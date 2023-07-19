@@ -1,0 +1,46 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools >= 61.0.0"]
+
+[project]
+classifiers = [
+  "Programming Language :: Python :: 3.8"
+]
+dependencies = [
+  "bernstein_flow @ git+https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector.git@2ceb26e",
+    "tensorflow==2.9.*"
+]
+dynamic = ["version"]
+license = {text = "TODO"}
+name = "mctm"
+readme = "README.md"
+requires-python = "==3.8.*"
+
+[project.optional-dependencies]
+develop = [
+  'autoflake',
+  'black',
+  'isort',
+  'pre-commit',
+  'pytest',
+  'python-lsp-black',
+  'python-lsp-server[all]',
+  'ipykernel',
+  'tox'
+]
+
+[tool.autoflake]
+expand-star-imports = true
+ignore-init-module-imports = true
+remove-all-unused-imports = true
+remove-unused-variables = true
+
+[tool.black]
+# line-length = 88
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+
+[tool.setuptools.dynamic]
+version = {attr = "mctm.__version__"}
