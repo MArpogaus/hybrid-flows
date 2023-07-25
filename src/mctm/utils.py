@@ -14,18 +14,10 @@
 import tensorflow as tf
 import numpy as np
 
+from functools import partial
+from .models import get_parameter_model
+
 # FUNCTION DEFINITIONS #########################################################
-def get_unconditional_model(distribution, extra_variables=None):
-    class Model(tf.keras.Model):
-        def __init__(self, **kwds):
-            super().__init__(**kwds)
-            self.distribution = distribution
-            self.extra_variables= extra_variables
-
-        def call(self, *_):
-            return self.distribution
-
-    return Model
 def set_seed(seed):
     np.random.seed(seed)
     tf.random.set_seed(seed)
@@ -63,3 +55,37 @@ def fit_distribution(
         callbacks=callbacks,
         **kwds,
     )
+
+def pipeline(dist, latentdim, ds_train, preprocessing):
+    params = {
+        "latentdim": latentdim,
+        "hidden_layers": [16],
+        "activation": "relu",
+        "batch_norm": True,
+        "epochs": 500,
+        "learning_rate": 0.001, 
+        "lr_patience": 20,
+    }
+    
+    # create model from dist
+    P = partial(get_parameter_model, input_shape=(1,), **params)
+    model = P(
+        output_shape=latentdim + np.sum(np.arange(latentdim + 1)),
+        dist_lambda=dist(latentdim),
+    )
+    
+    ds_train = preprocessing(ds_train)
+    
+    # train model
+    hist = fit_distribution(
+    model,
+    x=ds_train,
+    # validation_data=(val_x, val_y),
+    #batch_size=32,
+    epochs=params["epochs"],
+    # steps_per_epoch=2,
+    learning_rate=params["learning_rate"],
+    lr_patience=params["lr_patience"],
+    )
+    
+    return model, hist

@@ -1,0 +1,2 @@
+mlflow==2.5.0
+tensorflow_datasets==4.9.2
