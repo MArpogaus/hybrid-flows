@@ -7,7 +7,7 @@ import tensorflow_datasets as tfds
 import numpy as np
 import tensorflow as tf
 
-def load_model(runid):
+def load_pretrained_autoencoder_model(runid):
     g = mlflow.pyfunc.load_model(model_uri=f"runs:/{runid}/g")
     f = mlflow.pyfunc.load_model(model_uri=f"runs:/{runid}/f")
     latentdim = f.metadata.signature.inputs.to_dict()[0]['tensor-spec']['shape'][1]
@@ -66,7 +66,7 @@ def load_mnist_data():
     return ds_train, ds_test, ds_info
 
 def get_preprocessed_mnist_data(encoder_id):
-    g, f, latentdim = load_model(encoder_id)
+    g, f, latentdim = load_pretrained_autoencoder_model(encoder_id)
     ds_train, ds_test, ds_info = load_mnist_data()
     ds_train_encoded, xmin, xmax, denom = create_encoded_dataset(g, ds_train)
     

@@ -67,6 +67,10 @@ def pipeline(dist, latentdim, ds_train, preprocessing):
         "lr_patience": 20,
     }
     
+    
+    # get_model, get_dist, get_data + respective keywords  + weitere an fit_distribution + fit_distribution keywords
+    #  + postfix_fn eg
+    
     # create model from dist
     P = partial(get_parameter_model, input_shape=(1,), **params)
     model = P(
