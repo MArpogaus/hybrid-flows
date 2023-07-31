@@ -5,7 +5,11 @@ from mlflow.models import infer_signature
 from mlflow.keras import autolog, log_model
 import tensorflow_datasets as tfds
 import numpy as np
+import logging
+logging.getLogger("tensorflow").setLevel(logging.NOTSET)
 import tensorflow as tf
+
+import os
 
 def load_pretrained_autoencoder_model(runid):
     g = mlflow.pyfunc.load_model(model_uri=f"runs:/{runid}/g")
@@ -18,9 +22,10 @@ def create_encoded_dataset(g, ds): #-> module data -> file mnist
     _ys = []
     _xs = []
     #with io.capture_output() as captured:
+    tf.get_logger().setLevel('ERROR')
     for (x, y) in tfds.as_numpy(ds):
         _ys.append(y.copy())
-        _xs.append(g.predict(x).copy())
+        _xs.append(g.predict(x).copy()) #TODO: why does predict not recognize verbose=0?
     __xs = tf.data.Dataset.from_tensor_slices((list(map(tf.constant,_xs[:-1])))) # -1 last image is incomplete
     __ys = tf.data.Dataset.from_tensor_slices((list(map(tf.constant,_ys[:-1]))))
     ds_train_encoded = tf.data.Dataset.zip((__ys,__xs))#.prefetch(1) # 1 batch size

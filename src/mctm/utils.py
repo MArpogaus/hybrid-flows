@@ -21,75 +21,84 @@ from .models import get_parameter_model
 def set_seed(seed):
     np.random.seed(seed)
     tf.random.set_seed(seed)
+
+
 # Construct and fit model.
 # @tf.function
 def fit_distribution(
     model,
     learning_rate=0.001,
-    lr_patience=5,
+    lr_patience=10,
+    monitor="loss",
     loss=lambda y, dist: -dist.log_prob(y),
     **kwds,
 ):
     set_seed(1)
+    print("start debug")
     model.compile(
         optimizer=tf.optimizers.Adam(learning_rate=learning_rate),
-        loss=loss,
+        loss=loss
     )
 
     callbacks = [
         tf.keras.callbacks.ReduceLROnPlateau(
-            monitor="val_loss",
+            monitor=monitor,
             factor=0.1,
             patience=lr_patience,
         ),
         tf.keras.callbacks.EarlyStopping(
-            monitor="val_loss",
+            monitor=monitor,
             patience=3 * lr_patience,
             restore_best_weights=True,
         ),
         tf.keras.callbacks.TerminateOnNaN(),
     ]
-
+    ds = kwds['x']
+    xa, xb = next(iter(ds))
+    print(xa.shape, xb.shape)
+    y = model.predict(xa)
+    print(y.shape)
+    #l = loss(xa, )
     return model.fit(
         shuffle=True,
         callbacks=callbacks,
         **kwds,
     )
 
-def pipeline(dist, latentdim, ds_train, preprocessing):
-    params = {
-        "latentdim": latentdim,
-        "hidden_layers": [16],
+def pipeline(dist, dist_keywords, output_shape, ds_train, preprocessing):
+    model_params = {
+        "input_shape": (1,),
+        "hidden_layers": [16, 16],
         "activation": "relu",
-        "batch_norm": True,
-        "epochs": 500,
-        "learning_rate": 0.001, 
-        "lr_patience": 20,
+        "batch_norm": False,
     }
     
+    params = {
+        "epochs": 5,
+        "learning_rate": 0.00001, 
+        "lr_patience": 10,
+    }
     
     # get_model, get_dist, get_data + respective keywords  + weitere an fit_distribution + fit_distribution keywords
     #  + postfix_fn eg
     
     # create model from dist
-    P = partial(get_parameter_model, input_shape=(1,), **params)
+    P = partial(get_parameter_model, **model_params)
     model = P(
-        output_shape=latentdim + np.sum(np.arange(latentdim + 1)),
-        dist_lambda=dist(latentdim),
+        output_shape=output_shape,
+        dist_lambda=dist(**dist_keywords),
     )
     
     ds_train = preprocessing(ds_train)
-    
+    print(ds_train)
     # train model
     hist = fit_distribution(
     model,
     x=ds_train,
     # validation_data=(val_x, val_y),
     #batch_size=32,
-    epochs=params["epochs"],
     # steps_per_epoch=2,
-    learning_rate=params["learning_rate"],
-    lr_patience=params["lr_patience"],
+    **params
     )
     
     return model, hist
