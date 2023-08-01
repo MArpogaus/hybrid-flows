@@ -1,6 +1,0 @@
-pandas==1.5.*
-seaborn==0.12.*
-scikit-learn==1.2.*
-git+https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector.git@2ee4f0f
-tensorflow==2.9.*
-

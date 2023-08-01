@@ -1,33 +1,6 @@
 [build-system]
-build-backend = "setuptools.build_meta"
-requires = ["setuptools >= 61.0.0"]
-
-[project]
-classifiers = [
-  "Programming Language :: Python :: 3.8"
-]
-dependencies = [
-  "bernstein_flow @ git+https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector.git@2ceb26e",
-    "tensorflow==2.9.*"
-]
-dynamic = ["version"]
-license = {text = "TODO"}
-name = "mctm"
-readme = "README.md"
-requires-python = "==3.8.*"
-
-[project.optional-dependencies]
-develop = [
-  'autoflake',
-  'black',
-  'isort',
-  'pre-commit',
-  'pytest',
-  'python-lsp-black',
-  'python-lsp-server[all]',
-  'ipykernel',
-  'tox'
-]
+build-backend = "poetry_dynamic_versioning.backend"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
 
 [tool.autoflake]
 expand-star-imports = true
@@ -42,5 +15,52 @@ target-version = ['py38']
 [tool.isort]
 profile = "black"
 
-[tool.setuptools.dynamic]
-version = {attr = "mctm.__version__"}
+[tool.poetry]
+authors = []
+classifiers = [
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.8"
+]
+description = ""
+name = "mctm"
+readme = "README.md"
+version = "0.0.0.post19.dev0+11a04fa"
+
+[tool.poetry.dependencies]
+autoflake = {version = "*", optional = true}
+bernstein-flow = {git = "https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector.git", rev = "2ee4f0f"}
+black = {version = "*", optional = true}
+ipykernel = {version = "*", optional = true}
+isort = {version = "*", optional = true}
+poetry = {version = "*", optional = true}
+poetry-dynamic-versioning = {extras = ["plugin"], version = "*", optional = true}
+pre-commit = {version = "*", optional = true}
+pytest = {version = "*", optional = true}
+python = "==3.9.*"
+python-lsp-black = {version = "*", optional = true}
+python-lsp-server = {version = "*", optional = true, extras = ["all"]}
+tensorflow = "==2.9.*"
+tox = {version = "*", optional = true}
+
+[tool.poetry.extras]
+develop = [
+  'autoflake',
+  'black',
+  'ipykernel',
+  'isort',
+  'poetry',
+  'poetry-dynamic-versioning',
+  'pre-commit',
+  'pytest',
+  'python-lsp-black',
+  'python-lsp-server',
+  'tox'
+]
+
+[tool.poetry-dynamic-versioning]
+enable = true
+
+[tool.poetry-dynamic-versioning.substitution]
+folders = [
+  {path = "src/mctm/"}
+]
