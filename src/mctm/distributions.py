@@ -12,19 +12,14 @@
 ################################################################################
 # IMPORTS ######################################################################
 import tensorflow as tf
-
 import tensorflow_probability as tfp
 from bernstein_flow.bijectors import BernsteinBijectorLinearExtrapolate
 from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
-from tensorflow_probability.python.internal import (
-    dtype_util,
-    prefer_static,
-    tensor_util,
-)
-
+from tensorflow_probability.python.internal import prefer_static
 
 # FUNCTIONS ####################################################################
+
 
 def bernstein_flow(thetas_constrain_fn):
     def dist(pv):
@@ -37,13 +32,14 @@ def bernstein_flow(thetas_constrain_fn):
 
     return dist
 
+
 def multivariate_bernstein_flow(dims, M, thetas_constrain_fn):
     def dist(pv):
         bs = prefer_static.shape(pv)[:-1]
         shape = tf.concat((bs, [dims, M]), 0)
 
         thetas = thetas_constrain_fn(tf.reshape(pv[..., : M * dims], shape))
-        scale_tril = tfp.bijectors.FillScaleTriL()(pv[..., M * dims :])
+        scale_tril = tfp.bijectors.FillScaleTriL()(pv[..., M * dims:])  # fmt: skip
 
         mv_normal = tfd.MultivariateNormalTriL(loc=0, scale_tril=scale_tril)
 
@@ -54,22 +50,32 @@ def multivariate_bernstein_flow(dims, M, thetas_constrain_fn):
 
     return dist
 
+
 def mctm_lambda(dims, M, thetas_constrain_fn, xmin, denom):
     def dist(pv):
         bs = prefer_static.shape(pv)[:-1]
         shape = tf.concat((bs, [dims, M]), 0)
 
         thetas = thetas_constrain_fn(tf.reshape(pv[..., : M * dims], shape))
-        scale_tril = tfp.bijectors.FillScaleTriL()(pv[..., M * dims :])
+        scale_tril = tfp.bijectors.FillScaleTriL()(pv[..., M * dims:])  # fmt: skip
 
         mv_normal = tfd.MultivariateNormalTriL(loc=0, scale_tril=scale_tril)
-        bj = list(reversed([tfb.Shift(-xmin), tfb.Scale(1/denom), BernsteinBijectorLinearExtrapolate(thetas=thetas)])) # data view
+        bj = list(
+            reversed(
+                [
+                    tfb.Shift(-xmin),
+                    tfb.Scale(1 / denom),
+                    BernsteinBijectorLinearExtrapolate(thetas=thetas),
+                ]
+            )
+        )  # data view
         return tfd.TransformedDistribution(
             distribution=mv_normal,
-            bijector=tfb.Invert(tfb.Chain(bj))#,# TODO min max skalierung
+            bijector=tfb.Invert(tfb.Chain(bj)),  # ,# TODO min max skalierung
         )
 
     return dist
+
 
 def multivariate_normal_lambda(dims):
     def dist(pv):

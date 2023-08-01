@@ -3,9 +3,9 @@
 ################################################################################
 # IMPORTS ######################################################################
 import tensorflow as tf
-import numpy as np
 import tensorflow_probability as tfp
 from tensorflow import keras as K
+
 
 # Model DEFINITIONS #########################################################
 def get_unconditional_model(distribution, extra_variables=None):
@@ -13,20 +13,23 @@ def get_unconditional_model(distribution, extra_variables=None):
         def __init__(self, **kwds):
             super().__init__(**kwds)
             self.distribution = distribution
-            self.extra_variables= extra_variables
+            self.extra_variables = extra_variables
 
         def call(self, *_):
             return self.distribution
 
     return Model
 
-def get_parameter_model(input_shape, hidden_layers,activation,batch_norm, output_shape, dist_lambda):
+
+def get_parameter_model(
+    input_shape, hidden_layers, activation, batch_norm, output_shape, dist_lambda
+):
     inputs = K.Input(input_shape)
     if batch_norm:
         inputs = K.layers.BatchNormalization(name="batch_norm")(inputs)
     for i, h in enumerate(hidden_layers):
         x = K.layers.Dense(h, activation=activation, name=f"hidden{i}")(inputs)
-    #x = K.layers.Dense(32, activation="relu", name="hidden2")(x)
+    # x = K.layers.Dense(32, activation="relu", name="hidden2")(x)
     pv = K.layers.Dense(output_shape, activation="linear", name="pv")(x)
     dist = tfp.layers.DistributionLambda(dist_lambda)(pv)
     param_model = K.Model(inputs=inputs, outputs=dist)
