@@ -20,6 +20,17 @@ from .models import get_parameter_model
 
 
 # FUNCTION DEFINITIONS #########################################################
+def flatten_dict(d, parent_key="", sep="."):
+    items = []
+    for key, value in d.items():
+        new_key = sep.join((parent_key, str(key))) if parent_key else str(key)
+        if isinstance(value, dict) and len(value):
+            items.extend(flatten_dict(value, new_key, sep=sep).items())
+        else:
+            items.append((new_key, value))
+    return dict(items)
+
+
 def set_seed(seed):
     np.random.seed(seed)
     tf.random.set_seed(seed)
@@ -29,13 +40,14 @@ def set_seed(seed):
 # @tf.function
 def fit_distribution(
     model,
-    learning_rate=0.001,
-    lr_patience=10,
+    seed,
+    learning_rate,
+    lr_patience,
     monitor="loss",
     loss=lambda y, dist: -dist.log_prob(y),
     **kwds,
 ):
-    set_seed(1)
+    set_seed(seed)
     print("start debug")
     model.compile(optimizer=tf.optimizers.Adam(learning_rate=learning_rate), loss=loss)
 
@@ -52,12 +64,7 @@ def fit_distribution(
         ),
         tf.keras.callbacks.TerminateOnNaN(),
     ]
-    ds = kwds["x"]
-    xa, xb = next(iter(ds))
-    print(xa.shape, xb.shape)
-    y = model.predict(xa)
-    print(y.shape)
-    # l = loss(xa, )
+    kwds["x"]
     return model.fit(
         shuffle=True,
         callbacks=callbacks,
