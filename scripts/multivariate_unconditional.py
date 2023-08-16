@@ -95,8 +95,13 @@ if __name__ == "__main__":
     logging.debug(vars(args))
 
     # load params
-    params = dvc.api.params_show(stages=args.stage_name)["params"]
-    params = {k: v for d in params.values() for k, v in d.items()}
+    params = dvc.api.params_show(stages=args.stage_name)
+    distribution = list(params["distributions"].keys())[0]
+    params = {
+        **params["common"],
+        "distribution": distribution,
+        **params["distributions"][distribution],
+    }
     logging.info(params)
 
     # ensure reproducibility
@@ -130,31 +135,30 @@ if __name__ == "__main__":
     mlflow.set_experiment(experiment_name)
     logging.info(f"Logging to MLFlow Experiment: {experiment_name}")
 
-    with mlflow.start_run(run_name=params["dataset"]):
-        with start_run_with_exception_logging(
-            run_name=params["distribution"] + "_training"
-        ):
-            # Auto log all MLflow entities
-            mlflow.autolog()
-            mlflow.set_tag("stage", "training")
-            mlflow.log_dict(params, "params.yaml")
-            log_cfg(params)
-            mlflow.log_params(vars(args))
-            fig = plot_2d_data(X, Y)
-            mlflow.log_figure(fig, "dataset.svg")
+    with start_run_with_exception_logging(
+        run_name=params["distribution"] + "_training"
+    ):
+        # Auto log all MLflow entities
+        mlflow.autolog()
+        mlflow.set_tag("stage", "training")
+        mlflow.log_dict(params, "params.yaml")
+        log_cfg(params)
+        mlflow.log_params(vars(args))
+        fig = plot_2d_data(X, Y)
+        mlflow.log_figure(fig, "dataset.svg")
 
-            model = Model(distribution_lambda, trainable_parameters)
-            hist = fit_distribution(
-                model,
-                seed=params["seed"],
-                # unused but required
-                x=X,
-                y=X,
-                **params["fit_kwds"],
-            )
+        model = Model(distribution_lambda, trainable_parameters)
+        hist = fit_distribution(
+            model,
+            seed=params["seed"],
+            # unused but required
+            x=X,
+            y=X,
+            **params["fit_kwds"],
+        )
 
-            fig = plot_samples(model(X), X, seed=1)
-            mlflow.log_figure(fig, "samples.svg")
+        fig = plot_samples(model(X), X, seed=1)
+        mlflow.log_figure(fig, "samples.svg")
 
-            if args.log_file:
-                mlflow.log_artifact(args.log_file)
+        if args.log_file:
+            mlflow.log_artifact(args.log_file)

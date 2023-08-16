@@ -2,13 +2,13 @@ stages:
   train:
     foreach: ${distributions}
     do:
-      cmd: python scripts/multivariate_unconditional.py --log-level ${log-level} --log-file train_${item}.log --experiment-name unconditional train@${item} results/${item}
+      cmd: python scripts/multivariate_unconditional.py --log-level ${log-level} --log-file train_${key}.log --experiment-name unconditional train@${key} results/${key}
       params:
-      - params.common.seed
-      - params.common.dataset
-      - params.common.data_kwds
-      - params.${item}.distribution
-      - params.${item}.distribution_kwds
-      - params.${item}.fit_kwds
+      - common.seed
+      - common.dataset
+      - common.data_kwds
+      - distributions.${key}
+      - distributions.${key}.distribution_kwds
+      - distributions.${key}.fit_kwds
       deps:
       - scripts/multivariate_unconditional.py

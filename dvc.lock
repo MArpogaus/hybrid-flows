@@ -7,26 +7,87 @@ stages:
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: f9dd89fe6b7fea0e1f4c965c3dc8c76a
-      size: 5031
+      md5: 21fdd7ec428749336875a2ceaaaef388
+      size: 5103
     params:
       params.yaml:
-        params.bernstein_flow.distribution: bernstein_flow
-        params.bernstein_flow.distribution_kwds:
-          order: 25
-          low: -3
-          high: 3
-          smooth_bounds: true
-          allow_flexible_bounds: true
-        params.bernstein_flow.fit_kwds:
-          epochs: 1000
-          validation_split: 0.1
-          batch_size: 32
-          learning_rate: 0.001
-          lr_patience: 10
-        params.common.data_kwds:
+        common.data_kwds:
           n_samples: 2000
           noise: 0.05
           scale: true
-        params.common.dataset: moons
-        params.common.seed: 1
+        common.dataset: moons
+        common.seed: 1
+        distributions.bernstein_flow:
+          distribution_kwds: &id001
+            order: 25
+            low: -3
+            high: 3
+            smooth_bounds: true
+            allow_flexible_bounds: true
+          fit_kwds: &id002
+            epochs: 1000
+            validation_split: 0.1
+            batch_size: 32
+            learning_rate: 0.001
+            lr_patience: 10
+        distributions.bernstein_flow.distribution_kwds: *id001
+        distributions.bernstein_flow.fit_kwds: *id002
+  train@multivariate_bernstein_flow:
+    cmd: python scripts/multivariate_unconditional.py --log-level info --log-file
+      train_multivariate_bernstein_flow.log --experiment-name unconditional train@multivariate_bernstein_flow
+      results/multivariate_bernstein_flow
+    deps:
+    - path: scripts/multivariate_unconditional.py
+      hash: md5
+      md5: 21fdd7ec428749336875a2ceaaaef388
+      size: 5103
+    params:
+      params.yaml:
+        common.data_kwds:
+          n_samples: 2000
+          noise: 0.05
+          scale: true
+        common.dataset: moons
+        common.seed: 1
+        distributions.multivariate_bernstein_flow:
+          distribution_kwds: &id003
+            order: 25
+            low: -3
+            high: 3
+            smooth_bounds: true
+            allow_flexible_bounds: true
+          fit_kwds: &id004
+            epochs: 1000
+            validation_split: 0.1
+            batch_size: 32
+            learning_rate: 0.001
+            lr_patience: 10
+        distributions.multivariate_bernstein_flow.distribution_kwds: *id003
+        distributions.multivariate_bernstein_flow.fit_kwds: *id004
+  train@multivariate_normal:
+    cmd: python scripts/multivariate_unconditional.py --log-level info --log-file
+      train_multivariate_normal.log --experiment-name unconditional train@multivariate_normal
+      results/multivariate_normal
+    deps:
+    - path: scripts/multivariate_unconditional.py
+      hash: md5
+      md5: 21fdd7ec428749336875a2ceaaaef388
+      size: 5103
+    params:
+      params.yaml:
+        common.data_kwds:
+          n_samples: 2000
+          noise: 0.05
+          scale: true
+        common.dataset: moons
+        common.seed: 1
+        distributions.multivariate_normal:
+          distribution_kwds: &id005 {}
+          fit_kwds: &id006
+            epochs: 1000
+            validation_split: 0.1
+            batch_size: 32
+            learning_rate: 0.001
+            lr_patience: 10
+        distributions.multivariate_normal.distribution_kwds: *id005
+        distributions.multivariate_normal.fit_kwds: *id006

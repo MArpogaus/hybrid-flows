@@ -1,27 +1,41 @@
 log-level: info
-
+common:
+  seed: 1
+  dataset: moons
+  data_kwds:
+    n_samples: 2000
+    noise: 0.05
+    scale: true
 
 distributions:
-- bernstein_flow
-- multivariate_bernstein_flow
-- multivariate_normal
-
-params:
-  common:
-    seed: 1
-    dataset: moons
-    data_kwds:
-      n_samples: 2000
-      noise: 0.05
-      scale: true
   bernstein_flow:
-    distribution: bernstein_flow
     distribution_kwds:
       order: 25
       low: -3
       high: 3
       smooth_bounds: true
       allow_flexible_bounds: true
+    fit_kwds:
+      epochs: 1000
+      validation_split: 0.1
+      batch_size: 32
+      learning_rate: 0.001
+      lr_patience: 10
+  multivariate_bernstein_flow:
+    distribution_kwds:
+      order: 25
+      low: -3
+      high: 3
+      smooth_bounds: true
+      allow_flexible_bounds: true
+    fit_kwds:
+      epochs: 1000
+      validation_split: 0.1
+      batch_size: 32
+      learning_rate: 0.001
+      lr_patience: 10
+  multivariate_normal:
+    distribution_kwds: {}
     fit_kwds:
       epochs: 1000
       validation_split: 0.1
