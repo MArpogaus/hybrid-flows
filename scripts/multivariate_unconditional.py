@@ -71,7 +71,7 @@ if __name__ == "__main__":
         distributions, "get_" + params["distribution"]
     )(dims=dims, **params["distribution_kwds"])
 
-    class Model(tf.keras.Model):
+    class UnconditionalModel(tf.keras.Model):
         def __init__(self, distribution_lambda, trainable_parameters, **kwds):
             super().__init__(**kwds)
             self.distribution_lambda = distribution_lambda
@@ -97,7 +97,7 @@ if __name__ == "__main__":
         fig = plot_2d_data(X, Y)
         mlflow.log_figure(fig, "dataset.svg")
 
-        model = Model(distribution_lambda, trainable_parameters)
+        model = UnconditionalModel(distribution_lambda, trainable_parameters)
         hist = fit_distribution(
             model,
             seed=params["seed"],

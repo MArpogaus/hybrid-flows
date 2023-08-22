@@ -42,3 +42,35 @@ distributions:
       batch_size: 32
       learning_rate: 0.001
       lr_patience: 10
+  masked_autoregressive_bernstein_flow:
+    distribution_kwds:
+      hidden_units: [16, 16]
+      activation: relu
+      order: 25
+      low: -3
+      high: 3
+      smooth_bounds: true
+      allow_flexible_bounds: true
+    fit_kwds:
+      epochs: 1000
+      validation_split: 0.1
+      batch_size: 32
+      learning_rate: 0.001
+      lr_patience: 10
+  coupling_bernstein_flow:
+    distribution_kwds:
+      hidden_units: [16, 16]
+      activation: relu
+      batch_norm: false,
+      coupling_layers: 2
+      order: 25
+      low: -3
+      high: 3
+      smooth_bounds: true
+      allow_flexible_bounds: true
+    fit_kwds:
+      epochs: 1000
+      validation_split: 0.1
+      batch_size: 32
+      learning_rate: 0.001
+      lr_patience: 10

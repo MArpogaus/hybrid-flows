@@ -2,13 +2,13 @@ schema: '2.0'
 stages:
   train@bernstein_flow:
     cmd: python scripts/multivariate_unconditional.py --log-level info --log-file
-      train_bernstein_flow.log --experiment-name unconditional train@bernstein_flow
+      train_bernstein_flow.log --experiment-name unconditional-moons train@bernstein_flow
       results/bernstein_flow
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: 21fdd7ec428749336875a2ceaaaef388
-      size: 5103
+      md5: 32ea07adea0d437253ed875d87afb5fa
+      size: 3621
     params:
       params.yaml:
         common.data_kwds:
@@ -34,13 +34,13 @@ stages:
         distributions.bernstein_flow.fit_kwds: *id002
   train@multivariate_bernstein_flow:
     cmd: python scripts/multivariate_unconditional.py --log-level info --log-file
-      train_multivariate_bernstein_flow.log --experiment-name unconditional train@multivariate_bernstein_flow
-      results/multivariate_bernstein_flow
+      train_multivariate_bernstein_flow.log --experiment-name unconditional-moons
+      train@multivariate_bernstein_flow results/multivariate_bernstein_flow
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: 21fdd7ec428749336875a2ceaaaef388
-      size: 5103
+      md5: 32ea07adea0d437253ed875d87afb5fa
+      size: 3621
     params:
       params.yaml:
         common.data_kwds:
@@ -66,13 +66,13 @@ stages:
         distributions.multivariate_bernstein_flow.fit_kwds: *id004
   train@multivariate_normal:
     cmd: python scripts/multivariate_unconditional.py --log-level info --log-file
-      train_multivariate_normal.log --experiment-name unconditional train@multivariate_normal
+      train_multivariate_normal.log --experiment-name unconditional-moons train@multivariate_normal
       results/multivariate_normal
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: 21fdd7ec428749336875a2ceaaaef388
-      size: 5103
+      md5: 32ea07adea0d437253ed875d87afb5fa
+      size: 3621
     params:
       params.yaml:
         common.data_kwds:
@@ -91,3 +91,77 @@ stages:
             lr_patience: 10
         distributions.multivariate_normal.distribution_kwds: *id005
         distributions.multivariate_normal.fit_kwds: *id006
+  train@masked_autoregressive_bernstein_flow:
+    cmd: python scripts/multivariate_unconditional.py --log-level info --log-file
+      train_masked_autoregressive_bernstein_flow.log --experiment-name unconditional-moons
+      train@masked_autoregressive_bernstein_flow results/masked_autoregressive_bernstein_flow
+    deps:
+    - path: scripts/multivariate_unconditional.py
+      hash: md5
+      md5: 32ea07adea0d437253ed875d87afb5fa
+      size: 3621
+    params:
+      params.yaml:
+        common.data_kwds:
+          n_samples: 2000
+          noise: 0.05
+          scale: true
+        common.dataset: moons
+        common.seed: 1
+        distributions.masked_autoregressive_bernstein_flow:
+          distribution_kwds: &id007
+            hidden_units:
+            - 16
+            - 16
+            activation: relu
+            order: 25
+            low: -3
+            high: 3
+            smooth_bounds: true
+            allow_flexible_bounds: true
+          fit_kwds: &id008
+            epochs: 1000
+            validation_split: 0.1
+            batch_size: 32
+            learning_rate: 0.001
+            lr_patience: 10
+        distributions.masked_autoregressive_bernstein_flow.distribution_kwds: *id007
+        distributions.masked_autoregressive_bernstein_flow.fit_kwds: *id008
+  train@coupling_bernstein_flow:
+    cmd: python scripts/multivariate_unconditional.py --log-level info --log-file
+      train_coupling_bernstein_flow.log --experiment-name unconditional-moons train@coupling_bernstein_flow
+      results/coupling_bernstein_flow
+    deps:
+    - path: scripts/multivariate_unconditional.py
+      hash: md5
+      md5: 32ea07adea0d437253ed875d87afb5fa
+      size: 3621
+    params:
+      params.yaml:
+        common.data_kwds:
+          n_samples: 2000
+          noise: 0.05
+          scale: true
+        common.dataset: moons
+        common.seed: 1
+        distributions.coupling_bernstein_flow:
+          distribution_kwds: &id009
+            hidden_units:
+            - 16
+            - 16
+            activation: relu
+            batch_norm: false,
+            coupling_layers: 2
+            order: 25
+            low: -3
+            high: 3
+            smooth_bounds: true
+            allow_flexible_bounds: true
+          fit_kwds: &id010
+            epochs: 1000
+            validation_split: 0.1
+            batch_size: 32
+            learning_rate: 0.001
+            lr_patience: 10
+        distributions.coupling_bernstein_flow.distribution_kwds: *id009
+        distributions.coupling_bernstein_flow.fit_kwds: *id010
