@@ -16,7 +16,7 @@ from functools import partial
 import numpy as np
 import tensorflow as tf
 
-from .models import get_parameter_model
+from ..models import get_parameter_model
 
 
 # FUNCTION DEFINITIONS #########################################################

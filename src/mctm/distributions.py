@@ -11,6 +11,8 @@
 # ...
 ################################################################################
 # IMPORTS ######################################################################
+from functools import partial
+
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
@@ -22,7 +24,7 @@ from tensorflow_probability.python.internal import prefer_static
 
 
 # FUNCTIONS ####################################################################
-def get_bernstein_flow(dims, order, **kwds):
+def __get_bernstein_flow_lambda__(dims, order, **kwds):
     pv_shape = [dims, order]
     thetas_constrain_fn = get_thetas_constrain_fn(**kwds)
 
@@ -39,7 +41,7 @@ def get_bernstein_flow(dims, order, **kwds):
     return dist, pv_shape
 
 
-def get_multivariate_bernstein_flow(dims, order, **kwds):
+def __get_multivariate_bernstein_flow_lambda__(dims, order, **kwds):
     pv_shape = [order * dims + np.sum(np.arange(dims + 1))]
     thetas_constrain_fn = get_thetas_constrain_fn(**kwds)
 
@@ -60,7 +62,7 @@ def get_multivariate_bernstein_flow(dims, order, **kwds):
     return dist, pv_shape
 
 
-def get_multivariate_normal(dims):
+def __get_multivariate_normal_lambda__(dims):
     pv_shape = [dims + np.sum(np.arange(dims + 1))]
 
     def dist(pv):
@@ -72,6 +74,38 @@ def get_multivariate_normal(dims):
     return dist, pv_shape
 
 
+def __get_unconditional_trainable_distribution__(
+    get_distribution_lambda_fn, dims, dtype=tf.float32, **distribution_kwds
+):
+    distribution_lambda, parameters_shape = get_distribution_lambda_fn(
+        dims=dims, **distribution_kwds
+    )
+    trainable_parameters = tf.Variable(
+        tf.random.normal(parameters_shape, dtype=dtype), trainable=True
+    )
+    return distribution_lambda, trainable_parameters
+
+
+def __get_conditional_trainable_distribution__(
+    get_distribution_lambda_fn, dims, conditioner, **distribution_kwds
+):
+    raise NotImplementedError()
+
+
+def __get_trainable_distribution__(
+    get_disttribution_lambda_fn, dims, conditioner=None, **kwds
+):
+    if conditioner:
+        return __get_conditional_trainable_distribution__(
+            get_disttribution_lambda_fn, dims=dims, conditioner=conditioner, **kwds
+        )
+    else:
+        return __get_unconditional_trainable_distribution__(
+            get_disttribution_lambda_fn, dims=dims, **kwds
+        )
+
+
+# PUBLIC FUNCTIONS #############################################################
 def get_masked_autoregressive_bernstein_flow(
     dims,
     M,
@@ -116,3 +150,17 @@ def get_masked_autoregressive_bernstein_flow(
     )
 
     return distribution, made_net.trainable_variables
+
+
+get_bernstein_flow = partial(
+    __get_trainable_distribution__,
+    __get_bernstein_flow_lambda__,
+)
+get_multivariate_bernstein_flow = partial(
+    __get_trainable_distribution__,
+    __get_multivariate_bernstein_flow_lambda__,
+)
+get_multivariate_normal = partial(
+    __get_trainable_distribution__,
+    __get_multivariate_normal_lambda__,
+)
