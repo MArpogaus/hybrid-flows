@@ -2,12 +2,15 @@
 
 import argparse
 import logging
+import os
 import pathlib
 import sys
 
 import dvc.api
 import mlflow
+import numpy as np
 import tensorflow as tf
+import yaml
 
 from mctm import distributions
 from mctm.data.sklearn_datasets import get_dataset
@@ -48,6 +51,9 @@ if __name__ == "__main__":
     )
 
     logging.debug(vars(args))
+
+    # prepare results directory
+    os.makedirs(args.results_path, exist_ok=True)
 
     # load params
     params = dvc.api.params_show(stages=args.stage_name)
@@ -109,6 +115,19 @@ if __name__ == "__main__":
 
         fig = plot_samples(model(X), X, seed=1)
         mlflow.log_figure(fig, "samples.svg")
+
+        min_idx = np.argmin(hist.history["val_loss"])
+        min_loss = hist.history["loss"][min_idx]
+        min_val_loss = hist.history["val_loss"][min_idx]
+        logging.info(f"training finished after {len(hist.history['loss'])} epochs.")
+        logging.info(f"train loss: {min_loss}")
+        logging.info(f"validation loss: {min_val_loss}")
+
+        if not args.test_mode:
+            with open(
+                os.path.join(args.results_path, "metrics.yaml"), "w+"
+            ) as results_file:
+                yaml.dump({"loss": min_loss, "val_loss": min_val_loss}, results_file)
 
         if args.log_file:
             mlflow.log_artifact(args.log_file)

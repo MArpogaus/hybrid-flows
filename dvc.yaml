@@ -12,3 +12,5 @@ stages:
       - distributions.${key}.fit_kwds
       deps:
       - scripts/multivariate_unconditional.py
+      metrics:
+      - results/${key}/metrics.yaml
