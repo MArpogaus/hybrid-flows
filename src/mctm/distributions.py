@@ -18,7 +18,6 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 from bernstein_flow.activations import get_thetas_constrain_fn
 from bernstein_flow.bijectors import BernsteinBijectorLinearExtrapolate
-from tensorflow import keras as K
 from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 from tensorflow_probability.python.internal import prefer_static
