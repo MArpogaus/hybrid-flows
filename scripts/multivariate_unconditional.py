@@ -9,13 +9,12 @@ import sys
 import dvc.api
 import mlflow
 import numpy as np
-import tensorflow as tf
 import yaml
 
-from mctm import distributions
 from mctm.data.sklearn_datasets import get_dataset
-from mctm.mlfow import log_cfg, start_run_with_exception_logging
-from mctm.utils import fit_distribution, set_seed
+from mctm.models import UnconditionalModel
+from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
+from mctm.utils.tensorflow import fit_distribution, set_seed
 from mctm.utils.visualisation import plot_2d_data, plot_samples
 
 if __name__ == "__main__":
@@ -73,19 +72,6 @@ if __name__ == "__main__":
 
     dims = X.shape[-1]
 
-    distribution_lambda, trainable_parameters = getattr(
-        distributions, "get_" + params["distribution"]
-    )(dims=dims, **params["distribution_kwds"])
-
-    class UnconditionalModel(tf.keras.Model):
-        def __init__(self, distribution_lambda, trainable_parameters, **kwds):
-            super().__init__(**kwds)
-            self.distribution_lambda = distribution_lambda
-            self.distribution_parameters = trainable_parameters
-
-        def call(self, *_):
-            return self.distribution_lambda(self.distribution_parameters)
-
     # Evaluate Model
     experiment_name = args.experiment_name + ("_test" if args.test_mode else "")
     mlflow.set_experiment(experiment_name)
@@ -103,13 +89,20 @@ if __name__ == "__main__":
         fig = plot_2d_data(X, Y)
         mlflow.log_figure(fig, "dataset.svg")
 
-        model = UnconditionalModel(distribution_lambda, trainable_parameters)
+        model = UnconditionalModel(
+            dims=dims,
+            distribution=params["distribution"],
+            **params["distribution_kwds"],
+        )
         hist = fit_distribution(
-            model,
+            model=model,
             seed=params["seed"],
             # unused but required
             x=X,
             y=X,
+            results_path=args.results_path,
+            verbose=True,
+            monitor="val_loss",
             **params["fit_kwds"],
         )
 

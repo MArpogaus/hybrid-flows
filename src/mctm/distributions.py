@@ -22,7 +22,7 @@ from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 from tensorflow_probability.python.internal import prefer_static
 
-from .models import get_simple_fully_connected_network
+from .utils.tensorflow import get_simple_fully_connected_network
 
 # PRIVATE GLOBAL OBJECTS #######################################################
 __DEFAULT_BASE_DISTRIBUTION__ = tfd.Normal(0.0, 1.0)

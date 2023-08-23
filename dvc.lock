@@ -7,8 +7,8 @@ stages:
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: a44e65d9ab95806acb066e9cbde96fc6
-      size: 4338
+      md5: 4aff7a83804536a6dcff5ba5ccc07f08
+      size: 3985
     params:
       params.yaml:
         common.data_kwds:
@@ -35,7 +35,7 @@ stages:
     outs:
     - path: results/bernstein_flow/metrics.yaml
       hash: md5
-      md5: 7b379da144409f5517a937bdb9e0bcbd
+      md5: d3b51c1656029c5dc8c342897ad69555
       size: 57
   train@multivariate_bernstein_flow:
     cmd: python scripts/multivariate_unconditional.py --log-level info --log-file
@@ -44,8 +44,8 @@ stages:
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: a44e65d9ab95806acb066e9cbde96fc6
-      size: 4338
+      md5: 4aff7a83804536a6dcff5ba5ccc07f08
+      size: 3985
     params:
       params.yaml:
         common.data_kwds:
@@ -72,8 +72,8 @@ stages:
     outs:
     - path: results/multivariate_bernstein_flow/metrics.yaml
       hash: md5
-      md5: aa956ebbb3b4b3d06d10b45b7dc35b12
-      size: 56
+      md5: e90ea06dbe615305e2df912bbc9abbbb
+      size: 58
   train@multivariate_normal:
     cmd: python scripts/multivariate_unconditional.py --log-level info --log-file
       train_multivariate_normal.log --experiment-name unconditional-moons train@multivariate_normal
@@ -81,8 +81,8 @@ stages:
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: a44e65d9ab95806acb066e9cbde96fc6
-      size: 4338
+      md5: 4aff7a83804536a6dcff5ba5ccc07f08
+      size: 3985
     params:
       params.yaml:
         common.data_kwds:
@@ -113,8 +113,8 @@ stages:
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: a44e65d9ab95806acb066e9cbde96fc6
-      size: 4338
+      md5: 4aff7a83804536a6dcff5ba5ccc07f08
+      size: 3985
     params:
       params.yaml:
         common.data_kwds:
@@ -145,7 +145,7 @@ stages:
     outs:
     - path: results/masked_autoregressive_bernstein_flow/metrics.yaml
       hash: md5
-      md5: efd7cd468e8e296bbf22443a06fed24e
+      md5: e8463a2c73f470efa293966ee624bcae
       size: 55
   train@coupling_bernstein_flow:
     cmd: python scripts/multivariate_unconditional.py --log-level info --log-file
@@ -154,8 +154,8 @@ stages:
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: a44e65d9ab95806acb066e9cbde96fc6
-      size: 4338
+      md5: 4aff7a83804536a6dcff5ba5ccc07f08
+      size: 3985
     params:
       params.yaml:
         common.data_kwds:
@@ -188,5 +188,5 @@ stages:
     outs:
     - path: results/coupling_bernstein_flow/metrics.yaml
       hash: md5
-      md5: e44da7e776a6486fc1e530173aa21ca0
-      size: 56
+      md5: 6308705a16df2d799e5bd5c742ede27b
+      size: 55
