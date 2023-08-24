@@ -9,7 +9,7 @@ common:
 
 distributions:
   bernstein_flow:
-    distribution_kwds:
+    distribution_kwds: &distribution_kwds
       order: 25
       low: -3
       high: 3
@@ -22,12 +22,7 @@ distributions:
       learning_rate: 0.001
       lr_patience: 10
   multivariate_bernstein_flow:
-    distribution_kwds:
-      order: 25
-      low: -3
-      high: 3
-      smooth_bounds: true
-      allow_flexible_bounds: true
+    distribution_kwds: *distribution_kwds
     fit_kwds:
       epochs: 1000
       validation_split: 0.1
@@ -43,14 +38,10 @@ distributions:
       learning_rate: 0.001
       lr_patience: 10
   masked_autoregressive_bernstein_flow:
-    distribution_kwds:
+    distribution_kwds: *distribution_kwds
+    parameter_kwds:
       hidden_units: [16, 16]
       activation: relu
-      order: 25
-      low: -3
-      high: 3
-      smooth_bounds: true
-      allow_flexible_bounds: true
     fit_kwds:
       epochs: 1000
       validation_split: 0.1
@@ -59,15 +50,12 @@ distributions:
       lr_patience: 10
   coupling_bernstein_flow:
     distribution_kwds:
+      <<: *distribution_kwds
+      coupling_layers: 2
+    parameter_kwds:
       hidden_units: [16, 16]
       activation: relu
       batch_norm: false,
-      coupling_layers: 2
-      order: 25
-      low: -3
-      high: 3
-      smooth_bounds: true
-      allow_flexible_bounds: true
     fit_kwds:
       epochs: 1000
       validation_split: 0.1

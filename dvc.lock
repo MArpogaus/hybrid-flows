@@ -7,8 +7,8 @@ stages:
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: 4aff7a83804536a6dcff5ba5ccc07f08
-      size: 3985
+      md5: f386cc32aca768c92418859630b74cff
+      size: 4001
     params:
       params.yaml:
         common.data_kwds:
@@ -44,8 +44,8 @@ stages:
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: 4aff7a83804536a6dcff5ba5ccc07f08
-      size: 3985
+      md5: f386cc32aca768c92418859630b74cff
+      size: 4001
     params:
       params.yaml:
         common.data_kwds:
@@ -81,8 +81,8 @@ stages:
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: 4aff7a83804536a6dcff5ba5ccc07f08
-      size: 3985
+      md5: f386cc32aca768c92418859630b74cff
+      size: 4001
     params:
       params.yaml:
         common.data_kwds:
@@ -113,8 +113,8 @@ stages:
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: 4aff7a83804536a6dcff5ba5ccc07f08
-      size: 3985
+      md5: d1460d9baf3fcc112941dfd2b9eddd8c
+      size: 4062
     params:
       params.yaml:
         common.data_kwds:
@@ -125,15 +125,16 @@ stages:
         common.seed: 1
         distributions.masked_autoregressive_bernstein_flow:
           distribution_kwds: &id007
-            hidden_units:
-            - 16
-            - 16
-            activation: relu
             order: 25
             low: -3
             high: 3
             smooth_bounds: true
             allow_flexible_bounds: true
+          parameter_kwds:
+            hidden_units:
+            - 16
+            - 16
+            activation: relu
           fit_kwds: &id008
             epochs: 1000
             validation_split: 0.1
@@ -145,8 +146,8 @@ stages:
     outs:
     - path: results/masked_autoregressive_bernstein_flow/metrics.yaml
       hash: md5
-      md5: e8463a2c73f470efa293966ee624bcae
-      size: 55
+      md5: ae9290253df9d8e1a7797cb31d68ba4e
+      size: 56
   train@coupling_bernstein_flow:
     cmd: python scripts/multivariate_unconditional.py --log-level info --log-file
       train_coupling_bernstein_flow.log --experiment-name unconditional-moons train@coupling_bernstein_flow
@@ -154,8 +155,8 @@ stages:
     deps:
     - path: scripts/multivariate_unconditional.py
       hash: md5
-      md5: 4aff7a83804536a6dcff5ba5ccc07f08
-      size: 3985
+      md5: d1460d9baf3fcc112941dfd2b9eddd8c
+      size: 4062
     params:
       params.yaml:
         common.data_kwds:
@@ -166,17 +167,18 @@ stages:
         common.seed: 1
         distributions.coupling_bernstein_flow:
           distribution_kwds: &id009
-            hidden_units:
-            - 16
-            - 16
-            activation: relu
-            batch_norm: false,
-            coupling_layers: 2
             order: 25
             low: -3
             high: 3
             smooth_bounds: true
             allow_flexible_bounds: true
+            coupling_layers: 2
+          parameter_kwds:
+            hidden_units:
+            - 16
+            - 16
+            activation: relu
+            batch_norm: false,
           fit_kwds: &id010
             epochs: 1000
             validation_split: 0.1
@@ -188,5 +190,5 @@ stages:
     outs:
     - path: results/coupling_bernstein_flow/metrics.yaml
       hash: md5
-      md5: 6308705a16df2d799e5bd5c742ede27b
-      size: 55
+      md5: b6f315af2169d83bc7fac09107e1bfb4
+      size: 56

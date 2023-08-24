@@ -92,7 +92,8 @@ if __name__ == "__main__":
         model = UnconditionalModel(
             dims=dims,
             distribution=params["distribution"],
-            **params["distribution_kwds"],
+            distribution_kwds=params["distribution_kwds"],
+            parameter_kwds=params.get("parameter_kwds", {}),
         )
         hist = fit_distribution(
             model=model,
