@@ -19,16 +19,28 @@ from mctm.utils.visualisation import plot_2d_data, plot_samples
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a model")
-    parser.add_argument("--experiment-name", type=str, help="MLFlow experiment name")
     parser.add_argument("--log-file", type=str, help="path for log file")
     parser.add_argument(
         "--log-level", type=str, default="INFO", help="logging severaty level"
     )
     parser.add_argument("--test-mode", action="store_true", help="activate test-mode")
     parser.add_argument(
+        "--experiment-name", type=str, help="MLFlow experiment name", required=True
+    )
+    parser.add_argument(
         "stage_name",
         type=str,
-        help="name of dvstage ",
+        help="name of dvstage",
+    )
+    parser.add_argument(
+        "distribution",
+        type=str,
+        help="name of distribution",
+    )
+    parser.add_argument(
+        "dataset",
+        type=str,
+        help="name of dataset",
     )
     parser.add_argument(
         "results_path",
@@ -36,6 +48,9 @@ if __name__ == "__main__":
         help="destination for model checkpoints and logs.",
     )
     args = parser.parse_args()
+
+    # prepare results directory
+    os.makedirs(args.results_path, exist_ok=True)
 
     # configure logging
     handlers = [logging.StreamHandler(sys.stdout)]
@@ -51,12 +66,11 @@ if __name__ == "__main__":
 
     logging.debug(vars(args))
 
-    # prepare results directory
-    os.makedirs(args.results_path, exist_ok=True)
-
     # load params
-    params = dvc.api.params_show(stages=args.stage_name)
-    distribution = list(params["distributions"].keys())[0]
+    params = dvc.api.params_show(
+        stages=f"{args.stage_name}@{args.distribution}-{args.dataset}"
+    )
+    distribution = args.distribution
     params = {
         **params["common"],
         "distribution": distribution,
@@ -68,7 +82,7 @@ if __name__ == "__main__":
     set_seed(params["seed"])
 
     # generate data
-    X, Y = get_dataset(params["dataset"], **params["data_kwds"])
+    X, Y = get_dataset(args.dataset, **params["data_kwds"])
 
     dims = X.shape[-1]
 
@@ -102,8 +116,6 @@ if __name__ == "__main__":
             x=X,
             y=X,
             results_path=args.results_path,
-            verbose=True,
-            monitor="val_loss",
             **params["fit_kwds"],
         )
 

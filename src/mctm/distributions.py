@@ -189,7 +189,7 @@ def get_coupling_bernstein_flow(
                 )
             )
             if coupling_layers % 2 != 0 and layer == (coupling_layers - 1):
-                print("uneven number of coupling layers -> skipping last permuataion")
+                print("uneven number of coupling layers -> skipping last permutation")
             else:
                 bijectors.append(tfb.Permute(permutation=[1, 0]))
 

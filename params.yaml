@@ -1,7 +1,10 @@
+datasets:
+- moons
+- circles
+
 log-level: info
 common:
   seed: 1
-  dataset: moons
   data_kwds:
     n_samples: 2000
     noise: 0.05
@@ -15,28 +18,43 @@ distributions:
       high: 3
       smooth_bounds: true
       allow_flexible_bounds: true
+    parameter_kwds:
+      dtype: float32
     fit_kwds:
       epochs: 1000
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
       lr_patience: 10
+      verbose: true
+      monitor: val_loss
+
   multivariate_bernstein_flow:
     distribution_kwds: *distribution_kwds
+    parameter_kwds:
+      dtype: float32
     fit_kwds:
       epochs: 1000
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
       lr_patience: 10
+      verbose: true
+      monitor: val_loss
+
   multivariate_normal:
     distribution_kwds: {}
+    parameter_kwds:
+      dtype: float32
     fit_kwds:
       epochs: 1000
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
       lr_patience: 10
+      verbose: true
+      monitor: val_loss
+
   masked_autoregressive_bernstein_flow:
     distribution_kwds: *distribution_kwds
     parameter_kwds:
@@ -48,12 +66,15 @@ distributions:
       batch_size: 32
       learning_rate: 0.001
       lr_patience: 10
+      verbose: true
+      monitor: val_loss
+
   coupling_bernstein_flow:
     distribution_kwds:
       <<: *distribution_kwds
       coupling_layers: 2
     parameter_kwds:
-      hidden_units: [16, 16]
+      hidden_units: [16, 16, 16, 16]
       activation: relu
       batch_norm: false,
     fit_kwds:
@@ -62,3 +83,5 @@ distributions:
       batch_size: 32
       learning_rate: 0.001
       lr_patience: 10
+      verbose: true
+      monitor: val_loss

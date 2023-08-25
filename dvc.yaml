@@ -1,16 +1,22 @@
 stages:
   train:
-    foreach: ${distributions}
-    do:
-      cmd: python scripts/multivariate_unconditional.py --log-level ${log-level} --log-file train_${key}.log --experiment-name unconditional-${common.dataset} train@${key} results/${key}
-      params:
-      - common.seed
-      - common.dataset
-      - common.data_kwds
-      - distributions.${key}
-      - distributions.${key}.distribution_kwds
-      - distributions.${key}.fit_kwds
-      deps:
-      - scripts/multivariate_unconditional.py
-      metrics:
-      - results/${key}/metrics.yaml
+    matrix:
+      distribution: ${distributions}
+      dataset: ${datasets}
+    cmd: python scripts/multivariate_unconditional.py --log-level ${log-level} --log-file results/${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-${item.dataset} train ${item.distribution} ${item.dataset} results/${item.distribution}_${item.dataset}
+    params:
+    - log-level
+    - common.seed
+    - common.data_kwds.n_samples
+    - common.data_kwds.noise
+    - common.data_kwds.scale
+    - distributions.${item.distribution}*
+    deps:
+    - scripts/multivariate_unconditional.py
+    - pyproject.toml
+    - src/mctm
+    metrics:
+    - results/${item.distribution}_${item.dataset}/metrics.yaml
+    outs:
+    - results/${item.distribution}_${item.dataset}/mcp
+    - results/${item.distribution}_${item.dataset}/train.log
