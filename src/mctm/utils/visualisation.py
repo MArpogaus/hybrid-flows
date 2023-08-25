@@ -29,17 +29,21 @@ def plot_2d_data(X, Y):
 
 
 def plot_samples(dist, data, seed=1):
-    N = data.shape[0]
+    if len(dist.batch_shape) == 0 or dist.batch_shape[0] == 1:
+        N = data.shape[0]
+    else:
+        N = 1
+
     # Use the fitted distribution.
     start = time.time()
-    samples = dist.sample(N, seed=seed)
+    samples = dist.sample(N, seed=seed).numpy().squeeze()
     end = time.time()
     print(f"sampling took {end-start} seconds.")
 
     df1 = pd.DataFrame(columns=["x1", "x2"], data=data)
     df1 = df1.assign(source="data")
 
-    df2 = pd.DataFrame(columns=["x1", "x2"], data=samples.numpy())
+    df2 = pd.DataFrame(columns=["x1", "x2"], data=samples)
     df2 = df2.assign(source="model")
 
     df = pd.concat([df1, df2])

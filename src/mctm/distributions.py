@@ -201,21 +201,33 @@ def get_coupling_bernstein_flow(
     return distribution_lambda, parameter_lambda, trainable_variables
 
 
-get_bernstein_flow = partial(
+get_unconditional_bernstein_flow = partial(
     __get_trainable_distribution__,
     get_distribution_lambda_fn=__get_bernstein_flow_lambda__,
     get_parameter_lambda_fn=get_parameter_vector_lambda,
-    parameter_kwds={"dtype": tf.float32},
 )
-get_multivariate_bernstein_flow = partial(
+get_unconditional_multivariate_bernstein_flow = partial(
     __get_trainable_distribution__,
     get_distribution_lambda_fn=__get_multivariate_bernstein_flow_lambda__,
     get_parameter_lambda_fn=get_parameter_vector_lambda,
-    parameter_kwds={"dtype": tf.float32},
 )
-get_multivariate_normal = partial(
+get_unconditional_multivariate_normal = partial(
     __get_trainable_distribution__,
     get_distribution_lambda_fn=__get_multivariate_normal_lambda__,
     get_parameter_lambda_fn=get_parameter_vector_lambda,
-    parameter_kwds={"dtype": tf.float32},
+)
+get_conditional_bernstein_flow = partial(
+    __get_trainable_distribution__,
+    get_distribution_lambda_fn=__get_bernstein_flow_lambda__,
+    get_parameter_lambda_fn=get_simple_fully_connected_parameter_network_lambda,
+)
+get_conditional_multivariate_bernstein_flow = partial(
+    __get_trainable_distribution__,
+    get_distribution_lambda_fn=__get_multivariate_bernstein_flow_lambda__,
+    get_parameter_lambda_fn=get_simple_fully_connected_parameter_network_lambda,
+)
+get_conditional_multivariate_normal = partial(
+    __get_trainable_distribution__,
+    get_distribution_lambda_fn=__get_multivariate_normal_lambda__,
+    get_parameter_lambda_fn=get_simple_fully_connected_parameter_network_lambda,
 )

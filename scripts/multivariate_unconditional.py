@@ -74,7 +74,7 @@ if __name__ == "__main__":
     params = {
         **params["common"],
         "distribution": distribution,
-        **params["distributions"][distribution],
+        **params[args.stage_name + "_distributions"][distribution],
     }
     logging.info(params)
 
@@ -87,7 +87,11 @@ if __name__ == "__main__":
     dims = X.shape[-1]
 
     # Evaluate Model
-    experiment_name = args.experiment_name + ("_test" if args.test_mode else "")
+    experiment_name = args.experiment_name
+    if args.test_mode:
+        experiment_name += "_test"
+        params["fit_kwds"]["epochs"] = 1
+
     mlflow.set_experiment(experiment_name)
     logging.info(f"Logging to MLFlow Experiment: {experiment_name}")
 
@@ -113,13 +117,13 @@ if __name__ == "__main__":
             model=model,
             seed=params["seed"],
             # unused but required
-            x=X,
+            x=Y,
             y=X,
             results_path=args.results_path,
             **params["fit_kwds"],
         )
 
-        fig = plot_samples(model(X), X, seed=1)
+        fig = plot_samples(model(Y.flatten()), X, seed=1)
         mlflow.log_figure(fig, "samples.svg")
 
         min_idx = np.argmin(hist.history["val_loss"])

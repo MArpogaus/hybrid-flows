@@ -10,8 +10,8 @@ common:
     noise: 0.05
     scale: true
 
-distributions:
-  bernstein_flow:
+unconditional_distributions:
+  unconditional_bernstein_flow:
     distribution_kwds: &distribution_kwds
       order: 25
       low: -3
@@ -29,7 +29,7 @@ distributions:
       verbose: true
       monitor: val_loss
 
-  multivariate_bernstein_flow:
+  unconditional_multivariate_bernstein_flow:
     distribution_kwds: *distribution_kwds
     parameter_kwds:
       dtype: float32
@@ -42,7 +42,7 @@ distributions:
       verbose: true
       monitor: val_loss
 
-  multivariate_normal:
+  unconditional_multivariate_normal:
     distribution_kwds: {}
     parameter_kwds:
       dtype: float32
@@ -85,3 +85,86 @@ distributions:
       lr_patience: 10
       verbose: true
       monitor: val_loss
+
+conditional_distributions:
+  conditional_bernstein_flow:
+    distribution_kwds: *distribution_kwds
+    parameter_kwds:
+      activation: relu
+      batch_norm: true
+      hidden_units: [16, 16]
+      input_shape: 1
+    fit_kwds:
+      epochs: 1000
+      validation_split: 0.1
+      batch_size: 32
+      learning_rate: 0.001
+      lr_patience: 10
+      verbose: true
+      monitor: val_loss
+
+  conditional_multivariate_bernstein_flow:
+    distribution_kwds: *distribution_kwds
+    parameter_kwds:
+      activation: relu
+      batch_norm: true
+      hidden_units: [16, 16]
+      input_shape: 1
+    fit_kwds:
+      epochs: 1000
+      validation_split: 0.1
+      batch_size: 32
+      learning_rate: 0.001
+      lr_patience: 10
+      verbose: true
+      monitor: val_loss
+
+  conditional_multivariate_normal:
+    distribution_kwds: {}
+    parameter_kwds:
+      activation: relu
+      batch_norm: true
+      hidden_units: [16, 16]
+      input_shape: 1
+    fit_kwds:
+      epochs: 1000
+      validation_split: 0.1
+      batch_size: 32
+      learning_rate: 0.001
+      lr_patience: 10
+      verbose: true
+      monitor: val_loss
+
+  masked_autoregressive_bernstein_flow:
+    distribution_kwds: *distribution_kwds
+    parameter_kwds:
+      hidden_units: [16, 16]
+      activation: relu
+      conditional: True,
+      # conditional_input_layers='first_layer',
+      conditional_event_shape: [1]
+    fit_kwds:
+      epochs: 1000
+      validation_split: 0.1
+      batch_size: 32
+      learning_rate: 0.001
+      lr_patience: 10
+      verbose: true
+      monitor: val_loss
+
+  # coupling_bernstein_flow:
+  #   distribution_kwds:
+  #     <<: *distribution_kwds
+  #     coupling_layers: 2
+  #   parameter_kwds:
+  #     hidden_units: [16, 16, 16, 16]
+  #     activation: relu
+  #     batch_norm: false,
+  #   fit_kwds:
+  #     epochs: 1000
+  #     validation_split: 0.1
+  #     batch_size: 32
+  #     learning_rate: 0.001
+  #     lr_patience: 10
+  #     verbose: true
+  #     monitor: val_loss
