@@ -24,7 +24,7 @@ from tensorflow_probability.python.internal import prefer_static
 
 from .parameters import (
     get_autoregressive_parameter_network_lambda,
-    get_parameter_vector_lambda,
+    get_parameter_vector_or_simple_network_lambda,
     get_simple_fully_connected_parameter_network_lambda,
 )
 
@@ -102,7 +102,7 @@ def __get_trainable_distribution__(
 def __get_bijector_fn__(network, thetas_constrain_fn, **kwds):
     def bijector_fn(y, *arg, **kwds):
         with tf.name_scope("bnf_made_bjector"):
-            pvector = network(y, **kwds)  # todo: add conditionals
+            pvector = network(y, **kwds)
             thetas = thetas_constrain_fn(pvector)
 
             return tfb.Invert(BernsteinBijectorLinearExtrapolate(thetas=thetas))
@@ -117,13 +117,14 @@ def get_masked_autoregressive_bernstein_flow(
     parameter_kwds,
     get_parameter_lambda_fn=get_autoregressive_parameter_network_lambda,
 ):
+    distribution_kwds = distribution_kwds.copy()
     order = distribution_kwds.pop("order")
     base_distribution = distribution_kwds.pop(
         "base_distribution", __DEFAULT_BASE_DISTRIBUTION__
     )
 
     parameter_shape = (dims, order)
-    parameter_network, trainable_variables = get_parameter_lambda_fn(
+    parameter_network_lambda, trainable_variables = get_parameter_lambda_fn(
         parameter_shape, **parameter_kwds
     )
 
@@ -140,7 +141,7 @@ def get_masked_autoregressive_bernstein_flow(
         )
         return distribution
 
-    return distribution_lambda, parameter_network, trainable_variables
+    return distribution_lambda, parameter_network_lambda, trainable_variables
 
 
 def get_coupling_bernstein_flow(
@@ -149,6 +150,7 @@ def get_coupling_bernstein_flow(
     parameter_kwds,
     get_parameter_lambda_fn=get_simple_fully_connected_parameter_network_lambda,
 ):
+    distribution_kwds = distribution_kwds.copy()
     order = distribution_kwds.pop("order")
     base_distribution = distribution_kwds.pop(
         "base_distribution", __DEFAULT_BASE_DISTRIBUTION__
@@ -168,13 +170,10 @@ def get_coupling_bernstein_flow(
         parameter_networks.append(network)
         trainable_variables.append(variables)
 
-    def parameter_lambda(conditional_input=None, **kwds):
+    def parameter_lambda(conditional_input, **kwds):
         if parameter_kwds.get("conditional", False):
             return list(
-                map(
-                    lambda net: lambda x: net([x, conditional_input], **kwds),
-                    parameter_networks,
-                )
+                map(lambda net: net(conditional_input, **kwds), parameter_networks)
             )
         else:
             return parameter_networks
@@ -201,33 +200,18 @@ def get_coupling_bernstein_flow(
     return distribution_lambda, parameter_lambda, trainable_variables
 
 
-get_unconditional_bernstein_flow = partial(
+get_bernstein_flow = partial(
     __get_trainable_distribution__,
     get_distribution_lambda_fn=__get_bernstein_flow_lambda__,
-    get_parameter_lambda_fn=get_parameter_vector_lambda,
+    get_parameter_lambda_fn=get_parameter_vector_or_simple_network_lambda,
 )
-get_unconditional_multivariate_bernstein_flow = partial(
+get_multivariate_bernstein_flow = partial(
     __get_trainable_distribution__,
     get_distribution_lambda_fn=__get_multivariate_bernstein_flow_lambda__,
-    get_parameter_lambda_fn=get_parameter_vector_lambda,
+    get_parameter_lambda_fn=get_parameter_vector_or_simple_network_lambda,
 )
-get_unconditional_multivariate_normal = partial(
+get_multivariate_normal = partial(
     __get_trainable_distribution__,
     get_distribution_lambda_fn=__get_multivariate_normal_lambda__,
-    get_parameter_lambda_fn=get_parameter_vector_lambda,
-)
-get_conditional_bernstein_flow = partial(
-    __get_trainable_distribution__,
-    get_distribution_lambda_fn=__get_bernstein_flow_lambda__,
-    get_parameter_lambda_fn=get_simple_fully_connected_parameter_network_lambda,
-)
-get_conditional_multivariate_bernstein_flow = partial(
-    __get_trainable_distribution__,
-    get_distribution_lambda_fn=__get_multivariate_bernstein_flow_lambda__,
-    get_parameter_lambda_fn=get_simple_fully_connected_parameter_network_lambda,
-)
-get_conditional_multivariate_normal = partial(
-    __get_trainable_distribution__,
-    get_distribution_lambda_fn=__get_multivariate_normal_lambda__,
-    get_parameter_lambda_fn=get_simple_fully_connected_parameter_network_lambda,
+    get_parameter_lambda_fn=get_parameter_vector_or_simple_network_lambda,
 )

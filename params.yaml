@@ -11,7 +11,7 @@ common:
     scale: true
 
 unconditional_distributions:
-  unconditional_bernstein_flow:
+  bernstein_flow:
     distribution_kwds: &distribution_kwds
       order: 25
       low: -3
@@ -19,6 +19,7 @@ unconditional_distributions:
       smooth_bounds: true
       allow_flexible_bounds: true
     parameter_kwds:
+      conditional: false
       dtype: float32
     fit_kwds:
       epochs: 1000
@@ -29,9 +30,10 @@ unconditional_distributions:
       verbose: true
       monitor: val_loss
 
-  unconditional_multivariate_bernstein_flow:
+  multivariate_bernstein_flow:
     distribution_kwds: *distribution_kwds
     parameter_kwds:
+      conditional: false
       dtype: float32
     fit_kwds:
       epochs: 1000
@@ -42,9 +44,10 @@ unconditional_distributions:
       verbose: true
       monitor: val_loss
 
-  unconditional_multivariate_normal:
+  multivariate_normal:
     distribution_kwds: {}
     parameter_kwds:
+      conditional: false
       dtype: float32
     fit_kwds:
       epochs: 1000
@@ -87,9 +90,10 @@ unconditional_distributions:
       monitor: val_loss
 
 conditional_distributions:
-  conditional_bernstein_flow:
+  bernstein_flow:
     distribution_kwds: *distribution_kwds
     parameter_kwds:
+      conditional: true
       activation: relu
       batch_norm: true
       hidden_units: [16, 16]
@@ -103,9 +107,10 @@ conditional_distributions:
       verbose: true
       monitor: val_loss
 
-  conditional_multivariate_bernstein_flow:
+  multivariate_bernstein_flow:
     distribution_kwds: *distribution_kwds
     parameter_kwds:
+      conditional: true
       activation: relu
       batch_norm: true
       hidden_units: [16, 16]
@@ -119,9 +124,10 @@ conditional_distributions:
       verbose: true
       monitor: val_loss
 
-  conditional_multivariate_normal:
+  multivariate_normal:
     distribution_kwds: {}
     parameter_kwds:
+      conditional: true
       activation: relu
       batch_norm: true
       hidden_units: [16, 16]
