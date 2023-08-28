@@ -42,3 +42,25 @@ stages:
     outs:
     - results/conditional_${item.distribution}_${item.dataset}/mcp
     - results/conditional_${item.distribution}_${item.dataset}/train.log
+
+  unconditional_hybrid:
+    matrix:
+      distribution: ${unconditional_hybrid_distributions}
+      dataset: ${datasets}
+    cmd: python scripts/train_hybrid.py --log-level ${log-level} --log-file results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-${item.dataset} unconditional_hybrid ${item.distribution} ${item.dataset} results/unconditional_hybrid_${item.distribution}_${item.dataset}/
+    params:
+    - log-level
+    - common.seed
+    - common.data_kwds.n_samples
+    - common.data_kwds.noise
+    - common.data_kwds.scale
+    - unconditional_hybrid_distributions.${item.distribution}*
+    deps:
+    - scripts/train_hybrid.py
+    - pyproject.toml
+    - src/mctm
+    metrics:
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/metrics.yaml
+    outs:
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/mcp

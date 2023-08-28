@@ -28,13 +28,15 @@ from .parameters import (
     get_simple_fully_connected_parameter_network_lambda,
 )
 
+
 # PRIVATE GLOBAL OBJECTS #######################################################
-__DEFAULT_BASE_DISTRIBUTION__ = tfd.Normal(0.0, 1.0)
+def __DEFAULT_BASE_DISTRIBUTION_LAMBDA__(dims):
+    return tfd.Sample(tfd.Normal(0.0, 1.0), sample_shape=[dims])
 
 
 # FUNCTIONS ####################################################################
 def __get_bernstein_flow_lambda__(
-    dims, order, base_distribution=__DEFAULT_BASE_DISTRIBUTION__, **kwds
+    dims, order, base_distribution_lambda=__DEFAULT_BASE_DISTRIBUTION_LAMBDA__, **kwds
 ):
     pv_shape = [dims, order]
     thetas_constrain_fn = get_thetas_constrain_fn(**kwds)
@@ -43,7 +45,7 @@ def __get_bernstein_flow_lambda__(
         thetas = thetas_constrain_fn(pv)
 
         return tfd.TransformedDistribution(
-            distribution=tfd.Sample(base_distribution, sample_shape=[dims]),
+            distribution=base_distribution_lambda(dims),
             bijector=tfb.Invert(BernsteinBijectorLinearExtrapolate(thetas=thetas)),
         )
 
@@ -119,8 +121,8 @@ def get_masked_autoregressive_bernstein_flow(
 ):
     distribution_kwds = distribution_kwds.copy()
     order = distribution_kwds.pop("order")
-    base_distribution = distribution_kwds.pop(
-        "base_distribution", __DEFAULT_BASE_DISTRIBUTION__
+    base_distribution_lambda = distribution_kwds.pop(
+        "base_distribution_lambda", __DEFAULT_BASE_DISTRIBUTION_LAMBDA__
     )
 
     parameter_shape = (dims, order)
@@ -136,7 +138,7 @@ def get_masked_autoregressive_bernstein_flow(
         )
 
         distribution = tfd.TransformedDistribution(
-            distribution=tfd.Sample(base_distribution, sample_shape=[dims]),
+            distribution=base_distribution_lambda(dims),
             bijector=tfb.MaskedAutoregressiveFlow(bijector_fn=bijector_fn),
         )
         return distribution
@@ -152,8 +154,8 @@ def get_coupling_bernstein_flow(
 ):
     distribution_kwds = distribution_kwds.copy()
     order = distribution_kwds.pop("order")
-    base_distribution = distribution_kwds.pop(
-        "base_distribution", __DEFAULT_BASE_DISTRIBUTION__
+    base_distribution_lambda = distribution_kwds.pop(
+        "base_distribution_lambda", __DEFAULT_BASE_DISTRIBUTION_LAMBDA__
     )
     coupling_layers = distribution_kwds.pop("coupling_layers")
 
@@ -193,7 +195,7 @@ def get_coupling_bernstein_flow(
                 bijectors.append(tfb.Permute(permutation=[1, 0]))
 
         return tfd.TransformedDistribution(
-            distribution=tfd.Sample(base_distribution, sample_shape=[dims]),
+            distribution=base_distribution_lambda(dims),
             bijector=tfb.Chain(bijectors),
         )
 

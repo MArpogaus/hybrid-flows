@@ -176,3 +176,51 @@ conditional_distributions:
       lr_patience: 10
       verbose: true
       monitor: val_loss
+
+
+unconditional_hybrid_distributions:
+  masked_autoregressive_bernstein_flow:
+    distribution_kwds: *distribution_kwds
+    parameter_kwds:
+      hidden_units: [16, 16]
+      activation: relu
+      conditional: True,
+      # conditional_input_layers='first_layer',
+      conditional_event_shape: 1
+    base_distribution: bernstein_flow
+    base_distribution_kwds: *distribution_kwds
+    base_parameter_kwds:
+      conditional: false
+      dtype: float32
+    fit_kwds:
+      epochs: 1000
+      validation_split: 0.1
+      batch_size: 32
+      learning_rate: 0.001
+      lr_patience: 25
+      verbose: true
+      monitor: val_loss
+
+  coupling_bernstein_flow:
+    distribution_kwds:
+      <<: *distribution_kwds
+      coupling_layers: 1
+    parameter_kwds:
+      hidden_units: [16, 16]
+      activation: relu
+      batch_norm: false,
+      conditional: True,
+      conditional_event_shape: 1
+    base_distribution: bernstein_flow
+    base_distribution_kwds: *distribution_kwds
+    base_parameter_kwds:
+      conditional: false
+      dtype: float32
+    fit_kwds:
+      epochs: 1000
+      validation_split: 0.1
+      batch_size: 32
+      learning_rate: 0.001
+      lr_patience: 25
+      verbose: true
+      monitor: val_loss
