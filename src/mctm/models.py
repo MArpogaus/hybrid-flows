@@ -8,7 +8,7 @@ from mctm import distributions
 
 
 # MODEL DEFINITIONS #########################################################
-class UnconditionalModel(tf.keras.Model):
+class DensityRegressionModel(tf.keras.Model):
     def __init__(self, dims, distribution, **kwds):
         super().__init__()
         (

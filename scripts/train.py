@@ -13,7 +13,7 @@ import tensorflow as tf
 import yaml
 
 from mctm.data.sklearn_datasets import get_dataset
-from mctm.models import UnconditionalModel
+from mctm.models import DensityRegressionModel
 from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
 from mctm.utils.tensorflow import fit_distribution, set_seed
 from mctm.utils.visualisation import plot_2d_data, plot_samples, setup_latex
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         fig = plot_2d_data(X, Y, figsize=(8, 8))
         mlflow.log_figure(fig, "dataset.svg")
 
-        model = UnconditionalModel(
+        model = DensityRegressionModel(
             dims=dims,
             distribution=params["distribution"],
             distribution_kwds=params["distribution_kwds"],
