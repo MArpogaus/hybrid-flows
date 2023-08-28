@@ -7,7 +7,7 @@ common:
   seed: 1
   data_kwds:
     n_samples: 2000
-    noise: 0.05
+    noise: 0.02
     scale: true
 
 unconditional_distributions:
@@ -142,7 +142,7 @@ conditional_distributions:
       activation: relu
       conditional: True,
       # conditional_input_layers='first_layer',
-      conditional_event_shape: [1]
+      conditional_event_shape: 1
     fit_kwds:
       epochs: 1000
       validation_split: 0.1

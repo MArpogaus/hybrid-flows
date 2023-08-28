@@ -9,13 +9,14 @@ import sys
 import dvc.api
 import mlflow
 import numpy as np
+import tensorflow as tf
 import yaml
 
 from mctm.data.sklearn_datasets import get_dataset
 from mctm.models import UnconditionalModel
 from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
 from mctm.utils.tensorflow import fit_distribution, set_seed
-from mctm.utils.visualisation import plot_2d_data, plot_samples
+from mctm.utils.visualisation import plot_2d_data, plot_samples, setup_latex
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a model")
@@ -95,6 +96,8 @@ if __name__ == "__main__":
     mlflow.set_experiment(experiment_name)
     logging.info(f"Logging to MLFlow Experiment: {experiment_name}")
 
+    setup_latex(fontsize=10)
+
     with start_run_with_exception_logging(
         run_name=params["distribution"] + "_training"
     ):
@@ -104,7 +107,7 @@ if __name__ == "__main__":
         mlflow.log_dict(params, "params.yaml")
         log_cfg(params)
         mlflow.log_params(vars(args))
-        fig = plot_2d_data(X, Y)
+        fig = plot_2d_data(X, Y, figsize=(8, 8))
         mlflow.log_figure(fig, "dataset.svg")
 
         model = UnconditionalModel(
@@ -113,17 +116,19 @@ if __name__ == "__main__":
             distribution_kwds=params["distribution_kwds"],
             parameter_kwds=params.get("parameter_kwds", {}),
         )
+        x = tf.convert_to_tensor(Y[..., None], dtype=model.dtype)
+        y = tf.convert_to_tensor(X, dtype=model.dtype)
         hist = fit_distribution(
             model=model,
             seed=params["seed"],
             # unused but required
-            x=Y,
-            y=X,
             results_path=args.results_path,
+            x=x,
+            y=y,
             **params["fit_kwds"],
         )
 
-        fig = plot_samples(model(Y.flatten()), X, seed=1)
+        fig = plot_samples(model(x), X, seed=1)
         mlflow.log_figure(fig, "samples.svg")
 
         min_idx = np.argmin(hist.history["val_loss"])

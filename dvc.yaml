@@ -3,7 +3,7 @@ stages:
     matrix:
       distribution: ${unconditional_distributions}
       dataset: ${datasets}
-    cmd: python scripts/multivariate_unconditional.py --log-level ${log-level} --log-file results/unconditional_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-${item.dataset} unconditional ${item.distribution} ${item.dataset} results/unconditional_${item.distribution}_${item.dataset}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-${item.dataset} unconditional ${item.distribution} ${item.dataset} results/unconditional_${item.distribution}_${item.dataset}
     params:
     - log-level
     - common.seed
@@ -12,7 +12,7 @@ stages:
     - common.data_kwds.scale
     - unconditional_distributions.${item.distribution}*
     deps:
-    - scripts/multivariate_unconditional.py
+    - scripts/train.py
     - pyproject.toml
     - src/mctm
     metrics:
@@ -25,7 +25,7 @@ stages:
     matrix:
       distribution: ${conditional_distributions}
       dataset: ${datasets}
-    cmd: python scripts/multivariate_unconditional.py --log-level ${log-level} --log-file results/conditional_${item.distribution}_${item.dataset}/train.log --experiment-name conditional-${item.dataset} conditional ${item.distribution} ${item.dataset} results/conditional_${item.distribution}_${item.dataset}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/conditional_${item.distribution}_${item.dataset}/train.log --experiment-name conditional-${item.dataset} conditional ${item.distribution} ${item.dataset} results/conditional_${item.distribution}_${item.dataset}
     params:
     - log-level
     - common.seed
@@ -34,7 +34,7 @@ stages:
     - common.data_kwds.scale
     - conditional_distributions.${item.distribution}*
     deps:
-    - scripts/multivariate_unconditional.py
+    - scripts/train.py
     - pyproject.toml
     - src/mctm
     metrics:
