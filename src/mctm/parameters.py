@@ -20,14 +20,37 @@ from tensorflow_probability import bijectors as tfb
 
 # PRIVATE FUNCTIONS ############################################################
 def __get_simple_fully_connected_network__(
-    input_shape, hidden_units, activation, batch_norm, output_shape
+    input_shape,
+    hidden_units,
+    activation,
+    batch_norm,
+    output_shape,
+    conditional=False,
+    conditional_event_shape=None,
 ):
-    inputs = K.Input(input_shape, name="conditional_input")
+    x = K.Input(input_shape, name="input")
+    inputs = [x]
+
+    if conditional:
+        c = K.Input(conditional_event_shape, name="conditional_input")
+        inputs += [c]
     if batch_norm:
-        inputs = K.layers.BatchNormalization(name="batch_norm")(inputs)
+        x = K.layers.BatchNormalization(name="batch_norm")(x)
+        if conditional:
+            c = K.layers.BatchNormalization(name="conditional_batch_norm")(c)
+
     for i, h in enumerate(hidden_units):
-        x = K.layers.Dense(h, activation=activation, name=f"hidden{i}")(inputs)
-    pv = K.layers.Dense(tf.reduce_prod(output_shape), activation="linear", name="pv")(x)
+        x = K.layers.Dense(h, activation=None, name=f"hidden{i}_layer")(x)
+        if conditional:
+            c_out = K.layers.Dense(
+                h, activation=None, name=f"conditional_hidden{i}_layer"
+            )(c)
+            x = K.layers.Add(name=f"add_c_out{i}")([x, c_out])
+        x = K.layers.Activation(activation)(x)
+
+    pv = K.layers.Dense(
+        tf.reduce_prod(output_shape), activation="linear", name="parameter_vector"
+    )(x)
     pv_reshaped = K.layers.Reshape(output_shape)(pv)
     return K.Model(inputs=inputs, outputs=pv_reshaped)
 
