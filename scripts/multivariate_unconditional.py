@@ -16,39 +16,73 @@ from mctm.models import UnconditionalModel
 from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
 from mctm.utils.tensorflow import fit_distribution, set_seed
 from mctm.utils.visualisation import plot_2d_data, plot_samples
+from typing import Any, Callable, Protocol
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Train a model")
-    parser.add_argument("--log-file", type=str, help="path for log file")
-    parser.add_argument(
-        "--log-level", type=str, default="INFO", help="logging severaty level"
-    )
-    parser.add_argument("--test-mode", action="store_true", help="activate test-mode")
-    parser.add_argument(
-        "--experiment-name", type=str, help="MLFlow experiment name", required=True
-    )
-    parser.add_argument(
-        "stage_name",
-        type=str,
-        help="name of dvstage",
-    )
-    parser.add_argument(
-        "distribution",
-        type=str,
-        help="name of distribution",
-    )
-    parser.add_argument(
-        "dataset",
-        type=str,
-        help="name of dataset",
-    )
-    parser.add_argument(
-        "results_path",
-        type=pathlib.Path,
-        help="destination for model checkpoints and logs.",
-    )
-    args = parser.parse_args()
+class getDataset(Protocol):
+    def __call__(self) -> "tuple[Any, Any]": pass
+    
+class getModel(Protocol):
+    def __call__(self, dataset: "tuple[Any,Any]") -> Any: pass
 
+# TODO: wie flexibel soll es sein? Was für constraints sollen angenommen und enforced werden?
+def pipeline(experiment_name: str, run_name: str, results_path: str, log_file: str, test_mode: bool, seed: int, get_dataset: getDataset, get_model: getModel, fit_kwds: dict):
+    """
+    get_dataset is callback because we have no common interface for how to generate a dataset (?!)
+    assumes models history has "loss" and "val_loss"
+    log_file is optional and can be none.
+    """
+    set_seed(seed)
+    X, Y = get_dataset()
+    model = get_model((X,Y))
+    
+    # Evaluate Model
+    experiment_name = experiment_name + ("_test" if test_mode else "")
+    mlflow.set_experiment(experiment_name)
+    logging.info(f"Logging to MLFlow Experiment: {experiment_name}")
+    with start_run_with_exception_logging(
+        run_name=run_name
+    ):
+        # Auto log all MLflow entities
+        mlflow.autolog()
+        mlflow.set_tag("stage", "training")
+        #mlflow.log_dict(params, "params.yaml")
+        #log_cfg(params)
+        #mlflow.log_params(vars(args))
+        #fig = plot_2d_data(X, Y)
+        #mlflow.log_figure(fig, "dataset.svg")
+        
+        hist = fit_distribution(
+            model=model,
+            seed=seed,
+            # unused but required
+            x=X,
+            y=X,
+            results_path=results_path,
+            **fit_kwds,
+        )
+        
+        # fig = plot_samples(model(X), X, seed=1)
+        # mlflow.log_figure(fig, "samples.svg")
+
+        min_idx = np.argmin(hist.history["val_loss"])
+        min_loss = hist.history["loss"][min_idx]
+        min_val_loss = hist.history["val_loss"][min_idx]
+        logging.info(f"training finished after {len(hist.history['loss'])} epochs.")
+        logging.info(f"train loss: {min_loss}")
+        logging.info(f"validation loss: {min_val_loss}")
+        
+        if not test_mode:
+            with open(
+                os.path.join(results_path, "metrics.yaml"), "w+"
+            ) as results_file:
+                yaml.dump({"loss": min_loss, "val_loss": min_val_loss}, results_file)
+
+        if log_file:
+            mlflow.log_artifact(log_file)
+    
+def main_with_pipeline(args):
+   # --- prepare for execution ---
+    
     # prepare results directory
     os.makedirs(args.results_path, exist_ok=True)
 
@@ -64,19 +98,71 @@ if __name__ == "__main__":
         handlers=handlers,
     )
 
-    logging.debug(vars(args))
+    logging.debug(f"meta params: {vars(args)}")
 
     # load params
     params = dvc.api.params_show(
         stages=f"{args.stage_name}@{args.distribution}-{args.dataset}"
     )
     distribution = args.distribution
+    # concat model params with meta params
     params = {
         **params["common"],
         "distribution": distribution,
         **params["distributions"][distribution],
     }
     logging.info(params)
+
+    # --- actually execute training ---
+    
+    pipeline(
+        args.experiment_name,
+        params["distribution"],
+        args.results_path,
+        args.log_file,
+        args.test_mode,
+        params["seed"], 
+        get_dataset=lambda: get_dataset(args.dataset, **params["data_kwds"]),
+        get_model=lambda DS: UnconditionalModel(    dims=DS[0].shape[-1],   distribution=params["distribution"],    distribution_kwds=params["distribution_kwds"],    parameter_kwds=params.get("parameter_kwds", {})),
+        fit_kwds=params["fit_kwds"]
+        )
+
+def main(args):
+    """ Args contain meta parameters for experiment. Actual parameters for model get loaded from dvc."""
+    
+    # --- prepare for execution ---
+    
+    # prepare results directory
+    os.makedirs(args.results_path, exist_ok=True)
+
+    # configure logging
+    handlers = [logging.StreamHandler(sys.stdout)]
+    if args.log_file:
+        handlers += [
+            logging.FileHandler(args.log_file),
+        ]
+    logging.basicConfig(
+        level=args.log_level.upper(),
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=handlers,
+    )
+
+    logging.debug(f"meta params: {vars(args)}")
+
+    # load params
+    params = dvc.api.params_show(
+        stages=f"{args.stage_name}@{args.distribution}-{args.dataset}"
+    )
+    distribution = args.distribution
+    # concat model params with meta params
+    params = {
+        **params["common"],
+        "distribution": distribution,
+        **params["distributions"][distribution],
+    }
+    logging.info(params)
+
+    # --- actually execute training ---
 
     # ensure reproducibility
     set_seed(params["seed"])
@@ -137,3 +223,40 @@ if __name__ == "__main__":
 
         if args.log_file:
             mlflow.log_artifact(args.log_file)
+    
+    
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Train a model")
+    parser.add_argument("--log-file", type=str, help="path for log file")
+    parser.add_argument(
+        "--log-level", type=str, default="INFO", help="logging severaty level"
+    )
+    parser.add_argument("--test-mode", action="store_true", help="activate test-mode")
+    parser.add_argument(
+        "--experiment-name", type=str, help="MLFlow experiment name", required=True
+    )
+    parser.add_argument(
+        "stage_name",
+        type=str,
+        help="name of dvstage",
+    )
+    parser.add_argument(
+        "distribution",
+        type=str,
+        help="name of distribution",
+    )
+    parser.add_argument(
+        "dataset",
+        type=str,
+        help="name of dataset",
+    )
+    parser.add_argument(
+        "results_path",
+        type=pathlib.Path,
+        help="destination for model checkpoints and logs.",
+    )
+    args = parser.parse_args()
+
+    main_with_pipeline(args)

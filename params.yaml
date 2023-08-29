@@ -21,7 +21,7 @@ distributions:
     parameter_kwds:
       dtype: float32
     fit_kwds:
-      epochs: 1000
+      epochs: 5
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
@@ -34,7 +34,7 @@ distributions:
     parameter_kwds:
       dtype: float32
     fit_kwds:
-      epochs: 1000
+      epochs: 5
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
@@ -47,7 +47,7 @@ distributions:
     parameter_kwds:
       dtype: float32
     fit_kwds:
-      epochs: 1000
+      epochs: 5
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
@@ -61,7 +61,7 @@ distributions:
       hidden_units: [16, 16]
       activation: relu
     fit_kwds:
-      epochs: 1000
+      epochs: 5
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
@@ -78,7 +78,7 @@ distributions:
       activation: relu
       batch_norm: false,
     fit_kwds:
-      epochs: 1000
+      epochs: 5
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
