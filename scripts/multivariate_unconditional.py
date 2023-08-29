@@ -17,19 +17,29 @@ from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
 from mctm.utils.tensorflow import fit_distribution, set_seed
 from mctm.utils.visualisation import plot_2d_data, plot_samples
 from typing import Any, Callable, Protocol
+from matplotlib.pyplot import Figure
 
 class getDataset(Protocol):
     def __call__(self) -> "tuple[Any, Any]": pass
     
 class getModel(Protocol):
     def __call__(self, dataset: "tuple[Any,Any]") -> Any: pass
+    
+class doPlotData(Protocol):
+    def __call__(self, X: Any, Y: Any) -> "Figure": pass
+    
+class doPlotSamples(Protocol):
+    def __call__(self, X: Any, X_: Any) -> "Figure": pass
 
 # TODO: wie flexibel soll es sein? Was für constraints sollen angenommen und enforced werden?
-def pipeline(experiment_name: str, run_name: str, results_path: str, log_file: str, test_mode: bool, seed: int, get_dataset: getDataset, get_model: getModel, fit_kwds: dict):
+def pipeline(experiment_name: str, run_name: str, results_path: str, log_file: str, test_mode: bool, seed: int, get_dataset: getDataset, get_model: getModel, fit_kwds: dict, params: dict, plot_data: doPlotData, plot_samples: doPlotSamples):
     """
     get_dataset is callback because we have no common interface for how to generate a dataset (?!)
     assumes models history has "loss" and "val_loss"
     log_file is optional and can be none.
+    params: params from params.yaml to be logged
+    plot_data is optional
+    plot_samples is optional
     """
     set_seed(seed)
     X, Y = get_dataset()
@@ -45,11 +55,12 @@ def pipeline(experiment_name: str, run_name: str, results_path: str, log_file: s
         # Auto log all MLflow entities
         mlflow.autolog()
         mlflow.set_tag("stage", "training")
-        #mlflow.log_dict(params, "params.yaml")
-        #log_cfg(params)
-        #mlflow.log_params(vars(args))
-        #fig = plot_2d_data(X, Y)
-        #mlflow.log_figure(fig, "dataset.svg")
+        mlflow.log_dict(params, "params.yaml")
+        log_cfg(params)
+        mlflow.log_params(vars())
+        if plot_data:
+            fig = plot_data(X, Y)
+            mlflow.log_figure(fig, "dataset.svg")
         
         hist = fit_distribution(
             model=model,
@@ -61,8 +72,9 @@ def pipeline(experiment_name: str, run_name: str, results_path: str, log_file: s
             **fit_kwds,
         )
         
-        # fig = plot_samples(model(X), X, seed=1)
-        # mlflow.log_figure(fig, "samples.svg")
+        if plot_samples:
+            fig = plot_samples(model(X), X, seed=1)
+            mlflow.log_figure(fig, "samples.svg")
 
         min_idx = np.argmin(hist.history["val_loss"])
         min_loss = hist.history["loss"][min_idx]
@@ -124,7 +136,10 @@ def main_with_pipeline(args):
         params["seed"], 
         get_dataset=lambda: get_dataset(args.dataset, **params["data_kwds"]),
         get_model=lambda DS: UnconditionalModel(    dims=DS[0].shape[-1],   distribution=params["distribution"],    distribution_kwds=params["distribution_kwds"],    parameter_kwds=params.get("parameter_kwds", {})),
-        fit_kwds=params["fit_kwds"]
+        fit_kwds=params["fit_kwds"],
+        params=params,
+        plot_data=plot_2d_data,
+        plot_samples=plot_samples
         )
 
 def main(args):
