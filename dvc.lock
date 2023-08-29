@@ -894,9 +894,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -936,7 +936,7 @@ stages:
       size: 56
     - path: results/unconditional_masked_autoregressive_bernstein_flow_circles/train.log
       hash: md5
-      md5: 1ec8f825b5268416a0965b88e26fb3ad
+      md5: 5951f53759e704a95e6176fd6a88e75a
       size: 969
   conditional@conditional_multivariate_bernstein_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_conditional_multivariate_bernstein_flow_moons/train.log
@@ -1288,9 +1288,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -1330,7 +1330,7 @@ stages:
       size: 56
     - path: results/unconditional_masked_autoregressive_bernstein_flow_moons/train.log
       hash: md5
-      md5: 4a61042e09e9b21809e20d1d70103a4d
+      md5: d632f4cac37189b9f85fc3c87d5f261e
       size: 967
   unconditional@coupling_bernstein_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_coupling_bernstein_flow_moons/train.log
@@ -1347,9 +1347,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -1393,7 +1393,7 @@ stages:
       size: 56
     - path: results/unconditional_coupling_bernstein_flow_moons/train.log
       hash: md5
-      md5: a82c96e6d5fb793a57787d8c81b22beb
+      md5: ce1a5c2a8017ee7b1f3818eb447eecdc
       size: 1008
   unconditional@coupling_bernstein_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_coupling_bernstein_flow_circles/train.log
@@ -1410,9 +1410,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -1456,7 +1456,7 @@ stages:
       size: 56
     - path: results/unconditional_coupling_bernstein_flow_circles/train.log
       hash: md5
-      md5: 4dfdbc025816c5c649b28c53b0a85ab3
+      md5: 2b6a86de17e04f8b2d4240d249ea81e6
       size: 1010
   conditional@conditional_bernstein_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_conditional_bernstein_flow_moons/train.log
@@ -1712,9 +1712,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -1756,7 +1756,7 @@ stages:
       size: 54
     - path: results/conditional_masked_autoregressive_bernstein_flow_moons/train.log
       hash: md5
-      md5: 3a723e10c346ac23efd4b5f7c1de71a5
+      md5: b4433bfb76567959cbcf7e48a456142d
       size: 1017
   conditional@masked_autoregressive_bernstein_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_masked_autoregressive_bernstein_flow_circles/train.log
@@ -1773,9 +1773,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -1817,7 +1817,7 @@ stages:
       size: 56
     - path: results/conditional_masked_autoregressive_bernstein_flow_circles/train.log
       hash: md5
-      md5: 1c16eb2ffd05c9eca9a69118fb3c7284
+      md5: 599dbe9c21b80dbea8a03777412c0ba9
       size: 1021
   conditional@coupling_bernstein_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_coupling_bernstein_flow_circles/train.log
@@ -1834,9 +1834,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -1880,7 +1880,7 @@ stages:
       size: 56
     - path: results/conditional_coupling_bernstein_flow_circles/train.log
       hash: md5
-      md5: 07a5656fc76633cb413630c5e2cdb323
+      md5: adbc00f00335c37164161dc6c926b17e
       size: 1054
   conditional@coupling_bernstein_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_coupling_bernstein_flow_moons/train.log
@@ -1897,9 +1897,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -1943,7 +1943,7 @@ stages:
       size: 55
     - path: results/conditional_coupling_bernstein_flow_moons/train.log
       hash: md5
-      md5: 4828f83a1d110187a428697a21310b36
+      md5: b724c8e46a602b7c9115c5d6bbf82e94
       size: 1051
   unconditional@multivariate_bernstein_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_multivariate_bernstein_flow_circles/train.log
@@ -1960,9 +1960,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2000,7 +2000,7 @@ stages:
       size: 61
     - path: results/unconditional_multivariate_bernstein_flow_circles/train.log
       hash: md5
-      md5: 777a2794adb6ebd73ec0b4d6a015fc73
+      md5: 7272974062d5cec69f0d97795e54c336
       size: 959
   unconditional@bernstein_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_bernstein_flow_circles/train.log
@@ -2017,9 +2017,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2057,7 +2057,7 @@ stages:
       size: 57
     - path: results/unconditional_bernstein_flow_circles/train.log
       hash: md5
-      md5: 61686b7a464e8143873e868a4beef049
+      md5: bdf1240a3cc41e2e9cd5e5c442923569
       size: 942
   unconditional@multivariate_bernstein_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_multivariate_bernstein_flow_moons/train.log
@@ -2074,9 +2074,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2114,7 +2114,7 @@ stages:
       size: 57
     - path: results/unconditional_multivariate_bernstein_flow_moons/train.log
       hash: md5
-      md5: c7fe747d79128115b3e1e38fccdce6f6
+      md5: 1ee00075a421e534f34946c52095bb4d
       size: 953
   unconditional@bernstein_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_bernstein_flow_moons/train.log
@@ -2130,9 +2130,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2170,7 +2170,7 @@ stages:
       size: 59
     - path: results/unconditional_bernstein_flow_moons/train.log
       hash: md5
-      md5: b3255d32dc2333d817921b463ef5cf7e
+      md5: 7e3720cf22966cc0e6ca012d5d307536
       size: 942
   unconditional@multivariate_normal-moons:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_multivariate_normal_moons/train.log
@@ -2187,9 +2187,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2222,7 +2222,7 @@ stages:
       size: 55
     - path: results/unconditional_multivariate_normal_moons/train.log
       hash: md5
-      md5: c7285b9353fc313291aed6e136da2a64
+      md5: 44861233f7c45403ba590055cc6bca15
       size: 947
   unconditional@multivariate_normal-circles:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_multivariate_normal_circles/train.log
@@ -2239,9 +2239,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2274,7 +2274,7 @@ stages:
       size: 55
     - path: results/unconditional_multivariate_normal_circles/train.log
       hash: md5
-      md5: f908b83925253f12932cd58ed203165e
+      md5: a33b2191cfad72c238c93674c5f02173
       size: 949
   conditional@bernstein_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_bernstein_flow_moons/train.log
@@ -2290,9 +2290,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2335,7 +2335,7 @@ stages:
       size: 56
     - path: results/conditional_bernstein_flow_moons/train.log
       hash: md5
-      md5: e568292c2d89fb2588e4dc3bf059406a
+      md5: 772ad6dc0a647327078217c1594a9df3
       size: 1001
   conditional@bernstein_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_bernstein_flow_circles/train.log
@@ -2351,9 +2351,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2396,7 +2396,7 @@ stages:
       size: 58
     - path: results/conditional_bernstein_flow_circles/train.log
       hash: md5
-      md5: ab4021e5c670d8d015cf8962c067affc
+      md5: 2ad1e8c65d27bac0b29e8730decb05fe
       size: 1006
   conditional@multivariate_bernstein_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_multivariate_bernstein_flow_moons/train.log
@@ -2413,9 +2413,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2458,7 +2458,7 @@ stages:
       size: 56
     - path: results/conditional_multivariate_bernstein_flow_moons/train.log
       hash: md5
-      md5: 0675b0b149978180da534c5418d973c8
+      md5: 51265db6194637314f8039e3554435c6
       size: 1015
   conditional@multivariate_normal-moons:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_multivariate_normal_moons/train.log
@@ -2474,9 +2474,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2514,7 +2514,7 @@ stages:
       size: 57
     - path: results/conditional_multivariate_normal_moons/train.log
       hash: md5
-      md5: 7cd7d23b0ed9149e813d6bce22497e46
+      md5: e5b1d81a1576023e479f716342bca45a
       size: 920
   conditional@multivariate_bernstein_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_multivariate_bernstein_flow_circles/train.log
@@ -2531,9 +2531,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2576,7 +2576,7 @@ stages:
       size: 57
     - path: results/conditional_multivariate_bernstein_flow_circles/train.log
       hash: md5
-      md5: c8bff27521ec947cba811d7b623f2160
+      md5: eae5cdf6d13d187c14a77145a0c21b90
       size: 1018
   conditional@multivariate_normal-circles:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_multivariate_normal_circles/train.log
@@ -2593,9 +2593,9 @@ stages:
       size: 4562
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2633,7 +2633,7 @@ stages:
       size: 54
     - path: results/conditional_multivariate_normal_circles/train.log
       hash: md5
-      md5: 9a6f3bfda0f2ec084a4ef59a226b218f
+      md5: da644ffc222ed6191fdbb18c615152d7
       size: 919
   unconditional_hybrid@coupling_bernstein_flow-moons:
     cmd: python scripts/train_hybrid.py --log-level info --log-file results/unconditional_hybrid_coupling_bernstein_flow_moons/train.log
@@ -2650,9 +2650,9 @@ stages:
       size: 4746
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2689,25 +2689,25 @@ stages:
           fit_kwds:
             epochs: 1000
             validation_split: 0.1
-            batch_size: 32
-            learning_rate: 0.001
-            lr_patience: 25
+            batch_size: 512
+            learning_rate: 0.005
+            lr_patience: 100
             verbose: true
             monitor: val_loss
     outs:
     - path: results/unconditional_hybrid_coupling_bernstein_flow_moons/mcp
       hash: md5
-      md5: 4376488fc089379acd1691420aad4b27.dir
+      md5: c011f7a928a42d71402944ab8461a8b5.dir
       size: 20204
       nfiles: 3
     - path: results/unconditional_hybrid_coupling_bernstein_flow_moons/metrics.yaml
       hash: md5
-      md5: 619c17f9b935fee1496b8857bb526c7e
-      size: 54
+      md5: 1899be524f403586730bfe3ad7097e22
+      size: 56
     - path: results/unconditional_hybrid_coupling_bernstein_flow_moons/train.log
       hash: md5
-      md5: 53ec2501d36d17c3593165654695b200
-      size: 1282
+      md5: 811e5c929dd56473fff204018712b634
+      size: 1287
   unconditional_hybrid@masked_autoregressive_bernstein_flow-moons:
     cmd: python scripts/train_hybrid.py --log-level info --log-file
       results/unconditional_hybrid_masked_autoregressive_bernstein_flow_moons/train.log
@@ -2724,9 +2724,9 @@ stages:
       size: 4746
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2775,7 +2775,7 @@ stages:
     - path:
         results/unconditional_hybrid_masked_autoregressive_bernstein_flow_moons/train.log
       hash: md5
-      md5: 116a6903b50930559155762bfeb2c3f2
+      md5: 1e4191108ea986fa29ef0947bcb11ba2
       size: 1251
   unconditional_hybrid@masked_autoregressive_bernstein_flow-circles:
     cmd: python scripts/train_hybrid.py --log-level info --log-file
@@ -2793,9 +2793,9 @@ stages:
       size: 4746
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2844,7 +2844,7 @@ stages:
     - path:
         results/unconditional_hybrid_masked_autoregressive_bernstein_flow_circles/train.log
       hash: md5
-      md5: e91ca950eec9a695262b6732fb225510
+      md5: 65c2d55fa08b789b433a8047060e7b67
       size: 1252
   unconditional_hybrid@coupling_bernstein_flow-circles:
     cmd: python scripts/train_hybrid.py --log-level info --log-file results/unconditional_hybrid_coupling_bernstein_flow_circles/train.log
@@ -2861,9 +2861,9 @@ stages:
       size: 4746
     - path: src/mctm
       hash: md5
-      md5: 396dc5579785afbdb04aee8648e64a3f.dir
-      size: 74935
-      nfiles: 36
+      md5: e0f8bebc4fd9cf3d45f7ba7154014879.dir
+      size: 25914
+      nfiles: 10
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2900,22 +2900,22 @@ stages:
           fit_kwds:
             epochs: 1000
             validation_split: 0.1
-            batch_size: 32
-            learning_rate: 0.001
-            lr_patience: 25
+            batch_size: 512
+            learning_rate: 0.005
+            lr_patience: 100
             verbose: true
             monitor: val_loss
     outs:
     - path: results/unconditional_hybrid_coupling_bernstein_flow_circles/mcp
       hash: md5
-      md5: 2b00ffc89005a915c701f797a96db7d6.dir
+      md5: 62c45b6b96aee19a8afc04d5664fc939.dir
       size: 20204
       nfiles: 3
     - path: results/unconditional_hybrid_coupling_bernstein_flow_circles/metrics.yaml
       hash: md5
-      md5: 6dba7f8f5da315a2a37c498941361b15
-      size: 55
+      md5: 2842fab813693926ae1a18bdaf762594
+      size: 57
     - path: results/unconditional_hybrid_coupling_bernstein_flow_circles/train.log
       hash: md5
-      md5: fc8877ee1ebac2dba0c9315cb94d38fd
-      size: 1285
+      md5: f946199a0d5c589593de172547e651f5
+      size: 1290
