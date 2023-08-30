@@ -63,7 +63,8 @@ def __set_size__(width, fraction=1, subplots=(1, 1)):
 def setup_latex(fontsize=10):
     tex_fonts = {
         # Use LaTeX to write all text
-        "text.usetex": True,
+        # https://stackoverflow.com/questions/43295837/latex-was-not-able-to-process-the-following-string-blp
+        "text.usetex": False,
         "font.family": "serif",
         # for the align enivironment
         "text.latex.preamble": r"\usepackage{amsmath}",

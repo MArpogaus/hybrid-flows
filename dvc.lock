@@ -2027,13 +2027,13 @@ stages:
       size: 1035
     - path: scripts/train.py
       hash: md5
-      md5: a4727b9697722e79cf7684d3e1abd449
-      size: 2319
+      md5: e6996f0427d357c36e81296e0ab37a55
+      size: 2320
     - path: src/mctm
       hash: md5
-      md5: 198e7d47236404691533fc95d2974f1b.dir
-      size: 26107
-      nfiles: 10
+      md5: a08aa3dbce28faaaeb15e4ddba257b6c.dir
+      size: 30677
+      nfiles: 11
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2052,7 +2052,7 @@ stages:
             conditional: false
             dtype: float32
           fit_kwds:
-            epochs: 10000
+            epochs: 5
             validation_split: 0.1
             batch_size: 512
             learning_rate: 0.01
@@ -2064,17 +2064,17 @@ stages:
     outs:
     - path: results/unconditional_bernstein_flow_circles/mcp
       hash: md5
-      md5: f6732614cf10a081475cc6bbf0528267.dir
+      md5: 5772688c3d15618286f386cd6431ed31.dir
       size: 2262
       nfiles: 3
     - path: results/unconditional_bernstein_flow_circles/metrics.yaml
       hash: md5
-      md5: 0ec14862ca93514dce4d8204c8e802fb
-      size: 58
+      md5: c572580e15e5b5dd58c6553013d947ef
+      size: 53
     - path: results/unconditional_bernstein_flow_circles/train.log
       hash: md5
-      md5: 8ddaa5d4d02dd4ee7587ac446d9bbb05
-      size: 1000
+      md5: 473073a12a0626bdbbeb583b311e2523
+      size: 1031
   unconditional@multivariate_bernstein_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_multivariate_bernstein_flow_moons/train.log
       --experiment-name unconditional-moons unconditional multivariate_bernstein_flow
@@ -2144,13 +2144,13 @@ stages:
       size: 1035
     - path: scripts/train.py
       hash: md5
-      md5: a4727b9697722e79cf7684d3e1abd449
-      size: 2319
+      md5: e6996f0427d357c36e81296e0ab37a55
+      size: 2320
     - path: src/mctm
       hash: md5
-      md5: 198e7d47236404691533fc95d2974f1b.dir
-      size: 26107
-      nfiles: 10
+      md5: a08aa3dbce28faaaeb15e4ddba257b6c.dir
+      size: 30677
+      nfiles: 11
     params:
       params.yaml:
         common.data_kwds.n_samples: 2000
@@ -2169,7 +2169,7 @@ stages:
             conditional: false
             dtype: float32
           fit_kwds:
-            epochs: 10000
+            epochs: 5
             validation_split: 0.1
             batch_size: 512
             learning_rate: 0.01
@@ -2181,17 +2181,17 @@ stages:
     outs:
     - path: results/unconditional_bernstein_flow_moons/mcp
       hash: md5
-      md5: a880b13b67fe3b5360c50398cae9482c.dir
+      md5: 488c4ad9cbf3881093c0018e44f987d8.dir
       size: 2262
       nfiles: 3
     - path: results/unconditional_bernstein_flow_moons/metrics.yaml
       hash: md5
-      md5: 1878fc2f4acec7875f58e65b1333580b
-      size: 58
+      md5: 4b5cd65b8fa2369e7acd56633fef48c8
+      size: 54
     - path: results/unconditional_bernstein_flow_moons/train.log
       hash: md5
-      md5: 366e77926e3ae4010750e2e970007a65
-      size: 998
+      md5: 24c999d3731b2b738caa4b7d39d45dc1
+      size: 1030
   unconditional@multivariate_normal-moons:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_multivariate_normal_moons/train.log
       --experiment-name unconditional-moons unconditional multivariate_normal moons

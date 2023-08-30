@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 import sys
 from typing import Any, Protocol
 
@@ -11,6 +12,7 @@ from matplotlib.pyplot import Figure
 
 from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
 from mctm.utils.tensorflow import fit_distribution, set_seed
+from mctm.utils.visualisation import setup_latex
 
 
 class getDataset(Protocol):
@@ -72,7 +74,12 @@ def pipeline(
         params["fit_kwds"]["epochs"] = 1
     mlflow.set_experiment(experiment_name)
     logging.info(f"Logging to MLFlow Experiment: {experiment_name}")
-    # setup_latex(fontsize=10)
+    if shutil.which("latex"):
+        logging.info("found latex")
+        setup_latex(fontsize=10)
+    else:
+        logging.info("latex not found")
+
     with start_run_with_exception_logging(run_name=run_name):
         # Auto log all MLflow entities
         mlflow.autolog()
