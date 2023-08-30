@@ -81,7 +81,7 @@ unconditional_distributions:
       activation: relu
       batch_norm: false,
     fit_kwds:
-      epochs: 5
+      epochs: 10
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
@@ -99,7 +99,7 @@ conditional_distributions:
       hidden_units: [16, 16]
       input_shape: 1
     fit_kwds:
-      epochs: 1000
+      epochs: 10000
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
@@ -116,7 +116,7 @@ conditional_distributions:
       hidden_units: [16, 16]
       input_shape: 1
     fit_kwds:
-      epochs: 1000
+      epochs: 10000
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
@@ -133,7 +133,7 @@ conditional_distributions:
       hidden_units: [16, 16]
       input_shape: 1
     fit_kwds:
-      epochs: 1000
+      epochs: 10000
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
@@ -150,7 +150,7 @@ conditional_distributions:
       # conditional_input_layers='first_layer',
       conditional_event_shape: 1
     fit_kwds:
-      epochs: 1000
+      epochs: 10000
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
@@ -169,7 +169,7 @@ conditional_distributions:
       conditional: True,
       conditional_event_shape: 1
     fit_kwds:
-      epochs: 1000
+      epochs: 10000
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
@@ -193,7 +193,7 @@ unconditional_hybrid_distributions:
       conditional: false
       dtype: float32
     fit_kwds:
-      epochs: 1000
+      epochs: 10000
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001
@@ -217,7 +217,7 @@ unconditional_hybrid_distributions:
       conditional: false
       dtype: float32
     fit_kwds:
-      epochs: 1000
+      epochs: 10000
       validation_split: 0.1
       batch_size: 32
       learning_rate: 0.001

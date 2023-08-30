@@ -3,6 +3,8 @@
 import argparse
 import pathlib
 
+import tensorflow as tf
+
 from mctm.data.sklearn_datasets import get_dataset
 from mctm.models import DensityRegressionModel
 from mctm.utils.pipeline import pipeline, prepare_pipeline
@@ -30,6 +32,10 @@ def main(args):
             distribution_kwds=params["distribution_kwds"],
             parameter_kwds=params.get("parameter_kwds", {}),
         ),
+        preprocess_dataset=lambda X, Y, model: {
+            "x": tf.convert_to_tensor(Y[..., None], dtype=model.dtype),
+            "y": tf.convert_to_tensor(X, dtype=model.dtype),
+        },
         fit_kwds=params["fit_kwds"],
         params=params,
         plot_data=plot_2d_data,

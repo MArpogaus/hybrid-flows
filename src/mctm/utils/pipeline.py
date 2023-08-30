@@ -11,7 +11,6 @@ from matplotlib.pyplot import Figure
 
 from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
 from mctm.utils.tensorflow import fit_distribution, set_seed
-from mctm.utils.visualisation import setup_latex
 
 
 class getDataset(Protocol):
@@ -35,7 +34,7 @@ class doPlotSamples(Protocol):
 
 
 class doPreprocessDataset(Protocol):
-    def __call__(self, X: Any, X_: Any) -> "dict":
+    def __call__(self, X: Any, Y: Any, model: Any) -> "dict":
         pass
 
 
@@ -73,7 +72,7 @@ def pipeline(
         params["fit_kwds"]["epochs"] = 1
     mlflow.set_experiment(experiment_name)
     logging.info(f"Logging to MLFlow Experiment: {experiment_name}")
-    setup_latex(fontsize=10)
+    # setup_latex(fontsize=10)
     with start_run_with_exception_logging(run_name=run_name):
         # Auto log all MLflow entities
         mlflow.autolog()
@@ -86,7 +85,7 @@ def pipeline(
             mlflow.log_figure(fig, "dataset.svg")
 
         if preprocess_dataset:
-            preprocessed = preprocess_dataset(X, Y)
+            preprocessed = preprocess_dataset(X, Y, model)
         else:
             preprocessed = {"x": X, "y": Y}
 
@@ -145,7 +144,7 @@ def prepare_pipeline(args):
     params = {
         **params["common"],
         "distribution": distribution,
-        **params["distributions"][distribution],
+        **params[args.stage_name + "_distributions"][distribution],
     }
     logging.info(params)
 
