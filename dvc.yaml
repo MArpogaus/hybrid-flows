@@ -6,10 +6,8 @@ stages:
     cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-${item.dataset} unconditional ${item.distribution} ${item.dataset} results/unconditional_${item.distribution}_${item.dataset}
     params:
     - log-level
-    - common.seed
-    - common.data_kwds.n_samples
-    - common.data_kwds.noise
-    - common.data_kwds.scale
+    - seed
+    - datasets.${item.dataset}*
     - unconditional_distributions.${item.distribution}*
     deps:
     - scripts/train.py
@@ -28,10 +26,8 @@ stages:
     cmd: python scripts/train.py --log-level ${log-level} --log-file results/conditional_${item.distribution}_${item.dataset}/train.log --experiment-name conditional-${item.dataset} conditional ${item.distribution} ${item.dataset} results/conditional_${item.distribution}_${item.dataset}
     params:
     - log-level
-    - common.seed
-    - common.data_kwds.n_samples
-    - common.data_kwds.noise
-    - common.data_kwds.scale
+    - seed
+    - datasets.${item.dataset}*
     - conditional_distributions.${item.distribution}*
     deps:
     - scripts/train.py
@@ -50,10 +46,8 @@ stages:
     cmd: python scripts/train_hybrid.py --log-level ${log-level} --log-file results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-${item.dataset} unconditional_hybrid ${item.distribution} ${item.dataset} results/unconditional_hybrid_${item.distribution}_${item.dataset}/
     params:
     - log-level
-    - common.seed
-    - common.data_kwds.n_samples
-    - common.data_kwds.noise
-    - common.data_kwds.scale
+    - seed
+    - datasets.${item.dataset}*
     - unconditional_hybrid_distributions.${item.distribution}*
     deps:
     - scripts/train_hybrid.py

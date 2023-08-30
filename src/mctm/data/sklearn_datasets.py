@@ -14,8 +14,8 @@ from sklearn import datasets
 from sklearn.preprocessing import MinMaxScaler
 
 
-def get_dataset(name, n_samples, scale, **kwds):
-    X, Y = getattr(datasets, f"make_{name}")(n_samples=n_samples, **kwds)
+def get_dataset(dataset_name, n_samples, scale, **kwds):
+    X, Y = getattr(datasets, f"make_{dataset_name}")(n_samples=n_samples, **kwds)
     if scale:
         X = MinMaxScaler().fit_transform(X)
     return X, Y

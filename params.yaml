@@ -1,10 +1,12 @@
-datasets:
-- moons
-- circles
 log-level: info
-common:
-  seed: 1
-  data_kwds:
+seed: 1
+
+datasets:
+  moons:
+    n_samples: 2000
+    noise: 0.05
+    scale: true
+  circles:
     n_samples: 2000
     noise: 0.05
     scale: true
@@ -90,7 +92,7 @@ unconditional_distributions:
       - 16
       - 16
       activation: relu
-      batch_norm: false,
+      batch_norm: false
     fit_kwds:
       epochs: 10000
       validation_split: 0.1
@@ -218,9 +220,6 @@ unconditional_hybrid_distributions:
       - 16
       - 16
       activation: relu
-      conditional: True,
-      # conditional_input_layers='first_layer',
-      conditional_event_shape: 1
     base_distribution: bernstein_flow
     base_distribution_kwds: *distribution_kwds
     base_parameter_kwds:
@@ -247,9 +246,7 @@ unconditional_hybrid_distributions:
       - 16
       - 16
       activation: relu
-      batch_norm: false,
-      conditional: True,
-      conditional_event_shape: 1
+      batch_norm: false
     base_distribution: bernstein_flow
     base_distribution_kwds: *distribution_kwds
     base_parameter_kwds:
