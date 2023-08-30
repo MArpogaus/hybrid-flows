@@ -1,22 +1,66 @@
 stages:
-  train:
+  unconditional:
     matrix:
-      distribution: ${distributions}
+      distribution: ${unconditional_distributions}
       dataset: ${datasets}
-    cmd: python scripts/multivariate_unconditional.py --log-level ${log-level} --log-file results/${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-${item.dataset} train ${item.distribution} ${item.dataset} results/${item.distribution}_${item.dataset}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-${item.dataset} unconditional ${item.distribution} ${item.dataset} results/unconditional_${item.distribution}_${item.dataset}
     params:
     - log-level
     - common.seed
     - common.data_kwds.n_samples
     - common.data_kwds.noise
     - common.data_kwds.scale
-    - distributions.${item.distribution}*
+    - unconditional_distributions.${item.distribution}*
     deps:
-    - scripts/multivariate_unconditional.py
+    - scripts/train.py
     - pyproject.toml
     - src/mctm
     metrics:
-    - results/${item.distribution}_${item.dataset}/metrics.yaml
+    - results/unconditional_${item.distribution}_${item.dataset}/metrics.yaml
     outs:
-    - results/${item.distribution}_${item.dataset}/mcp
-    - results/${item.distribution}_${item.dataset}/train.log
+    - results/unconditional_${item.distribution}_${item.dataset}/mcp
+    - results/unconditional_${item.distribution}_${item.dataset}/train.log
+
+  conditional:
+    matrix:
+      distribution: ${conditional_distributions}
+      dataset: ${datasets}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/conditional_${item.distribution}_${item.dataset}/train.log --experiment-name conditional-${item.dataset} conditional ${item.distribution} ${item.dataset} results/conditional_${item.distribution}_${item.dataset}
+    params:
+    - log-level
+    - common.seed
+    - common.data_kwds.n_samples
+    - common.data_kwds.noise
+    - common.data_kwds.scale
+    - conditional_distributions.${item.distribution}*
+    deps:
+    - scripts/train.py
+    - pyproject.toml
+    - src/mctm
+    metrics:
+    - results/conditional_${item.distribution}_${item.dataset}/metrics.yaml
+    outs:
+    - results/conditional_${item.distribution}_${item.dataset}/mcp
+    - results/conditional_${item.distribution}_${item.dataset}/train.log
+
+  unconditional_hybrid:
+    matrix:
+      distribution: ${unconditional_hybrid_distributions}
+      dataset: ${datasets}
+    cmd: python scripts/train_hybrid.py --log-level ${log-level} --log-file results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-${item.dataset} unconditional_hybrid ${item.distribution} ${item.dataset} results/unconditional_hybrid_${item.distribution}_${item.dataset}/
+    params:
+    - log-level
+    - common.seed
+    - common.data_kwds.n_samples
+    - common.data_kwds.noise
+    - common.data_kwds.scale
+    - unconditional_hybrid_distributions.${item.distribution}*
+    deps:
+    - scripts/train_hybrid.py
+    - pyproject.toml
+    - src/mctm
+    metrics:
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/metrics.yaml
+    outs:
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/mcp

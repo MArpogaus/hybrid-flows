@@ -3,34 +3,38 @@
 import argparse
 import pathlib
 
-from mctm.utils.pipeline import prepare_pipeline, pipeline
-
 from mctm.data.sklearn_datasets import get_dataset
-from mctm.models import UnconditionalModel
+from mctm.models import DensityRegressionModel
+from mctm.utils.pipeline import pipeline, prepare_pipeline
 from mctm.utils.visualisation import plot_2d_data, plot_samples
 
 
 def main(args):
     # --- prepare for execution ---
-   
+
     params = prepare_pipeline(args)
-   
+
     # --- actually execute training ---
-    
+
     pipeline(
         args.experiment_name,
         params["distribution"],
         args.results_path,
         args.log_file,
         args.test_mode,
-        params["seed"], 
+        params["seed"],
         get_dataset=lambda: get_dataset(args.dataset, **params["data_kwds"]),
-        get_model=lambda DS: UnconditionalModel(    dims=DS[0].shape[-1],   distribution=params["distribution"],    distribution_kwds=params["distribution_kwds"],    parameter_kwds=params.get("parameter_kwds", {})),
+        get_model=lambda DS: DensityRegressionModel(
+            dims=DS[0].shape[-1],
+            distribution=params["distribution"],
+            distribution_kwds=params["distribution_kwds"],
+            parameter_kwds=params.get("parameter_kwds", {}),
+        ),
         fit_kwds=params["fit_kwds"],
         params=params,
         plot_data=plot_2d_data,
-        plot_samples=plot_samples
-        )
+        plot_samples=plot_samples,
+    )
 
 
 if __name__ == "__main__":

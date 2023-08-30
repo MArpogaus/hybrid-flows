@@ -20,15 +20,44 @@ from tensorflow_probability import bijectors as tfb
 
 # PRIVATE FUNCTIONS ############################################################
 def __get_simple_fully_connected_network__(
-    input_shape, hidden_units, activation, batch_norm, output_shape
+    input_shape,
+    hidden_units,
+    activation,
+    batch_norm,
+    output_shape,
+    conditional=False,
+    conditional_event_shape=None,
+    dtype=tf.float32,
 ):
-    inputs = K.Input(input_shape, name="conditional_input")
+    x = K.Input(input_shape, name="input", dtype=dtype)
+    inputs = [x]
+
+    if conditional:
+        c = K.Input(conditional_event_shape, name="conditional_input", dtype=dtype)
+        inputs += [c]
     if batch_norm:
-        inputs = K.layers.BatchNormalization(name="batch_norm")(inputs)
+        x = K.layers.BatchNormalization(name="batch_norm", dtype=dtype)(x)
+        if conditional:
+            c = K.layers.BatchNormalization(name="conditional_batch_norm", dtype=dtype)(
+                c
+            )
+
     for i, h in enumerate(hidden_units):
-        x = K.layers.Dense(h, activation=activation, name=f"hidden{i}")(inputs)
-    pv = K.layers.Dense(tf.reduce_prod(output_shape), activation="linear", name="pv")(x)
-    pv_reshaped = K.layers.Reshape(output_shape)(pv)
+        x = K.layers.Dense(h, activation=None, name=f"hidden{i}_layer", dtype=dtype)(x)
+        if conditional:
+            c_out = K.layers.Dense(
+                h, activation=None, name=f"conditional_hidden{i}_layer", dtype=dtype
+            )(c)
+            x = K.layers.Add(name=f"add_c_out{i}", dtype=dtype)([x, c_out])
+        x = K.layers.Activation(activation, dtype=dtype)(x)
+
+    pv = K.layers.Dense(
+        tf.reduce_prod(output_shape),
+        activation="linear",
+        name="parameter_vector",
+        dtype=dtype,
+    )(x)
+    pv_reshaped = K.layers.Reshape(output_shape, dtype=dtype)(pv)
     return K.Model(inputs=inputs, outputs=pv_reshaped)
 
 
@@ -47,7 +76,27 @@ def get_simple_fully_connected_parameter_network_lambda(
         input_shape=input_shape, output_shape=parameter_shape, **kwds
     )
     parameter_network.build(input_shape)
-    return parameter_network, parameter_network.trainable_variables
+
+    if kwds.get("conditional", False):
+
+        def parameter_network_lambda(conditional_input=None, **kwds):
+            return lambda x: parameter_network([x, conditional_input], **kwds)
+
+    else:
+
+        def parameter_network_lambda(conditional_input=None, **kwds):
+            return parameter_network(conditional_input, **kwds)
+
+    return parameter_network_lambda, parameter_network.trainable_variables
+
+
+def get_parameter_vector_or_simple_network_lambda(parameter_shape, conditional, **kwds):
+    if conditional:
+        return get_simple_fully_connected_parameter_network_lambda(
+            parameter_shape, **kwds
+        )
+    else:
+        return get_parameter_vector_lambda(parameter_shape, **kwds)
 
 
 def get_autoregressive_parameter_network_lambda(parameter_shape, **kwds):

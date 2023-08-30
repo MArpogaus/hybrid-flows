@@ -24,17 +24,19 @@ from tensorflow_probability.python.internal import prefer_static
 
 from .parameters import (
     get_autoregressive_parameter_network_lambda,
-    get_parameter_vector_lambda,
+    get_parameter_vector_or_simple_network_lambda,
     get_simple_fully_connected_parameter_network_lambda,
 )
 
+
 # PRIVATE GLOBAL OBJECTS #######################################################
-__DEFAULT_BASE_DISTRIBUTION__ = tfd.Normal(0.0, 1.0)
+def __DEFAULT_BASE_DISTRIBUTION_LAMBDA__(dims):
+    return tfd.Sample(tfd.Normal(0.0, 1.0), sample_shape=[dims])
 
 
 # FUNCTIONS ####################################################################
 def __get_bernstein_flow_lambda__(
-    dims, order, base_distribution=__DEFAULT_BASE_DISTRIBUTION__, **kwds
+    dims, order, base_distribution_lambda=__DEFAULT_BASE_DISTRIBUTION_LAMBDA__, **kwds
 ):
     pv_shape = [dims, order]
     thetas_constrain_fn = get_thetas_constrain_fn(**kwds)
@@ -43,7 +45,7 @@ def __get_bernstein_flow_lambda__(
         thetas = thetas_constrain_fn(pv)
 
         return tfd.TransformedDistribution(
-            distribution=tfd.Sample(base_distribution, sample_shape=[dims]),
+            distribution=base_distribution_lambda(dims),
             bijector=tfb.Invert(BernsteinBijectorLinearExtrapolate(thetas=thetas)),
         )
 
@@ -102,7 +104,7 @@ def __get_trainable_distribution__(
 def __get_bijector_fn__(network, thetas_constrain_fn, **kwds):
     def bijector_fn(y, *arg, **kwds):
         with tf.name_scope("bnf_made_bjector"):
-            pvector = network(y, **kwds)  # todo: add conditionals
+            pvector = network(y, **kwds)
             thetas = thetas_constrain_fn(pvector)
 
             return tfb.Invert(BernsteinBijectorLinearExtrapolate(thetas=thetas))
@@ -117,13 +119,14 @@ def get_masked_autoregressive_bernstein_flow(
     parameter_kwds,
     get_parameter_lambda_fn=get_autoregressive_parameter_network_lambda,
 ):
+    distribution_kwds = distribution_kwds.copy()
     order = distribution_kwds.pop("order")
-    base_distribution = distribution_kwds.pop(
-        "base_distribution", __DEFAULT_BASE_DISTRIBUTION__
+    base_distribution_lambda = distribution_kwds.pop(
+        "base_distribution_lambda", __DEFAULT_BASE_DISTRIBUTION_LAMBDA__
     )
 
     parameter_shape = (dims, order)
-    parameter_network, trainable_variables = get_parameter_lambda_fn(
+    parameter_network_lambda, trainable_variables = get_parameter_lambda_fn(
         parameter_shape, **parameter_kwds
     )
 
@@ -135,12 +138,12 @@ def get_masked_autoregressive_bernstein_flow(
         )
 
         distribution = tfd.TransformedDistribution(
-            distribution=tfd.Sample(base_distribution, sample_shape=[dims]),
+            distribution=base_distribution_lambda(dims),
             bijector=tfb.MaskedAutoregressiveFlow(bijector_fn=bijector_fn),
         )
         return distribution
 
-    return distribution_lambda, parameter_network, trainable_variables
+    return distribution_lambda, parameter_network_lambda, trainable_variables
 
 
 def get_coupling_bernstein_flow(
@@ -149,9 +152,10 @@ def get_coupling_bernstein_flow(
     parameter_kwds,
     get_parameter_lambda_fn=get_simple_fully_connected_parameter_network_lambda,
 ):
+    distribution_kwds = distribution_kwds.copy()
     order = distribution_kwds.pop("order")
-    base_distribution = distribution_kwds.pop(
-        "base_distribution", __DEFAULT_BASE_DISTRIBUTION__
+    base_distribution_lambda = distribution_kwds.pop(
+        "base_distribution_lambda", __DEFAULT_BASE_DISTRIBUTION_LAMBDA__
     )
     coupling_layers = distribution_kwds.pop("coupling_layers")
 
@@ -168,13 +172,10 @@ def get_coupling_bernstein_flow(
         parameter_networks.append(network)
         trainable_variables.append(variables)
 
-    def parameter_lambda(conditional_input=None, **kwds):
+    def parameter_lambda(conditional_input, **kwds):
         if parameter_kwds.get("conditional", False):
             return list(
-                map(
-                    lambda net: lambda x: net([x, conditional_input], **kwds),
-                    parameter_networks,
-                )
+                map(lambda net: net(conditional_input, **kwds), parameter_networks)
             )
         else:
             return parameter_networks
@@ -194,7 +195,7 @@ def get_coupling_bernstein_flow(
                 bijectors.append(tfb.Permute(permutation=[1, 0]))
 
         return tfd.TransformedDistribution(
-            distribution=tfd.Sample(base_distribution, sample_shape=[dims]),
+            distribution=base_distribution_lambda(dims),
             bijector=tfb.Chain(bijectors),
         )
 
@@ -204,18 +205,15 @@ def get_coupling_bernstein_flow(
 get_bernstein_flow = partial(
     __get_trainable_distribution__,
     get_distribution_lambda_fn=__get_bernstein_flow_lambda__,
-    get_parameter_lambda_fn=get_parameter_vector_lambda,
-    parameter_kwds={"dtype": tf.float32},
+    get_parameter_lambda_fn=get_parameter_vector_or_simple_network_lambda,
 )
 get_multivariate_bernstein_flow = partial(
     __get_trainable_distribution__,
     get_distribution_lambda_fn=__get_multivariate_bernstein_flow_lambda__,
-    get_parameter_lambda_fn=get_parameter_vector_lambda,
-    parameter_kwds={"dtype": tf.float32},
+    get_parameter_lambda_fn=get_parameter_vector_or_simple_network_lambda,
 )
 get_multivariate_normal = partial(
     __get_trainable_distribution__,
     get_distribution_lambda_fn=__get_multivariate_normal_lambda__,
-    get_parameter_lambda_fn=get_parameter_vector_lambda,
-    parameter_kwds={"dtype": tf.float32},
+    get_parameter_lambda_fn=get_parameter_vector_or_simple_network_lambda,
 )

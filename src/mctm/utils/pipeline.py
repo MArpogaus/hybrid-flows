@@ -1,35 +1,62 @@
 import logging
 import os
 import sys
+from typing import Any, Protocol
 
 import dvc.api
 import mlflow
 import numpy as np
 import yaml
+from matplotlib.pyplot import Figure
 
 from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
 from mctm.utils.tensorflow import fit_distribution, set_seed
+from mctm.utils.visualisation import setup_latex
 
-
-from typing import Any, Callable, Protocol
-from matplotlib.pyplot import Figure
 
 class getDataset(Protocol):
-    def __call__(self) -> "tuple[Any, Any]": pass
-    
-class getModel(Protocol):
-    def __call__(self, dataset: "tuple[Any,Any]") -> Any: pass
-    
-class doPlotData(Protocol):
-    def __call__(self, X: Any, Y: Any) -> "Figure": pass
-    
-class doPlotSamples(Protocol):
-    def __call__(self, X: Any, X_: Any) -> "Figure": pass
+    def __call__(self) -> "tuple[Any, Any]":
+        pass
 
-# TODO: wie flexibel soll es sein? Was für constraints sollen angenommen und enforced werden?
-def pipeline(experiment_name: str, run_name: str, results_path: str, log_file: str, test_mode: bool, seed: int, get_dataset: getDataset, get_model: getModel, fit_kwds: dict, params: dict, plot_data: doPlotData, plot_samples: doPlotSamples):
+
+class getModel(Protocol):
+    def __call__(self, dataset: "tuple[Any,Any]") -> Any:
+        pass
+
+
+class doPlotData(Protocol):
+    def __call__(self, X: Any, Y: Any) -> "Figure":
+        pass
+
+
+class doPlotSamples(Protocol):
+    def __call__(self, X: Any, X_: Any) -> "Figure":
+        pass
+
+
+class doPreprocessDataset(Protocol):
+    def __call__(self, X: Any, X_: Any) -> "dict":
+        pass
+
+
+def pipeline(
+    experiment_name: str,
+    run_name: str,
+    results_path: str,
+    log_file: str,
+    test_mode: bool,
+    seed: int,
+    get_dataset: getDataset,
+    get_model: getModel,
+    preprocess_dataset: doPreprocessDataset,
+    fit_kwds: dict,
+    params: dict,
+    plot_data: doPlotData,
+    plot_samples: doPlotSamples,
+):
     """
-    get_dataset is callback because we have no common interface for how to generate a dataset (?!)
+    get_dataset is callback because we have no common
+    interface for how to generate a dataset (?!)
     assumes models history has "loss" and "val_loss"
     log_file is optional and can be none.
     params: params from params.yaml to be logged
@@ -38,15 +65,16 @@ def pipeline(experiment_name: str, run_name: str, results_path: str, log_file: s
     """
     set_seed(seed)
     X, Y = get_dataset()
-    model = get_model((X,Y))
-    
+    model = get_model((X, Y))
+
     # Evaluate Model
     experiment_name = experiment_name + ("_test" if test_mode else "")
+    if test_mode:
+        params["fit_kwds"]["epochs"] = 1
     mlflow.set_experiment(experiment_name)
     logging.info(f"Logging to MLFlow Experiment: {experiment_name}")
-    with start_run_with_exception_logging(
-        run_name=run_name
-    ):
+    setup_latex(fontsize=10)
+    with start_run_with_exception_logging(run_name=run_name):
         # Auto log all MLflow entities
         mlflow.autolog()
         mlflow.set_tag("stage", "training")
@@ -56,17 +84,21 @@ def pipeline(experiment_name: str, run_name: str, results_path: str, log_file: s
         if plot_data:
             fig = plot_data(X, Y)
             mlflow.log_figure(fig, "dataset.svg")
-        
+
+        if preprocess_dataset:
+            preprocessed = preprocess_dataset(X, Y)
+        else:
+            preprocessed = {"x": X, "y": Y}
+
         hist = fit_distribution(
             model=model,
             seed=seed,
             # unused but required
-            x=X,
-            y=X,
+            **preprocessed,
             results_path=results_path,
             **fit_kwds,
         )
-        
+
         if plot_samples:
             fig = plot_samples(model(X), X, seed=1)
             mlflow.log_figure(fig, "samples.svg")
@@ -77,16 +109,15 @@ def pipeline(experiment_name: str, run_name: str, results_path: str, log_file: s
         logging.info(f"training finished after {len(hist.history['loss'])} epochs.")
         logging.info(f"train loss: {min_loss}")
         logging.info(f"validation loss: {min_val_loss}")
-        
+
         if not test_mode:
-            with open(
-                os.path.join(results_path, "metrics.yaml"), "w+"
-            ) as results_file:
+            with open(os.path.join(results_path, "metrics.yaml"), "w+") as results_file:
                 yaml.dump({"loss": min_loss, "val_loss": min_val_loss}, results_file)
 
         if log_file:
             mlflow.log_artifact(log_file)
-    
+
+
 def prepare_pipeline(args):
     # prepare results directory
     os.makedirs(args.results_path, exist_ok=True)
@@ -117,5 +148,5 @@ def prepare_pipeline(args):
         **params["distributions"][distribution],
     }
     logging.info(params)
-    
+
     return params

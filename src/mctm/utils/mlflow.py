@@ -23,7 +23,7 @@ from mctm.utils import flatten_dict
 
 # PUBLIC FUNCTIONS ############################################################
 def log_cfg(cfg: dict):
-    """ log flattened dictionary as mlflow params """
+    """log flattened dictionary as mlflow params"""
     mlflow.log_params(flatten_dict(cfg))
 
 
