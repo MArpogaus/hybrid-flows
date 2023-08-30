@@ -34,6 +34,8 @@ def fit_distribution(
     results_path,
     monitor,
     verbose,
+    reduce_lr_on_plateau,
+    early_stopping,
     loss=lambda y, dist: -dist.log_prob(y),
     **kwds,
 ):
@@ -44,27 +46,32 @@ def fit_distribution(
     callbacks = [
         K.callbacks.ModelCheckpoint(
             os.path.join(results_path, "mcp/weights"),
-            monitor="val_loss",
+            monitor=monitor,
             mode="auto",
             verbose=verbose,
             save_weights_only=True,
             save_best_only=True,
         ),
-        K.callbacks.ReduceLROnPlateau(
-            monitor=monitor,
-            factor=0.1,
-            patience=lr_patience,
-            verbose=verbose,
-        ),
-        K.callbacks.EarlyStopping(
-            monitor=monitor,
-            patience=3 * lr_patience,
-            restore_best_weights=True,
-            verbose=verbose,
-        ),
         K.callbacks.TerminateOnNaN(),
     ]
-    kwds["x"]
+    if reduce_lr_on_plateau:
+        callbacks += [
+            K.callbacks.ReduceLROnPlateau(
+                monitor=monitor,
+                factor=0.1,
+                patience=lr_patience,
+                verbose=verbose,
+            )
+        ]
+    if early_stopping:
+        callbacks += [
+            K.callbacks.EarlyStopping(
+                monitor=monitor,
+                patience=3 * lr_patience,
+                restore_best_weights=True,
+                verbose=verbose,
+            )
+        ]
     return model.fit(
         shuffle=True,
         callbacks=callbacks,
