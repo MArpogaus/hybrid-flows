@@ -1,5 +1,4 @@
 # IMPORT PACKAGES #############################################################
-
 import argparse
 
 import tensorflow as tf
@@ -20,13 +19,10 @@ def main(args):
     dataset = args.dataset
     dataset_kwds = params["datasets"][dataset]
     distribution = args.distribution
-    distribution_kwds = params[args.stage_name + "_distributions"][distribution][
-        "distribution_kwds"
-    ]
-    fit_kwds = params[args.stage_name + "_distributions"][distribution]["fit_kwds"]
-    parameter_kwds = params[args.stage_name + "_distributions"][distribution][
-        "parameter_kwds"
-    ]
+    distribution_params = params[args.stage_name + "_distributions"][distribution]
+    distribution_kwds = distribution_params["distribution_kwds"]
+    fit_kwds = distribution_params["fit_kwds"]
+    parameter_kwds = distribution_params["parameter_kwds"]
 
     if args.test_mode:
         fit_kwds.update(epochs=1)

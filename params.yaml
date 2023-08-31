@@ -215,6 +215,8 @@ conditional_distributions:
 unconditional_hybrid_distributions:
   masked_autoregressive_bernstein_flow:
     distribution_kwds: *distribution_kwds
+    freeze_base_model: false
+    base_checkpoint_path: false
     parameter_kwds:
       hidden_units:
       - 16
@@ -241,6 +243,63 @@ unconditional_hybrid_distributions:
       <<: *distribution_kwds
       coupling_layers: 1
       order: 50
+    freeze_base_model: false
+    base_checkpoint_path: false
+    parameter_kwds:
+      hidden_units:
+      - 16
+      - 16
+      activation: relu
+      batch_norm: false
+    base_distribution: bernstein_flow
+    base_distribution_kwds: *distribution_kwds
+    base_parameter_kwds:
+      conditional: false
+      dtype: float32
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.01
+      lr_patience: 500
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+unconditional_hybrid_pre_trained_distributions:
+  masked_autoregressive_bernstein_flow:
+    distribution_kwds: *distribution_kwds
+    freeze_base_model: true
+    base_checkpoint_path: unconditional_bernstein_flow
+    parameter_kwds:
+      hidden_units:
+      - 16
+      - 16
+      activation: relu
+    base_distribution: bernstein_flow
+    base_distribution_kwds: *distribution_kwds
+    base_parameter_kwds:
+      conditional: false
+      dtype: float32
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.01
+      lr_patience: 500
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+  coupling_bernstein_flow:
+    distribution_kwds:
+      <<: *distribution_kwds
+      coupling_layers: 1
+      order: 50
+    freeze_base_model: true
+    base_checkpoint_path: unconditional_bernstein_flow
     parameter_kwds:
       hidden_units:
       - 16

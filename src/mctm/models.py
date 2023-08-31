@@ -33,6 +33,8 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
         base_distribution,
         base_distribution_kwds,
         base_parameter_kwds,
+        base_checkpoint_path,
+        freeze_base_model,
     ):
         super().__init__(
             dims,
@@ -44,15 +46,16 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
             parameter_kwds=parameter_kwds,
         )
 
-        (
-            self.base_distribution_lambda,
-            self.base_distribution_parameters_lambda,
-            self.base_trainable_parameters,
-        ) = getattr(distributions, "get_" + base_distribution)(
+        self.base_model = DensityRegressionModel(
             dims=dims,
+            distribution=base_distribution,
             distribution_kwds=base_distribution_kwds,
             parameter_kwds=base_parameter_kwds,
         )
+        if base_checkpoint_path:
+            self.base_model.load_weights(base_checkpoint_path)
+        if freeze_base_model:
+            self.base_model.trainable = False
 
-    def get_base_distribution(self, _):
-        return self.base_distribution_lambda(self.base_distribution_parameters_lambda())
+    def get_base_distribution(self, *args, **kwds):
+        return self.base_model(*args, **kwds)
