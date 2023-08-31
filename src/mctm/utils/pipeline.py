@@ -102,9 +102,16 @@ def pipeline(
         min_idx = np.argmin(hist.history["val_loss"])
         min_loss = hist.history["loss"][min_idx]
         min_val_loss = hist.history["val_loss"][min_idx]
-        logging.info(f"training finished after {len(hist.history['loss'])} epochs.")
-        logging.info(f"train loss: {min_loss}")
-        logging.info(f"validation loss: {min_val_loss}")
+        epochs = len(hist.history["loss"])
+        logging.info(f"training finished after {epochs} epochs.")
+        logging.info(f"best train loss: {min_loss}")
+        logging.info(f"best validation loss: {min_val_loss}")
+        logging.info(f"minimum reached after {min_idx} epochs")
+
+        mlflow.log_metric("best_epoch", min_idx)
+        mlflow.log_metric("final_epoch", epochs)
+        mlflow.log_metric("min_loss", min_loss)
+        mlflow.log_metric("min_val_loss", min_val_loss)
 
         with open(os.path.join(results_path, "metrics.yaml"), "w+") as results_file:
             yaml.dump({"loss": min_loss, "val_loss": min_val_loss}, results_file)
