@@ -14,8 +14,6 @@ def main(args):
 
     params = prepare_pipeline(args)
 
-    experiment_name = args.experiment_name + ("_test" if args.test_mode else "")
-
     dataset = args.dataset
     dataset_kwds = params["datasets"][dataset]
     distribution = args.distribution
@@ -24,14 +22,18 @@ def main(args):
     fit_kwds = distribution_params["fit_kwds"]
     parameter_kwds = distribution_params["parameter_kwds"]
 
+    experiment_name = args.experiment_name
+    run_name = "_".join((args.stage_name, distribution))
+
     if args.test_mode:
+        experiment_name += "_test"
         fit_kwds.update(epochs=1)
 
     # --- actually execute training ---
 
     pipeline(
         experiment_name=experiment_name,
-        run_name=distribution,
+        run_name=run_name,
         results_path=args.results_path,
         log_file=args.log_file,
         seed=params["seed"],
