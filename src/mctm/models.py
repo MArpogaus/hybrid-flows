@@ -58,4 +58,4 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
             self.base_model.trainable = False
 
     def get_base_distribution(self, *args, **kwds):
-        return self.base_model(*args, **kwds)
+        return self.base_model(None)
