@@ -64,8 +64,8 @@ def pipeline(
     """
     call_args = dict(filter(lambda x: not callable(x[1]), vars().items()))
     set_seed(seed)
-    X, Y = get_dataset_fn(**dataset_kwds)
-    model = get_model_fn(dims=X.shape[-1], **model_kwds)
+    data, dims = get_dataset_fn(**dataset_kwds)
+    model = get_model_fn(dims=dims, **model_kwds)
 
     # Evaluate Model
     mlflow.set_experiment(experiment_name)
@@ -77,13 +77,13 @@ def pipeline(
         mlflow.log_dict(call_args, "params.yaml")
         log_cfg(call_args)
         if plot_data:
-            fig = plot_data(X, Y)
-            mlflow.log_figure(fig, "dataset.svg")
+            fig = plot_data(*data)
+            fig.savefig(os.path.join(results_path, "dataset.svg"))
 
         if preprocess_dataset:
-            preprocessed = preprocess_dataset(X, Y, model)
+            preprocessed = preprocess_dataset(data, model)
         else:
-            preprocessed = {"x": X, "y": Y}
+            preprocessed = {"x": data[0], "y": data[1]}
 
         hist = fit_distribution(
             model=model,
@@ -97,7 +97,7 @@ def pipeline(
             fig = plot_samples(
                 model(preprocessed["x"]), preprocessed["y"].numpy(), seed=1
             )
-            mlflow.log_figure(fig, "samples.svg")
+            fig.savefig(os.path.join(results_path, "samples.svg"))
 
         min_idx = np.argmin(hist.history["val_loss"])
         min_loss = hist.history["loss"][min_idx]
@@ -118,6 +118,10 @@ def pipeline(
 
         if log_file:
             mlflow.log_artifact(log_file)
+
+        mlflow.log_artifacts(results_path)
+
+        return hist, model, preprocessed
 
 
 def prepare_pipeline(args):

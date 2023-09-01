@@ -11,6 +11,12 @@ datasets:
     noise: 0.05
     scale: true
 
+benchmark_datasets:
+- POWER
+- HEPMASS
+- MINIBOONE
+- BSDS300
+
 unconditional_distributions:
   bernstein_flow:
     distribution_kwds: &distribution_kwds
@@ -51,6 +57,78 @@ unconditional_distributions:
 
   multivariate_normal:
     distribution_kwds: {}
+    parameter_kwds:
+      conditional: false
+      dtype: float32
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.01
+      lr_patience: 500
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+  masked_autoregressive_bernstein_flow:
+    distribution_kwds: *distribution_kwds
+    parameter_kwds:
+      hidden_units:
+      - 16
+      - 16
+      activation: relu
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.001
+      lr_patience: 100
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+  coupling_bernstein_flow:
+    distribution_kwds:
+      <<: *distribution_kwds
+      coupling_layers: 2
+    parameter_kwds:
+      hidden_units:
+      - 16
+      - 16
+      activation: relu
+      batch_norm: false
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.001
+      lr_patience: 100
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+unconditional_benchmark_distributions:
+  bernstein_flow:
+    distribution_kwds: *distribution_kwds
+    parameter_kwds:
+      conditional: false
+      dtype: float32
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.01
+      lr_patience: 500
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+  multivariate_bernstein_flow:
+    distribution_kwds: *distribution_kwds
     parameter_kwds:
       conditional: false
       dtype: float32

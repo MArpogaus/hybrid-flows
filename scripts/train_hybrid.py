@@ -60,9 +60,9 @@ def main(args):
             freeze_base_model=freeze_base_model,
             base_checkpoint_path=base_checkpoint_path,
         ),
-        preprocess_dataset=lambda X, Y, model: {
-            "x": tf.convert_to_tensor(Y[..., None], dtype=model.dtype),
-            "y": tf.convert_to_tensor(X, dtype=model.dtype),
+        preprocess_dataset=lambda data, model: {
+            "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype),
+            "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
         },
         fit_kwds=fit_kwds,
         plot_data=plot_2d_data,

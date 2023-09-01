@@ -19,6 +19,26 @@ stages:
     - results/unconditional_${item.distribution}_${item.dataset}/mcp
     - results/unconditional_${item.distribution}_${item.dataset}/train.log
 
+  unconditional_benchmark:
+    matrix:
+      distribution: ${unconditional_benchmark_distributions}
+      dataset: ${benchmark_datasets}
+    cmd: python scripts/train_benchmark.py --log-level ${log-level} --log-file results/unconditional_benchmark_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-becnhmark-${item.dataset} unconditional_benchmark ${item.distribution} ${item.dataset} results/unconditional_benchmark_${item.distribution}_${item.dataset}
+    params:
+    - log-level
+    - seed
+    - benchmark_datasets
+    - unconditional_benchmark_distributions.${item.distribution}*
+    deps:
+    - scripts/train.py
+    - pyproject.toml
+    - src/mctm
+    metrics:
+    - results/unconditional_benchmark_${item.distribution}_${item.dataset}/metrics.yaml
+    outs:
+    - results/unconditional_benchmark_${item.distribution}_${item.dataset}/mcp
+    - results/unconditional_benchmark_${item.distribution}_${item.dataset}/train.log
+
   conditional:
     matrix:
       distribution: ${conditional_distributions}

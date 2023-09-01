@@ -18,4 +18,4 @@ def get_dataset(dataset_name, n_samples, scale, **kwds):
     X, Y = getattr(datasets, f"make_{dataset_name}")(n_samples=n_samples, **kwds)
     if scale:
         X = MinMaxScaler().fit_transform(X)
-    return X, Y
+    return (X, Y), X.shape[-1]
