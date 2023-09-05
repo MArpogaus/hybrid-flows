@@ -1,5 +1,6 @@
 log-level: info
 seed: 1
+textwidth: 487.8225
 
 datasets:
   moons:
@@ -9,6 +10,7 @@ datasets:
   circles:
     n_samples: 2000
     noise: 0.05
+    factor: 0.5
     scale: true
 
 benchmark_datasets:

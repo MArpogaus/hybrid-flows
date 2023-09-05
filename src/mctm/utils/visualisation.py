@@ -19,7 +19,7 @@ from matplotlib import pyplot as plt
 
 
 # PRIVATE FUNCTIONS ############################################################
-def __set_size__(width, fraction=1, subplots=(1, 1)):
+def get_figsize(width, fraction=1, subplots=(1, 1)):
     """Set figure dimensions to avoid scaling in LaTeX.
 
     Parameters
@@ -85,7 +85,14 @@ def plot_2d_data(X, Y, **kwds):
     fig = plt.figure(**kwds)
     plt.scatter(X1[label], X2[label], s=10, color="blue")
     plt.scatter(X1[~label], X2[~label], s=10, color="red")
-    plt.legend(["label: 1", "label: 0"])
+    plt.axis("equal")
+    plt.legend(
+        ["label: 1", "label: 0"],
+        bbox_to_anchor=(0.5, 1.1),
+        ncols=2,
+        loc="upper center",
+        frameon=False,
+    )
     return fig
 
 
@@ -116,10 +123,18 @@ def plot_samples(dist, data, seed=1, **kwds):
         y="x2",
         hue="source",
         alpha=0.5,
+        s=10,
         xlim=(data[..., 0].min() - 0.1, data[..., 0].max() + 0.1),
         ylim=(data[..., 1].min() - 0.1, data[..., 1].max() + 0.1),
         **kwds,
     )
-    g.plot_joint(sns.kdeplot)
-    # g.plot_marginals(sns.rugplot, height=-.15)
+    g.plot_joint(sns.kdeplot, legend=False)
+    sns.move_legend(
+        g.ax_joint,
+        "upper left",
+        bbox_to_anchor=(0.93, 1.25),
+        title=None,
+        frameon=False,
+    )
+
     return g.figure
