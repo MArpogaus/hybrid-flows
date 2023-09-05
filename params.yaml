@@ -1,18 +1,26 @@
-datasets:
-- moons
-- circles
 log-level: info
-common:
-  seed: 1
-  data_kwds:
+seed: 1
+
+datasets:
+  moons:
+    n_samples: 2000
+    noise: 0.05
+    scale: true
+  circles:
     n_samples: 2000
     noise: 0.05
     scale: true
 
+benchmark_datasets:
+- POWER
+- HEPMASS
+- MINIBOONE
+- BSDS300
+
 unconditional_distributions:
   bernstein_flow:
     distribution_kwds: &distribution_kwds
-      order: 25
+      order: 50
       low: -3
       high: 3
       smooth_bounds: true
@@ -90,7 +98,79 @@ unconditional_distributions:
       - 16
       - 16
       activation: relu
-      batch_norm: false,
+      batch_norm: false
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.001
+      lr_patience: 100
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+unconditional_benchmark_distributions:
+  bernstein_flow:
+    distribution_kwds: *distribution_kwds
+    parameter_kwds:
+      conditional: false
+      dtype: float32
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.01
+      lr_patience: 500
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+  multivariate_bernstein_flow:
+    distribution_kwds: *distribution_kwds
+    parameter_kwds:
+      conditional: false
+      dtype: float32
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.01
+      lr_patience: 500
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+  masked_autoregressive_bernstein_flow:
+    distribution_kwds: *distribution_kwds
+    parameter_kwds:
+      hidden_units:
+      - 16
+      - 16
+      activation: relu
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.001
+      lr_patience: 100
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+  coupling_bernstein_flow:
+    distribution_kwds:
+      <<: *distribution_kwds
+      coupling_layers: 2
+    parameter_kwds:
+      hidden_units:
+      - 16
+      - 16
+      activation: relu
+      batch_norm: false
     fit_kwds:
       epochs: 5
       validation_split: 0.1
@@ -211,16 +291,46 @@ conditional_distributions:
       monitor: val_loss
 
 unconditional_hybrid_distributions:
-  masked_autoregressive_bernstein_flow:
-    distribution_kwds: *distribution_kwds
+  # masked_autoregressive_bernstein_flow:
+  #   distribution_kwds: *distribution_kwds
+  #   freeze_base_model: false
+  #   base_checkpoint_path: false
+  #   parameter_kwds:
+  #     hidden_units:
+  #     - 16
+  #     - 16
+  #     activation: relu
+  #   base_distribution: bernstein_flow
+  #   base_distribution_kwds: *distribution_kwds
+  #   base_parameter_kwds:
+  #     conditional: false
+  #     dtype: float32
+  #   fit_kwds:
+  #     epochs: 10000
+  #     validation_split: 0.1
+  #     batch_size: 512
+  #     learning_rate: 0.01
+  #     lr_patience: 500
+  #     reduce_lr_on_plateau: true
+  #     early_stopping: true
+  #     verbose: true
+  #     monitor: val_loss
+
+  coupling_bernstein_flow:
+    distribution_kwds:
+      <<: *distribution_kwds
+      coupling_layers: 1
+      order: 100
+      low: 0
+      high: 1
+    freeze_base_model: false
+    base_checkpoint_path: false
     parameter_kwds:
       hidden_units:
       - 16
       - 16
       activation: relu
-      conditional: True,
-      # conditional_input_layers='first_layer',
-      conditional_event_shape: 1
+      batch_norm: false
     base_distribution: bernstein_flow
     base_distribution_kwds: *distribution_kwds
     base_parameter_kwds:
@@ -237,19 +347,47 @@ unconditional_hybrid_distributions:
       verbose: true
       monitor: val_loss
 
+unconditional_hybrid_pre_trained_distributions:
+  # masked_autoregressive_bernstein_flow:
+  #   distribution_kwds: *distribution_kwds
+  #   freeze_base_model: true
+  #   base_checkpoint_path: unconditional_bernstein_flow
+  #   parameter_kwds:
+  #     hidden_units:
+  #     - 16
+  #     - 16
+  #     activation: relu
+  #   base_distribution: bernstein_flow
+  #   base_distribution_kwds: *distribution_kwds
+  #   base_parameter_kwds:
+  #     conditional: false
+  #     dtype: float32
+  #   fit_kwds:
+  #     epochs: 10000
+  #     validation_split: 0.1
+  #     batch_size: 512
+  #     learning_rate: 0.01
+  #     lr_patience: 500
+  #     reduce_lr_on_plateau: true
+  #     early_stopping: true
+  #     verbose: true
+  #     monitor: val_loss
+
   coupling_bernstein_flow:
     distribution_kwds:
       <<: *distribution_kwds
       coupling_layers: 1
-      order: 50
+      order: 100
+      low: 0
+      high: 1
+    freeze_base_model: true
+    base_checkpoint_path: unconditional_bernstein_flow
     parameter_kwds:
       hidden_units:
       - 16
       - 16
       activation: relu
-      batch_norm: false,
-      conditional: True,
-      conditional_event_shape: 1
+      batch_norm: false
     base_distribution: bernstein_flow
     base_distribution_kwds: *distribution_kwds
     base_parameter_kwds:

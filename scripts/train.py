@@ -1,7 +1,5 @@
 # IMPORT PACKAGES #############################################################
-
 import argparse
-import pathlib
 
 import tensorflow as tf
 
@@ -16,28 +14,42 @@ def main(args):
 
     params = prepare_pipeline(args)
 
+    dataset = args.dataset
+    dataset_kwds = params["datasets"][dataset]
+    distribution = args.distribution
+    distribution_params = params[args.stage_name + "_distributions"][distribution]
+    distribution_kwds = distribution_params["distribution_kwds"]
+    fit_kwds = distribution_params["fit_kwds"]
+    parameter_kwds = distribution_params["parameter_kwds"]
+
+    experiment_name = args.experiment_name
+    run_name = "_".join((args.stage_name, distribution))
+
+    if args.test_mode:
+        experiment_name += "_test"
+        fit_kwds.update(epochs=1)
+
     # --- actually execute training ---
 
     pipeline(
-        args.experiment_name,
-        params["distribution"],
-        args.results_path,
-        args.log_file,
-        args.test_mode,
-        params["seed"],
-        get_dataset=lambda: get_dataset(args.dataset, **params["data_kwds"]),
-        get_model=lambda DS: DensityRegressionModel(
-            dims=DS[0].shape[-1],
-            distribution=params["distribution"],
-            distribution_kwds=params["distribution_kwds"],
-            parameter_kwds=params.get("parameter_kwds", {}),
+        experiment_name=experiment_name,
+        run_name=run_name,
+        results_path=args.results_path,
+        log_file=args.log_file,
+        seed=params["seed"],
+        get_dataset_fn=get_dataset,
+        dataset_kwds={"dataset_name": dataset, **dataset_kwds},
+        get_model_fn=DensityRegressionModel,
+        model_kwds=dict(
+            distribution=distribution,
+            distribution_kwds=distribution_kwds,
+            parameter_kwds=parameter_kwds,
         ),
-        preprocess_dataset=lambda X, Y, model: {
-            "x": tf.convert_to_tensor(Y[..., None], dtype=model.dtype),
-            "y": tf.convert_to_tensor(X, dtype=model.dtype),
+        preprocess_dataset=lambda data, model: {
+            "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype),
+            "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
         },
-        fit_kwds=params["fit_kwds"],
-        params=params,
+        fit_kwds=fit_kwds,
         plot_data=plot_2d_data,
         plot_samples=plot_samples,
     )
@@ -70,7 +82,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "results_path",
-        type=pathlib.Path,
+        type=str,
         help="destination for model checkpoints and logs.",
     )
     args = parser.parse_args()

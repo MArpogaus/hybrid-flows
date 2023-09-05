@@ -45,13 +45,13 @@ def pipeline(
     run_name: str,
     results_path: str,
     log_file: str,
-    test_mode: bool,
     seed: int,
-    get_dataset: getDataset,
-    get_model: getModel,
+    get_dataset_fn: getDataset,
+    dataset_kwds: dict,
+    get_model_fn: getModel,
+    model_kwds: dict,
     preprocess_dataset: doPreprocessDataset,
     fit_kwds: dict,
-    params: dict,
     plot_data: doPlotData,
     plot_samples: doPlotSamples,
 ):
@@ -64,14 +64,12 @@ def pipeline(
     plot_data is optional
     plot_samples is optional
     """
+    call_args = dict(filter(lambda x: not callable(x[1]), vars().items()))
     set_seed(seed)
-    X, Y = get_dataset()
-    model = get_model((X, Y))
+    data, dims = get_dataset_fn(**dataset_kwds)
+    model = get_model_fn(dims=dims, **model_kwds)
 
     # Evaluate Model
-    experiment_name = experiment_name + ("_test" if test_mode else "")
-    if test_mode:
-        params["fit_kwds"]["epochs"] = 1
     mlflow.set_experiment(experiment_name)
     logging.info(f"Logging to MLFlow Experiment: {experiment_name}")
     if shutil.which("latex"):
@@ -83,45 +81,54 @@ def pipeline(
     with start_run_with_exception_logging(run_name=run_name):
         # Auto log all MLflow entities
         mlflow.autolog()
-        mlflow.set_tag("stage", "training")
-        mlflow.log_dict(params, "params.yaml")
-        log_cfg(params)
-        mlflow.log_params(vars())
+        mlflow.log_dict(call_args, "params.yaml")
+        log_cfg(call_args)
         if plot_data:
-            fig = plot_data(X, Y)
-            mlflow.log_figure(fig, "dataset.svg")
+            fig = plot_data(*data)
+            fig.savefig(os.path.join(results_path, "dataset.svg"))
 
         if preprocess_dataset:
-            preprocessed = preprocess_dataset(X, Y, model)
+            preprocessed = preprocess_dataset(data, model)
         else:
-            preprocessed = {"x": X, "y": Y}
+            preprocessed = {"x": data[0], "y": data[1]}
 
         hist = fit_distribution(
             model=model,
             seed=seed,
-            # unused but required
-            **preprocessed,
             results_path=results_path,
+            **preprocessed,
             **fit_kwds,
         )
 
         if plot_samples:
-            fig = plot_samples(model(X), X, seed=1)
-            mlflow.log_figure(fig, "samples.svg")
+            fig = plot_samples(
+                model(preprocessed["x"]), preprocessed["y"].numpy(), seed=1
+            )
+            fig.savefig(os.path.join(results_path, "samples.svg"))
 
         min_idx = np.argmin(hist.history["val_loss"])
         min_loss = hist.history["loss"][min_idx]
         min_val_loss = hist.history["val_loss"][min_idx]
-        logging.info(f"training finished after {len(hist.history['loss'])} epochs.")
-        logging.info(f"train loss: {min_loss}")
-        logging.info(f"validation loss: {min_val_loss}")
+        epochs = len(hist.history["loss"])
+        logging.info(f"training finished after {epochs} epochs.")
+        logging.info(f"best train loss: {min_loss}")
+        logging.info(f"best validation loss: {min_val_loss}")
+        logging.info(f"minimum reached after {min_idx} epochs")
 
-        if not test_mode:
-            with open(os.path.join(results_path, "metrics.yaml"), "w+") as results_file:
-                yaml.dump({"loss": min_loss, "val_loss": min_val_loss}, results_file)
+        mlflow.log_metric("best_epoch", min_idx)
+        mlflow.log_metric("final_epoch", epochs)
+        mlflow.log_metric("min_loss", min_loss)
+        mlflow.log_metric("min_val_loss", min_val_loss)
+
+        with open(os.path.join(results_path, "metrics.yaml"), "w+") as results_file:
+            yaml.dump({"loss": min_loss, "val_loss": min_val_loss}, results_file)
 
         if log_file:
             mlflow.log_artifact(log_file)
+
+        mlflow.log_artifacts(results_path)
+
+        return hist, model, preprocessed
 
 
 def prepare_pipeline(args):
@@ -146,13 +153,6 @@ def prepare_pipeline(args):
     params = dvc.api.params_show(
         stages=f"{args.stage_name}@{args.distribution}-{args.dataset}"
     )
-    distribution = args.distribution
-    # concat model params with meta params
-    params = {
-        **params["common"],
-        "distribution": distribution,
-        **params[args.stage_name + "_distributions"][distribution],
-    }
     logging.info(params)
 
     return params

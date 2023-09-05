@@ -40,7 +40,6 @@ def fit_distribution(
     **kwds,
 ):
     set_seed(seed)
-    print("start debug")
     model.compile(optimizer=tf.optimizers.Adam(learning_rate=learning_rate), loss=loss)
 
     callbacks = [
