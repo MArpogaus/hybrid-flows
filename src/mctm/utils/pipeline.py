@@ -33,13 +33,13 @@ class doPlotData(Protocol):
         pass
 
 
-class doPlotSamples(Protocol):
-    def __call__(self, X: Any, X_: Any) -> "Figure":
+class doPreprocessDataset(Protocol):
+    def __call__(self, X: Any, Y: Any, model: Any) -> "dict":
         pass
 
 
-class doPreprocessDataset(Protocol):
-    def __call__(self, X: Any, Y: Any, model: Any) -> "dict":
+class doAfterFit(Protocol):
+    def __call__(self, model: Any, x: Any, y: Any, **kwds: dict) -> None:
         pass
 
 
@@ -57,7 +57,7 @@ def pipeline(
     preprocess_dataset: doPreprocessDataset,
     fit_kwds: dict,
     plot_data: doPlotData,
-    plot_samples: doPlotSamples,
+    after_fit_hook: doAfterFit,
 ):
     """
     get_dataset is callback because we have no common
@@ -81,6 +81,7 @@ def pipeline(
         mlflow.autolog()
         mlflow.log_dict(call_args, "params.yaml")
         log_cfg(call_args)
+
         if plot_data:
             fig = plot_data(*data)
             fig.savefig(os.path.join(results_path, "dataset.pdf"))
@@ -98,12 +99,8 @@ def pipeline(
             **fit_kwds,
         )
 
-        if plot_samples:
-            fig = plot_samples(
-                model(preprocessed["x"]), preprocessed["y"].numpy(), seed=1
-            )
-            fig.savefig(os.path.join(results_path, "samples.pdf"))
-
+        if after_fit_hook:
+            after_fit_hook(model, **preprocessed)
         min_idx = np.argmin(hist.history["val_loss"])
         min_loss = hist.history["loss"][min_idx]
         min_val_loss = hist.history["val_loss"][min_idx]

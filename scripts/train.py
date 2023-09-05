@@ -1,6 +1,7 @@
 # IMPORT PACKAGES #############################################################
 import argparse
 import logging
+import os
 from functools import partial
 from shutil import which
 
@@ -13,11 +14,25 @@ from mctm.utils.pipeline import pipeline, prepare_pipeline
 from mctm.utils.visualisation import (
     get_figsize,
     plot_2d_data,
+    plot_flow,
     plot_samples,
     setup_latex,
 )
 
 __LOGGER__ = logging.getLogger(__name__)
+
+
+def get_after_fit_hook(results_path, is_hybrid, **kwds):
+    def plot_after_fit(model, x, y):
+        fig = plot_samples(model(x), y.numpy(), seed=1, **kwds)
+        fig.savefig(os.path.join(results_path, "samples.pdf"))
+        if is_hybrid:
+            fig1, fig2, fig3 = plot_flow(model(x), x, y, seed=1, **kwds)
+            fig1.savefig(os.path.join(results_path, "data.pdf"))
+            fig2.savefig(os.path.join(results_path, "z1.pdf"))
+            fig3.savefig(os.path.join(results_path, "z2.pdf"))
+
+    return plot_after_fit
 
 
 def main(args):
@@ -78,7 +93,7 @@ def main(args):
     fig_width = get_figsize(params["textwidth"], fraction=0.5)[0]
 
     # actually execute training
-    pipeline(
+    hist, model, preprocessed = pipeline(
         experiment_name=experiment_name,
         run_name=run_name,
         results_path=args.results_path,
@@ -94,7 +109,11 @@ def main(args):
         },
         fit_kwds=fit_kwds,
         plot_data=partial(plot_2d_data, figsize=(fig_width, fig_width)),
-        plot_samples=partial(plot_samples, height=fig_width),
+        after_fit_hook=get_after_fit_hook(
+            results_path=args.results_path,
+            is_hybrid=get_model == HybridDenistyRegressionModel,
+            height=fig_width,
+        ),
     )
 
 
