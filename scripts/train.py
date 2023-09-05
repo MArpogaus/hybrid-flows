@@ -93,7 +93,7 @@ def main(args):
     fig_width = get_figsize(params["textwidth"], fraction=0.5)[0]
 
     # actually execute training
-    hist, model, preprocessed = pipeline(
+    pipeline(
         experiment_name=experiment_name,
         run_name=run_name,
         results_path=args.results_path,
