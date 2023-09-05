@@ -13,12 +13,39 @@
 
 import time
 
+import numpy as np
 import pandas as pd
 import seaborn as sns
+import tensorflow as tf
 from matplotlib import pyplot as plt
 
 
 # PRIVATE FUNCTIONS ############################################################
+def __joint_kde_plot__(data, x, y, **kwds):
+    g = sns.jointplot(
+        data=data,
+        x=x,
+        y=y,
+        hue="source",
+        alpha=0.5,
+        s=10,
+        xlim=(data[x].min() - 0.1, data[x].max() + 0.1),
+        ylim=(data[y].min() - 0.1, data[y].max() + 0.1),
+        **kwds,
+    )
+    g.plot_joint(sns.kdeplot, legend=False)
+    sns.move_legend(
+        g.ax_joint,
+        "upper left",
+        bbox_to_anchor=(0.93, 1.25),
+        title=None,
+        frameon=False,
+    )
+
+    return g.figure
+
+
+# PUBLIC FUNCTIONS #############################################################
 def get_figsize(width, fraction=1, subplots=(1, 1)):
     """Set figure dimensions to avoid scaling in LaTeX.
 
@@ -59,7 +86,6 @@ def get_figsize(width, fraction=1, subplots=(1, 1)):
     return (fig_width_in, fig_height_in)
 
 
-# PUBLIC FUNCTIONS #############################################################
 def setup_latex(fontsize=10):
     tex_fonts = {
         # Use LaTeX to write all text
@@ -115,26 +141,35 @@ def plot_samples(dist, data, seed=1, **kwds):
     df2 = df2.assign(source="model")
 
     df = pd.concat([df1, df2])
+    return __joint_kde_plot__(data=df, x="x1", y="x2", **kwds)
 
-    # sns.jointplot(data=df, x='x1', y='x2', hue='source', kind='kde')
-    g = sns.jointplot(
-        data=df,
-        x="x1",
-        y="x2",
-        hue="source",
-        alpha=0.5,
-        s=10,
-        xlim=(data[..., 0].min() - 0.1, data[..., 0].max() + 0.1),
-        ylim=(data[..., 1].min() - 0.1, data[..., 1].max() + 0.1),
-        **kwds,
-    )
-    g.plot_joint(sns.kdeplot, legend=False)
-    sns.move_legend(
-        g.ax_joint,
-        "upper left",
-        bbox_to_anchor=(0.93, 1.25),
-        title=None,
-        frameon=False,
-    )
 
-    return g.figure
+def plot_flow(dist, x, y, seed=1, **kwds):
+    # forward flow (bnf in inverted)
+    y = tf.convert_to_tensor(y, dtype=tf.float32)
+    z1 = dist.bijector.inverse(y)
+    z2 = dist.distribution.bijector.inverse(z1)
+    df_inv = pd.DataFrame(
+        np.concatenate([y, z1, z2], 1), columns=["y1", "y2", "z11", "z12", "z21", "z22"]
+    ).assign(label=x, source="data")
+
+    # inverse flow
+    z2 = dist.distribution.distribution.sample(y.shape[0], seed=seed)
+    z1 = dist.distribution.bijector.forward(z2)
+    yy = dist.bijector.forward(z1)
+    df_fwd = pd.DataFrame(
+        np.concatenate([yy, z1, z2], 1),
+        columns=["y1", "y2", "z11", "z12", "z21", "z22"],
+    ).assign(label=x, source="model")
+    df = pd.concat((df_inv, df_fwd))
+
+    # plot joint
+    fig1 = __joint_kde_plot__(data=df, x="y1", y="y2", **kwds)
+
+    # plot copula
+    fig2 = __joint_kde_plot__(data=df, x="z11", y="z12", **kwds)
+
+    # plot base
+    fig3 = __joint_kde_plot__(data=df, x="z21", y="z22", **kwds)
+
+    return fig1, fig2, fig3
