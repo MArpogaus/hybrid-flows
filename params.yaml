@@ -123,7 +123,7 @@ unconditional_benchmark_distributions:
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.01
-      lr_patience: 500
+      lr_patience: 50
       reduce_lr_on_plateau: true
       early_stopping: true
       verbose: true
@@ -139,7 +139,7 @@ unconditional_benchmark_distributions:
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.01
-      lr_patience: 500
+      lr_patience: 50
       reduce_lr_on_plateau: true
       early_stopping: true
       verbose: true
@@ -157,7 +157,7 @@ unconditional_benchmark_distributions:
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.001
-      lr_patience: 100
+      lr_patience: 50
       reduce_lr_on_plateau: true
       early_stopping: true
       verbose: true
@@ -178,7 +178,7 @@ unconditional_benchmark_distributions:
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.001
-      lr_patience: 100
+      lr_patience: 50
       reduce_lr_on_plateau: true
       early_stopping: true
       verbose: true
