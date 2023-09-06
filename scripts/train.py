@@ -45,7 +45,9 @@ def main(args):
     dataset = args.dataset
     dataset_kwds = params["datasets"][dataset]
     distribution = args.distribution
-    distribution_params = params[args.stage_name + "_distributions"][distribution]
+    distribution_params = params[args.stage_name + "_distributions"][distribution][
+        dataset + "_dataset"
+    ]
     distribution_kwds = distribution_params["distribution_kwds"]
     fit_kwds = distribution_params["fit_kwds"]
     parameter_kwds = distribution_params["parameter_kwds"]
