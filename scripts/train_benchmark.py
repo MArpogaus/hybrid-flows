@@ -46,10 +46,14 @@ def main(args):
         preprocess_dataset=lambda data, model: {
             "x": tf.ones_like(data[0], dtype=model.dtype),
             "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
+            "validation_data": (
+                tf.ones_like(data[1], dtype=model.dtype),
+                tf.convert_to_tensor(data[1], dtype=model.dtype),
+            ),
         },
         fit_kwds=fit_kwds,
         plot_data=None,
-        plot_samples=None,
+        after_fit_hook=None,
     )
 
 

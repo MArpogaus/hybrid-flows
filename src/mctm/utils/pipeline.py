@@ -1,6 +1,6 @@
+# IMPORT MODULES ###############################################################
 import logging
 import os
-import shutil
 import sys
 from typing import Any, Protocol
 
@@ -12,9 +12,12 @@ from matplotlib.pyplot import Figure
 
 from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
 from mctm.utils.tensorflow import fit_distribution, set_seed
-from mctm.utils.visualisation import setup_latex
+
+# MODULE GLOBAL OBJECTS ########################################################
+__LOGGER__ = logging.getLogger(__name__)
 
 
+# CLASS DEFINITIONS ############################################################
 class getDataset(Protocol):
     def __call__(self) -> "tuple[Any, Any]":
         pass
@@ -30,16 +33,17 @@ class doPlotData(Protocol):
         pass
 
 
-class doPlotSamples(Protocol):
-    def __call__(self, X: Any, X_: Any) -> "Figure":
-        pass
-
-
 class doPreprocessDataset(Protocol):
     def __call__(self, X: Any, Y: Any, model: Any) -> "dict":
         pass
 
 
+class doAfterFit(Protocol):
+    def __call__(self, model: Any, x: Any, y: Any, **kwds: dict) -> None:
+        pass
+
+
+# PUBLIC FUNCTIONS #############################################################
 def pipeline(
     experiment_name: str,
     run_name: str,
@@ -53,7 +57,7 @@ def pipeline(
     preprocess_dataset: doPreprocessDataset,
     fit_kwds: dict,
     plot_data: doPlotData,
-    plot_samples: doPlotSamples,
+    after_fit_hook: doAfterFit,
 ):
     """
     get_dataset is callback because we have no common
@@ -71,21 +75,16 @@ def pipeline(
 
     # Evaluate Model
     mlflow.set_experiment(experiment_name)
-    logging.info(f"Logging to MLFlow Experiment: {experiment_name}")
-    if shutil.which("latex"):
-        logging.info("found latex")
-        setup_latex(fontsize=10)
-    else:
-        logging.info("latex not found")
-
+    __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
     with start_run_with_exception_logging(run_name=run_name):
         # Auto log all MLflow entities
         mlflow.autolog()
         mlflow.log_dict(call_args, "params.yaml")
         log_cfg(call_args)
+
         if plot_data:
             fig = plot_data(*data)
-            fig.savefig(os.path.join(results_path, "dataset.svg"))
+            fig.savefig(os.path.join(results_path, "dataset.pdf"))
 
         if preprocess_dataset:
             preprocessed = preprocess_dataset(data, model)
@@ -100,20 +99,16 @@ def pipeline(
             **fit_kwds,
         )
 
-        if plot_samples:
-            fig = plot_samples(
-                model(preprocessed["x"]), preprocessed["y"].numpy(), seed=1
-            )
-            fig.savefig(os.path.join(results_path, "samples.svg"))
-
+        if after_fit_hook:
+            after_fit_hook(model, **preprocessed)
         min_idx = np.argmin(hist.history["val_loss"])
         min_loss = hist.history["loss"][min_idx]
         min_val_loss = hist.history["val_loss"][min_idx]
         epochs = len(hist.history["loss"])
-        logging.info(f"training finished after {epochs} epochs.")
-        logging.info(f"best train loss: {min_loss}")
-        logging.info(f"best validation loss: {min_val_loss}")
-        logging.info(f"minimum reached after {min_idx} epochs")
+        __LOGGER__.info("training finished after %s epochs.", epochs)
+        __LOGGER__.info("best train loss: %s", min_loss)
+        __LOGGER__.info("best validation loss: %s", min_val_loss)
+        __LOGGER__.info("minimum reached after %s epochs", min_idx)
 
         mlflow.log_metric("best_epoch", min_idx)
         mlflow.log_metric("final_epoch", epochs)
@@ -143,16 +138,16 @@ def prepare_pipeline(args):
         ]
     logging.basicConfig(
         level=args.log_level.upper(),
-        format="%(asctime)s [%(levelname)s] %(message)s",
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
         handlers=handlers,
     )
 
-    logging.debug(f"meta params: {vars(args)}")
+    __LOGGER__.info("CLI arguments: %s", vars(args))
 
     # load params
     params = dvc.api.params_show(
         stages=f"{args.stage_name}@{args.distribution}-{args.dataset}"
     )
-    logging.info(params)
+    __LOGGER__.info("DVC params: %s", params)
 
     return params

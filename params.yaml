@@ -1,5 +1,6 @@
 log-level: info
 seed: 1
+textwidth: 487.8225
 
 datasets:
   moons:
@@ -9,6 +10,7 @@ datasets:
   circles:
     n_samples: 2000
     noise: 0.05
+    factor: 0.5
     scale: true
 
 benchmark_datasets:
@@ -16,6 +18,7 @@ benchmark_datasets:
 - HEPMASS
 - MINIBOONE
 - BSDS300
+
 unconditional_distributions:
   bernstein_flow:
     distribution_kwds: &distribution_kwds
@@ -28,7 +31,7 @@ unconditional_distributions:
       conditional: false
       dtype: float32
     fit_kwds:
-      epochs: 1
+      epochs: 10000
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.01
@@ -44,7 +47,7 @@ unconditional_distributions:
       conditional: false
       dtype: float32
     fit_kwds:
-      epochs: 1
+      epochs: 10000
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.01
@@ -60,7 +63,7 @@ unconditional_distributions:
       conditional: false
       dtype: float32
     fit_kwds:
-      epochs: 1
+      epochs: 10000
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.01
@@ -78,7 +81,28 @@ unconditional_distributions:
       - 16
       activation: relu
     fit_kwds:
-      epochs: 1
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.001
+      lr_patience: 100
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+  coupling_bernstein_flow:
+    distribution_kwds:
+      <<: *distribution_kwds
+      coupling_layers: 2
+    parameter_kwds:
+      hidden_units:
+      - 16
+      - 16
+      activation: relu
+      batch_norm: false
+    fit_kwds:
+      epochs: 10000
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.001
@@ -95,11 +119,11 @@ unconditional_benchmark_distributions:
       conditional: false
       dtype: float32
     fit_kwds:
-      epochs: 1
+      epochs: 10000
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.01
-      lr_patience: 500
+      lr_patience: 50
       reduce_lr_on_plateau: true
       early_stopping: true
       verbose: true
@@ -111,11 +135,11 @@ unconditional_benchmark_distributions:
       conditional: false
       dtype: float32
     fit_kwds:
-      epochs: 1
+      epochs: 10000
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.01
-      lr_patience: 500
+      lr_patience: 50
       reduce_lr_on_plateau: true
       early_stopping: true
       verbose: true
@@ -129,11 +153,32 @@ unconditional_benchmark_distributions:
       - 16
       activation: relu
     fit_kwds:
-      epochs: 1
+      epochs: 10000
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.001
-      lr_patience: 100
+      lr_patience: 50
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+  coupling_bernstein_flow:
+    distribution_kwds:
+      <<: *distribution_kwds
+      coupling_layers: 2
+    parameter_kwds:
+      hidden_units:
+      - 16
+      - 16
+      activation: relu
+      batch_norm: false
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.001
+      lr_patience: 50
       reduce_lr_on_plateau: true
       early_stopping: true
       verbose: true
@@ -151,7 +196,7 @@ conditional_distributions:
       - 16
       input_shape: 1
     fit_kwds:
-      epochs: 1
+      epochs: 10000
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.01
@@ -172,7 +217,7 @@ conditional_distributions:
       - 16
       input_shape: 1
     fit_kwds:
-      epochs: 1
+      epochs: 10000
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.01
@@ -193,7 +238,7 @@ conditional_distributions:
       - 16
       input_shape: 1
     fit_kwds:
-      epochs: 1
+      epochs: 10000
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.01
@@ -214,7 +259,7 @@ conditional_distributions:
       # conditional_input_layers='first_layer',
       conditional_event_shape: 1
     fit_kwds:
-      epochs: 1
+      epochs: 10000
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.001
@@ -224,8 +269,55 @@ conditional_distributions:
       verbose: true
       monitor: val_loss
 
+  coupling_bernstein_flow:
+    distribution_kwds:
+      <<: *distribution_kwds
+      coupling_layers: 2
+    parameter_kwds:
+      hidden_units:
+      - 16
+      - 16
+      activation: relu
+      batch_norm: false,
+      conditional: True,
+      conditional_event_shape: 1
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.001
+      lr_patience: 100
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
 
 unconditional_hybrid_distributions:
+  # masked_autoregressive_bernstein_flow:
+  #   distribution_kwds: *distribution_kwds
+  #   freeze_base_model: false
+  #   base_checkpoint_path: false
+  #   parameter_kwds:
+  #     hidden_units:
+  #     - 16
+  #     - 16
+  #     activation: relu
+  #   base_distribution: bernstein_flow
+  #   base_distribution_kwds: *distribution_kwds
+  #   base_parameter_kwds:
+  #     conditional: false
+  #     dtype: float32
+  #   fit_kwds:
+  #     epochs: 10000
+  #     validation_split: 0.1
+  #     batch_size: 512
+  #     learning_rate: 0.01
+  #     lr_patience: 500
+  #     reduce_lr_on_plateau: true
+  #     early_stopping: true
+  #     verbose: true
+  #     monitor: val_loss
+
   coupling_bernstein_flow:
     distribution_kwds:
       <<: *distribution_kwds
@@ -233,8 +325,6 @@ unconditional_hybrid_distributions:
       order: 100
       low: 0
       high: 1
-      smooth_bounds: true
-      allow_flexible_bounds: true
     freeze_base_model: false
     base_checkpoint_path: false
     parameter_kwds:
@@ -249,7 +339,7 @@ unconditional_hybrid_distributions:
       conditional: false
       dtype: float32
     fit_kwds:
-      epochs: 1
+      epochs: 10000
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.01
@@ -260,6 +350,31 @@ unconditional_hybrid_distributions:
       monitor: val_loss
 
 unconditional_hybrid_pre_trained_distributions:
+  # masked_autoregressive_bernstein_flow:
+  #   distribution_kwds: *distribution_kwds
+  #   freeze_base_model: true
+  #   base_checkpoint_path: unconditional_bernstein_flow
+  #   parameter_kwds:
+  #     hidden_units:
+  #     - 16
+  #     - 16
+  #     activation: relu
+  #   base_distribution: bernstein_flow
+  #   base_distribution_kwds: *distribution_kwds
+  #   base_parameter_kwds:
+  #     conditional: false
+  #     dtype: float32
+  #   fit_kwds:
+  #     epochs: 10000
+  #     validation_split: 0.1
+  #     batch_size: 512
+  #     learning_rate: 0.01
+  #     lr_patience: 500
+  #     reduce_lr_on_plateau: true
+  #     early_stopping: true
+  #     verbose: true
+  #     monitor: val_loss
+
   coupling_bernstein_flow:
     distribution_kwds:
       <<: *distribution_kwds
@@ -267,8 +382,6 @@ unconditional_hybrid_pre_trained_distributions:
       order: 100
       low: 0
       high: 1
-      smooth_bounds: true
-      allow_flexible_bounds: true
     freeze_base_model: true
     base_checkpoint_path: unconditional_bernstein_flow
     parameter_kwds:
@@ -283,7 +396,7 @@ unconditional_hybrid_pre_trained_distributions:
       conditional: false
       dtype: float32
     fit_kwds:
-      epochs: 1
+      epochs: 10000
       validation_split: 0.1
       batch_size: 512
       learning_rate: 0.01

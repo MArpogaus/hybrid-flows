@@ -7,6 +7,7 @@ stages:
     params:
     - log-level
     - seed
+    - textwidth
     - datasets.${item.dataset}*
     - unconditional_distributions.${item.distribution}*
     deps:
@@ -47,6 +48,7 @@ stages:
     params:
     - log-level
     - seed
+    - textwidth
     - datasets.${item.dataset}*
     - conditional_distributions.${item.distribution}*
     deps:
@@ -63,14 +65,15 @@ stages:
     matrix:
       distribution: ${unconditional_hybrid_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train_hybrid.py --log-level ${log-level} --log-file results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-${item.dataset} unconditional_hybrid ${item.distribution} ${item.dataset} results/unconditional_hybrid_${item.distribution}_${item.dataset}/
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-${item.dataset} unconditional_hybrid ${item.distribution} ${item.dataset} results/unconditional_hybrid_${item.distribution}_${item.dataset}/
     params:
     - log-level
     - seed
+    - textwidth
     - datasets.${item.dataset}*
     - unconditional_hybrid_distributions.${item.distribution}*
     deps:
-    - scripts/train_hybrid.py
+    - scripts/train.py
     - pyproject.toml
     - src/mctm
     metrics:
@@ -83,14 +86,15 @@ stages:
     matrix:
       distribution: ${unconditional_hybrid_pre_trained_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train_hybrid.py --log-level ${log-level} --log-file results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-pre-trained-${item.dataset} unconditional_hybrid_pre_trained ${item.distribution} ${item.dataset} results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-pre-trained-${item.dataset} unconditional_hybrid_pre_trained ${item.distribution} ${item.dataset} results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/
     params:
     - log-level
     - seed
+    - textwidth
     - datasets.${item.dataset}*
     - unconditional_hybrid_pre_trained_distributions.${item.distribution}*
     deps:
-    - scripts/train_hybrid.py
+    - scripts/train.py
     - pyproject.toml
     - src/mctm
     # - results/unconditional_bernstein_flow_${item.dataset}/mcp
