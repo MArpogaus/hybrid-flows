@@ -63,7 +63,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--log-level", type=str, default="INFO", help="logging severaty level"
     )
-    parser.add_argument("--test-mode", action="store_true", help="activate test-mode")
+    parser.add_argument(
+        "--test-mode", default=False, type=bool, help="activate test-mode"
+    )
     parser.add_argument(
         "--experiment-name", type=str, help="MLFlow experiment name", required=True
     )

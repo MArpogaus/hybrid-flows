@@ -29,8 +29,8 @@ def __joint_kde_plot__(data, x, y, **kwds):
         hue="source",
         alpha=0.5,
         s=10,
-        xlim=(data[x].min() - 0.1, data[x].max() + 0.1),
-        ylim=(data[y].min() - 0.1, data[y].max() + 0.1),
+        xlim=(data[x].quantile(q=0.05) - 0.1, data[x].quantile(q=0.95) + 0.1),
+        ylim=(data[y].quantile(q=0.05) - 0.1, data[y].quantile(q=0.95) + 0.1),
         **kwds,
     )
     g.plot_joint(sns.kdeplot, legend=False)

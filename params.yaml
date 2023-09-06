@@ -1,7 +1,7 @@
 log-level: info
 seed: 1
 textwidth: 487.8225
-
+testmode: true
 datasets:
   moons:
     n_samples: 2000
@@ -13,11 +13,13 @@ datasets:
     factor: 0.5
     scale: true
 
-benchmark_datasets:
-- POWER
-- HEPMASS
-- MINIBOONE
-- BSDS300
+# benchmark_datasets:
+# - POWER
+# - HEPMASS
+# - MINIBOONE
+# - BSDS300
+
+benchmark_datasets: []
 
 unconditional_distributions:
   bernstein_flow:

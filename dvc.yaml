@@ -3,7 +3,7 @@ stages:
     matrix:
       distribution: ${unconditional_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-${item.dataset} unconditional ${item.distribution} ${item.dataset} results/unconditional_${item.distribution}_${item.dataset}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-${item.dataset} unconditional ${item.distribution} ${item.dataset} results/unconditional_${item.distribution}_${item.dataset} --test-mode=${testmode}
     params:
     - log-level
     - seed
@@ -17,14 +17,14 @@ stages:
     metrics:
     - results/unconditional_${item.distribution}_${item.dataset}/metrics.yaml
     outs:
-    # - results/unconditional_${item.distribution}_${item.dataset}/mcp
+    - results/unconditional_${item.distribution}_${item.dataset}/mcp
     - results/unconditional_${item.distribution}_${item.dataset}/train.log
 
   unconditional_benchmark:
     matrix:
       distribution: ${unconditional_benchmark_distributions}
       dataset: ${benchmark_datasets}
-    cmd: python scripts/train_benchmark.py --log-level ${log-level} --log-file results/unconditional_benchmark_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-becnhmark-${item.dataset} unconditional_benchmark ${item.distribution} ${item.dataset} results/unconditional_benchmark_${item.distribution}_${item.dataset}
+    cmd: python scripts/train_benchmark.py --log-level ${log-level} --log-file results/unconditional_benchmark_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-becnhmark-${item.dataset} unconditional_benchmark ${item.distribution} ${item.dataset} results/unconditional_benchmark_${item.distribution}_${item.dataset} --test-mode=${testmode}
     params:
     - log-level
     - seed
@@ -37,14 +37,14 @@ stages:
     metrics:
     - results/unconditional_benchmark_${item.distribution}_${item.dataset}/metrics.yaml
     outs:
-    # - results/unconditional_benchmark_${item.distribution}_${item.dataset}/mcp
+    - results/unconditional_benchmark_${item.distribution}_${item.dataset}/mcp
     - results/unconditional_benchmark_${item.distribution}_${item.dataset}/train.log
 
   conditional:
     matrix:
       distribution: ${conditional_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file results/conditional_${item.distribution}_${item.dataset}/train.log --experiment-name conditional-${item.dataset} conditional ${item.distribution} ${item.dataset} results/conditional_${item.distribution}_${item.dataset}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/conditional_${item.distribution}_${item.dataset}/train.log --experiment-name conditional-${item.dataset} conditional ${item.distribution} ${item.dataset} results/conditional_${item.distribution}_${item.dataset} --test-mode=${testmode}
     params:
     - log-level
     - seed
@@ -58,14 +58,14 @@ stages:
     metrics:
     - results/conditional_${item.distribution}_${item.dataset}/metrics.yaml
     outs:
-    # - results/conditional_${item.distribution}_${item.dataset}/mcp
+    - results/conditional_${item.distribution}_${item.dataset}/mcp
     - results/conditional_${item.distribution}_${item.dataset}/train.log
 
   unconditional_hybrid:
     matrix:
       distribution: ${unconditional_hybrid_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-${item.dataset} unconditional_hybrid ${item.distribution} ${item.dataset} results/unconditional_hybrid_${item.distribution}_${item.dataset}/
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-${item.dataset} unconditional_hybrid ${item.distribution} ${item.dataset} results/unconditional_hybrid_${item.distribution}_${item.dataset}/  --test-mode=${testmode}
     params:
     - log-level
     - seed
@@ -79,14 +79,14 @@ stages:
     metrics:
     - results/unconditional_hybrid_${item.distribution}_${item.dataset}/metrics.yaml
     outs:
-    # - results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log
     - results/unconditional_hybrid_${item.distribution}_${item.dataset}/mcp
 
   unconditional_hybrid_pre_trained:
     matrix:
       distribution: ${unconditional_hybrid_pre_trained_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-pre-trained-${item.dataset} unconditional_hybrid_pre_trained ${item.distribution} ${item.dataset} results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-pre-trained-${item.dataset} unconditional_hybrid_pre_trained ${item.distribution} ${item.dataset} results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/  --test-mode=${testmode}
     params:
     - log-level
     - seed
@@ -97,9 +97,9 @@ stages:
     - scripts/train.py
     - pyproject.toml
     - src/mctm
-    # - results/unconditional_bernstein_flow_${item.dataset}/mcp
+    - results/unconditional_bernstein_flow_${item.dataset}/mcp
     metrics:
     - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/metrics.yaml
     outs:
     - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/train.log
-    # - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/mcp
+    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/mcp
