@@ -5,6 +5,7 @@ import tensorflow as tf
 
 from mctm.data.benchmark import get_dataset
 from mctm.models import DensityRegressionModel
+from mctm.utils import str2bool
 from mctm.utils.pipeline import pipeline, prepare_pipeline
 
 
@@ -64,7 +65,7 @@ if __name__ == "__main__":
         "--log-level", type=str, default="INFO", help="logging severaty level"
     )
     parser.add_argument(
-        "--test-mode", default=False, type=bool, help="activate test-mode"
+        "--test-mode", default=False, type=str2bool, help="activate test-mode"
     )
     parser.add_argument(
         "--experiment-name", type=str, help="MLFlow experiment name", required=True
