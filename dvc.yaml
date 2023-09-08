@@ -19,6 +19,8 @@ stages:
     outs:
     - results/unconditional_${item.distribution}_${item.dataset}/mcp
     - results/unconditional_${item.distribution}_${item.dataset}/train.log
+    - results/unconditional_${item.distribution}_${item.dataset}/dataset.pdf
+    - results/unconditional_${item.distribution}_${item.dataset}/samples.pdf
 
   unconditional_benchmark:
     matrix:
@@ -60,6 +62,8 @@ stages:
     outs:
     - results/conditional_${item.distribution}_${item.dataset}/mcp
     - results/conditional_${item.distribution}_${item.dataset}/train.log
+    - results/conditional_${item.distribution}_${item.dataset}/dataset.pdf
+    - results/conditional_${item.distribution}_${item.dataset}/samples.pdf
 
   unconditional_hybrid:
     matrix:
@@ -81,6 +85,11 @@ stages:
     outs:
     - results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log
     - results/unconditional_hybrid_${item.distribution}_${item.dataset}/mcp
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/dataset.pdf
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/data.pdf
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/z1.pdf
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/z2.pdf
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/samples.pdf
 
   unconditional_hybrid_pre_trained:
     matrix:
@@ -103,3 +112,8 @@ stages:
     outs:
     - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/train.log
     - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/mcp
+    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/dataset.pdf
+    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/data.pdf
+    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/z1.pdf
+    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/z2.pdf
+    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/samples.pdf
