@@ -10,6 +10,7 @@ from tensorflow_probability import distributions as tfd
 
 from mctm.data.sklearn_datasets import get_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
+from mctm.utils import str2bool
 from mctm.utils.pipeline import pipeline, prepare_pipeline
 from mctm.utils.visualisation import (
     get_figsize,
@@ -45,7 +46,9 @@ def main(args):
     dataset = args.dataset
     dataset_kwds = params["datasets"][dataset]
     distribution = args.distribution
-    distribution_params = params[args.stage_name + "_distributions"][distribution]
+    distribution_params = params[args.stage_name + "_distributions"][distribution][
+        dataset + "_dataset"
+    ]
     distribution_kwds = distribution_params["distribution_kwds"]
     fit_kwds = distribution_params["fit_kwds"]
     parameter_kwds = distribution_params["parameter_kwds"]
@@ -123,7 +126,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--log-level", type=str, default="INFO", help="logging severaty level"
     )
-    parser.add_argument("--test-mode", action="store_true", help="activate test-mode")
+    parser.add_argument(
+        "--test-mode", default=False, type=str2bool, help="activate test-mode"
+    )
     parser.add_argument(
         "--experiment-name", type=str, help="MLFlow experiment name", required=True
     )

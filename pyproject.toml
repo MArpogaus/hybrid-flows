@@ -31,7 +31,7 @@ develop = [
   'tox'
 ]
 train = [
-  "dvc==3.15.*",
+  "dvc==3.18.*",
   "mlflow==2.5.*",
   "seaborn==0.12.*"
 ]
