@@ -30,7 +30,7 @@ stages:
     params:
     - log-level
     - seed
-    - benchmark_datasets
+    - benchmark_datasets.${item.dataset}*
     - unconditional_benchmark_distributions.${item.distribution}*
     deps:
     - scripts/train.py

@@ -347,3 +347,8 @@ if __name__ == "__main__":
             print(f"{d.max()=}")
             print(f"{d.std()=}")
             print(f"{d.mean()=}")
+
+            shift = d.min(0).tolist()
+            scale = (1 / (d.max(0) - d.min(0))).tolist()
+            print(f"{shift=}")
+            print(f"{scale=}")

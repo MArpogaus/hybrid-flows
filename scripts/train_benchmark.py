@@ -16,10 +16,15 @@ def main(args):
 
     dataset = args.dataset
     distribution = args.distribution
-    distribution_params = params[args.stage_name + "_distributions"][distribution]
+    distribution_params = params[args.stage_name + "_distributions"][distribution][
+        dataset
+    ]
     distribution_kwds = distribution_params["distribution_kwds"]
     fit_kwds = distribution_params["fit_kwds"]
     parameter_kwds = distribution_params["parameter_kwds"]
+    dataset_kwds = params["benchmark_datasets"][dataset]
+
+    distribution_kwds.update(dataset_kwds)
 
     experiment_name = args.experiment_name
     run_name = "_".join((args.stage_name, distribution))
