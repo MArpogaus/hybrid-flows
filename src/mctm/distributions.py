@@ -35,18 +35,53 @@ def __DEFAULT_BASE_DISTRIBUTION_LAMBDA__(dims):
 
 
 # FUNCTIONS ####################################################################
+def __get_parametrized_flow__(
+    scale, shift, unconstrained_bernstein_coefficents, clip_to_bernstein_domain, **kwds
+):
+    thetas_constrain_fn = get_thetas_constrain_fn(**kwds)
+
+    bijectors = []
+
+    # f1: ŷ = a1(x)*(y - b1(x))
+    if shift:
+        shift = tf.convert_to_tensor(
+            shift, dtype=unconstrained_bernstein_coefficents.dtype, name="shift"
+        )[None, ...]
+        f1_shift = tfb.Shift(shift, name="f1_shift")
+        bijectors.append(f1_shift)
+
+    if scale:
+        scale = tf.convert_to_tensor(
+            scale, dtype=unconstrained_bernstein_coefficents.dtype, name="scale"
+        )[None, ...]
+        f1_scale = tfb.Scale(scale, name="f1_scale")
+        bijectors.append(f1_scale)
+
+    # clip to domain [0, 1]
+    if clip_to_bernstein_domain:
+        bijectors.append(tfb.Sigmoid(name="sigmoid"))
+
+    # f2: ẑ = Bernstein Polynomial
+    bernstein_coefficents = thetas_constrain_fn(unconstrained_bernstein_coefficents)
+    f2 = BernsteinBijectorLinearExtrapolate(bernstein_coefficents, name="bpoly")
+    bijectors.append(f2)
+
+    bijectors = list(reversed(bijectors))
+
+    return tfb.Invert(tfb.Chain(bijectors))
+
+
 def __get_bernstein_flow_lambda__(
     dims, order, base_distribution_lambda=__DEFAULT_BASE_DISTRIBUTION_LAMBDA__, **kwds
 ):
     pv_shape = [dims, order]
-    thetas_constrain_fn = get_thetas_constrain_fn(**kwds)
 
     def dist(pv):
-        thetas = thetas_constrain_fn(pv)
-
         return tfd.TransformedDistribution(
             distribution=base_distribution_lambda(dims),
-            bijector=tfb.Invert(BernsteinBijectorLinearExtrapolate(thetas=thetas)),
+            bijector=__get_parametrized_flow__(
+                unconstrained_bernstein_coefficents=pv, **kwds
+            ),
         )
 
     return dist, pv_shape
@@ -54,20 +89,22 @@ def __get_bernstein_flow_lambda__(
 
 def __get_multivariate_bernstein_flow_lambda__(dims, order, **kwds):
     pv_shape = [order * dims + np.sum(np.arange(dims + 1))]
-    thetas_constrain_fn = get_thetas_constrain_fn(**kwds)
 
     def dist(pv):
         bs = prefer_static.shape(pv)[:-1]
         shape = tf.concat((bs, [dims, order]), 0)
 
-        thetas = thetas_constrain_fn(tf.reshape(pv[..., : order * dims], shape))
+        unconstrained_bernstein_coeficents = tf.reshape(pv[..., : order * dims], shape)
         scale_tril = tfp.bijectors.FillScaleTriL()(pv[..., order * dims:])  # fmt: skip
 
         mv_normal = tfd.MultivariateNormalTriL(loc=0, scale_tril=scale_tril)
 
         return tfd.TransformedDistribution(
             distribution=mv_normal,
-            bijector=tfb.Invert(BernsteinBijectorLinearExtrapolate(thetas=thetas)),
+            bijector=__get_parametrized_flow__(
+                unconstrained_bernstein_coefficents=unconstrained_bernstein_coeficents,
+                **kwds,
+            ),
         )
 
     return dist, pv_shape
@@ -101,13 +138,14 @@ def __get_trainable_distribution__(
     return distribution_lambda, parameter_vector_lambda, trainable_parameters
 
 
-def __get_bijector_fn__(network, thetas_constrain_fn, **kwds):
+def __get_bijector_fn__(network, **flow_kwds):
     def bijector_fn(y, *arg, **kwds):
-        with tf.name_scope("bnf_made_bjector"):
+        with tf.name_scope("bnf_bjector"):
             pvector = network(y, **kwds)
-            thetas = thetas_constrain_fn(pvector)
 
-            return tfb.Invert(BernsteinBijectorLinearExtrapolate(thetas=thetas))
+            return __get_parametrized_flow__(
+                unconstrained_bernstein_coefficents=pvector, **flow_kwds
+            )
 
     return bijector_fn
 
@@ -130,11 +168,9 @@ def get_masked_autoregressive_bernstein_flow(
         parameter_shape, **parameter_kwds
     )
 
-    thetas_constrain_fn = get_thetas_constrain_fn(**distribution_kwds)
-
     def distribution_lambda(parameter_network):
         bijector_fn = __get_bijector_fn__(
-            network=parameter_network, thetas_constrain_fn=thetas_constrain_fn
+            network=parameter_network, **distribution_kwds
         )
 
         distribution = tfd.TransformedDistribution(
@@ -161,8 +197,6 @@ def get_coupling_bernstein_flow(
 
     parameter_shape = (dims // 2, order)
 
-    thetas_constrain_fn = get_thetas_constrain_fn(**distribution_kwds)
-
     parameter_networks = []
     trainable_variables = []
     for _ in range(coupling_layers):
@@ -186,7 +220,7 @@ def get_coupling_bernstein_flow(
             bijectors.append(
                 tfb.RealNVP(
                     num_masked=(dims // 2),
-                    bijector_fn=__get_bijector_fn__(network, thetas_constrain_fn),
+                    bijector_fn=__get_bijector_fn__(network, **distribution_kwds),
                 )
             )
             if coupling_layers % 2 != 0 and layer == (coupling_layers - 1):

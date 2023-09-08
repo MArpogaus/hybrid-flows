@@ -30,6 +30,9 @@ unconditional_distributions:
         high: 3
         smooth_bounds: true
         allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: false
         dtype: float32
