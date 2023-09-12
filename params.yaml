@@ -107,7 +107,7 @@ unconditional_distributions:
         validation_split: 0.1
         batch_size: 512
         learning_rate: 0.01
-        lr_patience: 500
+        lr_patience: 1000
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -121,8 +121,8 @@ unconditional_distributions:
         epochs: 10000
         validation_split: 0.1
         batch_size: 512
-        learning_rate: 0.005
-        lr_patience: 1000
+        learning_rate: 0.01
+        lr_patience: 500
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -740,7 +740,7 @@ unconditional_hybrid_pre_trained_distributions:
         validation_split: 0.1
         batch_size: 512
         learning_rate: 0.01
-        lr_patience: 1000
+        lr_patience: 500
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true

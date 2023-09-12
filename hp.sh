@@ -1,6 +1,6 @@
 #!/usr/sbin/bash
-set -euxo pipefail
-
+#set -euxo pipefail
+#set -e
 
 # TODO: how to read this from params? I have only found it provided in the python api as params_show
 declare -A models=(
@@ -71,23 +71,35 @@ export MLFLOW_TRACKING_URI=http://127.0.0.1:5000
 
 run_exp_with_id() {
     queue_id="$1"
+    # wait random in [0,10] to avoid simultaneous locking
+
+    sleep $(($RANDOM % 6)) # 5 statt 10
+
     # echo $queue_id
-    rm .dvc/tmp/lock || echo "lock not found"
-    dvc exp apply $queue_id
-    dvc exp run --temp
-    dvc queue remove $queue_id
+    # rm .dvc/tmp/lock || echo "lock not found"
+    dvc exp apply $queue_id && dvc exp run --temp && dvc queue remove $queue_id
 }
 
 # export to make available in subprocesses
 export -f run_exp_with_id
 
-status="$(dvc queue status | head -n-2 | tail -n+2)"
-ids=$(echo "$status" | sed -n 's/^\([^[:space:]]\+\).*/\1/p')
-ids=( "$ids" ) # list to array                                                                                                                                                                                                        │
+echo "executing experiments"
+while true; do
+  status="$(dvc queue status | head -n-2 | tail -n+2)"
+  status=$(echo "$status" | grep "Queued\|Failed")
+  ids=($(echo "$status" | sed -n 's/^\([^[:space:]]\+\).*/\1/p'))
 
-echo "queuing experiments"
+  if [[ "${#ids[@]}" -eq 0 ]]; then
+    break  # Exit the loop when ids array is empty
+  fi
 
-parallel --joblog my_joblog.log -j 5 --eta run_exp_with_id {} ::: "${ids[@]}"
+  #dvc queue start
+
+  #sleep 30
+
+  #parallel --joblog my_joblog.log -j 5 --eta run_exp_with_id {} ::: "${ids[@]}"
+done
+
 
 #dvc queue start -j 5 # NOTE: Possible race condition on lock > -j 1 leading to failed tasks, also worker not picking up new tasks
 # show progress every 30 minutes because it is time consuming
