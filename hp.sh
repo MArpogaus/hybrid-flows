@@ -4,11 +4,11 @@ set -euxo pipefail
 
 # TODO: how to read this from params? I have only found it provided in the python api as params_show
 declare -A models=(
-    [unconditional_distributions]="
-        bernstein_flow
-        masked_autoregressive_bernstein_flow
-        multivariate_bernstein_flow
-        multivariate_normal"
+    # [unconditional_distributions]="
+    #     bernstein_flow
+    #     masked_autoregressive_bernstein_flow
+    #     multivariate_bernstein_flow
+    #     multivariate_normal"
 
     # [conditional_distributions]="
     #     bernstein_flow
@@ -72,6 +72,7 @@ export MLFLOW_TRACKING_URI=http://127.0.0.1:5000
 run_exp_with_id() {
     queue_id="$1"
     # echo $queue_id
+    rm .dvc/tmp/lock || echo "lock not found"
     dvc exp apply $queue_id
     dvc exp run --temp
     dvc queue remove $queue_id
