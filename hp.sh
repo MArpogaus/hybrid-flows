@@ -49,6 +49,8 @@ get_params(){
 # clean dvc queue
 dvc queue stop --kill
 dvc queue remove --all
+rm -r results/ || echo "results not present" # to remove old artifacts
+rm my_joblog.log || echo "logfile not present" # used by parallel
 counter=0
 for stage in "${!models[@]}"; do
     distributions=${models[$stage]}
@@ -67,17 +69,24 @@ export MLFLOW_TRACKING_URI=http://127.0.0.1:5000
 
 # fix for queue not running all tasks as discussed inhttps://github.com/iterative/dvc/issues/8121
 
+run_exp_with_id() {
+    queue_id="$1"
+    # echo $queue_id
+    dvc exp apply $queue_id
+    dvc exp run --temp
+    dvc queue remove $queue_id
+}
+
+# export to make available in subprocesses
+export -f run_exp_with_id
 
 status="$(dvc queue status | head -n-2 | tail -n+2)"
 ids=$(echo "$status" | sed -n 's/^\([^[:space:]]\+\).*/\1/p')
-ids=( "$ids" )
+ids=( "$ids" ) # list to array                                                                                                                                                                                                        │
 
-# TODO: make function out of this and call with parallel as done in chatgpt
-dvc exp apply $queue_id
-dvc exp run --temp
-dvc queue remove $queue_id
+echo "queuing experiments"
 
-
+parallel --joblog my_joblog.log -j 5 --eta run_exp_with_id {} ::: "${ids[@]}"
 
 #dvc queue start -j 5 # NOTE: Possible race condition on lock > -j 1 leading to failed tasks, also worker not picking up new tasks
 # show progress every 30 minutes because it is time consuming

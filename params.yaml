@@ -121,8 +121,8 @@ unconditional_distributions:
         epochs: 10000
         validation_split: 0.1
         batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 500
+        learning_rate: 0.005
+        lr_patience: 1000
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -169,6 +169,11 @@ unconditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 2
+        order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
       parameter_kwds:
         hidden_units:
         - 16
@@ -189,6 +194,11 @@ unconditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 2
+        order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
       parameter_kwds:
         hidden_units:
         - 16
@@ -312,6 +322,11 @@ unconditional_benchmark_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 2
+        order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
       parameter_kwds:
         hidden_units:
         - 16
@@ -332,6 +347,11 @@ unconditional_benchmark_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 2
+        order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
       parameter_kwds:
         hidden_units:
         - 16
@@ -523,6 +543,11 @@ conditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 2
+        order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
       parameter_kwds:
         hidden_units:
         - 16
@@ -545,6 +570,11 @@ conditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 2
+        order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
       parameter_kwds:
         hidden_units:
         - 16
@@ -598,6 +628,8 @@ unconditional_hybrid_distributions:
         order: 100
         low: 0
         high: 1
+        smooth_bounds: true
+        allow_flexible_bounds: true
       freeze_base_model: false
       base_checkpoint_path: false
       parameter_kwds:
@@ -628,6 +660,8 @@ unconditional_hybrid_distributions:
         order: 100
         low: 0
         high: 1
+        smooth_bounds: true
+        allow_flexible_bounds: true
       freeze_base_model: false
       base_checkpoint_path: false
       parameter_kwds:
@@ -686,6 +720,8 @@ unconditional_hybrid_pre_trained_distributions:
         order: 100
         low: 0
         high: 1
+        smooth_bounds: true
+        allow_flexible_bounds: true
       freeze_base_model: true
       base_checkpoint_path: unconditional_bernstein_flow
       parameter_kwds:
@@ -704,7 +740,7 @@ unconditional_hybrid_pre_trained_distributions:
         validation_split: 0.1
         batch_size: 512
         learning_rate: 0.01
-        lr_patience: 500
+        lr_patience: 1000
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -716,6 +752,8 @@ unconditional_hybrid_pre_trained_distributions:
         order: 100
         low: 0
         high: 1
+        smooth_bounds: true
+        allow_flexible_bounds: true
       freeze_base_model: true
       base_checkpoint_path: unconditional_bernstein_flow
       parameter_kwds:
