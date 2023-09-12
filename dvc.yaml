@@ -9,7 +9,7 @@ stages:
     - seed
     - textwidth
     - datasets.${item.dataset}*
-    - unconditional_distributions.${item.distribution}*
+    - unconditional_distributions.${item.distribution}.${item.dataset}_dataset*
     deps:
     - scripts/train.py
     - pyproject.toml
@@ -31,7 +31,7 @@ stages:
     - log-level
     - seed
     - benchmark_datasets.${item.dataset}*
-    - unconditional_benchmark_distributions.${item.distribution}*
+    - unconditional_benchmark_distributions.${item.distribution}.${item.dataset}*
     deps:
     - scripts/train.py
     - pyproject.toml
@@ -75,7 +75,7 @@ stages:
     - seed
     - textwidth
     - datasets.${item.dataset}*
-    - unconditional_hybrid_distributions.${item.distribution}*
+    - unconditional_hybrid_distributions.${item.distribution}.${item.dataset}_dataset*
     deps:
     - scripts/train.py
     - pyproject.toml
@@ -101,7 +101,7 @@ stages:
     - seed
     - textwidth
     - datasets.${item.dataset}*
-    - unconditional_hybrid_pre_trained_distributions.${item.distribution}*
+    - unconditional_hybrid_pre_trained_distributions.${item.distribution}.${item.dataset}_dataset*
     deps:
     - scripts/train.py
     - pyproject.toml
