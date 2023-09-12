@@ -10,15 +10,15 @@ declare -A models=(
         multivariate_bernstein_flow
         multivariate_normal"
 
-    [conditional_distributions]="
-        bernstein_flow
-        multivariate_bernstein_flow
-        multivariate_normal
-        masked_autoregressive_bernstein_flow
-        coupling_bernstein_flow"
+    # [conditional_distributions]="
+    #     bernstein_flow
+    #     multivariate_bernstein_flow
+    #     multivariate_normal
+    #     masked_autoregressive_bernstein_flow
+    #     coupling_bernstein_flow"
 
-    [unconditional_hybrid_distributions]="
-        coupling_bernstein_flow"
+    # [unconditional_hybrid_distributions]="
+    #     coupling_bernstein_flow"
 
     [unconditional_hybrid_pre_trained_distributions]="
         coupling_bernstein_flow"
@@ -36,13 +36,13 @@ get_params(){
           -S $1.$2.$3.fit_kwds.learning_rate=0.05,0.01,0.005
           -S $1.$2.$3.fit_kwds.lr_patience=100,1000"
 
-    if [ "$2" != "multivariate_normal" ]; then
-        echo "-S $1.$2.$3.distribution_kwds.order=50,80"
-    fi
+    # if [ "$2" != "multivariate_normal" ]; then
+    #     echo "-S $1.$2.$3.distribution_kwds.order=50,80"
+    # fi
 
-    if [ "$2" != "bernstein_flow" ] && [ "$2" != "multivariate_bernstein_flow" ] && [ "$2" != "multivariate_normal" ]; then
-        echo "-S $1.$2.$3.parameter_kwds.hidden_units=[16,16],[16,16,16],[512,512]"
-    fi
+    # if [ "$2" != "bernstein_flow" ] && [ "$2" != "multivariate_bernstein_flow" ] && [ "$2" != "multivariate_normal" ]; then
+    #     echo "-S $1.$2.$3.parameter_kwds.hidden_units=[16,16],[16,16,16],[512,512]"
+    # fi
 
 }
 
@@ -64,6 +64,21 @@ done
 
 [ ! $(pgrep mlflow) ] && mlflow ui &
 export MLFLOW_TRACKING_URI=http://127.0.0.1:5000
-dvc queue start -j $counter # NOTE: Possible race condition on lock > -j 1 leading to failed tasks, also worker not picking up new tasks
+
+# fix for queue not running all tasks as discussed inhttps://github.com/iterative/dvc/issues/8121
+
+
+status="$(dvc queue status | head -n-2 | tail -n+2)"
+ids=$(echo "$status" | sed -n 's/^\([^[:space:]]\+\).*/\1/p')
+ids=( "$ids" )
+
+# TODO: make function out of this and call with parallel as done in chatgpt
+dvc exp apply $queue_id
+dvc exp run --temp
+dvc queue remove $queue_id
+
+
+
+#dvc queue start -j 5 # NOTE: Possible race condition on lock > -j 1 leading to failed tasks, also worker not picking up new tasks
 # show progress every 30 minutes because it is time consuming
-watch -n 1800 echo "Progress" $(dvc queue status | grep "Success\|Failed" | wc -l) "/" $(dvc queue status | wc -l) $(dvc queue status | grep Failed | wc -l) Failed
+#watch -n 1800 echo "Progress" $(dvc queue status | grep "Success\|Failed" | wc -l) "/" $(dvc queue status | wc -l) $(dvc queue status | grep Failed | wc -l) Failed
