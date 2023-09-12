@@ -73,13 +73,13 @@ run_exp_with_id() {
     queue_id="$1"
     # wait random in [0,10] to avoid simultaneous locking
 
-    sleep $(($RANDOM % 6)) # 5 statt 10
+    sleep $(($RANDOM % 11)) # 5 statt 10
 
     # echo $queue_id
     # rm .dvc/tmp/lock || echo "lock not found"
     git stash --include-untracked
     dvc exp apply $queue_id && dvc exp run --temp && dvc queue remove $queue_id
-    git stash pop
+    #git stash pop
 }
 
 # export to make available in subprocesses
@@ -99,7 +99,7 @@ while true; do
 
   #sleep 30
 
-  parallel --joblog my_joblog.log -j 5 --eta run_exp_with_id {} ::: "${ids[@]}"
+  parallel --joblog my_joblog.log -j 10 --eta run_exp_with_id {} ::: "${ids[@]}"
 done
 
 
