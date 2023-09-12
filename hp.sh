@@ -73,7 +73,7 @@ run_exp_with_id() {
     queue_id="$1"
     # wait random in [0,10] to avoid simultaneous locking
 
-    sleep $(($RANDOM % 11)) # 5 statt 10
+    sleep $(($RANDOM % 26)) # 5 statt 10
 
     # echo $queue_id
     # rm .dvc/tmp/lock || echo "lock not found"
@@ -88,7 +88,8 @@ export -f run_exp_with_id
 echo "executing experiments"
 while true; do
   status="$(dvc queue status | head -n-2 | tail -n+2)"
-  status=$(echo "$status" | grep "Queued\|Failed")
+  #status=$(echo "$status" | grep "Queued\|Failed")
+  status=$(echo "$status" | grep "Queued")
   ids=($(echo "$status" | sed -n 's/^\([^[:space:]]\+\).*/\1/p'))
 
   if [[ "${#ids[@]}" -eq 0 ]]; then
