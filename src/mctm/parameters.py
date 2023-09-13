@@ -28,6 +28,7 @@ def __get_simple_fully_connected_network__(
     conditional=False,
     conditional_event_shape=None,
     dtype=tf.float32,
+    **kwds,
 ):
     x = K.Input(input_shape, name="input", dtype=dtype)
     inputs = [x]
@@ -43,10 +44,16 @@ def __get_simple_fully_connected_network__(
             )
 
     for i, h in enumerate(hidden_units):
-        x = K.layers.Dense(h, activation=None, name=f"hidden{i}_layer", dtype=dtype)(x)
+        x = K.layers.Dense(
+            h, activation=None, name=f"hidden{i}_layer", dtype=dtype, **kwds
+        )(x)
         if conditional:
             c_out = K.layers.Dense(
-                h, activation=None, name=f"conditional_hidden{i}_layer", dtype=dtype
+                h,
+                activation=None,
+                name=f"conditional_hidden{i}_layer",
+                dtype=dtype,
+                **kwds,
             )(c)
             x = K.layers.Add(name=f"add_c_out{i}", dtype=dtype)([x, c_out])
         x = K.layers.Activation(activation, dtype=dtype)(x)
@@ -56,6 +63,7 @@ def __get_simple_fully_connected_network__(
         activation="linear",
         name="parameter_vector",
         dtype=dtype,
+        **kwds,
     )(x)
     pv_reshaped = K.layers.Reshape(output_shape, dtype=dtype)(pv)
     return K.Model(inputs=inputs, outputs=pv_reshaped)
@@ -111,3 +119,40 @@ def get_autoregressive_parameter_network_lambda(parameter_shape, **kwds):
         return partial(parameter_network, conditional_input=conditional_input, **kwds)
 
     return parameter_network_lambda, parameter_network.trainable_variables
+
+
+def get_autoregressive_parameter_network_with_additive_conditioner_lambda(
+    parameter_shape, made_kwds, x0_kwds
+):
+    (
+        masked_autoregressive_parameter_network_lambda,
+        masked_autoregressive_trainable_variables,
+    ) = get_autoregressive_parameter_network_lambda(
+        parameter_shape,
+        **made_kwds,
+    )
+
+    (
+        x0_parameter_network_lambda,
+        x0_trainable_variables,
+    ) = get_simple_fully_connected_parameter_network_lambda(
+        parameter_shape=parameter_shape, input_shape=1, **x0_kwds
+    )
+
+    def parameter_lambda(conditional_input=None, **kwds):
+        made_net = masked_autoregressive_parameter_network_lambda(
+            conditional_input, **kwds
+        )
+        x0_net = x0_parameter_network_lambda  # (conditional_input, **kwds)
+
+        def call(x, conditional_input):
+            pv1 = made_net(x)
+            pv2 = x0_net(conditional_input)
+            return pv1 + pv2
+
+        return call
+
+    trainable_parameters = (
+        masked_autoregressive_trainable_variables + x0_trainable_variables
+    )
+    return parameter_lambda, trainable_parameters

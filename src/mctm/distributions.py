@@ -24,6 +24,7 @@ from tensorflow_probability.python.internal import prefer_static
 
 from .parameters import (
     get_autoregressive_parameter_network_lambda,
+    get_autoregressive_parameter_network_with_additive_conditioner_lambda,
     get_parameter_vector_or_simple_network_lambda,
     get_simple_fully_connected_parameter_network_lambda,
 )
@@ -270,6 +271,57 @@ def get_coupling_bernstein_flow(
         )
 
     return distribution_lambda, parameter_lambda, trainable_variables
+
+
+def get_masked_autoregressive_bernstein_flow_first_dim_masked(
+    dims,
+    distribution_kwds,
+    parameter_kwds,
+    get_parameter_lambda_fn=get_autoregressive_parameter_network_with_additive_conditioner_lambda,  # noqa: E501
+):
+    distribution_kwds = distribution_kwds.copy()
+    order = distribution_kwds.pop("order")
+    base_distribution_lambda = distribution_kwds.pop(
+        "base_distribution_lambda", __DEFAULT_BASE_DISTRIBUTION_LAMBDA__
+    )
+
+    parameter_shape = (dims - 1, order)
+    parameter_lambda, trainable_parameters = get_parameter_lambda_fn(
+        parameter_shape, **parameter_kwds
+    )
+
+    def get_bijector_fn(parameter_network):
+        bijector_fn = __get_bijector_fn__(
+            network=parameter_network, **distribution_kwds
+        )
+        maf_bijector = tfb.MaskedAutoregressiveFlow(bijector_fn=bijector_fn)
+
+        def bijector_fn(x0, *arg, **kwds):
+            with tf.name_scope("bernstein_bjector"):
+                return tfb.Inline(
+                    forward_fn=partial(maf_bijector.forward, conditional_input=x0),
+                    inverse_fn=partial(maf_bijector.inverse, conditional_input=x0),
+                    inverse_log_det_jacobian_fn=partial(
+                        maf_bijector.inverse_log_det_jacobian, conditional_input=x0
+                    ),
+                    forward_min_event_ndims=1,
+                    # is_increasing=True,
+                    name="maf_cond",
+                )
+
+        return bijector_fn
+
+    def distribution_lambda(parameter_network):
+        bijector = tfb.RealNVP(
+            num_masked=1,
+            bijector_fn=get_bijector_fn(parameter_network),
+        )
+        return tfd.TransformedDistribution(
+            distribution=base_distribution_lambda(dims),
+            bijector=bijector,
+        )
+
+    return distribution_lambda, parameter_lambda, trainable_parameters
 
 
 get_bernstein_flow = partial(
