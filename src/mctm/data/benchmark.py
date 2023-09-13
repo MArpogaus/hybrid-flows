@@ -12,11 +12,8 @@ import pandas as pd
 DATA_ARCHIVE_URL = "https://zenodo.org/record/1161203/files/data.tar.gz"
 MD5_CHECKSUM = "9b9c9b0375315ad270eba4ce80c093ab"
 
-# Define the directory where datasets will be stored
-DATASET_DIR = "datasets"
 
-
-def download_and_verify_data():
+def download_and_verify_data(download_path):
     """
     Downloads the preprocessed data archive and verifies its MD5 checksum.
 
@@ -24,11 +21,11 @@ def download_and_verify_data():
         str: Path to the downloaded data archive.
     """
     # Create the dataset directory if it doesn't exist
-    os.makedirs(DATASET_DIR, exist_ok=True)
+    os.makedirs(download_path, exist_ok=True)
 
     # Calculate MD5 checksum of the downloaded file
     md5 = hashlib.md5()
-    data_archive_file = os.path.join(DATASET_DIR, "data.tar.gz")
+    data_archive_file = os.path.join(download_path, "data.tar.gz")
 
     # Download the data archive if it doesn't exist
     if not os.path.exists(data_archive_file):
@@ -46,9 +43,9 @@ def download_and_verify_data():
     return data_archive_file
 
 
-def extract_dataset(dataset_name):
-    data_archive_file = download_and_verify_data()
-    dataset_dir = os.path.join(DATASET_DIR, dataset_name.lower())
+def extract_dataset(dataset_name, dataset_path):
+    data_archive_file = download_and_verify_data(dataset_path)
+    dataset_dir = os.path.join(dataset_path, dataset_name.lower())
 
     # Extract the dataset if it hasn't been extracted yet
     if not os.path.exists(dataset_dir):
@@ -77,7 +74,7 @@ def extract_dataset(dataset_name):
     return dataset_dir
 
 
-def load_and_preprocess_data(dataset_name):
+def load_and_preprocess_data(dataset_name, dataset_path):
     """
     Loads and preprocesses the specified dataset.
 
@@ -90,19 +87,19 @@ def load_and_preprocess_data(dataset_name):
 
     # Load the data and apply preprocessing as per the original code
     if dataset_name == "POWER":
-        dataset_dir = extract_dataset(dataset_name)
+        dataset_dir = extract_dataset(dataset_name, dataset_path)
         return load_and_process_power_data(dataset_dir)
     elif dataset_name == "GAS":
-        dataset_dir = extract_dataset(dataset_name)
+        dataset_dir = extract_dataset(dataset_name, dataset_path)
         return load_and_process_gas_data(dataset_dir)
     elif dataset_name == "HEPMASS":
-        dataset_dir = extract_dataset(dataset_name)
+        dataset_dir = extract_dataset(dataset_name, dataset_path)
         return load_and_process_hepmass_data(dataset_dir)
     elif dataset_name == "MINIBOONE":
-        dataset_dir = extract_dataset(dataset_name)
+        dataset_dir = extract_dataset(dataset_name, dataset_path)
         return load_and_process_miniboone_data(dataset_dir)
     elif dataset_name == "BSDS300":
-        dataset_dir = extract_dataset(dataset_name)
+        dataset_dir = extract_dataset(dataset_name, dataset_path)
         return load_and_process_bsds300_data(dataset_dir)
     else:
         raise ValueError(f"Dataset '{dataset_name}' is not supported.")
@@ -319,7 +316,7 @@ def load_and_process_bsds300_data(dataset_dir):
     return (data_train, data_validate, data_test), data_train.shape[-1]
 
 
-def get_dataset(dataset_name):
+def get_dataset(dataset_name, dataset_path="datasets"):
     """
     Provides access to the specified dataset.
 
@@ -329,7 +326,7 @@ def get_dataset(dataset_name):
     Returns:
         tuple: Tuple containing the training, validation, and test data arrays.
     """
-    return load_and_preprocess_data(dataset_name)
+    return load_and_preprocess_data(dataset_name, dataset_path)
 
 
 if __name__ == "__main__":
@@ -348,7 +345,7 @@ if __name__ == "__main__":
             print(f"{d.std()=}")
             print(f"{d.mean()=}")
 
-            shift = d.min(0).tolist()
+            shift = (-d.min(0)).tolist()
             scale = (1 / (d.max(0) - d.min(0))).tolist()
             print(f"{shift=}")
             print(f"{scale=}")
