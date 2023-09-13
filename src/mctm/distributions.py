@@ -66,8 +66,11 @@ def __get_parametrized_flow__(
     f2 = BernsteinBijectorLinearExtrapolate(bernstein_coefficents, name="bpoly")
     bijectors.append(f2)
 
+    # tfp uses the invers T⁻¹ to calculate the log_prob
+    # lets change the direction here by first reversing the list to get f₃ ∘ f₂ ∘ f₁
     bijectors = list(reversed(bijectors))
 
+    # and now invert it to get T = f₃⁻¹ ∘ f₂⁻¹ ∘ f₁⁻¹ and T⁻¹ = f₁ ∘ f₂ ∘ f₂
     return tfb.Invert(tfb.Chain(bijectors))
 
 
@@ -150,6 +153,13 @@ def __get_bijector_fn__(network, **flow_kwds):
     return bijector_fn
 
 
+def __get_num_masked__(dims, layer):
+    num_masked = dims // 2
+    if dims % 2 != 0:
+        num_masked += layer % 2
+    return num_masked
+
+
 # PUBLIC FUNCTIONS #############################################################
 def get_masked_autoregressive_bernstein_flow(
     dims,
@@ -195,13 +205,23 @@ def get_coupling_bernstein_flow(
     )
     coupling_layers = distribution_kwds.pop("coupling_layers")
 
-    parameter_shape = (dims // 2, order)
+    # scale and shift have to be applied on all dimensions before the first
+    # coupling layers so let's remove them from the kwds to skip them in the
+    # following calls of __get_bijector_fn__
+    scale = distribution_kwds.pop("scale", False)
+    shift = distribution_kwds.pop("shift", False)
+
+    distribution_kwds.update(scale=False, shift=False)
 
     parameter_networks = []
     trainable_variables = []
-    for _ in range(coupling_layers):
+    for layer in range(coupling_layers):
+        num_masked = __get_num_masked__(dims, layer)
+        parameter_shape = (dims - num_masked, order)
         network, variables = get_parameter_lambda_fn(
-            input_shape=dims // 2, parameter_shape=parameter_shape, **parameter_kwds
+            input_shape=num_masked,
+            parameter_shape=parameter_shape,
+            **parameter_kwds,
         )
         parameter_networks.append(network)
         trainable_variables.append(variables)
@@ -216,17 +236,33 @@ def get_coupling_bernstein_flow(
 
     def distribution_lambda(parameter_networks):
         bijectors = []
+        # tfp uses the invers T⁻¹ to calculate the log_prob
+        # the Chain bijector uses reversed list in the forward call so we want the
+        # chained bijectors in the order f₁ ∘ f₂ ∘ … ∘ fᵢ and use their inverse
+        # to get T = f₃⁻¹ ∘ … ∘ f₂⁻¹ ∘ f₁⁻¹ and T⁻¹ = f₁ ∘ f₂ ∘ f₂
+
+        if shift:
+            shift_t = tf.convert_to_tensor(shift, name="shift")[None, ...]
+            f1_shift = tfb.Shift(shift_t, name="f1_shift")
+            bijectors.append(tfb.Invert(f1_shift))
+        if scale:
+            scale_t = tf.convert_to_tensor(scale, name="scale")[None, ...]
+            f1_scale = tfb.Scale(scale_t, name="f1_scale")
+            bijectors.append(tfb.Invert(f1_scale))
+
         for layer, network in enumerate(parameter_networks):
+            num_masked = __get_num_masked__(dims, layer)
+            permutation = list(range(num_masked, dims)) + list(range(num_masked))
             bijectors.append(
                 tfb.RealNVP(
-                    num_masked=(dims // 2),
+                    num_masked=num_masked,
                     bijector_fn=__get_bijector_fn__(network, **distribution_kwds),
                 )
             )
             if coupling_layers % 2 != 0 and layer == (coupling_layers - 1):
                 print("uneven number of coupling layers -> skipping last permutation")
             else:
-                bijectors.append(tfb.Permute(permutation=[1, 0]))
+                bijectors.append(tfb.Permute(permutation=permutation))
 
         return tfd.TransformedDistribution(
             distribution=base_distribution_lambda(dims),
