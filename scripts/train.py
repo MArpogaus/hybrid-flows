@@ -46,9 +46,8 @@ def main(args):
     dataset = args.dataset
     dataset_kwds = params["datasets"][dataset]
     distribution = args.distribution
-    distribution_params = params[args.stage_name + "_distributions"][distribution][
-        dataset
-    ]
+    stage = args.stage_name.split("@")[0]
+    distribution_params = params[stage + "_distributions"][distribution][dataset]
     distribution_kwds = distribution_params["distribution_kwds"]
     fit_kwds = distribution_params["fit_kwds"]
     parameter_kwds = distribution_params["parameter_kwds"]
@@ -81,7 +80,7 @@ def main(args):
         get_model = DensityRegressionModel
 
     experiment_name = args.experiment_name
-    run_name = "_".join((args.stage_name, distribution))
+    run_name = "_".join((stage, distribution))
 
     if args.test_mode:
         __LOGGER__.info("Running in test-mode")

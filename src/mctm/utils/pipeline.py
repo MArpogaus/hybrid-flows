@@ -74,8 +74,9 @@ def pipeline(
     model = get_model_fn(dims=dims, **model_kwds)
 
     # Evaluate Model
-    mlflow.set_experiment(experiment_name)
-    __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
+    if experiment_name:
+        mlflow.set_experiment(experiment_name)
+        __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
     with start_run_with_exception_logging(run_name=run_name):
         # Auto log all MLflow entities
         mlflow.autolog()
@@ -145,9 +146,7 @@ def prepare_pipeline(args):
     __LOGGER__.info("CLI arguments: %s", vars(args))
 
     # load params
-    params = dvc.api.params_show(
-        stages=f"{args.stage_name}@{args.distribution}-{args.dataset}"
-    )
+    params = dvc.api.params_show(stages=args.stage_name)
     __LOGGER__.info("DVC params: %s", params)
 
     return params

@@ -3,7 +3,7 @@ stages:
     matrix:
       distribution: ${unconditional_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-${item.dataset} unconditional ${item.distribution} ${item.dataset} results/unconditional_${item.distribution}_${item.dataset} --test-mode=${testmode}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-${item.dataset} unconditional@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_${item.distribution}_${item.dataset} --test-mode=${testmode}
     params:
     - log-level
     - seed
@@ -26,7 +26,7 @@ stages:
     matrix:
       distribution: ${unconditional_benchmark_distributions}
       dataset: ${benchmark_datasets}
-    cmd: python scripts/train_benchmark.py --log-level ${log-level} --log-file results/unconditional_benchmark_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-benchmark-${item.dataset} unconditional_benchmark ${item.distribution} ${item.dataset} results/unconditional_benchmark_${item.distribution}_${item.dataset} --test-mode=${testmode}
+    cmd: python scripts/train_benchmark.py --log-level ${log-level} --log-file results/unconditional_benchmark_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-benchmark-${item.dataset} unconditional_benchmark@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_benchmark_${item.distribution}_${item.dataset} --test-mode=${testmode}
     params:
     - log-level
     - seed
@@ -46,7 +46,7 @@ stages:
     matrix:
       distribution: ${conditional_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file results/conditional_${item.distribution}_${item.dataset}/train.log --experiment-name conditional-${item.dataset} conditional ${item.distribution} ${item.dataset} results/conditional_${item.distribution}_${item.dataset} --test-mode=${testmode}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/conditional_${item.distribution}_${item.dataset}/train.log --experiment-name conditional-${item.dataset} conditional@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/conditional_${item.distribution}_${item.dataset} --test-mode=${testmode}
     params:
     - log-level
     - seed
@@ -69,7 +69,7 @@ stages:
     matrix:
       distribution: ${unconditional_hybrid_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-${item.dataset} unconditional_hybrid ${item.distribution} ${item.dataset} results/unconditional_hybrid_${item.distribution}_${item.dataset}/  --test-mode=${testmode}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-${item.dataset} unconditional_hybrid@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_hybrid_${item.distribution}_${item.dataset}/  --test-mode=${testmode}
     params:
     - log-level
     - seed
@@ -95,7 +95,7 @@ stages:
     matrix:
       distribution: ${unconditional_hybrid_pre_trained_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-pre-trained-${item.dataset} unconditional_hybrid_pre_trained ${item.distribution} ${item.dataset} results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/  --test-mode=${testmode}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-pre-trained-${item.dataset} unconditional_hybrid_pre_trained@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/  --test-mode=${testmode}
     params:
     - log-level
     - seed
