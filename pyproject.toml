@@ -4,6 +4,8 @@ requires = ["setuptools >= 61.0.0"]
 
 [project]
 classifiers = [
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.8"
 ]
 dependencies = [
@@ -15,7 +17,7 @@ dynamic = ["version"]
 license = {text = "TODO"}
 name = "mctm"
 readme = "README.md"
-requires-python = "==3.9.*"
+requires-python = "~=3.8.0"
 
 [project.optional-dependencies]
 develop = [
