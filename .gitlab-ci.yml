@@ -1,6 +1,6 @@
 stages:
-  - train
-  - report
+- train
+- report
 
 prepare-job:
   stage: .pre
@@ -38,11 +38,13 @@ report-job:
   # Post CML report as a comment in GitLab
   - cml comment create report.md
 
-push-job:
-  stage: .post
-  tags:
-  - ai-cli
-  script:
-  # Push local changes
-  - git remote set-url --push origin git@gitlab:${CI_PROJECT_PATH}
-  - git push --follow-tags origin HEAD:${CI_COMMIT_REF_NAME}
+# push-job:
+#   stage: .post
+#   tags:
+#   - ai-cli
+#   script:
+#   # Push local changes
+#   - git add dvc.lock
+#   - git commit -m "updates dvc.lock from cml runner"
+#   - git remote set-url --push origin git@gitlab:${CI_PROJECT_PATH}
+#   - git push --follow-tags origin HEAD:${CI_COMMIT_REF_NAME}
