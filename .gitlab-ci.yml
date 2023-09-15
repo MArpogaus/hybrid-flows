@@ -6,8 +6,8 @@ train:
   - export MLFLOW_EXPERIMENT_NAME="CI $CI_PROJECT_NAME ($CI_COMMIT_REF_NAME)"
 
   # Ensure conda env is recreated
-  #- export MLFLOW_ENVS=$(mamba env list | grep mlflow | cut -d " " -f1)
-  #- for e in $MLFLOW_ENVS; do mamba env remove -n $d; done
+  - export MLFLOW_ENVS=$(mamba env list | grep mlflow | cut -d " " -f1)
+  - for e in $MLFLOW_ENVS; do mamba env remove -n $d; done
   - mlflow run .
 
   # DVC Metrics
