@@ -1,7 +1,7 @@
 log-level: info
 seed: 1
 textwidth: 487.8225
-testmode: false
+testmode: true
 
 datasets:
   moons:
@@ -489,7 +489,7 @@ unconditional_benchmark_distributions:
       fit_kwds:
         epochs: 10000
         batch_size: 512
-        learning_rate: 0.01
+        learning_rate: 0.001
         lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
@@ -505,7 +505,7 @@ unconditional_benchmark_distributions:
       fit_kwds:
         epochs: 10000
         batch_size: 512
-        learning_rate: 0.01
+        learning_rate: 0.001
         lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
@@ -521,7 +521,7 @@ unconditional_benchmark_distributions:
       fit_kwds:
         epochs: 10000
         batch_size: 512
-        learning_rate: 0.01
+        learning_rate: 0.001
         lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
@@ -537,7 +537,7 @@ unconditional_benchmark_distributions:
       fit_kwds:
         epochs: 10000
         batch_size: 512
-        learning_rate: 0.01
+        learning_rate: 0.0001
         lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
@@ -609,8 +609,8 @@ unconditional_benchmark_distributions:
   masked_autoregressive_bernstein_flow:
     POWER:
       distribution_kwds:
-      <<: *distribution_kwds
-      order: 100
+        <<: *distribution_kwds
+        order: 100
       parameter_kwds:
         hidden_units:
         - 128
