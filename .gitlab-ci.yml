@@ -5,15 +5,15 @@ train:
   - export MLFLOW_TRACKING_URI=http://server:5000
   - export MLFLOW_EXPERIMENT_NAME="CI $CI_PROJECT_NAME ($CI_COMMIT_REF_NAME)"
 
-    # Ensure conda env is recreated
-  - export MLFLOW_ENVS=$(mamba env list | grep mlflow | cut -d " " -f1)
-  - for e in $MLFLOW_ENVS; do mamba env remove -n $d; done
+  # Ensure conda env is recreated
+  #- export MLFLOW_ENVS=$(mamba env list | grep mlflow | cut -d " " -f1)
+  #- for e in $MLFLOW_ENVS; do mamba env remove -n $d; done
   - mlflow run .
 
-    # DVC Metrics
+  # DVC Metrics
   - echo '# Train Run' > report.md
   - echo '## Metrics ' >> report.md
   - dvc metrics diff --show-md >> report.md
 
-    # Post CML report as a comment in GitLab
+  # Post CML report as a comment in GitLab
   - cml comment create report.md
