@@ -7,7 +7,7 @@ train:
 
   # Ensure conda env is recreated
   - export MLFLOW_ENVS=$(mamba env list | grep mlflow | cut -d " " -f1)
-  - for e in $MLFLOW_ENVS; do mamba env remove -n $d; done
+  - for e in $MLFLOW_ENVS; do mamba env remove -n $e; done
   - mlflow run .
 
   # DVC Metrics
