@@ -12,8 +12,8 @@ prepare-job:
   - git config --global --replace-all user.name "${GITLAB_USER_NAME}"
 
   # Ensure conda env is recreated
-  - export MLFLOW_ENVS=$(mamba env list | grep mlflow | cut -d " " -f1)
-  - for e in $MLFLOW_ENVS; do mamba env remove -n $e; done
+  #- export MLFLOW_ENVS=$(mamba env list | grep mlflow | cut -d " " -f1)
+  #- for e in $MLFLOW_ENVS; do mamba env remove -n $e; done
 
 train-job:
   stage: train
