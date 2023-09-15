@@ -480,193 +480,205 @@ unconditional_distributions:
 unconditional_benchmark_distributions:
   bernstein_flow:
     POWER:
-      distribution_kwds: *distribution_kwds
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
       parameter_kwds:
         conditional: false
         dtype: float32
       fit_kwds:
         epochs: 10000
-        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.01
-        lr_patience: 50
+        lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
         monitor: val_loss
     HEPMASS:
-      distribution_kwds: *distribution_kwds
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
       parameter_kwds:
         conditional: false
         dtype: float32
       fit_kwds:
         epochs: 10000
-        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.01
-        lr_patience: 50
+        lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
         monitor: val_loss
     MINIBOONE:
-      distribution_kwds: *distribution_kwds
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
       parameter_kwds:
         conditional: false
         dtype: float32
       fit_kwds:
         epochs: 10000
-        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.01
-        lr_patience: 50
+        lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
         monitor: val_loss
     BSDS300:
-      distribution_kwds: *distribution_kwds
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
       parameter_kwds:
         conditional: false
         dtype: float32
       fit_kwds:
         epochs: 10000
-        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.01
-        lr_patience: 50
+        lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
         monitor: val_loss
 
-  multivariate_bernstein_flow:
-    POWER:
-      distribution_kwds: *distribution_kwds
-      parameter_kwds:
-        conditional: false
-        dtype: float32
-      fit_kwds:
-        epochs: 10000
-        validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 50
-        reduce_lr_on_plateau: true
-        early_stopping: true
-        verbose: true
-        monitor: val_loss
-    HEPMASS:
-      distribution_kwds: *distribution_kwds
-      parameter_kwds:
-        conditional: false
-        dtype: float32
-      fit_kwds:
-        epochs: 10000
-        validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 50
-        reduce_lr_on_plateau: true
-        early_stopping: true
-        verbose: true
-        monitor: val_loss
-    MINIBOONE:
-      distribution_kwds: *distribution_kwds
-      parameter_kwds:
-        conditional: false
-        dtype: float32
-      fit_kwds:
-        epochs: 10000
-        validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 50
-        reduce_lr_on_plateau: true
-        early_stopping: true
-        verbose: true
-        monitor: val_loss
-    BSDS300:
-      distribution_kwds: *distribution_kwds
-      parameter_kwds:
-        conditional: false
-        dtype: float32
-      fit_kwds:
-        epochs: 10000
-        validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 50
-        reduce_lr_on_plateau: true
-        early_stopping: true
-        verbose: true
-        monitor: val_loss
+  # multivariate_bernstein_flow:
+  #   POWER:
+  #     distribution_kwds: *distribution_kwds
+  #     parameter_kwds:
+  #       conditional: false
+  #       dtype: float32
+  #     fit_kwds:
+  #       epochs: 10000
+  #       validation_split: 0.1
+  #       batch_size: 512
+  #       learning_rate: 0.01
+  #       lr_patience: 50
+  #       reduce_lr_on_plateau: true
+  #       early_stopping: true
+  #       verbose: true
+  #       monitor: val_loss
+  #   HEPMASS:
+  #     distribution_kwds: *distribution_kwds
+  #     parameter_kwds:
+  #       conditional: false
+  #       dtype: float32
+  #     fit_kwds:
+  #       epochs: 10000
+  #       validation_split: 0.1
+  #       batch_size: 512
+  #       learning_rate: 0.01
+  #       lr_patience: 50
+  #       reduce_lr_on_plateau: true
+  #       early_stopping: true
+  #       verbose: true
+  #       monitor: val_loss
+  #   MINIBOONE:
+  #     distribution_kwds: *distribution_kwds
+  #     parameter_kwds:
+  #       conditional: false
+  #       dtype: float32
+  #     fit_kwds:
+  #       epochs: 10000
+  #       validation_split: 0.1
+  #       batch_size: 512
+  #       learning_rate: 0.01
+  #       lr_patience: 50
+  #       reduce_lr_on_plateau: true
+  #       early_stopping: true
+  #       verbose: true
+  #       monitor: val_loss
+  #   BSDS300:
+  #     distribution_kwds: *distribution_kwds
+  #     parameter_kwds:
+  #       conditional: false
+  #       dtype: float32
+  #     fit_kwds:
+  #       epochs: 10000
+  #       validation_split: 0.1
+  #       batch_size: 512
+  #       learning_rate: 0.01
+  #       lr_patience: 50
+  #       reduce_lr_on_plateau: true
+  #       early_stopping: true
+  #       verbose: true
+  #       monitor: val_loss
 
   masked_autoregressive_bernstein_flow:
     POWER:
-      distribution_kwds: *distribution_kwds
+      distribution_kwds:
+      <<: *distribution_kwds
+      order: 100
       parameter_kwds:
         hidden_units:
-        - 16
-        - 16
+        - 128
+        - 128
+        - 128
         activation: relu
       fit_kwds:
         epochs: 10000
-        validation_split: 0.1
         batch_size: 512
-        learning_rate: 0.001
-        lr_patience: 50
+        learning_rate: 0.01
+        lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
         monitor: val_loss
     HEPMASS:
-      distribution_kwds: *distribution_kwds
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
       parameter_kwds:
         hidden_units:
-        - 16
-        - 16
+        - 128
+        - 128
+        - 128
         activation: relu
       fit_kwds:
         epochs: 10000
-        validation_split: 0.1
         batch_size: 512
-        learning_rate: 0.001
-        lr_patience: 50
+        learning_rate: 0.01
+        lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
         monitor: val_loss
     BSDS300:
-      distribution_kwds: *distribution_kwds
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
       parameter_kwds:
         hidden_units:
-        - 16
-        - 16
+        - 128
+        - 128
+        - 128
         activation: relu
       fit_kwds:
         epochs: 10000
-        validation_split: 0.1
         batch_size: 512
-        learning_rate: 0.001
-        lr_patience: 50
+        learning_rate: 0.01
+        lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
         monitor: val_loss
     MINIBOONE:
-      distribution_kwds: *distribution_kwds
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
       parameter_kwds:
         hidden_units:
-        - 16
-        - 16
+        - 128
+        - 128
+        - 128
         activation: relu
       fit_kwds:
         epochs: 10000
-        validation_split: 0.1
         batch_size: 512
-        learning_rate: 0.001
-        lr_patience: 50
+        learning_rate: 0.01
+        lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
