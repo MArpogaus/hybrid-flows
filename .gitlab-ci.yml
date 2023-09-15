@@ -33,7 +33,7 @@ report-job:
   # DVC Metrics
   - echo '# Train Run' > report.md
   - echo '## Metrics ' >> report.md
-  - dvc metrics diff --show-md >> report.md
+  - dvc metrics show --show-md >> report.md
 
   # Post CML report as a comment in GitLab
   - cml comment create report.md
