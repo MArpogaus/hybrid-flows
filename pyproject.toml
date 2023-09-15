@@ -17,7 +17,7 @@ dynamic = ["version"]
 license = {text = "TODO"}
 name = "mctm"
 readme = "README.md"
-requires-python = "~=3.8.0"
+requires-python = ">=3.8.0"
 
 [project.optional-dependencies]
 develop = [
