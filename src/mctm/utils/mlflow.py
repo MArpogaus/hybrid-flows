@@ -12,6 +12,7 @@
 ###############################################################################
 # REQUIRED MODULES #############################################################
 import logging
+import os
 import tempfile
 import traceback
 from contextlib import contextmanager
@@ -31,6 +32,11 @@ def log_cfg(cfg: dict):
 
 @contextmanager
 def start_run_with_exception_logging(run_name):
+    # if there is already a parent run, start it first
+    run_id = os.environ.get("MLFLOW_RUN_ID", False)
+    if run_id:
+        mlflow.start_run()
+
     run = mlflow.start_run(
         run_name=run_name,
         nested=mlflow.active_run() is not None,
