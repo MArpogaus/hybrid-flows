@@ -79,7 +79,7 @@ def main(args):
     else:
         get_model = DensityRegressionModel
 
-    experiment_name = args.experiment_name
+    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", args.experiment_name)
     run_name = "_".join((stage, distribution))
 
     if args.test_mode:
