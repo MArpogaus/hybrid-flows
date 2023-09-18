@@ -92,6 +92,10 @@ def main(args):
         __LOGGER__.info("Using latex backend for plotting")
         setup_latex(fontsize=10)
 
+    # don't show progress bar if running from CI
+    if os.environ.get("CI", False):
+        fit_kwds.update(verbose=2)
+
     fig_width = get_figsize(params["textwidth"], fraction=0.5)[0]
 
     # actually execute training

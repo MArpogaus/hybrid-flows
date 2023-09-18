@@ -74,5 +74,6 @@ def fit_distribution(
     return model.fit(
         shuffle=True,
         callbacks=callbacks,
+        verbose=verbose,
         **kwds,
     )
