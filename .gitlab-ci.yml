@@ -24,6 +24,11 @@ train-job:
   - export MLFLOW_TRACKING_URI=http://server:5000
   - export MLFLOW_EXPERIMENT_NAME="CI $CI_PROJECT_NAME ($CI_COMMIT_REF_NAME)"
   - mlflow run .
+  artifacts:
+    paths:
+      - dvc.lock
+      - results/
+    expire_in: 1 week
 
 report-job:
   stage: report
