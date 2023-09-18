@@ -2,6 +2,18 @@ import mlflow
 import pandas as pd
 from mlflow import tracking
 from mlflow.entities import ViewType
+import yaml
+import json
+import numpy as np
+import sys  # Import the sys module for stderr
+
+# Define a custom function to convert NumPy objects to standard Python objects
+def numpy_to_python(obj):
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, np.generic):
+        return np.asscalar(obj)
+    return obj
 
 # Set the MLflow tracking server URI
 tracking_uri = "http://127.0.0.1:5000"  # Replace with your MLflow server URI
@@ -70,11 +82,14 @@ for experiment_id in all_experiments:
 
     # Update progress
     progress_counter += 1
-    print(f"Processed {progress_counter}/{len(all_experiments)} experiments")
-    break
+    print(f"Processed {progress_counter}/{len(all_experiments)} experiments", file=sys.stderr)
 
 # Create a DataFrame from the list of results
 results_df = pd.DataFrame(results_list)
 
 # Print the final results DataFrame
-print(results_df["Run Name"])
+#print(results_df["Run Name"])
+
+# Serialize the list of dictionaries to JSON with the custom function
+results_json = json.dumps(results_list, indent=4, default=numpy_to_python)
+print(results_json)
