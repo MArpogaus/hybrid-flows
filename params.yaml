@@ -620,8 +620,8 @@ unconditional_benchmark_distributions:
       fit_kwds:
         epochs: 10000
         batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 25
+        learning_rate: 0.001
+        lr_patience: 15
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -639,8 +639,8 @@ unconditional_benchmark_distributions:
       fit_kwds:
         epochs: 10000
         batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 25
+        learning_rate: 0.001
+        lr_patience: 15
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -659,7 +659,7 @@ unconditional_benchmark_distributions:
         epochs: 10000
         batch_size: 512
         learning_rate: 0.01
-        lr_patience: 25
+        lr_patience: 15
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -677,8 +677,8 @@ unconditional_benchmark_distributions:
       fit_kwds:
         epochs: 10000
         batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 25
+        learning_rate: 0.005
+        lr_patience: 15
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
