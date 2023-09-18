@@ -19,14 +19,14 @@ def numpy_to_python(obj):
 # Set the MLflow tracking server URI
 #tracking_uri = "http://127.0.0.1:5000"  # Replace with your MLflow server URI
 tracking_uri = os.environ["MLFLOW_TRACKING_URI"]  # Replace with your MLflow server URI
-print(f"connecting with: {tracking_uri}")
+print(f"connecting with: {tracking_uri}", file=sys.stderr)
 tracking.set_tracking_uri(tracking_uri)
 
 # Retrieve all experiments and create a dictionary to map experiment IDs to names
 print(f"searching for experiments", file=sys.stderr)
 experiment_id_to_name = {}
 for exp in mlflow.search_experiments():
-    print(f"found {exp.name}", file=sys.stderr)
+    print(f" - found {exp.name}", file=sys.stderr)
     experiment_id_to_name[exp.experiment_id] = exp.name
 
 # Retrieve all experiments

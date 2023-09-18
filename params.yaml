@@ -1,7 +1,7 @@
 log-level: info
 seed: 1
 textwidth: 487.8225
-testmode: true
+testmode: false
 datasets:
   moons:
     n_samples: 2000
