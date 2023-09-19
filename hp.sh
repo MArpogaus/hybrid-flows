@@ -83,8 +83,8 @@ while true; do
 
   
 
-  dvc queue start -j 50
-  sleep 600 # every 10 minutes
+  dvc queue start -j 10
+  sleep 900 # every 15 minutes
   #parallel --joblog my_joblog.log -j 10 --eta run_exp_with_id {} ::: "${ids[@]}"
 done
 
