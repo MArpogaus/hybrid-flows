@@ -613,9 +613,9 @@ unconditional_benchmark_distributions:
         order: 100
       parameter_kwds:
         hidden_units:
-        - 128
-        - 128
-        - 128
+        - 256
+        - 256
+        - 256
         activation: relu
       fit_kwds:
         epochs: 10000
@@ -632,15 +632,15 @@ unconditional_benchmark_distributions:
         order: 100
       parameter_kwds:
         hidden_units:
-        - 128
-        - 128
-        - 128
+        - 256
+        - 256
+        - 256
         activation: relu
       fit_kwds:
         epochs: 10000
         batch_size: 512
         learning_rate: 0.001
-        lr_patience: 15
+        lr_patience: 10
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -670,9 +670,9 @@ unconditional_benchmark_distributions:
         order: 100
       parameter_kwds:
         hidden_units:
-        - 128
-        - 128
-        - 128
+        - 256
+        - 256
+        - 256
         activation: relu
       fit_kwds:
         epochs: 10000
