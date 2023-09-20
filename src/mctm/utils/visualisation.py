@@ -124,7 +124,7 @@ def plot_2d_data(X, Y, **kwds):
 
 
 def plot_samples(dist, data, seed=1, **kwds):
-    columns = ["$x_1$", "$x_2$"]
+    columns = ["$y_1$", "$y_2$"]
     if len(dist.batch_shape) == 0 or dist.batch_shape[0] == 1:
         N = data.shape[0]
     else:
