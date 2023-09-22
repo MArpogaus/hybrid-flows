@@ -30,12 +30,25 @@ from .parameters import (
 )
 
 
-# PRIVATE GLOBAL OBJECTS #######################################################
-def __DEFAULT_BASE_DISTRIBUTION_LAMBDA__(dims):
-    return tfd.Sample(tfd.Normal(0.0, 1.0), sample_shape=[dims])
-
-
 # FUNCTIONS ####################################################################
+def __default_base_distribution_lambda__(dims, distribution_type="normal", **kwds):
+    if distribution_type == "normal":
+        default_kwds = dict(loc=0.0, scale=1.0)
+        default_kwds.update(**kwds)
+        dist = tfd.Normal(**default_kwds)
+    elif distribution_type == "lognormal":
+        default_kwds = dict(loc=0.0, scale=1.0)
+        default_kwds.update(**kwds)
+        dist = tfd.LogNormal(**default_kwds)
+    elif distribution_type == "uniform":
+        dist = tfd.Uniform(**kwds)
+    elif distribution_type == "kumaraswamy":
+        dist = tfd.Kumaraswamy(**kwds)
+    else:
+        raise ValueError(f"Unsupported distribution type {distribution_type}.")
+    return tfd.Sample(dist, sample_shape=[dims])
+
+
 def __get_parametrized_flow__(
     scale, shift, unconstrained_bernstein_coefficents, clip_to_bernstein_domain, **kwds
 ):
@@ -43,7 +56,7 @@ def __get_parametrized_flow__(
 
     bijectors = []
 
-    # f1: ŷ = a1(x)*(y - b1(x))
+    # f1: ŷ = a1(x)*(y + b1(x))
     if shift:
         shift = tf.convert_to_tensor(
             shift, dtype=unconstrained_bernstein_coefficents.dtype, name="shift"
@@ -76,13 +89,15 @@ def __get_parametrized_flow__(
 
 
 def __get_bernstein_flow_lambda__(
-    dims, order, base_distribution_lambda=__DEFAULT_BASE_DISTRIBUTION_LAMBDA__, **kwds
+    dims, order, base_distribution_lambda=__default_base_distribution_lambda__, **kwds
 ):
     pv_shape = [dims, order]
 
     def dist(pv):
         return tfd.TransformedDistribution(
-            distribution=base_distribution_lambda(dims),
+            distribution=base_distribution_lambda(
+                dims, **kwds.pop("base_distribution_kwds", {})
+            ),
             bijector=__get_parametrized_flow__(
                 unconstrained_bernstein_coefficents=pv, **kwds
             ),
@@ -171,8 +186,9 @@ def get_masked_autoregressive_bernstein_flow(
     distribution_kwds = distribution_kwds.copy()
     order = distribution_kwds.pop("order")
     base_distribution_lambda = distribution_kwds.pop(
-        "base_distribution_lambda", __DEFAULT_BASE_DISTRIBUTION_LAMBDA__
+        "base_distribution_lambda", __default_base_distribution_lambda__
     )
+    base_distribution_kwds = distribution_kwds.pop("base_distribution_kwds", {})
 
     parameter_shape = (dims, order)
     parameter_network_lambda, trainable_variables = get_parameter_lambda_fn(
@@ -185,7 +201,7 @@ def get_masked_autoregressive_bernstein_flow(
         )
 
         distribution = tfd.TransformedDistribution(
-            distribution=base_distribution_lambda(dims),
+            distribution=base_distribution_lambda(dims, **base_distribution_kwds),
             bijector=tfb.MaskedAutoregressiveFlow(bijector_fn=bijector_fn),
         )
         return distribution
@@ -202,8 +218,9 @@ def get_coupling_bernstein_flow(
     distribution_kwds = distribution_kwds.copy()
     order = distribution_kwds.pop("order")
     base_distribution_lambda = distribution_kwds.pop(
-        "base_distribution_lambda", __DEFAULT_BASE_DISTRIBUTION_LAMBDA__
+        "base_distribution_lambda", __default_base_distribution_lambda__
     )
+    base_distribution_kwds = distribution_kwds.pop("base_distribution_kwds", {})
     coupling_layers = distribution_kwds.pop("coupling_layers")
 
     # scale and shift have to be applied on all dimensions before the first
@@ -266,7 +283,7 @@ def get_coupling_bernstein_flow(
                 bijectors.append(tfb.Permute(permutation=permutation))
 
         return tfd.TransformedDistribution(
-            distribution=base_distribution_lambda(dims),
+            distribution=base_distribution_lambda(dims, **base_distribution_kwds),
             bijector=tfb.Chain(bijectors),
         )
 
@@ -282,8 +299,9 @@ def get_masked_autoregressive_bernstein_flow_first_dim_masked(
     distribution_kwds = distribution_kwds.copy()
     order = distribution_kwds.pop("order")
     base_distribution_lambda = distribution_kwds.pop(
-        "base_distribution_lambda", __DEFAULT_BASE_DISTRIBUTION_LAMBDA__
+        "base_distribution_lambda", __default_base_distribution_lambda__
     )
+    base_distribution_kwds = distribution_kwds.pop("base_distribution_kwds", {})
 
     parameter_shape = (dims - 1, order)
     parameter_lambda, trainable_parameters = get_parameter_lambda_fn(
@@ -317,7 +335,7 @@ def get_masked_autoregressive_bernstein_flow_first_dim_masked(
             bijector_fn=get_bijector_fn(parameter_network),
         )
         return tfd.TransformedDistribution(
-            distribution=base_distribution_lambda(dims),
+            distribution=base_distribution_lambda(dims, **base_distribution_kwds),
             bijector=bijector,
         )
 
