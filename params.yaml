@@ -306,6 +306,12 @@ unconditional_distributions:
         shift: false
         scale: false
         clip_to_bernstein_domain: false
+        # base_distribution_kwds:
+        #   distribution_type: uniform
+        # base_distribution_kwds:
+        #   distribution_type: kumaraswamy
+        #   concentration1: 2
+        #   concentration0: 5
       parameter_kwds:
         conditional: false
         dtype: float32
@@ -608,9 +614,17 @@ unconditional_benchmark_distributions:
 
   masked_autoregressive_bernstein_flow:
     POWER:
-      distribution_kwds:
+      distribution_kwds: &benchmark_distribution_kwds
         <<: *distribution_kwds
         order: 100
+        base_distribution_kwds:
+          distribution_type: kumaraswamy
+          concentration1: 2
+          concentration0: 5
+        low: 0.001
+        high: 0.999
+        smooth_bounds: true
+        allow_flexible_bounds: false
       parameter_kwds:
         hidden_units:
         - 256
@@ -619,17 +633,15 @@ unconditional_benchmark_distributions:
         activation: relu
       fit_kwds:
         epochs: 10000
-        batch_size: 512
-        learning_rate: 0.001
-        lr_patience: 15
+        batch_size: 1024
+        learning_rate: 0.01
+        lr_patience: 5
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
         monitor: val_loss
     HEPMASS:
-      distribution_kwds:
-        <<: *distribution_kwds
-        order: 100
+      distribution_kwds: *benchmark_distribution_kwds
       parameter_kwds:
         hidden_units:
         - 256
@@ -646,9 +658,7 @@ unconditional_benchmark_distributions:
         verbose: true
         monitor: val_loss
     BSDS300:
-      distribution_kwds:
-        <<: *distribution_kwds
-        order: 100
+      distribution_kwds: *benchmark_distribution_kwds
       parameter_kwds:
         hidden_units:
         - 128
@@ -665,9 +675,7 @@ unconditional_benchmark_distributions:
         verbose: true
         monitor: val_loss
     MINIBOONE:
-      distribution_kwds:
-        <<: *distribution_kwds
-        order: 100
+      distribution_kwds: *benchmark_distribution_kwds
       parameter_kwds:
         hidden_units:
         - 256
