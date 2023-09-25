@@ -17,12 +17,12 @@ datasets="
 
 get_params(){
 
-    echo "-S $1.$2.$3.fit_kwds.batch_size=512,1024
-          -S $1.$2.$3.fit_kwds.learning_rate=0.5,0.1,0.05,0.01,0.005,0.001
-          -S $1.$2.$3.fit_kwds.lr_patience=10,50,100,500,1000,5000,10000"
+    echo "-S $1.$2.$3.fit_kwds.batch_size=128,512,1024
+          -S $1.$2.$3.fit_kwds.learning_rate=0.1,0.01,0.001
+          -S $1.$2.$3.fit_kwds.lr_patience=10,100,1000"
 
     if [ "$2" == "masked_autoregressive_bernstein_flow" ]; then
-        echo "-S $1.$2.$3.parameter_kwds.hidden_units=[16,16],[16,16,16],[512,512],[512,1028,512],[1028,512,1028],[16,16,16,16,16]"
+        echo "-S $1.$2.$3.parameter_kwds.hidden_units=[16,16],[16,16,16],[512,512],[1028,512,128]"
     fi
 
 }
