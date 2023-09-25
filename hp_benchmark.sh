@@ -9,10 +9,10 @@ declare -A models=(
 )
 
 datasets="
-    POWER_dataset
-    HEPMASS_dataset
-    BSDS300_dataset
-    MINIBOONE_dataset
+    POWER
+    HEPMASS
+    BSDS300
+    MINIBOONE
 "
 
 get_params(){
