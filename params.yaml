@@ -1,7 +1,8 @@
 log-level: info
 seed: 1
 textwidth: 487.8225
-testmode: false
+testmode: true
+
 datasets:
   moons:
     n_samples: 2000
@@ -13,23 +14,298 @@ datasets:
     factor: 0.5
     scale: true
 
-# benchmark_datasets:
-# - POWER
-# - HEPMASS
-# - MINIBOONE
-# - BSDS300
-
-benchmark_datasets: []
+benchmark_datasets:
+  BSDS300:
+    scale:
+    - 0.5951579809188843
+    - 0.6047486066818237
+    - 0.6197519302368164
+    - 0.6034218072891235
+    - 0.6157453060150146
+    - 0.6308441758155823
+    - 0.5997510552406311
+    - 0.5709870457649231
+    - 0.599551796913147
+    - 0.58362877368927
+    - 0.6593972444534302
+    - 0.6672208309173584
+    - 0.6173864603042603
+    - 0.6508700251579285
+    - 0.6202621459960938
+    - 0.6045238971710205
+    - 0.587252140045166
+    - 0.6234177350997925
+    - 0.6489835977554321
+    - 0.6045354604721069
+    - 0.6664966344833374
+    - 0.6436400413513184
+    - 0.6329915523529053
+    - 0.6099480390548706
+    - 0.6193516850471497
+    - 0.6315428614616394
+    - 0.6748039722442627
+    - 0.6610910296440125
+    - 0.6568368673324585
+    - 0.6654838919639587
+    - 0.6173692941665649
+    - 0.6164868474006653
+    - 0.6113609075546265
+    - 0.622491180896759
+    - 0.653924822807312
+    - 0.6275745034217834
+    - 0.5945932269096375
+    - 0.6490359306335449
+    - 0.6407253742218018
+    - 0.5792075395584106
+    - 0.6213913559913635
+    - 0.6313886642456055
+    - 0.6311299800872803
+    - 0.6249243021011353
+    - 0.6538536548614502
+    - 0.6603158116340637
+    - 0.6463392972946167
+    - 0.5864070653915405
+    - 0.5960292816162109
+    - 0.6167584657669067
+    - 0.6162797808647156
+    - 0.6911003589630127
+    - 0.6380019783973694
+    - 0.618881106376648
+    - 0.6006125807762146
+    - 0.6078148484230042
+    - 0.581818163394928
+    - 0.587313711643219
+    - 0.5694724917411804
+    - 0.6242935061454773
+    - 0.58849036693573
+    - 0.5797585844993591
+    - 0.590542197227478
+    shift:
+    - 0.858957827091217
+    - 0.8417633175849915
+    - 0.8207302689552307
+    - 0.8167888522148132
+    - 0.8271582126617432
+    - 0.8002507090568542
+    - 0.8622584939002991
+    - 0.9036107063293457
+    - 0.8724204301834106
+    - 0.8366307020187378
+    - 0.7527638077735901
+    - 0.7614379525184631
+    - 0.7945226430892944
+    - 0.7900691032409668
+    - 0.7851378917694092
+    - 0.8411343693733215
+    - 0.810021162033081
+    - 0.7124636173248291
+    - 0.786227285861969
+    - 0.875061571598053
+    - 0.7579098343849182
+    - 0.7953081727027893
+    - 0.7829033136367798
+    - 0.8367931246757507
+    - 0.7648852467536926
+    - 0.7432070374488831
+    - 0.7520200610160828
+    - 0.7791620492935181
+    - 0.7826623916625977
+    - 0.7129452228546143
+    - 0.8394992351531982
+    - 0.8043412566184998
+    - 0.8052926659584045
+    - 0.7797779440879822
+    - 0.7612169981002808
+    - 0.8703255653381348
+    - 0.836017906665802
+    - 0.7697322964668274
+    - 0.7665404677391052
+    - 0.8299756646156311
+    - 0.7607430815696716
+    - 0.7876516580581665
+    - 0.8117465972900391
+    - 0.8365708589553833
+    - 0.76621413230896
+    - 0.7430314421653748
+    - 0.7561199069023132
+    - 0.8779884576797485
+    - 0.8202036619186401
+    - 0.7829737067222595
+    - 0.7321658730506897
+    - 0.6892848610877991
+    - 0.7978940606117249
+    - 0.8199292421340942
+    - 0.8164166212081909
+    - 0.8342611789703369
+    - 0.8398663997650146
+    - 0.8350914716720581
+    - 0.8865905404090881
+    - 0.7900574803352356
+    - 0.8587415218353271
+    - 0.8638280034065247
+    - 0.8361334204673767
+  HEPMASS:
+    scale:
+    - 0.17695256134575785
+    - 0.19759763329826005
+    - 0.28867610590127607
+    - 0.09253009925936441
+    - 0.28890113221680425
+    - 0.10123199587499439
+    - 0.16401727890530876
+    - 0.2889207570651296
+    - 0.11516967277054968
+    - 0.1825951488793211
+    - 0.2886355332187824
+    - 0.13255015613375584
+    - 0.1982244246817454
+    - 0.2888247800146859
+    - 0.15848495145654218
+    - 0.21733771406591254
+    - 0.2885888039361186
+    - 0.1116598268134329
+    - 0.09219991272958859
+    - 0.06295419885822616
+    - 0.15128297907738794
+    shift:
+    - 2.265399710654582
+    - 2.531844790110442
+    - 1.7344418954418521
+    - 8.052965511466715
+    - 1.7312062399185746
+    - 5.183422296298865
+    - 3.04936281305711
+    - 1.7301672342402206
+    - 4.134827306214499
+    - 2.7372062075764245
+    - 1.7314321828801922
+    - 3.152846983050629
+    - 2.5223740920735453
+    - 1.7321641839195632
+    - 2.0002168167956955
+    - 2.3020041453145943
+    - 1.7322310449074751
+    - 3.0708844573320158
+    - 3.4145194665742595
+    - 5.92790623307369
+    - 2.5212808189161477
+  MINIBOONE:
+    scale:
+    - 0.10334264244515758
+    - 0.10621536003105092
+    - 0.0682334223653949
+    - 0.07346789810626338
+    - 0.08015583223749585
+    - 0.11139291237282614
+    - 0.11137769609453001
+    - 0.09767107927063683
+    - 0.09158914536092244
+    - 0.06036509544001272
+    - 0.22175244933118657
+    - 0.24952927184103696
+    - 0.08990903662374682
+    - 0.143232340833376
+    - 0.14922175472487428
+    - 0.031229718076870187
+    - 0.0846261105041304
+    - 0.07771330430745081
+    - 0.04171520674718831
+    - 0.0822227667584418
+    - 0.06536778057922817
+    - 0.0554866268274607
+    - 0.0359185392724435
+    - 0.08480965592394947
+    - 0.06841137854164227
+    - 0.07095308610924138
+    - 0.08776599248684097
+    - 0.08388107452489374
+    - 0.0933558489686088
+    - 0.1988073693896371
+    - 0.11705505041731322
+    - 0.09819440090128163
+    - 0.1074961118010386
+    - 0.06177303810289645
+    - 0.06888390673336123
+    - 0.12655067692819513
+    - 0.057103806646637605
+    - 0.052921306226952444
+    - 0.05055431735696499
+    - 0.04016329086096863
+    - 0.08863616149690565
+    - 0.037506513671035704
+    - 0.09125131199675945
+    shift:
+    - 2.4480202524577432
+    - 1.1862689759338267
+    - 0.4761170406463332
+    - 3.9758084478983857
+    - 1.483343235545288
+    - 3.2026944652243428
+    - 6.521560572642641
+    - 4.45843711126435
+    - 3.1616131368675218
+    - 6.282306115439889
+    - 1.3440977382497974
+    - 3.090414521893262
+    - 1.848094473912557
+    - 1.4390619235771342
+    - 1.4213604382214784
+    - 0.5953487734331023
+    - 4.028298976002369
+    - 6.401772340919938
+    - 11.054928029524982
+    - 6.684901549695364
+    - 2.267296215624182
+    - 17.087081293014844
+    - 23.49715981363247
+    - 2.8817025039267605
+    - 3.5646294632475954
+    - 5.427871366740003
+    - 2.222479285589368
+    - 7.009436868749215
+    - 1.4204062188184656
+    - 3.6053345483105725
+    - 3.3439575168600957
+    - 2.460961275233751
+    - 5.5115807119579765
+    - 3.681519143381214
+    - 3.243660065814275
+    - 3.191308057347147
+    - 11.384808779434902
+    - 1.8951547161872462
+    - 1.6773052225567346
+    - 21.009729813052733
+    - 1.8432593017316876
+    - 7.0422226399138195
+    - 5.296240295168592
+  POWER:
+    scale:
+    - 0.09568583419588816
+    - 0.1046697071863797
+    - 0.06917016831239553
+    - 0.07215392605459134
+    - 0.26385889573217364
+    - 0.28881530661915067
+    shift:
+    - 0.9607775340084271
+    - 5.445887760615095
+    - 0.2633235161191925
+    - 0.3085445219533287
+    - 0.8240348750373009
+    - 1.7315114778178926
 
 unconditional_distributions:
   bernstein_flow:
-    moons_dataset:
+    moons:
       distribution_kwds: &distribution_kwds
         order: 50
         low: -3
         high: 3
         smooth_bounds: true
         allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: false
         dtype: float32
@@ -43,13 +319,8 @@ unconditional_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    circles_dataset:
-      distribution_kwds:
-        order: 50
-        low: -3
-        high: 3
-        smooth_bounds: true
-        allow_flexible_bounds: true
+    circles:
+      distribution_kwds: *distribution_kwds
       parameter_kwds:
         conditional: false
         dtype: float32
@@ -65,7 +336,7 @@ unconditional_distributions:
         monitor: val_loss
 
   multivariate_bernstein_flow:
-    moons_dataset:
+    moons:
       distribution_kwds: *distribution_kwds
       parameter_kwds:
         conditional: false
@@ -80,7 +351,7 @@ unconditional_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    circles_dataset:
+    circles:
       distribution_kwds: *distribution_kwds
       parameter_kwds:
         conditional: false
@@ -97,7 +368,7 @@ unconditional_distributions:
         monitor: val_loss
 
   multivariate_normal:
-    moons_dataset:
+    moons:
       distribution_kwds: {}
       parameter_kwds:
         conditional: false
@@ -107,12 +378,12 @@ unconditional_distributions:
         validation_split: 0.1
         batch_size: 512
         learning_rate: 0.01
-        lr_patience: 1000
+        lr_patience: 500
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
         monitor: val_loss
-    circles_dataset:
+    circles:
       distribution_kwds: {}
       parameter_kwds:
         conditional: false
@@ -129,7 +400,7 @@ unconditional_distributions:
         monitor: val_loss
 
   masked_autoregressive_bernstein_flow:
-    moons_dataset:
+    moons:
       distribution_kwds: *distribution_kwds
       parameter_kwds:
         hidden_units:
@@ -146,7 +417,7 @@ unconditional_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    circles_dataset:
+    circles:
       distribution_kwds: *distribution_kwds
       parameter_kwds:
         hidden_units:
@@ -165,15 +436,10 @@ unconditional_distributions:
         monitor: val_loss
 
   coupling_bernstein_flow:
-    moons_dataset:
+    moons:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 2
-        order: 50
-        low: -3
-        high: 3
-        smooth_bounds: true
-        allow_flexible_bounds: true
       parameter_kwds:
         hidden_units:
         - 16
@@ -190,15 +456,10 @@ unconditional_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    circles_dataset:
+    circles:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 2
-        order: 50
-        low: -3
-        high: 3
-        smooth_bounds: true
-        allow_flexible_bounds: true
       parameter_kwds:
         hidden_units:
         - 16
@@ -218,152 +479,206 @@ unconditional_distributions:
 
 unconditional_benchmark_distributions:
   bernstein_flow:
-    moons_dataset:
-      distribution_kwds: *distribution_kwds
+    POWER:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
       parameter_kwds:
         conditional: false
         dtype: float32
       fit_kwds:
         epochs: 10000
-        validation_split: 0.1
         batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 50
+        learning_rate: 0.001
+        lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
         monitor: val_loss
-    circles_dataset:
-      distribution_kwds: *distribution_kwds
+    HEPMASS:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
       parameter_kwds:
         conditional: false
         dtype: float32
       fit_kwds:
         epochs: 10000
-        validation_split: 0.1
         batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 50
+        learning_rate: 0.001
+        lr_patience: 25
+        reduce_lr_on_plateau: true
+        early_stopping: true
+        verbose: true
+        monitor: val_loss
+    MINIBOONE:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
+      parameter_kwds:
+        conditional: false
+        dtype: float32
+      fit_kwds:
+        epochs: 10000
+        batch_size: 512
+        learning_rate: 0.001
+        lr_patience: 25
+        reduce_lr_on_plateau: true
+        early_stopping: true
+        verbose: true
+        monitor: val_loss
+    BSDS300:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
+      parameter_kwds:
+        conditional: false
+        dtype: float32
+      fit_kwds:
+        epochs: 10000
+        batch_size: 512
+        learning_rate: 0.0001
+        lr_patience: 25
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
         monitor: val_loss
 
-  multivariate_bernstein_flow:
-    moons_dataset:
-      distribution_kwds: *distribution_kwds
-      parameter_kwds:
-        conditional: false
-        dtype: float32
-      fit_kwds:
-        epochs: 10000
-        validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 50
-        reduce_lr_on_plateau: true
-        early_stopping: true
-        verbose: true
-        monitor: val_loss
-    circles_dataset:
-      distribution_kwds: *distribution_kwds
-      parameter_kwds:
-        conditional: false
-        dtype: float32
-      fit_kwds:
-        epochs: 10000
-        validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 50
-        reduce_lr_on_plateau: true
-        early_stopping: true
-        verbose: true
-        monitor: val_loss
+  # multivariate_bernstein_flow:
+  #   POWER:
+  #     distribution_kwds: *distribution_kwds
+  #     parameter_kwds:
+  #       conditional: false
+  #       dtype: float32
+  #     fit_kwds:
+  #       epochs: 10000
+  #       validation_split: 0.1
+  #       batch_size: 512
+  #       learning_rate: 0.01
+  #       lr_patience: 50
+  #       reduce_lr_on_plateau: true
+  #       early_stopping: true
+  #       verbose: true
+  #       monitor: val_loss
+  #   HEPMASS:
+  #     distribution_kwds: *distribution_kwds
+  #     parameter_kwds:
+  #       conditional: false
+  #       dtype: float32
+  #     fit_kwds:
+  #       epochs: 10000
+  #       validation_split: 0.1
+  #       batch_size: 512
+  #       learning_rate: 0.01
+  #       lr_patience: 50
+  #       reduce_lr_on_plateau: true
+  #       early_stopping: true
+  #       verbose: true
+  #       monitor: val_loss
+  #   MINIBOONE:
+  #     distribution_kwds: *distribution_kwds
+  #     parameter_kwds:
+  #       conditional: false
+  #       dtype: float32
+  #     fit_kwds:
+  #       epochs: 10000
+  #       validation_split: 0.1
+  #       batch_size: 512
+  #       learning_rate: 0.01
+  #       lr_patience: 50
+  #       reduce_lr_on_plateau: true
+  #       early_stopping: true
+  #       verbose: true
+  #       monitor: val_loss
+  #   BSDS300:
+  #     distribution_kwds: *distribution_kwds
+  #     parameter_kwds:
+  #       conditional: false
+  #       dtype: float32
+  #     fit_kwds:
+  #       epochs: 10000
+  #       validation_split: 0.1
+  #       batch_size: 512
+  #       learning_rate: 0.01
+  #       lr_patience: 50
+  #       reduce_lr_on_plateau: true
+  #       early_stopping: true
+  #       verbose: true
+  #       monitor: val_loss
 
   masked_autoregressive_bernstein_flow:
-    moons_dataset:
-      distribution_kwds: *distribution_kwds
-      parameter_kwds:
-        hidden_units:
-        - 16
-        - 16
-        activation: relu
-      fit_kwds:
-        epochs: 10000
-        validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.001
-        lr_patience: 50
-        reduce_lr_on_plateau: true
-        early_stopping: true
-        verbose: true
-        monitor: val_loss
-    circles_dataset:
-      distribution_kwds: *distribution_kwds
-      parameter_kwds:
-        hidden_units:
-        - 16
-        - 16
-        activation: relu
-      fit_kwds:
-        epochs: 10000
-        validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.001
-        lr_patience: 50
-        reduce_lr_on_plateau: true
-        early_stopping: true
-        verbose: true
-        monitor: val_loss
-
-  coupling_bernstein_flow:
-    moons_dataset:
+    POWER:
       distribution_kwds:
         <<: *distribution_kwds
-        coupling_layers: 2
-        order: 50
-        low: -3
-        high: 3
-        smooth_bounds: true
-        allow_flexible_bounds: true
+        order: 100
       parameter_kwds:
         hidden_units:
-        - 16
-        - 16
+        - 256
+        - 256
+        - 256
         activation: relu
-        batch_norm: false
       fit_kwds:
         epochs: 10000
-        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.001
-        lr_patience: 50
+        lr_patience: 15
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
         monitor: val_loss
-    circles_dataset:
+    HEPMASS:
       distribution_kwds:
         <<: *distribution_kwds
-        coupling_layers: 2
-        order: 50
-        low: -3
-        high: 3
-        smooth_bounds: true
-        allow_flexible_bounds: true
+        order: 100
       parameter_kwds:
         hidden_units:
-        - 16
-        - 16
+        - 256
+        - 256
+        - 256
         activation: relu
-        batch_norm: false
       fit_kwds:
         epochs: 10000
-        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.001
-        lr_patience: 50
+        lr_patience: 10
+        reduce_lr_on_plateau: true
+        early_stopping: true
+        verbose: true
+        monitor: val_loss
+    BSDS300:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
+      parameter_kwds:
+        hidden_units:
+        - 128
+        - 128
+        - 128
+        activation: relu
+      fit_kwds:
+        epochs: 10000
+        batch_size: 512
+        learning_rate: 0.01
+        lr_patience: 15
+        reduce_lr_on_plateau: true
+        early_stopping: true
+        verbose: true
+        monitor: val_loss
+    MINIBOONE:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
+      parameter_kwds:
+        hidden_units:
+        - 256
+        - 256
+        - 256
+        activation: relu
+      fit_kwds:
+        epochs: 10000
+        batch_size: 512
+        learning_rate: 0.005
+        lr_patience: 15
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -371,7 +686,7 @@ unconditional_benchmark_distributions:
 
 conditional_distributions:
   bernstein_flow:
-    moons_dataset:
+    moons:
       distribution_kwds: *distribution_kwds
       parameter_kwds:
         conditional: true
@@ -391,7 +706,7 @@ conditional_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    circles_dataset:
+    circles:
       distribution_kwds: *distribution_kwds
       parameter_kwds:
         conditional: true
@@ -413,7 +728,7 @@ conditional_distributions:
         monitor: val_loss
 
   multivariate_bernstein_flow:
-    moons_dataset:
+    moons:
       distribution_kwds: *distribution_kwds
       parameter_kwds:
         conditional: true
@@ -433,7 +748,7 @@ conditional_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    circles_dataset:
+    circles:
       distribution_kwds: *distribution_kwds
       parameter_kwds:
         conditional: true
@@ -455,7 +770,7 @@ conditional_distributions:
         monitor: val_loss
 
   multivariate_normal:
-    moons_dataset:
+    moons:
       distribution_kwds: {}
       parameter_kwds:
         conditional: true
@@ -475,7 +790,7 @@ conditional_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    circles_dataset:
+    circles:
       distribution_kwds: {}
       parameter_kwds:
         conditional: true
@@ -497,7 +812,7 @@ conditional_distributions:
         monitor: val_loss
 
   masked_autoregressive_bernstein_flow:
-    moons_dataset:
+    moons:
       distribution_kwds: *distribution_kwds
       parameter_kwds:
         hidden_units:
@@ -517,7 +832,7 @@ conditional_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    circles_dataset:
+    circles:
       distribution_kwds: *distribution_kwds
       parameter_kwds:
         hidden_units:
@@ -539,15 +854,10 @@ conditional_distributions:
         monitor: val_loss
 
   coupling_bernstein_flow:
-    moons_dataset:
+    moons:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 2
-        order: 50
-        low: -3
-        high: 3
-        smooth_bounds: true
-        allow_flexible_bounds: true
       parameter_kwds:
         hidden_units:
         - 16
@@ -566,15 +876,10 @@ conditional_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    circles_dataset:
+    circles:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 2
-        order: 50
-        low: -3
-        high: 3
-        smooth_bounds: true
-        allow_flexible_bounds: true
       parameter_kwds:
         hidden_units:
         - 16
@@ -595,41 +900,86 @@ conditional_distributions:
         monitor: val_loss
 
 unconditional_hybrid_distributions:
-  # masked_autoregressive_bernstein_flow:
-  #   distribution_kwds: *distribution_kwds
-  #   freeze_base_model: false
-  #   base_checkpoint_path: false
-  #   parameter_kwds:
-  #     hidden_units:
-  #     - 16
-  #     - 16
-  #     activation: relu
-  #   base_distribution: bernstein_flow
-  #   base_distribution_kwds: *distribution_kwds
-  #   base_parameter_kwds:
-  #     conditional: false
-  #     dtype: float32
-  #   fit_kwds:
-  #     epochs: 10000
-  #     validation_split: 0.1
-  #     batch_size: 512
-  #     learning_rate: 0.01
-  #     lr_patience: 500
-  #     reduce_lr_on_plateau: true
-  #     early_stopping: true
-  #     verbose: true
-  #     monitor: val_loss
+  masked_autoregressive_bernstein_flow_first_dim_masked:
+    moons:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
+        low: 0
+        high: 1
+      freeze_base_model: false
+      base_checkpoint_path: false
+      parameter_kwds:
+        made_kwds:
+          hidden_units: []
+          activation: relu
+        x0_kwds:
+          hidden_units:
+          - 16
+          - 16
+          activation: relu
+          batch_norm: false
+          kernel_initializer: glorot_uniform
+          bias_initializer: zeros
+      base_distribution: bernstein_flow
+      base_distribution_kwds: *distribution_kwds
+      base_parameter_kwds:
+        conditional: false
+        dtype: float32
+      fit_kwds:
+        epochs: 10000
+        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.01
+        lr_patience: 500
+        reduce_lr_on_plateau: true
+        early_stopping: true
+        verbose: true
+        monitor: val_loss
+    circles:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
+        low: 0
+        high: 1
+      freeze_base_model: false
+      base_checkpoint_path: false
+      parameter_kwds:
+        made_kwds:
+          hidden_units: []
+          activation: relu
+        x0_kwds:
+          hidden_units:
+          - 16
+          - 16
+          activation: relu
+          batch_norm: false
+          kernel_initializer: glorot_uniform
+          bias_initializer: zeros
+      base_distribution: bernstein_flow
+      base_distribution_kwds: *distribution_kwds
+      base_parameter_kwds:
+        conditional: false
+        dtype: float32
+      fit_kwds:
+        epochs: 10000
+        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.01
+        lr_patience: 500
+        reduce_lr_on_plateau: true
+        early_stopping: true
+        verbose: true
+        monitor: val_loss
 
   coupling_bernstein_flow:
-    moons_dataset:
+    moons:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 1
         order: 100
         low: 0
         high: 1
-        smooth_bounds: true
-        allow_flexible_bounds: true
       freeze_base_model: false
       base_checkpoint_path: false
       parameter_kwds:
@@ -653,15 +1003,13 @@ unconditional_hybrid_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    circles_dataset:
+    circles:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 1
         order: 100
         low: 0
         high: 1
-        smooth_bounds: true
-        allow_flexible_bounds: true
       freeze_base_model: false
       base_checkpoint_path: false
       parameter_kwds:
@@ -713,47 +1061,13 @@ unconditional_hybrid_pre_trained_distributions:
   #     monitor: val_loss
 
   coupling_bernstein_flow:
-    moons_dataset:
+    moons:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 1
         order: 100
         low: 0
         high: 1
-        smooth_bounds: true
-        allow_flexible_bounds: true
-      freeze_base_model: true
-      base_checkpoint_path: unconditional_bernstein_flow
-      parameter_kwds:
-        hidden_units:
-        - 16
-        - 16
-        activation: relu
-        batch_norm: false
-      base_distribution: bernstein_flow
-      base_distribution_kwds: *distribution_kwds
-      base_parameter_kwds:
-        conditional: false
-        dtype: float32
-      fit_kwds:
-        epochs: 10000
-        validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.01
-        lr_patience: 100
-        reduce_lr_on_plateau: true
-        early_stopping: true
-        verbose: true
-        monitor: val_loss
-    circles_dataset:
-      distribution_kwds:
-        <<: *distribution_kwds
-        coupling_layers: 1
-        order: 100
-        low: 0
-        high: 1
-        smooth_bounds: true
-        allow_flexible_bounds: true
       freeze_base_model: true
       base_checkpoint_path: unconditional_bernstein_flow
       parameter_kwds:
@@ -772,7 +1086,37 @@ unconditional_hybrid_pre_trained_distributions:
         validation_split: 0.1
         batch_size: 512
         learning_rate: 0.01
-        lr_patience: 100
+        lr_patience: 500
+        reduce_lr_on_plateau: true
+        early_stopping: true
+        verbose: true
+        monitor: val_loss
+    circles:
+      distribution_kwds:
+        <<: *distribution_kwds
+        coupling_layers: 1
+        order: 100
+        low: 0
+        high: 1
+      freeze_base_model: true
+      base_checkpoint_path: unconditional_bernstein_flow
+      parameter_kwds:
+        hidden_units:
+        - 16
+        - 16
+        activation: relu
+        batch_norm: false
+      base_distribution: bernstein_flow
+      base_distribution_kwds: *distribution_kwds
+      base_parameter_kwds:
+        conditional: false
+        dtype: float32
+      fit_kwds:
+        epochs: 10000
+        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.01
+        lr_patience: 500
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true

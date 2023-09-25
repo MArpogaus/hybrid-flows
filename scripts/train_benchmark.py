@@ -1,5 +1,6 @@
 # IMPORT PACKAGES #############################################################
 import argparse
+import os
 
 import tensorflow as tf
 
@@ -16,19 +17,25 @@ def main(args):
 
     dataset = args.dataset
     distribution = args.distribution
-    distribution_params = params[args.stage_name + "_distributions"][distribution]
+    stage = args.stage_name.split("@")[0]
+    distribution_params = params[stage + "_distributions"][distribution][dataset]
     distribution_kwds = distribution_params["distribution_kwds"]
     fit_kwds = distribution_params["fit_kwds"]
     parameter_kwds = distribution_params["parameter_kwds"]
+    dataset_kwds = params["benchmark_datasets"][dataset]
 
-    experiment_name = args.experiment_name
-    run_name = "_".join((args.stage_name, distribution))
+    distribution_kwds.update(dataset_kwds)
+
+    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", args.experiment_name)
+    run_name = "_".join((stage, distribution))
 
     if args.test_mode:
         experiment_name += "_test"
         fit_kwds.update(epochs=1)
 
-    # --- actually execute training ---
+    # don't show progress bar if running from CI
+    if os.environ.get("CI", False):
+        fit_kwds.update(verbose=2)
 
     pipeline(
         experiment_name=experiment_name,

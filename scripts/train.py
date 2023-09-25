@@ -46,9 +46,8 @@ def main(args):
     dataset = args.dataset
     dataset_kwds = params["datasets"][dataset]
     distribution = args.distribution
-    distribution_params = params[args.stage_name + "_distributions"][distribution][
-        dataset + "_dataset"
-    ]
+    stage = args.stage_name.split("@")[0]
+    distribution_params = params[stage + "_distributions"][distribution][dataset]
     distribution_kwds = distribution_params["distribution_kwds"]
     fit_kwds = distribution_params["fit_kwds"]
     parameter_kwds = distribution_params["parameter_kwds"]
@@ -80,8 +79,8 @@ def main(args):
     else:
         get_model = DensityRegressionModel
 
-    experiment_name = args.experiment_name
-    run_name = "_".join((args.stage_name, distribution))
+    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", args.experiment_name)
+    run_name = "_".join((stage, distribution))
 
     if args.test_mode:
         __LOGGER__.info("Running in test-mode")
@@ -92,6 +91,10 @@ def main(args):
     if which("latex"):
         __LOGGER__.info("Using latex backend for plotting")
         setup_latex(fontsize=10)
+
+    # don't show progress bar if running from CI
+    if os.environ.get("CI", False):
+        fit_kwds.update(verbose=2)
 
     fig_width = get_figsize(params["textwidth"], fraction=0.5)[0]
 

@@ -3,13 +3,13 @@ stages:
     matrix:
       distribution: ${unconditional_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-${item.dataset} unconditional ${item.distribution} ${item.dataset} results/unconditional_${item.distribution}_${item.dataset} --test-mode=${testmode}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-${item.dataset} unconditional@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_${item.distribution}_${item.dataset} --test-mode=${testmode}
     params:
     - log-level
     - seed
     - textwidth
     - datasets.${item.dataset}*
-    - unconditional_distributions.${item.distribution}*
+    - unconditional_distributions.${item.distribution}.${item.dataset}*
     deps:
     - scripts/train.py
     - pyproject.toml
@@ -19,17 +19,19 @@ stages:
     outs:
     - results/unconditional_${item.distribution}_${item.dataset}/mcp
     - results/unconditional_${item.distribution}_${item.dataset}/train.log
+    - results/unconditional_${item.distribution}_${item.dataset}/dataset.pdf
+    - results/unconditional_${item.distribution}_${item.dataset}/samples.pdf
 
   unconditional_benchmark:
     matrix:
       distribution: ${unconditional_benchmark_distributions}
       dataset: ${benchmark_datasets}
-    cmd: python scripts/train_benchmark.py --log-level ${log-level} --log-file results/unconditional_benchmark_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-becnhmark-${item.dataset} unconditional_benchmark ${item.distribution} ${item.dataset} results/unconditional_benchmark_${item.distribution}_${item.dataset} --test-mode=${testmode}
+    cmd: python scripts/train_benchmark.py --log-level ${log-level} --log-file results/unconditional_benchmark_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-benchmark-${item.dataset} unconditional_benchmark@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_benchmark_${item.distribution}_${item.dataset} --test-mode=${testmode}
     params:
     - log-level
     - seed
-    - benchmark_datasets
-    - unconditional_benchmark_distributions.${item.distribution}*
+    - benchmark_datasets.${item.dataset}*
+    - unconditional_benchmark_distributions.${item.distribution}.${item.dataset}*
     deps:
     - scripts/train.py
     - pyproject.toml
@@ -44,7 +46,7 @@ stages:
     matrix:
       distribution: ${conditional_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file results/conditional_${item.distribution}_${item.dataset}/train.log --experiment-name conditional-${item.dataset} conditional ${item.distribution} ${item.dataset} results/conditional_${item.distribution}_${item.dataset} --test-mode=${testmode}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/conditional_${item.distribution}_${item.dataset}/train.log --experiment-name conditional-${item.dataset} conditional@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/conditional_${item.distribution}_${item.dataset} --test-mode=${testmode}
     params:
     - log-level
     - seed
@@ -60,18 +62,20 @@ stages:
     outs:
     - results/conditional_${item.distribution}_${item.dataset}/mcp
     - results/conditional_${item.distribution}_${item.dataset}/train.log
+    - results/conditional_${item.distribution}_${item.dataset}/dataset.pdf
+    - results/conditional_${item.distribution}_${item.dataset}/samples.pdf
 
   unconditional_hybrid:
     matrix:
       distribution: ${unconditional_hybrid_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-${item.dataset} unconditional_hybrid ${item.distribution} ${item.dataset} results/unconditional_hybrid_${item.distribution}_${item.dataset}/  --test-mode=${testmode}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-${item.dataset} unconditional_hybrid@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_hybrid_${item.distribution}_${item.dataset}/  --test-mode=${testmode}
     params:
     - log-level
     - seed
     - textwidth
     - datasets.${item.dataset}*
-    - unconditional_hybrid_distributions.${item.distribution}*
+    - unconditional_hybrid_distributions.${item.distribution}.${item.dataset}*
     deps:
     - scripts/train.py
     - pyproject.toml
@@ -81,18 +85,23 @@ stages:
     outs:
     - results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log
     - results/unconditional_hybrid_${item.distribution}_${item.dataset}/mcp
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/dataset.pdf
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/data.pdf
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/z1.pdf
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/z2.pdf
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/samples.pdf
 
   unconditional_hybrid_pre_trained:
     matrix:
       distribution: ${unconditional_hybrid_pre_trained_distributions}
       dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-pre-trained-${item.dataset} unconditional_hybrid_pre_trained ${item.distribution} ${item.dataset} results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/  --test-mode=${testmode}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/train.log --experiment-name unconditional-hybrid-pre-trained-${item.dataset} unconditional_hybrid_pre_trained@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/  --test-mode=${testmode}
     params:
     - log-level
     - seed
     - textwidth
     - datasets.${item.dataset}*
-    - unconditional_hybrid_pre_trained_distributions.${item.distribution}*
+    - unconditional_hybrid_pre_trained_distributions.${item.distribution}.${item.dataset}*
     deps:
     - scripts/train.py
     - pyproject.toml
@@ -103,3 +112,8 @@ stages:
     outs:
     - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/train.log
     - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/mcp
+    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/dataset.pdf
+    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/data.pdf
+    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/z1.pdf
+    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/z2.pdf
+    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/samples.pdf

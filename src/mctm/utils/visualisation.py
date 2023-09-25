@@ -29,8 +29,8 @@ def __joint_kde_plot__(data, x, y, **kwds):
         hue="source",
         alpha=0.5,
         s=10,
-        xlim=(data[x].quantile(q=0.05) - 0.1, data[x].quantile(q=0.95) + 0.1),
-        ylim=(data[y].quantile(q=0.05) - 0.1, data[y].quantile(q=0.95) + 0.1),
+        xlim=(data[x].quantile(q=0.001) - 0.1, data[x].quantile(q=0.999) + 0.1),
+        ylim=(data[y].quantile(q=0.001) - 0.1, data[y].quantile(q=0.999) + 0.1),
         **kwds,
     )
     g.plot_joint(sns.kdeplot, legend=False)
@@ -124,6 +124,7 @@ def plot_2d_data(X, Y, **kwds):
 
 
 def plot_samples(dist, data, seed=1, **kwds):
+    columns = ["$y_1$", "$y_2$"]
     if len(dist.batch_shape) == 0 or dist.batch_shape[0] == 1:
         N = data.shape[0]
     else:
@@ -135,24 +136,25 @@ def plot_samples(dist, data, seed=1, **kwds):
     end = time.time()
     print(f"sampling took {end-start} seconds.")
 
-    df1 = pd.DataFrame(columns=["x1", "x2"], data=data)
+    df1 = pd.DataFrame(columns=columns, data=data)
     df1 = df1.assign(source="data")
 
-    df2 = pd.DataFrame(columns=["x1", "x2"], data=samples)
+    df2 = pd.DataFrame(columns=columns, data=samples)
     df2 = df2.assign(source="model")
 
     df = pd.concat([df1, df2])
-    return __joint_kde_plot__(data=df, x="x1", y="x2", **kwds)
+    return __joint_kde_plot__(data=df, x=columns[0], y=columns[1], **kwds)
 
 
 def plot_flow(dist, x, y, seed=1, **kwds):
+    columns = ["$y_1$", "$y_2$", "$z_{1,1}$", "$z_{1,2}$", "$z_{2,1}$", "$z_{2,2}$"]
     # forward flow (bnf in inverted)
     y = tf.convert_to_tensor(y, dtype=tf.float32)
     z1 = dist.bijector.inverse(y)
     z2 = dist.distribution.bijector.inverse(z1)
-    df_inv = pd.DataFrame(
-        np.concatenate([y, z1, z2], 1), columns=["y1", "y2", "z11", "z12", "z21", "z22"]
-    ).assign(label=x, source="data")
+    df_inv = pd.DataFrame(np.concatenate([y, z1, z2], 1), columns=columns).assign(
+        label=x, source="data"
+    )
 
     # inverse flow
     z2 = dist.distribution.distribution.sample(y.shape[0], seed=seed)
@@ -160,17 +162,17 @@ def plot_flow(dist, x, y, seed=1, **kwds):
     yy = dist.bijector.forward(z1)
     df_fwd = pd.DataFrame(
         np.concatenate([yy, z1, z2], 1),
-        columns=["y1", "y2", "z11", "z12", "z21", "z22"],
+        columns=columns,
     ).assign(label=x, source="model")
     df = pd.concat((df_inv, df_fwd))
 
     # plot joint
-    fig1 = __joint_kde_plot__(data=df, x="y1", y="y2", **kwds)
+    fig1 = __joint_kde_plot__(data=df, x=columns[0], y=columns[1], **kwds)
 
     # plot copula
-    fig2 = __joint_kde_plot__(data=df, x="z11", y="z12", **kwds)
+    fig2 = __joint_kde_plot__(data=df, x=columns[2], y=columns[3], **kwds)
 
     # plot base
-    fig3 = __joint_kde_plot__(data=df, x="z21", y="z22", **kwds)
+    fig3 = __joint_kde_plot__(data=df, x=columns[4], y=columns[5], **kwds)
 
     return fig1, fig2, fig3
