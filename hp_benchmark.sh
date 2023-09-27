@@ -11,18 +11,20 @@ declare -A models=(
 datasets="
     POWER
     HEPMASS
-    BSDS300
     MINIBOONE
 "
 
 get_params(){
 
-    echo "-S $1.$2.$3.fit_kwds.batch_size=128,512,1024
-          -S $1.$2.$3.fit_kwds.learning_rate=0.1,0.01,0.001
-          -S $1.$2.$3.fit_kwds.lr_patience=10,100,1000"
-
     if [ "$2" == "masked_autoregressive_bernstein_flow" ]; then
-        echo "-S $1.$2.$3.parameter_kwds.hidden_units=[16,16],[16,16,16],[512,512],[1028,512,128]"
+        echo "-S $1.$2.$3.fit_kwds.batch_size=512,1024
+          -S $1.$2.$3.fit_kwds.learning_rate=0.01,0.05,0.001,0.005
+          -S $1.$2.$3.fit_kwds.lr_patience=5,10,15,20"
+        echo "-S $1.$2.$3.parameter_kwds.hidden_units=[16,16],[16,16,16],[512,512]"
+    else
+        echo "-S $1.$2.$3.fit_kwds.batch_size=512,1024,2048
+          -S $1.$2.$3.fit_kwds.learning_rate=0.01,0.001,0.0001
+          -S $1.$2.$3.fit_kwds.lr_patience=10,25,40,1000"
     fi
 
 }
@@ -65,7 +67,7 @@ while true; do
 
   
 
-  dvc queue start -j 20
+  dvc queue start -j 5
   sleep 900 # every 15 minutes
   #parallel --joblog my_joblog.log -j 10 --eta run_exp_with_id {} ::: "${ids[@]}"
 done
