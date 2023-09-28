@@ -1,7 +1,7 @@
 log-level: info
 seed: 1
 textwidth: 487.8225
-testmode: true
+testmode: false
 
 datasets:
   moons:
@@ -1138,7 +1138,9 @@ unconditional_hybrid_pre_trained_distributions:
         activation: relu
         batch_norm: false
       base_distribution: bernstein_flow
-      base_distribution_kwds: *distribution_kwds
+      base_distribution_kwds: 
+        <<: *distribution_kwds
+        order: 80
       base_parameter_kwds:
         conditional: false
         dtype: float32
