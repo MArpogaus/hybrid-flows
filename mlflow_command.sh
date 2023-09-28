@@ -6,6 +6,6 @@ dvc pull -r local
 
 # set -eu
 
-dvc exp run $@
+dvc repro malnutrition
 
 dvc push -r local

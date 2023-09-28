@@ -1094,3 +1094,93 @@ unconditional_hybrid_pre_trained_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
+
+malnutrition_distributions:
+  bernstein_flow:
+    distribution_kwds: *distribution_kwds
+    parameter_kwds:
+      conditional: true
+      activation: relu
+      batch_norm: true
+      hidden_units:
+      - 16
+      - 16
+      input_shape: 1
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.01
+      lr_patience: 500
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+  multivariate_bernstein_flow:
+    distribution_kwds: *distribution_kwds
+    parameter_kwds:
+      conditional: true
+      activation: relu
+      batch_norm: true
+      hidden_units:
+      - 16
+      - 16
+      input_shape: 1
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.01
+      lr_patience: 500
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+  multivariate_normal:
+    distribution_kwds: {}
+    parameter_kwds:
+      conditional: true
+      activation: relu
+      batch_norm: true
+      hidden_units:
+      - 16
+      - 16
+      input_shape: 1
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.01
+      lr_patience: 500
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+  masked_autoregressive_bernstein_flow:
+    distribution_kwds: *distribution_kwds
+    parameter_kwds:
+      hidden_units:
+      - 16
+      - 16
+      activation: relu
+      conditional: True,
+      # conditional_input_layers='first_layer',
+      conditional_event_shape: 1
+    fit_kwds:
+      epochs: 10000
+      validation_split: 0.1
+      batch_size: 512
+      learning_rate: 0.001
+      lr_patience: 100
+      reduce_lr_on_plateau: true
+      early_stopping: true
+      verbose: true
+      monitor: val_loss
+
+malnutrition_kwds:
+  data_path: datasets/malnutrition/india.raw
+  targets: [stunting, wasting, underweight]
+  covariates: [mage]
