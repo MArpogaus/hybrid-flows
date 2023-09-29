@@ -14,6 +14,7 @@ from mctm.data.malnutrion import get_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
 from mctm.utils import str2bool
 from mctm.utils.pipeline import pipeline, prepare_pipeline
+from mctm.utils.tensorflow import set_seed
 from mctm.utils.visualisation import get_figsize, setup_latex
 
 __LOGGER__ = logging.getLogger(__name__)
@@ -23,13 +24,14 @@ def plot_grid(data, **kwds):
     sns.set_theme(style="white")
     g = sns.PairGrid(data, diag_sharey=False, **kwds)
     g.map_upper(sns.scatterplot, s=15)
+
     g.map_lower(sns.kdeplot)
     g.map_diag(sns.kdeplot, lw=2)
 
     return g
 
 
-def plot_data(*data, targets=None, frac=0.1, **kwds):
+def plot_data(*data, targets, frac=0.1, **kwds):
     train_data, _, _ = data
     data = pd.DataFrame(np.array(train_data[1]), columns=targets).sample(frac=frac)
 
@@ -37,22 +39,23 @@ def plot_data(*data, targets=None, frac=0.1, **kwds):
     return g.figure
 
 
-def get_after_fit_hook(results_path, N=1000, targets=None, **kwds):
-    def plot_samples_grid(model, x, y, *args, **_):
+def get_after_fit_hook(results_path, N, seed, targets, **kwds):
+    def plot_samples_grid(model, x, y, validation_data, **_):
+        x, y = validation_data
+        set_seed(seed)
         if targets is None:
             columns = [f"x{i}" for i in range(y.shape[-1])]
         else:
             columns = targets
-        df = (
-            pd.DataFrame(model(x).sample().numpy().reshape([-1, 3]), columns=columns)
-            .assign(model=True)
+        df_data = pd.DataFrame(y, columns=columns).sample(N).assign(source="data")
+        df_model = (
+            pd.DataFrame(model(x).sample(seed=seed).numpy().squeeze(), columns=columns)
+            .assign(source="model")
             .sample(N)
         )
-        df = pd.concat(
-            [df, pd.DataFrame(y, columns=columns).sample(N).assign(model=False)]
-        )
+        df = pd.concat([df_data, df_model])
 
-        g = plot_grid(df, hue="model", **kwds)
+        g = plot_grid(df, hue="source", **kwds)
         g = g.add_legend()
 
         g.figure.savefig(os.path.join(results_path, "samples.pdf"))
@@ -139,8 +142,10 @@ def main(args):
             "validation_data": data[1],
         },
         fit_kwds=fit_kwds,
-        plot_data=partial(plot_data, height=fig_width),
+        plot_data=partial(plot_data, targets=dataset_kwds["targets"], height=fig_width),
         after_fit_hook=get_after_fit_hook(
+            N=2000,
+            seed=params["seed"],
             results_path=args.results_path,
             targets=dataset_kwds["targets"],
             height=fig_width,
