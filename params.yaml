@@ -624,6 +624,14 @@ unconditional_benchmark_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 100
+        base_distribution_kwds:
+          distribution_type: kumaraswamy
+          concentration1: 2
+          concentration0: 5
+        low: 0.001
+        high: 0.999
+        smooth_bounds: true
+        allow_flexible_bounds: false
       parameter_kwds:
         hidden_units:
         - 256
@@ -643,6 +651,14 @@ unconditional_benchmark_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 100
+        base_distribution_kwds:
+          distribution_type: kumaraswamy
+          concentration1: 2
+          concentration0: 5
+        low: 0.001
+        high: 0.999
+        smooth_bounds: true
+        allow_flexible_bounds: false
       parameter_kwds:
         hidden_units:
         - 256
@@ -681,6 +697,14 @@ unconditional_benchmark_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 100
+        base_distribution_kwds:
+          distribution_type: kumaraswamy
+          concentration1: 2
+          concentration0: 5
+        low: 0.001
+        high: 0.999
+        smooth_bounds: true
+        allow_flexible_bounds: false
       parameter_kwds:
         hidden_units:
         - 256
@@ -837,6 +861,15 @@ conditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 50
+        base_distribution_kwds:
+          distribution_type: kumaraswamy
+          concentration1: 2
+          concentration0: 5
+        low: 0.001
+        high: 0.999
+        smooth_bounds: true
+        allow_flexible_bounds: false
+
       parameter_kwds:
         hidden_units:
         - 16
