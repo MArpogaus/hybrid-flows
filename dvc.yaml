@@ -134,7 +134,7 @@ stages:
       - malnutrition_distributions.${key}*
       deps:
       - datasets/malnutrition
-      - scripts/train.py
+      - scripts/train_malnutrition.py
       - pyproject.toml
       - src/mctm
       metrics:
