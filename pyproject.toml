@@ -10,7 +10,8 @@ classifiers = [
 ]
 dependencies = [
   "bernstein_flow @ git+https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector.git@ff84814",
-  "tensorflow-datasets==4.9.*"
+  "tensorflow-datasets==4.9.*",
+  "seaborn==0.12.*"
 ]
 dynamic = ["version"]
 license = {text = "TODO"}
@@ -33,8 +34,7 @@ develop = [
 ]
 train = [
   "dvc==3.18.*",
-  "mlflow==2.5.*",
-  "seaborn==0.12.*"
+  "mlflow==2.5.*"
 ]
 
 [tool.autoflake]
