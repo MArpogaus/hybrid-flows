@@ -6,6 +6,7 @@ dvc pull -r local
 
 # set -eu
 
-dvc exp run $@
+#dvc exp run $@
+dvc repro unconditional_benchmark
 
 dvc push -r local
