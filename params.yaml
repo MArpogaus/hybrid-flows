@@ -15,7 +15,7 @@ datasets:
     scale: true
 
 benchmark_datasets:
-  BSDS300:
+  bsds300:
     scale:
     - 0.41659998893737793
     - 0.42329999804496765
@@ -144,7 +144,7 @@ benchmark_datasets:
     - 1.030500054359436
     - 1.0365999937057495
     - 1.0033999681472778
-  HEPMASS:
+  hepmass:
     scale:
     - 0.1239
     - 0.1383
@@ -189,7 +189,7 @@ benchmark_datasets:
     - 4.0974
     - 7.1135
     - 3.0255
-  MINIBOONE:
+  miniboone:
     scale:
     - 0.0723
     - 0.0744
@@ -278,7 +278,7 @@ benchmark_datasets:
     - 2.2119
     - 8.4507
     - 6.3555
-  POWER:
+  power:
     scale:
     - 0.067
     - 0.0733
@@ -485,7 +485,7 @@ unconditional_distributions:
 
 unconditional_benchmark_distributions:
   bernstein_flow:
-    POWER:
+    power:
       distribution_kwds:
         <<: *distribution_kwds
         order: 100
@@ -501,7 +501,7 @@ unconditional_benchmark_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    HEPMASS:
+    hepmass:
       distribution_kwds:
         <<: *distribution_kwds
         order: 100
@@ -517,7 +517,7 @@ unconditional_benchmark_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    MINIBOONE:
+    miniboone:
       distribution_kwds:
         <<: *distribution_kwds
         order: 100
@@ -533,7 +533,7 @@ unconditional_benchmark_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    BSDS300:
+    bsds300:
       distribution_kwds:
         <<: *distribution_kwds
         order: 100
@@ -551,7 +551,7 @@ unconditional_benchmark_distributions:
         monitor: val_loss
 
   # multivariate_bernstein_flow:
-  #   POWER:
+  #   power:
   #     distribution_kwds: *distribution_kwds
   #     parameter_kwds:
   #       conditional: false
@@ -566,7 +566,7 @@ unconditional_benchmark_distributions:
   #       early_stopping: true
   #       verbose: true
   #       monitor: val_loss
-  #   HEPMASS:
+  #   hepmass:
   #     distribution_kwds: *distribution_kwds
   #     parameter_kwds:
   #       conditional: false
@@ -581,7 +581,7 @@ unconditional_benchmark_distributions:
   #       early_stopping: true
   #       verbose: true
   #       monitor: val_loss
-  #   MINIBOONE:
+  #   miniboone:
   #     distribution_kwds: *distribution_kwds
   #     parameter_kwds:
   #       conditional: false
@@ -596,7 +596,7 @@ unconditional_benchmark_distributions:
   #       early_stopping: true
   #       verbose: true
   #       monitor: val_loss
-  #   BSDS300:
+  #   bsds300:
   #     distribution_kwds: *distribution_kwds
   #     parameter_kwds:
   #       conditional: false
@@ -613,7 +613,7 @@ unconditional_benchmark_distributions:
   #       monitor: val_loss
 
   masked_autoregressive_bernstein_flow:
-    POWER:
+    power:
       distribution_kwds: &benchmark_distribution_kwds
         <<: *distribution_kwds
         order: 100
@@ -641,7 +641,7 @@ unconditional_benchmark_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    HEPMASS:
+    hepmass:
       distribution_kwds: *benchmark_distribution_kwds
       parameter_kwds:
         hidden_units:
@@ -659,7 +659,7 @@ unconditional_benchmark_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    BSDS300:
+    bsds300:
       distribution_kwds: *benchmark_distribution_kwds
       parameter_kwds:
         hidden_units:
@@ -676,7 +676,7 @@ unconditional_benchmark_distributions:
         early_stopping: true
         verbose: true
         monitor: val_loss
-    MINIBOONE:
+    miniboone:
       distribution_kwds: *benchmark_distribution_kwds
       parameter_kwds:
         hidden_units:

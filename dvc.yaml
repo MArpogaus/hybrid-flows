@@ -33,10 +33,7 @@ stages:
     - benchmark_datasets.${item.dataset}*
     - unconditional_benchmark_distributions.${item.distribution}.${item.dataset}*
     deps:
-    - datasets/bsds300
-    - datasets/hepmass
-    - datasets/miniboone
-    - datasets/power
+    - datasets/${item.dataset}
     - scripts/train.py
     - pyproject.toml
     - src/mctm

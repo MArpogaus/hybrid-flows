@@ -84,6 +84,7 @@ def load_and_preprocess_data(dataset_name, dataset_path):
     Returns:
         tuple: Tuple containing the training, validation, and test data arrays.
     """
+    dataset_name = dataset_name.upper()
 
     # Load the data and apply preprocessing as per the original code
     if dataset_name == "POWER":
@@ -335,11 +336,9 @@ if __name__ == "__main__":
     shift_and_scale = {}
     for dataset_name in ("POWER", "HEPMASS", "MINIBOONE", "BSDS300"):
         print(f"=== {dataset_name} ===")
-        (train_data, validation_data, test_data), dims = get_dataset(dataset_name)
+        (train_data, validation_data, _), dims = get_dataset(dataset_name)
         print(f"{dims=}")
-        for d, split in zip(
-            (train_data, validation_data, test_data), ("train", "validate", "test")
-        ):
+        for d, split in zip((train_data, validation_data), ("train", "validate")):
             print(f"--- {split} ---")
             print(f"{type(d)=}")
             print(f"{d.shape=}")
