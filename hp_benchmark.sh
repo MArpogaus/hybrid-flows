@@ -3,44 +3,28 @@
 #set -e
 
 declare -A models=(
-    [unconditional_distributions]="
+    [unconditional_benchmark_distributions]="
         bernstein_flow
-        masked_autoregressive_bernstein_flow
-        multivariate_bernstein_flow
-        multivariate_normal"
-
-    [conditional_distributions]="
-        bernstein_flow
-        multivariate_bernstein_flow
-        multivariate_normal
-        masked_autoregressive_bernstein_flow
-        coupling_bernstein_flow"
-
-    [unconditional_hybrid_distributions]="
-        coupling_bernstein_flow"
-
-    [unconditional_hybrid_pre_trained_distributions]="
-        coupling_bernstein_flow"
+        masked_autoregressive_bernstein_flow"
 )
 
 datasets="
-    moons_dataset
-    circles_dataset
+    POWER
+    HEPMASS
+    MINIBOONE
 "
 
 get_params(){
-    # echo "-S $1.$2.$3.fit_kwds.epochs=1"
 
-    echo "-S $1.$2.$3.fit_kwds.batch_size=512,1024
-          -S $1.$2.$3.fit_kwds.learning_rate=0.05,0.01,0.005
-          -S $1.$2.$3.fit_kwds.lr_patience=100,1000"
-
-    if [ "$2" != "multivariate_normal" ]; then
-        echo "-S $1.$2.$3.distribution_kwds.order=50,80"
-    fi
-
-    if [ "$2" != "bernstein_flow" ] && [ "$2" != "multivariate_bernstein_flow" ] && [ "$2" != "multivariate_normal" ]; then
+    if [ "$2" == "masked_autoregressive_bernstein_flow" ]; then
+        echo "-S $1.$2.$3.fit_kwds.batch_size=512,1024
+          -S $1.$2.$3.fit_kwds.learning_rate=0.01,0.05,0.001,0.005
+          -S $1.$2.$3.fit_kwds.lr_patience=5,10,15,20"
         echo "-S $1.$2.$3.parameter_kwds.hidden_units=[16,16],[16,16,16],[512,512]"
+    else
+        echo "-S $1.$2.$3.fit_kwds.batch_size=512,1024,2048
+          -S $1.$2.$3.fit_kwds.learning_rate=0.01,0.001,0.0001
+          -S $1.$2.$3.fit_kwds.lr_patience=10,25,40,1000"
     fi
 
 }
@@ -83,7 +67,7 @@ while true; do
 
   
 
-  dvc queue start -j 10
+  dvc queue start -j 5
   sleep 900 # every 15 minutes
   #parallel --joblog my_joblog.log -j 10 --eta run_exp_with_id {} ::: "${ids[@]}"
 done
