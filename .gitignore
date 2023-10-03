@@ -1,6 +1,6 @@
 # Created by https://www.toptal.com/developers/gitignore/api/r,python,jupyternotebooks,emacs,linux,macos,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=r,python,jupyternotebooks,emacs,linux,macos,windows
-datasets/
+
 .virtual_documents/
 ### Emacs ###
 # -*- mode: gitignore; -*-
