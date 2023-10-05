@@ -9,17 +9,17 @@ declare -A models=(
 )
 
 datasets="
-    POWER
-    HEPMASS
-    MINIBOONE
+    power
+    hepmass
+    miniboone
 "
 
 get_params(){
 
     if [ "$2" == "masked_autoregressive_bernstein_flow" ]; then
-        echo "-S $1.$2.$3.fit_kwds.batch_size=128,512
+        echo "-S $1.$2.$3.fit_kwds.batch_size=32,128,512
           -S $1.$2.$3.fit_kwds.learning_rate=0.01,0.001
-          -S $1.$2.$3.fit_kwds.lr_patience=5,15
+          -S $1.$2.$3.fit_kwds.lr_patience=5,10
           -S $1.$2.$3.parameter_kwds.hidden_units=[64,64,64],[512,512,512]"
     else
         echo "-S $1.$2.$3.fit_kwds.batch_size=512,1024,2048
@@ -34,7 +34,7 @@ dvc queue stop --kill
 dvc queue remove --all
 
 rm -r results/ || echo "results not present" # to remove old artifacts
-
+dvc checkout
 # reproduce pipeline to cache results
 dvc repro
 
@@ -52,8 +52,8 @@ for stage in "${!models[@]}"; do
     done
 done
 
-[ ! $(pgrep mlflow) ] && mlflow ui &
-export MLFLOW_TRACKING_URI=http://127.0.0.1:5000
+# [ ! $(pgrep mlflow) ] && mlflow ui &
+# export MLFLOW_TRACKING_URI=http://127.0.0.1:5000
 
 echo "executing experiments"
 # while true; do
