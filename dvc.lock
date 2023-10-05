@@ -5611,28 +5611,24 @@ stages:
         unconditional_benchmark_distributions.masked_autoregressive_bernstein_flow.miniboone*:
           distribution_kwds:
             order: 100
-            low: 0.001
-            high: 0.999
+            low: -3
+            high: 3
             smooth_bounds: true
-            allow_flexible_bounds: false
+            allow_flexible_bounds: true
             shift: false
             scale: false
             clip_to_bernstein_domain: false
-            base_distribution_kwds:
-              distribution_type: kumaraswamy
-              concentration1: 2
-              concentration0: 5
           parameter_kwds:
             hidden_units:
-            - 256
-            - 256
-            - 256
+            - 64
+            - 64
+            - 64
             activation: elu
             kernel_initializer: he_normal
           fit_kwds:
             epochs: 10000
-            batch_size: 128
-            learning_rate: 0.005
+            batch_size: 32
+            learning_rate: 0.01
             lr_patience: 10
             reduce_lr_on_plateau: true
             early_stopping: true
@@ -5642,19 +5638,19 @@ stages:
     - path: 
         results/unconditional_benchmark_masked_autoregressive_bernstein_flow_miniboone/mcp
       hash: md5
-      md5: 1a33d76aca182517c728b0465fa0b869.dir
-      size: 14981007
+      md5: 82196e296eecbbe207f5dfd27e0b652e.dir
+      size: 3493215
       nfiles: 3
     - path: 
         results/unconditional_benchmark_masked_autoregressive_bernstein_flow_miniboone/metrics.yaml
       hash: md5
-      md5: 3b251c0cb5055e302b75a28ac86928e8
+      md5: 4c85f8a19d1e1a586f13c7dfea64c706
       size: 54
     - path: 
         results/unconditional_benchmark_masked_autoregressive_bernstein_flow_miniboone/train.log
       hash: md5
-      md5: bb4a4d3df3fd74269d22a58357ed6e59
-      size: 2717
+      md5: ad57935afcd04993e8c7961b06d44b8f
+      size: 2598
   unconditional_benchmark@bernstein_flow-miniboone:
     cmd: python scripts/train_benchmark.py --log-level info --log-file results/unconditional_benchmark_bernstein_flow_miniboone/train.log
       --experiment-name unconditional-benchmark-miniboone unconditional_benchmark@bernstein_flow-miniboone
@@ -5787,9 +5783,9 @@ stages:
             dtype: float32
           fit_kwds:
             epochs: 10000
-            batch_size: 512
-            learning_rate: 0.001
-            lr_patience: 25
+            batch_size: 32
+            learning_rate: 0.01
+            lr_patience: 10
             reduce_lr_on_plateau: true
             early_stopping: true
             verbose: true
@@ -5797,17 +5793,17 @@ stages:
     outs:
     - path: results/unconditional_benchmark_bernstein_flow_miniboone/mcp
       hash: md5
-      md5: 9bedd1a7469d8cdd5a2e09a8713d35a9.dir
+      md5: a884e13845e0b259d2af91cfd338fa36.dir
       size: 53273
       nfiles: 3
     - path: results/unconditional_benchmark_bernstein_flow_miniboone/metrics.yaml
       hash: md5
-      md5: 98e2a804c440b3d9d8200c5112c8dbe5
+      md5: 5f6a6951326bc9b7fcc1f9dcb51f3fdb
       size: 52
     - path: results/unconditional_benchmark_bernstein_flow_miniboone/train.log
       hash: md5
-      md5: fedd74d620e4e16b3085fdb0f97c0c58
-      size: 2247
+      md5: 64473da272a6d5e9613daf82d53bded0
+      size: 2442
   unconditional_benchmark@bernstein_flow-power:
     cmd: python scripts/train_benchmark.py --log-level info --log-file results/unconditional_benchmark_bernstein_flow_power/train.log
       --experiment-name unconditional-benchmark-power unconditional_benchmark@bernstein_flow-power
@@ -5865,9 +5861,9 @@ stages:
             dtype: float32
           fit_kwds:
             epochs: 10000
-            batch_size: 512
-            learning_rate: 0.001
-            lr_patience: 25
+            batch_size: 32
+            learning_rate: 0.01
+            lr_patience: 10
             reduce_lr_on_plateau: true
             early_stopping: true
             verbose: true
@@ -5875,17 +5871,17 @@ stages:
     outs:
     - path: results/unconditional_benchmark_bernstein_flow_power/mcp
       hash: md5
-      md5: 0cd93ecc516e1cbbcba0bf9a5c2b004b.dir
+      md5: b15f91daddfe834676b931478dba117a.dir
       size: 8862
       nfiles: 3
     - path: results/unconditional_benchmark_bernstein_flow_power/metrics.yaml
       hash: md5
-      md5: fefda353f6f4a9a938edf24b5fbcfb6d
-      size: 54
+      md5: 0792c4475f22f74cd58291398e8e1b65
+      size: 53
     - path: results/unconditional_benchmark_bernstein_flow_power/train.log
       hash: md5
-      md5: 9ac0362ae670e77e2f714a2ae93906e0
-      size: 1829
+      md5: 9108076c77cf591b19e8ae6f52f8415f
+      size: 1824
   unconditional_benchmark@masked_autoregressive_bernstein_flow-hepmass:
     cmd: python scripts/train_benchmark.py --log-level info --log-file 
       results/unconditional_benchmark_masked_autoregressive_bernstein_flow_hepmass/train.log
@@ -5963,28 +5959,24 @@ stages:
         unconditional_benchmark_distributions.masked_autoregressive_bernstein_flow.hepmass*:
           distribution_kwds:
             order: 100
-            low: 0.001
-            high: 0.999
+            low: -3
+            high: 3
             smooth_bounds: true
-            allow_flexible_bounds: false
+            allow_flexible_bounds: true
             shift: false
             scale: false
             clip_to_bernstein_domain: false
-            base_distribution_kwds:
-              distribution_type: kumaraswamy
-              concentration1: 2
-              concentration0: 5
           parameter_kwds:
             hidden_units:
-            - 256
-            - 256
-            - 256
+            - 64
+            - 64
+            - 64
             activation: elu
             kernel_initializer: he_normal
           fit_kwds:
             epochs: 10000
-            batch_size: 128
-            learning_rate: 0.001
+            batch_size: 32
+            learning_rate: 0.01
             lr_patience: 10
             reduce_lr_on_plateau: true
             early_stopping: true
@@ -5993,19 +5985,19 @@ stages:
     outs:
     - path: results/unconditional_benchmark_masked_autoregressive_bernstein_flow_hepmass/mcp
       hash: md5
-      md5: a885199cb7778316f2c689a2a3cf2a8d.dir
-      size: 8128620
+      md5: f60dd1bbacb732bf64382307f76beb68.dir
+      size: 1760306
       nfiles: 3
     - path: 
         results/unconditional_benchmark_masked_autoregressive_bernstein_flow_hepmass/metrics.yaml
       hash: md5
-      md5: 1e9644a998f9a488fb6e30dd719f36a0
-      size: 54
+      md5: 370a4bb467920223eced8f9fd97ce54a
+      size: 26
     - path: 
         results/unconditional_benchmark_masked_autoregressive_bernstein_flow_hepmass/train.log
       hash: md5
-      md5: 39b2a661872358590a9932c3e312a64f
-      size: 2356
+      md5: cccc749e90d6e39686f4247882bdae0e
+      size: 2203
   malnutrition@masked_autoregressive_bernstein_flow:
     cmd: python scripts/train_malnutrition.py --log-level info --log-file results/conditional_masked_autoregressive_bernstein_flow_malnutrition/train.log
       --experiment-name conditional-malnutrition malnutrition@masked_autoregressive_bernstein_flow
@@ -6347,3 +6339,590 @@ stages:
       hash: md5
       md5: 071f2b2ca864e55749eb194d06ec37c9
       size: 2021
+  unconditional_benchmark@bernstein_flow-bsds300:
+    cmd: python scripts/train_benchmark.py --log-level info --log-file results/unconditional_benchmark_bernstein_flow_bsds300/train.log
+      --experiment-name unconditional-benchmark-bsds300 unconditional_benchmark@bernstein_flow-bsds300
+      bernstein_flow bsds300 results/unconditional_benchmark_bernstein_flow_bsds300
+      --test-mode=false
+    deps:
+    - path: datasets/bsds300
+      hash: md5
+      md5: 53da7f787d62b78d2755abe32633f633.dir
+      size: 327602255
+      nfiles: 3
+    - path: pyproject.toml
+      hash: md5
+      md5: 6367d19557868b13b35ca3094fa18e50
+      size: 1132
+    - path: scripts/train.py
+      hash: md5
+      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
+      size: 5361
+    - path: src/mctm
+      hash: md5
+      md5: ea2709adfe342fce65da989eae16ca79.dir
+      size: 54642
+      nfiles: 13
+    params:
+      params.yaml:
+        benchmark_datasets.bsds300*:
+          scale:
+          - 0.41659998893737793
+          - 0.42329999804496765
+          - 0.43380001187324524
+          - 0.42239999771118164
+          - 0.4309999942779541
+          - 0.4415999948978424
+          - 0.4198000133037567
+          - 0.39969998598098755
+          - 0.4196999967098236
+          - 0.40849998593330383
+          - 0.46160000562667847
+          - 0.46709999442100525
+          - 0.43220001459121704
+          - 0.45559999346733093
+          - 0.4341999888420105
+          - 0.42320001125335693
+          - 0.41110000014305115
+          - 0.43639999628067017
+          - 0.4542999863624573
+          - 0.42320001125335693
+          - 0.46650001406669617
+          - 0.4505000114440918
+          - 0.4431000053882599
+          - 0.4269999861717224
+          - 0.4334999918937683
+          - 0.44209998846054077
+          - 0.4724000096321106
+          - 0.462799996137619
+          - 0.45980000495910645
+          - 0.4657999873161316
+          - 0.43220001459121704
+          - 0.43149998784065247
+          - 0.42800000309944153
+          - 0.435699999332428
+          - 0.4577000141143799
+          - 0.439300000667572
+          - 0.41620001196861267
+          - 0.4542999863624573
+          - 0.44850000739097595
+          - 0.40540000796318054
+          - 0.4350000023841858
+          - 0.44200000166893005
+          - 0.44179999828338623
+          - 0.4374000132083893
+          - 0.4577000141143799
+          - 0.46219998598098755
+          - 0.45239999890327454
+          - 0.4104999899864197
+          - 0.4171999990940094
+          - 0.4316999912261963
+          - 0.43140000104904175
+          - 0.4837999939918518
+          - 0.4465999901294708
+          - 0.43320000171661377
+          - 0.4203999936580658
+          - 0.4255000054836273
+          - 0.4072999954223633
+          - 0.41110000014305115
+          - 0.3986000120639801
+          - 0.43700000643730164
+          - 0.41190001368522644
+          - 0.4058000147342682
+          - 0.41339999437332153
+          shift:
+          - 1.0306999683380127
+          - 1.01010000705719
+          - 0.9848999977111816
+          - 0.9800999760627747
+          - 0.9926000237464905
+          - 0.9603000283241272
+          - 1.0347000360488892
+          - 1.0843000411987305
+          - 1.0469000339508057
+          - 1.003999948501587
+          - 0.9032999873161316
+          - 0.9136999845504761
+          - 0.9534000158309937
+          - 0.9480999708175659
+          - 0.9422000050544739
+          - 1.0094000101089478
+          - 0.972000002861023
+          - 0.8550000190734863
+          - 0.9434999823570251
+          - 1.0500999689102173
+          - 0.909500002861023
+          - 0.9544000029563904
+          - 0.9394999742507935
+          - 1.0041999816894531
+          - 0.917900025844574
+          - 0.8917999863624573
+          - 0.902400016784668
+          - 0.9350000023841858
+          - 0.9391999840736389
+          - 0.8554999828338623
+          - 1.0074000358581543
+          - 0.9652000069618225
+          - 0.9664000272750854
+          - 0.935699999332428
+          - 0.9135000109672546
+          - 1.0443999767303467
+          - 1.0032000541687012
+          - 0.9236999750137329
+          - 0.9197999835014343
+          - 0.9959999918937683
+          - 0.9128999710083008
+          - 0.9452000260353088
+          - 0.9740999937057495
+          - 1.0039000511169434
+          - 0.9194999933242798
+          - 0.8916000127792358
+          - 0.9072999954223633
+          - 1.0535999536514282
+          - 0.9842000007629395
+          - 0.9395999908447266
+          - 0.878600001335144
+          - 0.8270999789237976
+          - 0.9574999809265137
+          - 0.9839000105857849
+          - 0.9797000288963318
+          - 1.001099944114685
+          - 1.0077999830245972
+          - 1.0020999908447266
+          - 1.0638999938964844
+          - 0.9480999708175659
+          - 1.030500054359436
+          - 1.0365999937057495
+          - 1.0033999681472778
+        log-level: info
+        seed: 1
+        unconditional_benchmark_distributions.bernstein_flow.bsds300*:
+          distribution_kwds:
+            order: 100
+            low: -3
+            high: 3
+            smooth_bounds: true
+            allow_flexible_bounds: true
+            shift: false
+            scale: false
+            clip_to_bernstein_domain: false
+          parameter_kwds:
+            conditional: false
+            dtype: float32
+          fit_kwds:
+            epochs: 10000
+            batch_size: 32
+            learning_rate: 0.01
+            lr_patience: 10
+            reduce_lr_on_plateau: true
+            early_stopping: true
+            verbose: true
+            monitor: val_loss
+    outs:
+    - path: results/unconditional_benchmark_bernstein_flow_bsds300/mcp
+      hash: md5
+      md5: d680232c0705a3711f653025b8dc0894.dir
+      size: 77273
+      nfiles: 3
+    - path: results/unconditional_benchmark_bernstein_flow_bsds300/metrics.yaml
+      hash: md5
+      md5: 05e9a47cea0ef15b441d9bdd0e5cc3f5
+      size: 54
+    - path: results/unconditional_benchmark_bernstein_flow_bsds300/train.log
+      hash: md5
+      md5: d99784efa807e7149f392228eeac6364
+      size: 4286
+  unconditional_benchmark@bernstein_flow-hepmass:
+    cmd: python scripts/train_benchmark.py --log-level info --log-file results/unconditional_benchmark_bernstein_flow_hepmass/train.log
+      --experiment-name unconditional-benchmark-hepmass unconditional_benchmark@bernstein_flow-hepmass
+      bernstein_flow hepmass results/unconditional_benchmark_bernstein_flow_hepmass
+      --test-mode=false
+    deps:
+    - path: datasets/hepmass
+      hash: md5
+      md5: d346532e3bebcd376f9d236bb4d36a44.dir
+      size: 750085420
+      nfiles: 5
+    - path: pyproject.toml
+      hash: md5
+      md5: 6367d19557868b13b35ca3094fa18e50
+      size: 1132
+    - path: scripts/train.py
+      hash: md5
+      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
+      size: 5361
+    - path: src/mctm
+      hash: md5
+      md5: ea2709adfe342fce65da989eae16ca79.dir
+      size: 54642
+      nfiles: 13
+    params:
+      params.yaml:
+        benchmark_datasets.hepmass*:
+          scale:
+          - 0.1239
+          - 0.1383
+          - 0.2021
+          - 0.0648
+          - 0.2022
+          - 0.0709
+          - 0.1148
+          - 0.2022
+          - 0.0806
+          - 0.1278
+          - 0.202
+          - 0.0928
+          - 0.1388
+          - 0.2022
+          - 0.1109
+          - 0.1521
+          - 0.202
+          - 0.0782
+          - 0.0645
+          - 0.0441
+          - 0.1059
+          shift:
+          - 2.7185
+          - 3.0382
+          - 2.0813
+          - 9.6636
+          - 2.0774
+          - 6.2201
+          - 3.6592
+          - 2.0762
+          - 4.9618
+          - 3.2846
+          - 2.0777
+          - 3.7834
+          - 3.0268
+          - 2.0786
+          - 2.4003
+          - 2.7624
+          - 2.0787
+          - 3.6851
+          - 4.0974
+          - 7.1135
+          - 3.0255
+        log-level: info
+        seed: 1
+        unconditional_benchmark_distributions.bernstein_flow.hepmass*:
+          distribution_kwds:
+            order: 100
+            low: -3
+            high: 3
+            smooth_bounds: true
+            allow_flexible_bounds: true
+            shift: false
+            scale: false
+            clip_to_bernstein_domain: false
+          parameter_kwds:
+            conditional: false
+            dtype: float32
+          fit_kwds:
+            epochs: 10000
+            batch_size: 32
+            learning_rate: 0.01
+            lr_patience: 10
+            reduce_lr_on_plateau: true
+            early_stopping: true
+            verbose: true
+            monitor: val_loss
+    outs:
+    - path: results/unconditional_benchmark_bernstein_flow_hepmass/mcp
+      hash: md5
+      md5: 65ff243f7486486feac7c2ffef4562aa.dir
+      size: 26864
+      nfiles: 3
+    - path: results/unconditional_benchmark_bernstein_flow_hepmass/metrics.yaml
+      hash: md5
+      md5: f927a7ae611b99dd0764dd10d2774888
+      size: 51
+    - path: results/unconditional_benchmark_bernstein_flow_hepmass/train.log
+      hash: md5
+      md5: c8d1bb3f002ebeb28ab8196bbb7c426a
+      size: 2079
+  unconditional_benchmark@masked_autoregressive_bernstein_flow-bsds300:
+    cmd: python scripts/train_benchmark.py --log-level info --log-file 
+      results/unconditional_benchmark_masked_autoregressive_bernstein_flow_bsds300/train.log
+      --experiment-name unconditional-benchmark-bsds300 unconditional_benchmark@masked_autoregressive_bernstein_flow-bsds300
+      masked_autoregressive_bernstein_flow bsds300 results/unconditional_benchmark_masked_autoregressive_bernstein_flow_bsds300
+      --test-mode=false
+    deps:
+    - path: datasets/bsds300
+      hash: md5
+      md5: 53da7f787d62b78d2755abe32633f633.dir
+      size: 327602255
+      nfiles: 3
+    - path: pyproject.toml
+      hash: md5
+      md5: 6367d19557868b13b35ca3094fa18e50
+      size: 1132
+    - path: scripts/train.py
+      hash: md5
+      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
+      size: 5361
+    - path: src/mctm
+      hash: md5
+      md5: ea2709adfe342fce65da989eae16ca79.dir
+      size: 54642
+      nfiles: 13
+    params:
+      params.yaml:
+        benchmark_datasets.bsds300*:
+          scale:
+          - 0.41659998893737793
+          - 0.42329999804496765
+          - 0.43380001187324524
+          - 0.42239999771118164
+          - 0.4309999942779541
+          - 0.4415999948978424
+          - 0.4198000133037567
+          - 0.39969998598098755
+          - 0.4196999967098236
+          - 0.40849998593330383
+          - 0.46160000562667847
+          - 0.46709999442100525
+          - 0.43220001459121704
+          - 0.45559999346733093
+          - 0.4341999888420105
+          - 0.42320001125335693
+          - 0.41110000014305115
+          - 0.43639999628067017
+          - 0.4542999863624573
+          - 0.42320001125335693
+          - 0.46650001406669617
+          - 0.4505000114440918
+          - 0.4431000053882599
+          - 0.4269999861717224
+          - 0.4334999918937683
+          - 0.44209998846054077
+          - 0.4724000096321106
+          - 0.462799996137619
+          - 0.45980000495910645
+          - 0.4657999873161316
+          - 0.43220001459121704
+          - 0.43149998784065247
+          - 0.42800000309944153
+          - 0.435699999332428
+          - 0.4577000141143799
+          - 0.439300000667572
+          - 0.41620001196861267
+          - 0.4542999863624573
+          - 0.44850000739097595
+          - 0.40540000796318054
+          - 0.4350000023841858
+          - 0.44200000166893005
+          - 0.44179999828338623
+          - 0.4374000132083893
+          - 0.4577000141143799
+          - 0.46219998598098755
+          - 0.45239999890327454
+          - 0.4104999899864197
+          - 0.4171999990940094
+          - 0.4316999912261963
+          - 0.43140000104904175
+          - 0.4837999939918518
+          - 0.4465999901294708
+          - 0.43320000171661377
+          - 0.4203999936580658
+          - 0.4255000054836273
+          - 0.4072999954223633
+          - 0.41110000014305115
+          - 0.3986000120639801
+          - 0.43700000643730164
+          - 0.41190001368522644
+          - 0.4058000147342682
+          - 0.41339999437332153
+          shift:
+          - 1.0306999683380127
+          - 1.01010000705719
+          - 0.9848999977111816
+          - 0.9800999760627747
+          - 0.9926000237464905
+          - 0.9603000283241272
+          - 1.0347000360488892
+          - 1.0843000411987305
+          - 1.0469000339508057
+          - 1.003999948501587
+          - 0.9032999873161316
+          - 0.9136999845504761
+          - 0.9534000158309937
+          - 0.9480999708175659
+          - 0.9422000050544739
+          - 1.0094000101089478
+          - 0.972000002861023
+          - 0.8550000190734863
+          - 0.9434999823570251
+          - 1.0500999689102173
+          - 0.909500002861023
+          - 0.9544000029563904
+          - 0.9394999742507935
+          - 1.0041999816894531
+          - 0.917900025844574
+          - 0.8917999863624573
+          - 0.902400016784668
+          - 0.9350000023841858
+          - 0.9391999840736389
+          - 0.8554999828338623
+          - 1.0074000358581543
+          - 0.9652000069618225
+          - 0.9664000272750854
+          - 0.935699999332428
+          - 0.9135000109672546
+          - 1.0443999767303467
+          - 1.0032000541687012
+          - 0.9236999750137329
+          - 0.9197999835014343
+          - 0.9959999918937683
+          - 0.9128999710083008
+          - 0.9452000260353088
+          - 0.9740999937057495
+          - 1.0039000511169434
+          - 0.9194999933242798
+          - 0.8916000127792358
+          - 0.9072999954223633
+          - 1.0535999536514282
+          - 0.9842000007629395
+          - 0.9395999908447266
+          - 0.878600001335144
+          - 0.8270999789237976
+          - 0.9574999809265137
+          - 0.9839000105857849
+          - 0.9797000288963318
+          - 1.001099944114685
+          - 1.0077999830245972
+          - 1.0020999908447266
+          - 1.0638999938964844
+          - 0.9480999708175659
+          - 1.030500054359436
+          - 1.0365999937057495
+          - 1.0033999681472778
+        log-level: info
+        seed: 1
+        unconditional_benchmark_distributions.masked_autoregressive_bernstein_flow.bsds300*:
+          distribution_kwds:
+            order: 100
+            low: -3
+            high: 3
+            smooth_bounds: true
+            allow_flexible_bounds: true
+            shift: false
+            scale: false
+            clip_to_bernstein_domain: false
+          parameter_kwds:
+            hidden_units:
+            - 128
+            - 128
+            - 128
+            activation: relu
+          fit_kwds:
+            epochs: 10000
+            batch_size: 512
+            learning_rate: 0.01
+            lr_patience: 25
+            reduce_lr_on_plateau: true
+            early_stopping: true
+            verbose: true
+            monitor: val_loss
+    outs:
+    - path: results/unconditional_benchmark_masked_autoregressive_bernstein_flow_bsds300/mcp
+      hash: md5
+      md5: ea641a1f61f2bc4868edad84f25b3adc.dir
+      size: 10252623
+      nfiles: 3
+    - path: 
+        results/unconditional_benchmark_masked_autoregressive_bernstein_flow_bsds300/metrics.yaml
+      hash: md5
+      md5: a9e975c305e200014797b112056a3d81
+      size: 56
+    - path: 
+        results/unconditional_benchmark_masked_autoregressive_bernstein_flow_bsds300/train.log
+      hash: md5
+      md5: 33fdf568b1042fa87012969cc9277ce2
+      size: 4215
+  unconditional_benchmark@masked_autoregressive_bernstein_flow-power:
+    cmd: python scripts/train_benchmark.py --log-level info --log-file 
+      results/unconditional_benchmark_masked_autoregressive_bernstein_flow_power/train.log
+      --experiment-name unconditional-benchmark-power unconditional_benchmark@masked_autoregressive_bernstein_flow-power
+      masked_autoregressive_bernstein_flow power results/unconditional_benchmark_masked_autoregressive_bernstein_flow_power
+      --test-mode=false
+    deps:
+    - path: datasets/power
+      hash: md5
+      md5: 60fb6f44d73a43013e6f97aadfe784d8.dir
+      size: 131154103
+      nfiles: 3
+    - path: pyproject.toml
+      hash: md5
+      md5: 6367d19557868b13b35ca3094fa18e50
+      size: 1132
+    - path: scripts/train.py
+      hash: md5
+      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
+      size: 5361
+    - path: src/mctm
+      hash: md5
+      md5: ea2709adfe342fce65da989eae16ca79.dir
+      size: 54642
+      nfiles: 13
+    params:
+      params.yaml:
+        benchmark_datasets.power*:
+          scale:
+          - 0.067
+          - 0.0733
+          - 0.0484
+          - 0.0505
+          - 0.1847
+          - 0.2022
+          shift:
+          - 1.1529
+          - 6.5351
+          - 0.316
+          - 0.3703
+          - 0.9888
+          - 2.0778
+        log-level: info
+        seed: 1
+        unconditional_benchmark_distributions.masked_autoregressive_bernstein_flow.power*:
+          distribution_kwds:
+            order: 100
+            low: -3
+            high: 3
+            smooth_bounds: true
+            allow_flexible_bounds: true
+            shift: false
+            scale: false
+            clip_to_bernstein_domain: false
+          parameter_kwds:
+            hidden_units:
+            - 64
+            - 64
+            - 64
+            activation: elu
+            kernel_initializer: he_normal
+          fit_kwds:
+            epochs: 10000
+            batch_size: 32
+            learning_rate: 0.01
+            lr_patience: 10
+            reduce_lr_on_plateau: true
+            early_stopping: true
+            verbose: true
+            monitor: val_loss
+    outs:
+    - path: results/unconditional_benchmark_masked_autoregressive_bernstein_flow_power/mcp
+      hash: md5
+      md5: 932dd4265915a0d517471f92bc2a288a.dir
+      size: 578786
+      nfiles: 3
+    - path: 
+        results/unconditional_benchmark_masked_autoregressive_bernstein_flow_power/metrics.yaml
+      hash: md5
+      md5: 370a4bb467920223eced8f9fd97ce54a
+      size: 26
+    - path: 
+        results/unconditional_benchmark_masked_autoregressive_bernstein_flow_power/train.log
+      hash: md5
+      md5: 6ce9596c03413631791b61b9abe0cc70
+      size: 1947
