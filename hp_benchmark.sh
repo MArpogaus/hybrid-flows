@@ -14,18 +14,28 @@ datasets="
     MINIBOONE
 "
 
+# get_params(){
+
+#     if [ "$2" == "masked_autoregressive_bernstein_flow" ]; then
+#         echo "-S $1.$2.$3.fit_kwds.batch_size=512,1024
+#           -S $1.$2.$3.fit_kwds.learning_rate=0.01,0.05,0.001,0.005
+#           -S $1.$2.$3.fit_kwds.lr_patience=5,10,15,20"
+#         echo "-S $1.$2.$3.parameter_kwds.hidden_units=[16,16],[16,16,16],[512,512]"
+#     else
+#         echo "-S $1.$2.$3.fit_kwds.batch_size=512,1024,2048
+#           -S $1.$2.$3.fit_kwds.learning_rate=0.01,0.001,0.0001
+#           -S $1.$2.$3.fit_kwds.lr_patience=10,25,40,1000"
+#     fi
+
+# }
+
 get_params(){
 
-    if [ "$2" == "masked_autoregressive_bernstein_flow" ]; then
-        echo "-S $1.$2.$3.fit_kwds.batch_size=512,1024
-          -S $1.$2.$3.fit_kwds.learning_rate=0.01,0.05,0.001,0.005
-          -S $1.$2.$3.fit_kwds.lr_patience=5,10,15,20"
-        echo "-S $1.$2.$3.parameter_kwds.hidden_units=[16,16],[16,16,16],[512,512]"
-    else
-        echo "-S $1.$2.$3.fit_kwds.batch_size=512,1024,2048
-          -S $1.$2.$3.fit_kwds.learning_rate=0.01,0.001,0.0001
-          -S $1.$2.$3.fit_kwds.lr_patience=10,25,40,1000"
-    fi
+
+    echo "-S $1.$2.$3.fit_kwds.batch_size=1024
+          -S $1.$2.$3.fit_kwds.learning_rate=0.0001
+          -S $1.$2.$3.fit_kwds.lr_patience=25"
+
 
 }
 
@@ -33,6 +43,9 @@ get_params(){
 dvc queue stop --kill
 dvc queue remove --all
 rm -r results/ || echo "results not present" # to remove old artifacts
+
+#python mlflowcache.py download
+
 #rm my_joblog.log || echo "logfile not present" # used by parallel
 counter=0
 for stage in "${!models[@]}"; do
@@ -40,12 +53,15 @@ for stage in "${!models[@]}"; do
     for distribution in $distributions; do
         for dataset in $datasets; do
             echo "queueing experiment ${stage}-${distribution}"
-            dvc exp run --queue \
-                $(get_params $stage $distribution $dataset)
+            python mlflowcache.py find -e "$stage-$dataset" -r "$distribution" $(get_params $stage $distribution $dataset)
+            exit 42
+            # dvc exp run --queue \
+            #     $(get_params $stage $distribution $dataset)
             counter=$((counter+1))
         done
     done
 done
+
 
 #[ ! $(pgrep mlflow) ] && mlflow ui &
 #export MLFLOW_TRACKING_URI=http://127.0.0.1:5000
