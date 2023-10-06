@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-08-23 15:52:34 (Marcel Arpogaus)
-# changed : 2023-08-23 15:52:34 (Marcel Arpogaus)
+# changed : 2023-10-06 11:01:38 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -37,12 +37,13 @@ def fit_distribution(
     reduce_lr_on_plateau,
     early_stopping,
     loss=lambda y, dist: -dist.log_prob(y),
+    callbacks=[],
     **kwds,
 ):
     set_seed(seed)
     model.compile(optimizer=tf.optimizers.Adam(learning_rate=learning_rate), loss=loss)
 
-    callbacks = [
+    callbacks += [
         K.callbacks.ModelCheckpoint(
             os.path.join(results_path, "mcp/weights"),
             monitor=monitor,

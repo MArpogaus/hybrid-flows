@@ -33,6 +33,7 @@ stages:
     - benchmark_datasets.${item.dataset}*
     - unconditional_benchmark_distributions.${item.distribution}.${item.dataset}*
     deps:
+    - datasets/${item.dataset}
     - scripts/train.py
     - pyproject.toml
     - src/mctm
@@ -117,3 +118,26 @@ stages:
     - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/z1.pdf
     - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/z2.pdf
     - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/samples.pdf
+
+  malnutrition:
+    foreach: ${malnutrition_distributions}
+    do:
+      cmd: python scripts/train_malnutrition.py --log-level ${log-level} --log-file results/conditional_${key}_malnutrition/train.log --experiment-name conditional-malnutrition malnutrition@${key} ${key} malnutrition results/conditional_${key}_malnutrition --test-mode=${testmode}
+      params:
+      - log-level
+      - seed
+      - textwidth
+      - malnutrition_kwds
+      - malnutrition_distributions.${key}*
+      deps:
+      - datasets/malnutrition
+      - scripts/train_malnutrition.py
+      - pyproject.toml
+      - src/mctm
+      metrics:
+      - results/conditional_${key}_malnutrition/metrics.yaml
+      outs:
+      - results/conditional_${key}_malnutrition/mcp
+      - results/conditional_${key}_malnutrition/train.log
+      - results/conditional_${key}_malnutrition/dataset.pdf
+      - results/conditional_${key}_malnutrition/samples.pdf

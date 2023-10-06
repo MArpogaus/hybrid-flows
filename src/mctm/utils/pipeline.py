@@ -58,6 +58,7 @@ def pipeline(
     fit_kwds: dict,
     plot_data: doPlotData,
     after_fit_hook: doAfterFit,
+    **extra_params_to_log,
 ):
     """
     get_dataset is callback because we have no common

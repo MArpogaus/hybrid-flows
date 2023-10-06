@@ -84,6 +84,7 @@ def load_and_preprocess_data(dataset_name, dataset_path):
     Returns:
         tuple: Tuple containing the training, validation, and test data arrays.
     """
+    dataset_name = dataset_name.upper()
 
     # Load the data and apply preprocessing as per the original code
     if dataset_name == "POWER":
@@ -330,13 +331,14 @@ def get_dataset(dataset_name, dataset_path="datasets"):
 
 
 if __name__ == "__main__":
+    import yaml
+
+    shift_and_scale = {}
     for dataset_name in ("POWER", "HEPMASS", "MINIBOONE", "BSDS300"):
         print(f"=== {dataset_name} ===")
-        (train_data, validation_data, test_data), dims = get_dataset(dataset_name)
+        (train_data, validation_data, _), dims = get_dataset(dataset_name)
         print(f"{dims=}")
-        for d, split in zip(
-            (train_data, validation_data, test_data), ("train", "validate", "test")
-        ):
+        for d, split in zip((train_data, validation_data), ("train", "validate")):
             print(f"--- {split} ---")
             print(f"{type(d)=}")
             print(f"{d.shape=}")
@@ -345,7 +347,23 @@ if __name__ == "__main__":
             print(f"{d.std()=}")
             print(f"{d.mean()=}")
 
-            shift = (-d.min(0)).tolist()
-            scale = (1 / (d.max(0) - d.min(0))).tolist()
-            print(f"{shift=}")
-            print(f"{scale=}")
+        d = train_data
+        eps = 0.1
+        shift = (-d.min(0) * 1.2).round(4)
+        scale = ((0.70) / (d.max(0) - d.min(0))).round(4)
+
+        print(f"{shift=}")
+        print(f"{scale=}")
+
+        scaled_train_data = (train_data + shift) * scale
+        print(scaled_train_data.min(), scaled_train_data.max())
+        scaled_val_data = (validation_data + shift) * scale
+        print(scaled_val_data.min(), scaled_val_data.max())
+
+        assert scaled_val_data.min() >= 0
+        assert scaled_val_data.max() <= 1
+        shift_and_scale[dataset_name.upper()] = dict(
+            scale=scale.tolist(), shift=shift.tolist()
+        )
+
+    print(yaml.safe_dump({"benchmark_datasets": shift_and_scale}))
