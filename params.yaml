@@ -634,17 +634,22 @@ unconditional_benchmark_distributions:
         # allow_flexible_bounds: false
       parameter_kwds:
         hidden_units:
-        - 64
-        - 64
-        - 64
+        - 256
+        - 256
+        - 256
         activation: elu
         kernel_initializer: he_normal
       fit_kwds:
         epochs: 10000
-        batch_size: 32
-        learning_rate: 0.01
+        batch_size: 128
+        learning_rate: cosine_decay
+        cosine_decay_kwds:
+          decay_steps: 1000
+          initial_learning_rate: 0.01
+          # warmup_steps: 10
+          # target_learning_rate: 0.1
         lr_patience: 10
-        reduce_lr_on_plateau: true
+        reduce_lr_on_plateau: false
         early_stopping: true
         verbose: true
         monitor: val_loss

@@ -10,6 +10,11 @@ from mctm.utils import str2bool
 from mctm.utils.pipeline import pipeline, prepare_pipeline
 
 
+def get_lr_schedule(**kwds):
+    lr_decayed_fn = tf.keras.optimizers.schedules.CosineDecay(**kwds)
+    return lr_decayed_fn
+
+
 def main(args):
     # --- prepare for execution ---
 
@@ -37,6 +42,12 @@ def main(args):
     if os.environ.get("CI", False):
         fit_kwds.update(verbose=2)
 
+    extra_params_to_log = {}
+    if fit_kwds["learning_rate"] == "cosine_decay":
+        cosine_decay_kwds = fit_kwds.pop("cosine_decay_kwds")
+        fit_kwds["learning_rate"] = get_lr_schedule(**cosine_decay_kwds)
+        extra_params_to_log = cosine_decay_kwds
+
     pipeline(
         experiment_name=experiment_name,
         run_name=run_name,
@@ -62,6 +73,7 @@ def main(args):
         fit_kwds=fit_kwds,
         plot_data=None,
         after_fit_hook=None,
+        **extra_params_to_log,
     )
 
 
