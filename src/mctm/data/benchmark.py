@@ -348,21 +348,27 @@ if __name__ == "__main__":
             print(f"{d.mean()=}")
 
         d = train_data
-        eps = 0.1
-        shift = (-d.min(0) * 1.2).round(4)
-        scale = ((0.70) / (d.max(0) - d.min(0))).round(4)
+        eps = 0.01
+        data_min = np.min([train_data.min(0), validation_data.min(0)], 0)
+        data_max = np.max([train_data.max(0), validation_data.max(0)], 0)
+        shift = (-data_min + eps).round(3)
+        scale = ((1 - 2 * eps) / (data_max - data_min)).round(3)
 
         print(f"{shift=}")
         print(f"{scale=}")
 
         scaled_train_data = (train_data + shift) * scale
-        print(scaled_train_data.min(), scaled_train_data.max())
         scaled_val_data = (validation_data + shift) * scale
+
+        print(scaled_train_data.min(), scaled_train_data.max())
         print(scaled_val_data.min(), scaled_val_data.max())
 
+        assert scaled_train_data.min() >= 0
+        assert scaled_train_data.max() <= 1
         assert scaled_val_data.min() >= 0
         assert scaled_val_data.max() <= 1
-        shift_and_scale[dataset_name.upper()] = dict(
+
+        shift_and_scale[dataset_name.lower()] = dict(
             scale=scale.tolist(), shift=shift.tolist()
         )
 
