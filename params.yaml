@@ -621,17 +621,17 @@ unconditional_benchmark_distributions:
 
   masked_autoregressive_bernstein_flow:
     power:
-      distribution_kwds: &benchmark_distribution_kwds
+      distribution_kwds:
         <<: *distribution_kwds
         order: 100
-        # base_distribution_kwds:
-        #   distribution_type: kumaraswamy
-        #   concentration1: 2
-        #   concentration0: 5
-        # low: 0.001
-        # high: 0.999
-        # smooth_bounds: true
-        # allow_flexible_bounds: false
+        base_distribution_kwds:
+          distribution_type: kumaraswamy
+          concentration1: 2
+          concentration0: 5
+        low: 0.001
+        high: 0.999
+        smooth_bounds: true
+        allow_flexible_bounds: false
       parameter_kwds:
         hidden_units:
         - 256
@@ -654,7 +654,9 @@ unconditional_benchmark_distributions:
         verbose: true
         monitor: val_loss
     hepmass:
-      distribution_kwds: *benchmark_distribution_kwds
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
       parameter_kwds:
         hidden_units:
         - 64
@@ -672,7 +674,9 @@ unconditional_benchmark_distributions:
         verbose: true
         monitor: val_loss
     bsds300:
-      distribution_kwds: *benchmark_distribution_kwds
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
       parameter_kwds:
         hidden_units:
         - 128
@@ -689,7 +693,9 @@ unconditional_benchmark_distributions:
         verbose: true
         monitor: val_loss
     miniboone:
-      distribution_kwds: *benchmark_distribution_kwds
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
       parameter_kwds:
         hidden_units:
         - 64
