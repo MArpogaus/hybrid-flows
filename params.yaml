@@ -1,7 +1,7 @@
 log-level: info
 seed: 1
 textwidth: 487.8225
-testmode: false
+testmode: true
 
 datasets:
   moons:
@@ -293,7 +293,6 @@ benchmark_datasets:
     - 0.3703
     - 0.9888
     - 2.0778
-
 unconditional_distributions:
   bernstein_flow:
     moons:
@@ -323,6 +322,13 @@ unconditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 80
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: false
         dtype: float32
@@ -342,6 +348,13 @@ unconditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: false
         dtype: float32
@@ -359,6 +372,13 @@ unconditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: false
         dtype: float32
@@ -410,6 +430,13 @@ unconditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         hidden_units:
         - 16
@@ -430,6 +457,13 @@ unconditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         hidden_units:
         - 16
@@ -452,6 +486,13 @@ unconditional_distributions:
         <<: *distribution_kwds
         coupling_layers: 2
         order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         hidden_units:
         - 16
@@ -473,6 +514,13 @@ unconditional_distributions:
         <<: *distribution_kwds
         coupling_layers: 2
         order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         hidden_units:
         - 16
@@ -496,6 +544,13 @@ unconditional_benchmark_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 100
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: false
         dtype: float32
@@ -512,12 +567,19 @@ unconditional_benchmark_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 100
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: false
         dtype: float32
       fit_kwds:
         epochs: 10000
-        batch_size: 32
+        batch_size: 512
         learning_rate: 0.01
         lr_patience: 10
         reduce_lr_on_plateau: true
@@ -528,6 +590,13 @@ unconditional_benchmark_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 100
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: false
         dtype: float32
@@ -544,6 +613,13 @@ unconditional_benchmark_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 100
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: false
         dtype: float32
@@ -632,6 +708,13 @@ unconditional_benchmark_distributions:
         # high: 0.999
         # smooth_bounds: true
         # allow_flexible_bounds: false
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         hidden_units:
         - 256
@@ -713,6 +796,13 @@ conditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: true
         activation: relu
@@ -735,6 +825,13 @@ conditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: true
         activation: relu
@@ -759,6 +856,13 @@ conditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: true
         activation: relu
@@ -781,6 +885,13 @@ conditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: true
         activation: relu
@@ -847,6 +958,13 @@ conditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         hidden_units:
         - 16
@@ -870,6 +988,13 @@ conditional_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         hidden_units:
         - 16
@@ -896,6 +1021,13 @@ conditional_distributions:
         <<: *distribution_kwds
         coupling_layers: 2
         order: 80
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         hidden_units:
         - 16
@@ -920,6 +1052,13 @@ conditional_distributions:
         <<: *distribution_kwds
         coupling_layers: 2
         order: 50
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       parameter_kwds:
         hidden_units:
         - 16
@@ -947,6 +1086,11 @@ unconditional_hybrid_distributions:
         order: 100
         low: 0
         high: 1
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       freeze_base_model: false
       base_checkpoint_path: false
       parameter_kwds:
@@ -982,6 +1126,11 @@ unconditional_hybrid_distributions:
         order: 100
         low: 0
         high: 1
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       freeze_base_model: false
       base_checkpoint_path: false
       parameter_kwds:
@@ -1020,6 +1169,11 @@ unconditional_hybrid_distributions:
         order: 80
         low: 0
         high: 1
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       freeze_base_model: false
       base_checkpoint_path: false
       parameter_kwds:
@@ -1050,6 +1204,11 @@ unconditional_hybrid_distributions:
         order: 80
         low: 0
         high: 1
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       freeze_base_model: false
       base_checkpoint_path: false
       parameter_kwds:
@@ -1108,6 +1267,11 @@ unconditional_hybrid_pre_trained_distributions:
         order: 80
         low: 0
         high: 1
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       freeze_base_model: true
       base_checkpoint_path: unconditional_bernstein_flow
       parameter_kwds:
@@ -1138,6 +1302,11 @@ unconditional_hybrid_pre_trained_distributions:
         order: 80
         low: 0
         high: 1
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       freeze_base_model: true
       base_checkpoint_path: unconditional_bernstein_flow
       parameter_kwds:
@@ -1151,6 +1320,13 @@ unconditional_hybrid_pre_trained_distributions:
       base_distribution_kwds:
         <<: *distribution_kwds
         order: 80
+        low: -3
+        high: 3
+        smooth_bounds: true
+        allow_flexible_bounds: true
+        shift: false
+        scale: false
+        clip_to_bernstein_domain: false
       base_parameter_kwds:
         conditional: false
         dtype: float32
@@ -1252,5 +1428,9 @@ malnutrition_distributions:
 
 malnutrition_kwds:
   data_path: datasets/malnutrition/india.raw
-  targets: [stunting, wasting, underweight]
-  covariates: [mage]
+  targets:
+  - stunting
+  - wasting
+  - underweight
+  covariates:
+  - mage
