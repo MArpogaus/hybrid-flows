@@ -305,7 +305,6 @@ unconditional_distributions:
         allow_flexible_bounds: true
         shift: false
         scale: false
-        clip_to_bernstein_domain: false
       parameter_kwds:
         conditional: false
         dtype: float32

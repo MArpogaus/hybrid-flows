@@ -50,35 +50,35 @@ def __default_base_distribution_lambda__(dims, distribution_type="normal", **kwd
 
 
 def __get_parametrized_flow__(
-    scale, shift, unconstrained_bernstein_coefficents, clip_to_bernstein_domain, **kwds
+    scale,
+    shift,
+    unconstrained_parameters,
+    bijector_class=BernsteinBijectorLinearExtrapolate,
+    get_parameter_constrain_fn=get_thetas_constrain_fn,
+    **kwds,
 ):
-    thetas_constrain_fn = get_thetas_constrain_fn(**kwds)
+    parameter_constrain_fn = get_parameter_constrain_fn(**kwds)
 
     bijectors = []
 
     # f1: ŷ = a1(x)*(y + b1(x))
     if shift:
         shift = tf.convert_to_tensor(
-            shift, dtype=unconstrained_bernstein_coefficents.dtype, name="shift"
+            shift, dtype=unconstrained_parameters.dtype, name="shift"
         )[None, ...]
         f1_shift = tfb.Shift(shift, name="f1_shift")
         bijectors.append(f1_shift)
 
     if scale:
         scale = tf.convert_to_tensor(
-            scale, dtype=unconstrained_bernstein_coefficents.dtype, name="scale"
+            scale, dtype=unconstrained_parameters.dtype, name="scale"
         )[None, ...]
         f1_scale = tfb.Scale(scale, name="f1_scale")
         bijectors.append(f1_scale)
 
-    # clip to domain [0, 1]
-    if clip_to_bernstein_domain:
-        bijectors.append(tfb.Sigmoid(name="sigmoid"))
-
-    # f2: ẑ = Bernstein Polynomial
-    bernstein_coefficents = thetas_constrain_fn(unconstrained_bernstein_coefficents)
-    f2 = BernsteinBijectorLinearExtrapolate(bernstein_coefficents, name="bpoly")
-    bijectors.append(f2)
+    # Flexible Transformation Function
+    constrained_parameters = parameter_constrain_fn(unconstrained_parameters)
+    bijectors.append(bijector_class(constrained_parameters, name="bpoly"))
 
     # tfp uses the invers T⁻¹ to calculate the log_prob
     # lets change the direction here by first reversing the list to get f₃ ∘ f₂ ∘ f₁
@@ -99,9 +99,7 @@ def __get_bernstein_flow_lambda__(
             distribution=base_distribution_lambda(
                 dims, **kwds.pop("base_distribution_kwds", {})
             ),
-            bijector=__get_parametrized_flow__(
-                unconstrained_bernstein_coefficents=pv, **kwds
-            ),
+            bijector=__get_parametrized_flow__(unconstrained_parameters=pv, **kwds),
         )
 
     return dist, pv_shape
@@ -123,7 +121,7 @@ def __get_multivariate_bernstein_flow_lambda__(dims, order, **kwds):
         return tfd.TransformedDistribution(
             distribution=mv_normal,
             bijector=__get_parametrized_flow__(
-                unconstrained_bernstein_coefficents=unconstrained_bernstein_coeficents,
+                unconstrained_parameters=unconstrained_bernstein_coeficents,
                 **kwds,
             ),
         )
@@ -167,7 +165,7 @@ def __get_bijector_fn__(network, **flow_kwds):
             pvector = network(y, **kwds)
 
             return __get_parametrized_flow__(
-                unconstrained_bernstein_coefficents=pvector, **flow_kwds
+                unconstrained_parameters=pvector, **flow_kwds
             )
 
     return bijector_fn
