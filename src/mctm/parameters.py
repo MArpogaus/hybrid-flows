@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-08-24 16:15:23 (Marcel Arpogaus)
-# changed : 2023-08-24 16:15:23 (Marcel Arpogaus)
+# changed : 2023-10-10 14:26:17 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -74,7 +74,7 @@ def get_parameter_vector_lambda(parameters_shape, dtype):
     parameter_vector = tf.Variable(
         tf.random.normal(parameters_shape, dtype=dtype), trainable=True
     )
-    return lambda *_, **__: parameter_vector, parameter_vector
+    return lambda *_, **__: lambda: parameter_vector, parameter_vector
 
 
 def get_simple_fully_connected_parameter_network_lambda(
@@ -92,17 +92,24 @@ def get_simple_fully_connected_parameter_network_lambda(
 
     else:
 
-        def parameter_network_lambda(conditional_input=None, **kwds):
-            return parameter_network(conditional_input, **kwds)
+        def parameter_network_lambda(*_, **kwds):
+            return lambda x: parameter_network(x, **kwds)
 
     return parameter_network_lambda, parameter_network.trainable_variables
 
 
 def get_parameter_vector_or_simple_network_lambda(parameter_shape, conditional, **kwds):
     if conditional:
-        return get_simple_fully_connected_parameter_network_lambda(
-            parameter_shape, **kwds
+        input_shape = kwds.pop("input_shape")
+        parameter_network = __get_simple_fully_connected_network__(
+            output_shape=parameter_shape, input_shape=input_shape, **kwds
         )
+        parameter_network.build(input_shape)
+
+        def parameter_network_lambda(conditional_input, **kwds):
+            return lambda *_: parameter_network(conditional_input, **kwds)
+
+        return parameter_network_lambda, parameter_network.trainable_variables
     else:
         return get_parameter_vector_lambda(parameter_shape, **kwds)
 
@@ -122,7 +129,7 @@ def get_autoregressive_parameter_network_lambda(parameter_shape, **kwds):
 
 
 def get_autoregressive_parameter_network_with_additive_conditioner_lambda(
-    parameter_shape, made_kwds, x0_kwds
+    parameter_shape, input_shape, made_kwds, x0_kwds
 ):
     (
         masked_autoregressive_parameter_network_lambda,
@@ -136,14 +143,14 @@ def get_autoregressive_parameter_network_with_additive_conditioner_lambda(
         x0_parameter_network_lambda,
         x0_trainable_variables,
     ) = get_simple_fully_connected_parameter_network_lambda(
-        parameter_shape=parameter_shape, input_shape=1, **x0_kwds
+        parameter_shape=parameter_shape, input_shape=input_shape, **x0_kwds
     )
 
     def parameter_lambda(conditional_input=None, **kwds):
         made_net = masked_autoregressive_parameter_network_lambda(
             conditional_input, **kwds
         )
-        x0_net = x0_parameter_network_lambda  # (conditional_input, **kwds)
+        x0_net = x0_parameter_network_lambda(conditional_input, **kwds)
 
         def call(x, conditional_input):
             pv1 = made_net(x)
