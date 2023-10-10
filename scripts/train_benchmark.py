@@ -3,9 +3,10 @@ import argparse
 import os
 
 import tensorflow as tf
+from tensorflow_probability import distributions as tfd
 
 from mctm.data.benchmark import get_dataset
-from mctm.models import DensityRegressionModel
+from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
 from mctm.utils import str2bool
 from mctm.utils.pipeline import pipeline, prepare_pipeline
 
@@ -30,6 +31,33 @@ def main(args):
     dataset_kwds = params["benchmark_datasets"][dataset]
 
     distribution_kwds.update(dataset_kwds)
+
+    model_kwds = dict(
+        distribution=distribution,
+        distribution_kwds=distribution_kwds,
+        parameter_kwds=parameter_kwds,
+    )
+
+    if "base_distribution" in distribution_params.keys():
+        get_model = HybridDenistyRegressionModel
+        model_kwds.update(
+            freeze_base_model=distribution_params["freeze_base_model"],
+            base_checkpoint_path=(
+                f'results/{distribution_params["base_checkpoint_path"]}_{dataset}/mcp/weights'  # noqa: E501
+                if distribution_params["base_checkpoint_path"]
+                else False
+            ),
+            base_distribution=distribution_params["base_distribution"],
+            base_distribution_kwds=distribution_params["base_distribution_kwds"],
+            base_parameter_kwds=distribution_params["base_parameter_kwds"],
+        )
+        if not distribution_params["base_checkpoint_path"]:
+            fit_kwds.update(
+                loss=lambda y, dist: -dist.log_prob(y)
+                - tfd.Independent(dist.distribution).log_prob(y)
+            )
+    else:
+        get_model = DensityRegressionModel
 
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", args.experiment_name)
     run_name = "_".join((stage, distribution))
@@ -56,12 +84,8 @@ def main(args):
         seed=params["seed"],
         get_dataset_fn=get_dataset,
         dataset_kwds={"dataset_name": dataset},
-        get_model_fn=DensityRegressionModel,
-        model_kwds=dict(
-            distribution=distribution,
-            distribution_kwds=distribution_kwds,
-            parameter_kwds=parameter_kwds,
-        ),
+        get_model_fn=get_model,
+        model_kwds=model_kwds,
         preprocess_dataset=lambda data, model: {
             "x": tf.ones_like(data[0], dtype=model.dtype),
             "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
