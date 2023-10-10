@@ -640,16 +640,11 @@ unconditional_benchmark_distributions:
         activation: elu
         kernel_initializer: he_normal
       fit_kwds:
-        epochs: 10000
+        epochs: 2000
         batch_size: 128
-        learning_rate: cosine_decay
-        cosine_decay_kwds:
-          decay_steps: 1000
-          initial_learning_rate: 0.01
-          # warmup_steps: 10
-          # target_learning_rate: 0.1
+        learning_rate: 0.i01
         lr_patience: 10
-        reduce_lr_on_plateau: false
+        reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
         monitor: val_loss
@@ -659,14 +654,14 @@ unconditional_benchmark_distributions:
         order: 100
       parameter_kwds:
         hidden_units:
-        - 64
-        - 64
-        - 64
+        - 128
+        - 128
+        - 128
         activation: elu
         kernel_initializer: he_normal
       fit_kwds:
         epochs: 10000
-        batch_size: 32
+        batch_size: 128
         learning_rate: 0.01
         lr_patience: 10
         reduce_lr_on_plateau: true
@@ -704,8 +699,8 @@ unconditional_benchmark_distributions:
         activation: elu
         kernel_initializer: he_normal
       fit_kwds:
-        epochs: 10000
-        batch_size: 32
+        epochs: 2000
+        batch_size: 128
         learning_rate: 0.01
         lr_patience: 10
         reduce_lr_on_plateau: true
