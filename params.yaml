@@ -383,7 +383,7 @@ unconditional_distributions:
         validation_split: 0.1
         batch_size: 512
         learning_rate: 0.05
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -398,7 +398,7 @@ unconditional_distributions:
         validation_split: 0.1
         batch_size: 512
         learning_rate: 0.05
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -439,7 +439,7 @@ unconditional_distributions:
         validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.01
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -692,9 +692,9 @@ unconditional_benchmark_distributions:
         order: 100
       parameter_kwds:
         hidden_units:
-        - 64
-        - 64
-        - 64
+        - 512
+        - 512
+        - 512
         activation: elu
         kernel_initializer: he_normal
       fit_kwds:
@@ -889,7 +889,7 @@ conditional_distributions:
         validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.01
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -911,7 +911,7 @@ conditional_distributions:
         validation_split: 0.1
         batch_size: 512
         learning_rate: 0.05
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -935,7 +935,7 @@ conditional_distributions:
         validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.01
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -957,7 +957,7 @@ conditional_distributions:
         validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.005
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -999,7 +999,7 @@ conditional_distributions:
         validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.05
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -1024,7 +1024,7 @@ conditional_distributions:
         validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.01
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -1047,7 +1047,7 @@ conditional_distributions:
         validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.05
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -1201,7 +1201,7 @@ unconditional_hybrid_distributions:
         validation_split: 0.1
         batch_size: 512
         learning_rate: 0.05
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -1231,7 +1231,7 @@ unconditional_hybrid_distributions:
         validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.005
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -1289,7 +1289,7 @@ unconditional_hybrid_pre_trained_distributions:
         validation_split: 0.1
         batch_size: 512
         learning_rate: 0.01
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
@@ -1322,7 +1322,7 @@ unconditional_hybrid_pre_trained_distributions:
         validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.005
-        lr_patience: 1000
+        lr_patience: 100
         reduce_lr_on_plateau: true
         early_stopping: true
         verbose: true
