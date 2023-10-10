@@ -708,6 +708,169 @@ unconditional_benchmark_distributions:
         verbose: true
         monitor: val_loss
 
+  masked_autoregressive_bernstein_flow_first_dim_masked:
+    power:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 80
+        low: 0
+        high: 1
+      freeze_base_model: false
+      base_checkpoint_path:      # unconditional_benchmark_bernstein_flow
+      parameter_kwds:
+        made_kwds:
+          hidden_units:
+          - 512
+          - 512
+          - 512
+          activation: relu
+        x0_kwds:
+          hidden_units:
+          - 64
+          - 64
+          - 64
+          activation: relu
+          batch_norm: false
+          kernel_initializer: glorot_uniform
+          bias_initializer: zeros
+      base_distribution: bernstein_flow
+      base_distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
+      base_parameter_kwds:
+        conditional: false
+        dtype: float32
+      fit_kwds:
+        epochs: 10000
+        batch_size: 128
+        learning_rate: 0.01
+        lr_patience: 5
+        reduce_lr_on_plateau: true
+        early_stopping: true
+        verbose: true
+        monitor: val_loss
+    hepmass:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 80
+        low: 0
+        high: 1
+      freeze_base_model: false
+      base_checkpoint_path:      # unconditional_benchmark_bernstein_flow
+      parameter_kwds:
+        made_kwds:
+          hidden_units:
+          - 512
+          - 512
+          - 512
+          activation: relu
+        x0_kwds:
+          hidden_units:
+          - 64
+          - 64
+          - 64
+          activation: relu
+          batch_norm: false
+          kernel_initializer: glorot_uniform
+          bias_initializer: zeros
+      base_distribution: bernstein_flow
+      base_distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
+      base_parameter_kwds:
+        conditional: false
+        dtype: float32
+      fit_kwds:
+        epochs: 10000
+        batch_size: 128
+        learning_rate: 0.01
+        lr_patience: 5
+        reduce_lr_on_plateau: true
+        early_stopping: true
+        verbose: true
+        monitor: val_loss
+    bsds300:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 80
+        low: 0
+        high: 1
+      freeze_base_model: false
+      base_checkpoint_path:      # unconditional_benchmark_bernstein_flow
+      parameter_kwds:
+        made_kwds:
+          hidden_units:
+          - 512
+          - 512
+          - 512
+          activation: relu
+        x0_kwds:
+          hidden_units:
+          - 64
+          - 64
+          - 64
+          activation: relu
+          batch_norm: false
+          kernel_initializer: glorot_uniform
+          bias_initializer: zeros
+      base_distribution: bernstein_flow
+      base_distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
+      base_parameter_kwds:
+        conditional: false
+        dtype: float32
+      fit_kwds:
+        epochs: 10000
+        batch_size: 128
+        learning_rate: 0.01
+        lr_patience: 5
+        reduce_lr_on_plateau: true
+        early_stopping: true
+        verbose: true
+        monitor: val_loss
+    miniboone:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 80
+        low: 0
+        high: 1
+      freeze_base_model: false
+      base_checkpoint_path:      # unconditional_benchmark_bernstein_flow
+      parameter_kwds:
+        made_kwds:
+          hidden_units:
+          - 512
+          - 512
+          - 512
+          activation: relu
+        x0_kwds:
+          hidden_units:
+          - 64
+          - 64
+          - 64
+          activation: relu
+          batch_norm: false
+          kernel_initializer: glorot_uniform
+          bias_initializer: zeros
+      base_distribution: bernstein_flow
+      base_distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
+      base_parameter_kwds:
+        conditional: false
+        dtype: float32
+      fit_kwds:
+        epochs: 10000
+        batch_size: 128
+        learning_rate: 0.01
+        lr_patience: 5
+        reduce_lr_on_plateau: true
+        early_stopping: true
+        verbose: true
+        monitor: val_loss
+
+
 conditional_distributions:
   bernstein_flow:
     moons:
