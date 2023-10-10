@@ -1,7 +1,7 @@
 log-level: info
 seed: 1
 textwidth: 487.8225
-testmode: false
+testmode: true
 
 datasets:
   moons:
@@ -622,52 +622,109 @@ unconditional_benchmark_distributions:
   masked_autoregressive_bernstein_flow:
     power:
       distribution_kwds:
-        <<: *distribution_kwds
+        allow_flexible_bounds: true
+        clip_to_bernstein_domain: false
+        high: 3
+        low: -3
         order: 100
-        base_distribution_kwds:
-          distribution_type: kumaraswamy
-          concentration1: 2
-          concentration0: 5
-        low: 0.001
-        high: 0.999
+        scale:
+        - 0.067
+        - 0.0733
+        - 0.0484
+        - 0.0505
+        - 0.1847
+        - 0.2022
+        shift:
+        - 1.1529
+        - 6.5351
+        - 0.316
+        - 0.3703
+        - 0.9888
+        - 2.0778
         smooth_bounds: true
-        allow_flexible_bounds: false
       parameter_kwds:
+        activation: relu
         hidden_units:
-        - 256
-        - 256
-        - 256
-        activation: elu
-        kernel_initializer: he_normal
+        - 64
+        - 64
+        - 64
       fit_kwds:
-        epochs: 10000
-        batch_size: 128
-        learning_rate: 0.01
-        lr_patience: 5
-        reduce_lr_on_plateau: true
+        batch_size: 32
         early_stopping: true
-        verbose: true
+        epochs: 10000
+        learning_rate: 0.01
+        lr_patience: 10
         monitor: val_loss
+        reduce_lr_on_plateau: true
+        verbose: true
     hepmass:
       distribution_kwds:
-        <<: *distribution_kwds
+        allow_flexible_bounds: true
+        clip_to_bernstein_domain: false
+        high: 3
+        low: -3
         order: 100
+        scale:
+        - 0.173
+        - 0.194
+        - 0.283
+        - 0.091
+        - 0.283
+        - 0.099
+        - 0.161
+        - 0.283
+        - 0.112
+        - 0.179
+        - 0.283
+        - 0.126
+        - 0.194
+        - 0.283
+        - 0.155
+        - 0.213
+        - 0.283
+        - 0.109
+        - 0.09
+        - 0.062
+        - 0.148
+        shift:
+        - 2.275
+        - 2.542
+        - 1.744
+        - 8.063
+        - 1.741
+        - 5.193
+        - 3.059
+        - 1.74
+        - 4.243
+        - 2.747
+        - 1.741
+        - 3.163
+        - 2.532
+        - 1.742
+        - 2.01
+        - 2.312
+        - 1.742
+        - 3.081
+        - 3.425
+        - 5.938
+        - 2.531
+        smooth_bounds: true
       parameter_kwds:
-        hidden_units:
-        - 256
-        - 256
-        - 256
         activation: elu
+        hidden_units:
+        - 512
+        - 512
+        - 512
         kernel_initializer: he_normal
       fit_kwds:
-        epochs: 10000
         batch_size: 128
+        early_stopping: true
+        epochs: 10000
         learning_rate: 0.001
         lr_patience: 10
-        reduce_lr_on_plateau: true
-        early_stopping: true
-        verbose: true
         monitor: val_loss
+        reduce_lr_on_plateau: true
+        verbose: true
     bsds300:
       distribution_kwds:
         <<: *distribution_kwds
