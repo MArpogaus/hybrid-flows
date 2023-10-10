@@ -2,7 +2,8 @@
 set -ux
 
 dvc remote add --force --local local /data/mctm/
-dvc pull -r local
+dvc pull -r local --force
+dvc checkout
 
 # set -eu
 
