@@ -640,9 +640,9 @@ unconditional_benchmark_distributions:
         activation: elu
         kernel_initializer: he_normal
       fit_kwds:
-        epochs: 2000
+        epochs: 10000
         batch_size: 128
-        learning_rate: 0.i01
+        learning_rate: 0.01
         lr_patience: 10
         reduce_lr_on_plateau: true
         early_stopping: true
