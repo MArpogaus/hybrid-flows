@@ -8,6 +8,6 @@ dvc checkout
 # set -eu
 
 #dvc exp run $@
-dvc repro unconditional_benchmark
+dvc repro
 
 dvc push -r local
