@@ -295,9 +295,10 @@ benchmark_datasets:
     - 1.742
 
 unconditional_distributions:
-  bernstein_flow:
+  elementwise_flow:
     moons:
       distribution_kwds: &distribution_kwds
+        bijector_name: bernstein_poly
         order: 50
         low: -3
         high: 3
@@ -305,6 +306,12 @@ unconditional_distributions:
         allow_flexible_bounds: true
         shift: false
         scale: false
+        # bijector_name: quadratic_spline
+        # nbins: 32
+        # interval_width: 1
+        # range_min: 0
+        # min_bin_width: 1e-3
+        # min_slope: 1e-3
       parameter_kwds:
         conditional: false
         dtype: float32
@@ -336,7 +343,7 @@ unconditional_distributions:
         verbose: true
         monitor: val_loss
 
-  multivariate_bernstein_flow:
+  multivariate_flow:
     moons:
       distribution_kwds:
         <<: *distribution_kwds
@@ -404,7 +411,7 @@ unconditional_distributions:
         verbose: true
         monitor: val_loss
 
-  masked_autoregressive_bernstein_flow:
+  masked_autoregressive_flow:
     moons:
       distribution_kwds:
         <<: *distribution_kwds
@@ -445,7 +452,7 @@ unconditional_distributions:
         verbose: true
         monitor: val_loss
 
-  coupling_bernstein_flow:
+  coupling_flow:
     moons:
       distribution_kwds:
         <<: *distribution_kwds
@@ -490,7 +497,7 @@ unconditional_distributions:
         monitor: val_loss
 
 unconditional_benchmark_distributions:
-  bernstein_flow:
+  elementwise_flow:
     power:
       distribution_kwds:
         <<: *distribution_kwds
@@ -556,7 +563,7 @@ unconditional_benchmark_distributions:
         verbose: true
         monitor: val_loss
 
-  # multivariate_bernstein_flow:
+  # multivariate_flow:
   #   power:
   #     distribution_kwds: *distribution_kwds
   #     parameter_kwds:
@@ -618,7 +625,7 @@ unconditional_benchmark_distributions:
   #       verbose: true
   #       monitor: val_loss
 
-  masked_autoregressive_bernstein_flow:
+  masked_autoregressive_flow:
     power:
       distribution_kwds:
         <<: *distribution_kwds
@@ -707,7 +714,7 @@ unconditional_benchmark_distributions:
         verbose: true
         monitor: val_loss
 
-  masked_autoregressive_bernstein_flow_first_dim_masked:
+  masked_autoregressive_flow_first_dim_masked:
     power:
       distribution_kwds:
         <<: *distribution_kwds
@@ -715,7 +722,7 @@ unconditional_benchmark_distributions:
         low: 0
         high: 1
       freeze_base_model: false
-      base_checkpoint_path:      # unconditional_benchmark_bernstein_flow
+      base_checkpoint_path:          # unconditional_benchmark_elementwise_flow
       parameter_kwds:
         made_kwds:
           hidden_units:
@@ -732,7 +739,7 @@ unconditional_benchmark_distributions:
           batch_norm: false
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
-      base_distribution: bernstein_flow
+      base_distribution: elementwise_flow
       base_distribution_kwds:
         <<: *distribution_kwds
         order: 100
@@ -755,7 +762,7 @@ unconditional_benchmark_distributions:
         low: 0
         high: 1
       freeze_base_model: false
-      base_checkpoint_path:      # unconditional_benchmark_bernstein_flow
+      base_checkpoint_path:          # unconditional_benchmark_elementwise_flow
       parameter_kwds:
         made_kwds:
           hidden_units:
@@ -772,7 +779,7 @@ unconditional_benchmark_distributions:
           batch_norm: false
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
-      base_distribution: bernstein_flow
+      base_distribution: elementwise_flow
       base_distribution_kwds:
         <<: *distribution_kwds
         order: 100
@@ -795,7 +802,7 @@ unconditional_benchmark_distributions:
         low: 0
         high: 1
       freeze_base_model: false
-      base_checkpoint_path:      # unconditional_benchmark_bernstein_flow
+      base_checkpoint_path:          # unconditional_benchmark_elementwise_flow
       parameter_kwds:
         made_kwds:
           hidden_units:
@@ -812,7 +819,7 @@ unconditional_benchmark_distributions:
           batch_norm: false
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
-      base_distribution: bernstein_flow
+      base_distribution: elementwise_flow
       base_distribution_kwds:
         <<: *distribution_kwds
         order: 100
@@ -835,7 +842,7 @@ unconditional_benchmark_distributions:
         low: 0
         high: 1
       freeze_base_model: false
-      base_checkpoint_path:      # unconditional_benchmark_bernstein_flow
+      base_checkpoint_path:          # unconditional_benchmark_elementwise_flow
       parameter_kwds:
         made_kwds:
           hidden_units:
@@ -852,7 +859,7 @@ unconditional_benchmark_distributions:
           batch_norm: false
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
-      base_distribution: bernstein_flow
+      base_distribution: elementwise_flow
       base_distribution_kwds:
         <<: *distribution_kwds
         order: 100
@@ -871,7 +878,7 @@ unconditional_benchmark_distributions:
 
 
 conditional_distributions:
-  bernstein_flow:
+  elementwise_flow:
     moons:
       distribution_kwds:
         <<: *distribution_kwds
@@ -917,7 +924,7 @@ conditional_distributions:
         verbose: true
         monitor: val_loss
 
-  multivariate_bernstein_flow:
+  multivariate_flow:
     moons:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1005,7 +1012,7 @@ conditional_distributions:
         verbose: true
         monitor: val_loss
 
-  masked_autoregressive_bernstein_flow:
+  masked_autoregressive_flow:
     moons:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1053,7 +1060,7 @@ conditional_distributions:
         verbose: true
         monitor: val_loss
 
-  coupling_bernstein_flow:
+  coupling_flow:
     moons:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1103,7 +1110,7 @@ conditional_distributions:
         monitor: val_loss
 
 unconditional_hybrid_distributions:
-  masked_autoregressive_bernstein_flow_first_dim_masked:
+  masked_autoregressive_flow_first_dim_masked:
     moons:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1124,7 +1131,7 @@ unconditional_hybrid_distributions:
           batch_norm: false
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
-      base_distribution: bernstein_flow
+      base_distribution: elementwise_flow
       base_distribution_kwds: *distribution_kwds
       base_parameter_kwds:
         conditional: false
@@ -1159,7 +1166,7 @@ unconditional_hybrid_distributions:
           batch_norm: false
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
-      base_distribution: bernstein_flow
+      base_distribution: elementwise_flow
       base_distribution_kwds: *distribution_kwds
       base_parameter_kwds:
         conditional: false
@@ -1175,7 +1182,7 @@ unconditional_hybrid_distributions:
         verbose: true
         monitor: val_loss
 
-  coupling_bernstein_flow:
+  coupling_flow:
     moons:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1191,7 +1198,7 @@ unconditional_hybrid_distributions:
         - 16
         activation: relu
         batch_norm: false
-      base_distribution: bernstein_flow
+      base_distribution: elementwise_flow
       base_distribution_kwds: *distribution_kwds
       base_parameter_kwds:
         conditional: false
@@ -1221,7 +1228,7 @@ unconditional_hybrid_distributions:
         - 512
         activation: relu
         batch_norm: false
-      base_distribution: bernstein_flow
+      base_distribution: elementwise_flow
       base_distribution_kwds: *distribution_kwds
       base_parameter_kwds:
         conditional: false
@@ -1238,16 +1245,16 @@ unconditional_hybrid_distributions:
         monitor: val_loss
 
 unconditional_hybrid_pre_trained_distributions:
-  # masked_autoregressive_bernstein_flow:
+  # masked_autoregressive_flow:
   #   distribution_kwds: *distribution_kwds
   #   freeze_base_model: true
-  #   base_checkpoint_path: unconditional_bernstein_flow
+  #   base_checkpoint_path: unconditional_flow
   #   parameter_kwds:
   #     hidden_units:
   #     - 16
   #     - 16
   #     activation: relu
-  #   base_distribution: bernstein_flow
+  #   base_distribution: elementwise_flow
   #   base_distribution_kwds: *distribution_kwds
   #   base_parameter_kwds:
   #     conditional: false
@@ -1263,7 +1270,7 @@ unconditional_hybrid_pre_trained_distributions:
   #     verbose: true
   #     monitor: val_loss
 
-  coupling_bernstein_flow:
+  coupling_flow:
     moons:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1272,14 +1279,14 @@ unconditional_hybrid_pre_trained_distributions:
         low: 0
         high: 1
       freeze_base_model: true
-      base_checkpoint_path: unconditional_bernstein_flow
+      base_checkpoint_path: unconditional_elementwise_flow
       parameter_kwds:
         hidden_units:
         - 512
         - 512
         activation: relu
         batch_norm: false
-      base_distribution: bernstein_flow
+      base_distribution: elementwise_flow
       base_distribution_kwds: *distribution_kwds
       base_parameter_kwds:
         conditional: false
@@ -1302,7 +1309,7 @@ unconditional_hybrid_pre_trained_distributions:
         low: 0
         high: 1
       freeze_base_model: true
-      base_checkpoint_path: unconditional_bernstein_flow
+      base_checkpoint_path: unconditional_elementwise_flow
       parameter_kwds:
         hidden_units:
         - 16
@@ -1310,7 +1317,7 @@ unconditional_hybrid_pre_trained_distributions:
         - 16
         activation: relu
         batch_norm: false
-      base_distribution: bernstein_flow
+      base_distribution: elementwise_flow
       base_distribution_kwds:
         <<: *distribution_kwds
         order: 80
@@ -1329,7 +1336,7 @@ unconditional_hybrid_pre_trained_distributions:
         monitor: val_loss
 
 malnutrition_distributions:
-  bernstein_flow:
+  elementwise_flow:
     distribution_kwds: *distribution_kwds
     parameter_kwds:
       conditional: true
@@ -1350,7 +1357,7 @@ malnutrition_distributions:
       verbose: true
       monitor: val_loss
 
-  multivariate_bernstein_flow:
+  multivariate_flow:
     distribution_kwds: *distribution_kwds
     parameter_kwds:
       conditional: true
@@ -1392,7 +1399,7 @@ malnutrition_distributions:
       verbose: true
       monitor: val_loss
 
-  masked_autoregressive_bernstein_flow:
+  masked_autoregressive_flow:
     distribution_kwds: *distribution_kwds
     parameter_kwds:
       hidden_units:
