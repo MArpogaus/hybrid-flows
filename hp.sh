@@ -81,7 +81,7 @@ while true; do
 
   #dvc queue start
 
-  
+
 
   dvc queue start -j 10
   sleep 900 # every 15 minutes
