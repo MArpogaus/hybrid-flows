@@ -714,6 +714,7 @@ unconditional_benchmark_distributions:
         verbose: true
         monitor: val_loss
 
+unconditional_benchmark_hybrid_pre_trained_distributions:
   masked_autoregressive_flow_first_dim_masked:
     power:
       distribution_kwds:
@@ -721,8 +722,8 @@ unconditional_benchmark_distributions:
         order: 80
         low: 0
         high: 1
-      freeze_base_model: false
-      base_checkpoint_path:          # unconditional_benchmark_elementwise_flow
+      freeze_base_model: true
+      base_checkpoint_path: unconditional_benchmark_elementwise_flow
       parameter_kwds:
         made_kwds:
           hidden_units:
@@ -761,8 +762,8 @@ unconditional_benchmark_distributions:
         order: 80
         low: 0
         high: 1
-      freeze_base_model: false
-      base_checkpoint_path:          # unconditional_benchmark_elementwise_flow
+      freeze_base_model: true
+      base_checkpoint_path: unconditional_benchmark_elementwise_flow
       parameter_kwds:
         made_kwds:
           hidden_units:
@@ -801,8 +802,8 @@ unconditional_benchmark_distributions:
         order: 80
         low: 0
         high: 1
-      freeze_base_model: false
-      base_checkpoint_path:          # unconditional_benchmark_elementwise_flow
+      freeze_base_model: true
+      base_checkpoint_path: unconditional_benchmark_elementwise_flow
       parameter_kwds:
         made_kwds:
           hidden_units:
@@ -841,8 +842,8 @@ unconditional_benchmark_distributions:
         order: 80
         low: 0
         high: 1
-      freeze_base_model: false
-      base_checkpoint_path:          # unconditional_benchmark_elementwise_flow
+      freeze_base_model: true
+      base_checkpoint_path: unconditional_benchmark_elementwise_flow
       parameter_kwds:
         made_kwds:
           hidden_units:
