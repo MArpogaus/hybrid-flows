@@ -26,8 +26,8 @@ train-job:
   - mlflow run .
   artifacts:
     paths:
-      - dvc.lock
-      - results/
+    - dvc.lock
+    - results/
     expire_in: 1 week
 
 report-job:
