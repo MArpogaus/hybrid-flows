@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2023-10-11 13:23:18 (Marcel Arpogaus)
+# changed : 2023-10-17 09:29:33 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -177,19 +177,17 @@ def __get_multivariate_flow_lambda__(dims, **kwds):
     flow_parametrization_lambda, parameters_shape = __get_flow_parametrization_lambda__(
         **kwds
     )
-    parameters = tf.reduce_sum(parameters_shape)
-    pv_shape = [parameters * dims + np.sum(np.arange(dims + 1))]
+    num_params = np.sum(parameters_shape)
+    pv_shape = [num_params * dims + np.sum(np.arange(dims + 1))]
 
     def dist(pv_lambda):
         pv = pv_lambda()
         bs = prefer_static.shape(pv)[:-1]
-        shape = tf.concat((bs, [dims, parameters]), 0)
+        shape = tf.concat((bs, [dims, num_params]), 0)
 
-        unconstrained_bernstein_coeficents = tf.reshape(
-            pv[..., : parameters * dims], shape
-        )
+        unconstrained_parameters = tf.reshape(pv[..., : num_params * dims], shape)
         scale_tril = tfp.bijectors.FillScaleTriL()(
-            pv[..., parameters * dims:]  # fmt: skip
+            pv[..., num_params * dims:]  # fmt: skip
         )
 
         mv_normal = tfd.MultivariateNormalTriL(loc=0, scale_tril=scale_tril)
@@ -197,7 +195,7 @@ def __get_multivariate_flow_lambda__(dims, **kwds):
         return tfd.TransformedDistribution(
             distribution=mv_normal,
             bijector=flow_parametrization_lambda(
-                unconstrained_bernstein_coeficents,
+                unconstrained_parameters,
             ),
         )
 
