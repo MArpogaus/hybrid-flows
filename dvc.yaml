@@ -128,7 +128,7 @@ stages:
     - log-level
     - seed
     - benchmark_datasets.${item.dataset}*
-    - unconditional_benchmark_distributions.${item.distribution}.${item.dataset}*
+    - unconditional_benchmark_hybrid_pre_trained_distributions.${item.distribution}.${item.dataset}*
     deps:
     - datasets/${item.dataset}
     - scripts/train.py
