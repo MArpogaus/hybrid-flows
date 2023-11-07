@@ -20,6 +20,14 @@ from tensorflow import keras as K
 
 # PUBLIC FUNCTIONS #############################################################
 def set_seed(seed):
+    """
+    Set the random seed for reproducibility in NumPy and TensorFlow.
+
+    Parameters:
+        seed (int): The random seed value to set.
+
+    """
+
     np.random.seed(seed)
     tf.random.set_seed(seed)
 
@@ -40,6 +48,31 @@ def fit_distribution(
     callbacks=[],
     **kwds,
 ):
+    """
+    This function compiles and fits a probability distribution model using
+    the specified settings,
+    including callbacks for early stopping and learning rate reduction.
+
+    Parameters:
+        model: The probability distribution model to fit.
+        seed (int): The random seed for reproducibility.
+        learning_rate: The learning rate for the optimizer.
+        lr_patience: The patience parameter for learning rate reduction.
+        results_path: The path to save model weights and artifacts.
+        monitor: The monitored metric for early stopping and
+                 learning rate reduction.
+        verbose: The verbosity level for training.
+        reduce_lr_on_plateau: Whether to reduce the learning rate on plateau.
+        early_stopping: Whether to enable early stopping.
+        loss (callable): The loss function for the model.
+        callbacks (list): Additional training callbacks.
+        **kwds: Additional keyword arguments for the model fitting function.
+
+    Returns:
+        object: The training history of the fitted model.
+
+    """
+
     set_seed(seed)
     model.compile(optimizer=tf.optimizers.Adam(learning_rate=learning_rate), loss=loss)
 

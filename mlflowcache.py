@@ -1,15 +1,15 @@
+import argparse
+import os
+import re
+import sys  # Import the sys module for stderr
+import time
+
 import mlflow
+import numpy as np
 import pandas as pd
 from mlflow import tracking
 from mlflow.entities import ViewType
-import yaml
-import json
-import numpy as np
-import sys  # Import the sys module for stderr
-import os
-import time
-import argparse
-import re
+
 
 # Define a custom function to convert NumPy objects to standard Python objects
 def numpy_to_python(obj):
@@ -19,15 +19,18 @@ def numpy_to_python(obj):
         return np.asscalar(obj)
     return obj
 
+
 # Set the MLflow tracking server URI
-#tracking_uri = "http://127.0.0.1:5000"  # Replace with your MLflow server URI
-tracking_uri = os.environ["MLFLOW_TRACKING_URI"]  # Replace with your MLflow server URI
+# tracking_uri = "http://127.0.0.1:5000"  # Replace with your MLflow server URI
+tracking_uri = os.environ["MLFLOW_TRACKING_URI"]
 print(f"connecting with: {tracking_uri}", file=sys.stderr)
 tracking.set_tracking_uri(tracking_uri)
 
+
 def download_data():
-    # Retrieve all experiments and create a dictionary to map experiment IDs to names
-    print(f"searching for experiments", file=sys.stderr)
+    # Retrieve all experiments and create a dictionary to map experiment
+    # IDs to names
+    print("searching for experiments", file=sys.stderr)
     experiment_id_to_name = {}
     for exp in mlflow.search_experiments():
         if "_test" not in exp.name:
@@ -46,24 +49,35 @@ def download_data():
             runs = mlflow.search_runs(
                 experiment_ids=[experiment_id],
                 run_view_type=ViewType.ALL,
-                max_results=1000000
+                max_results=1000000,
             )
             all_runs.append(runs)
             progress_counter += 1
-            print(f"Downloaded {progress_counter}/{len(all_experiments)} experiments", file=sys.stderr)
-            time.sleep(1) # to avoid to many requests error (and speed up download time??)
-        except Exception as e:
+            print(
+                f"Downloaded {progress_counter}/{len(all_experiments)} experiments",
+                file=sys.stderr,
+            )
+            time.sleep(
+                1
+            )  # to avoid to many requests error (and speed up download time??)
+        except Exception:
             all_runs.append(None)
             progress_counter += 1
-            print(f"skipping {progress_counter} {list(experiment_id_to_name.items())[progress_counter-1]}", file=sys.stderr)
-            
+            print(
+                f"skipping {progress_counter} \
+                {list(experiment_id_to_name.items())[progress_counter-1]}",
+                file=sys.stderr,
+            )
+
     te = time.time()
     print(f"download took {te-ts}")
 
     df = pd.concat(all_runs)
-    df["experiment_name"] = df.apply(lambda row: experiment_id_to_name[row["experiment_id"]], axis=1)
+    df["experiment_name"] = df.apply(
+        lambda row: experiment_id_to_name[row["experiment_id"]], axis=1
+    )
 
-    df = df.dropna(axis=1, how='all')
+    df = df.dropna(axis=1, how="all")
     df = df.sort_values(["metrics.val_loss"])
 
     df.to_feather("mlflow_data.feather")
@@ -74,13 +88,13 @@ def download_data():
 def generate_combinations(dictionary, keys=None):
     if keys is None:
         keys = list(dictionary.keys())
-    
+
     if not keys:
         return []
-    
+
     current_key = keys[0]
     remaining_keys = keys[1:]
-    
+
     if remaining_keys:
         combinations = []
         for value in dictionary[current_key]:
@@ -92,8 +106,7 @@ def generate_combinations(dictionary, keys=None):
         return [[(current_key, value)] for value in dictionary[current_key]]
 
 
-def query_data(exp_name: str, run_name: str,query: dict):
-    
+def query_data(exp_name: str, run_name: str, query: dict):
     # Generate all combinations
     combinations = generate_combinations(query)
     df = pd.read_feather("mlflow_data.feather")
@@ -101,11 +114,11 @@ def query_data(exp_name: str, run_name: str,query: dict):
     for combo in combinations:
         try:
             print(f"evaluating {(exp_name, run_name)} {combo}")
-            q = [df["params."+c[0]] == c[1] for c in combo]
+            q = [df["params." + c[0]] == c[1] for c in combo]
             # q1 = df["params."+"fit_kwds.learning_rate"] == "0.01"
             # q2 = df["experiment_name"] == "unconditional-circles"
             # q3 = df["tags.mlflow.runName"] == "bernstein_flow"
-            q.append(df["experiment_name"] == exp_name+"doesnotexist")
+            q.append(df["experiment_name"] == exp_name + "doesnotexist")
             q.append(df["tags.mlflow.runName"] == run_name)
             res = df[np.logical_and.reduce(q)]
             num_solutions = res.shape[0]
@@ -114,32 +127,33 @@ def query_data(exp_name: str, run_name: str,query: dict):
                 combo_exist.append(False)
             else:
                 combo_exist.append(True)
-        except:
+        except Exception:
             combo_exist.append(False)
 
     print(list(zip(combo_exist, combinations)))
-    #TODO: zip not working
+    # TODO: zip not working
     for c in list(zip([combo_exist, combinations[0]])):
-        print("res",c)
+        print("res", c)
     return []
-    uncached_combinations = [print(c[1]) for c in list(zip([combo_exist, combinations])) if c[0] == False]
+    uncached_combinations = [
+        print(c[1]) for c in list(zip([combo_exist, combinations])) if c[0] is False
+    ]
     return uncached_combinations
-
 
 
 def split_string_with_lists(input_string):
     # Define a regular expression pattern to find Python lists
-    pattern = r'\[[^\[\]]*\]'
+    pattern = r"\[[^\[\]]*\]"
 
     # Find all Python lists in the input string
     lists = re.findall(pattern, input_string)
 
     # Replace the Python lists with a placeholder
-    placeholder = '###LIST###'
+    placeholder = "###LIST###"
     string_without_lists = re.sub(pattern, placeholder, input_string)
 
     # Split the string by commas
-    result = string_without_lists.split(',')
+    result = string_without_lists.split(",")
 
     # Replace the placeholders back with the original lists
     for i, part in enumerate(result):
@@ -151,29 +165,29 @@ def split_string_with_lists(input_string):
 
     return result
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("TASK", choices=["download","find"])
-    parser.add_argument('--exp_name', '-e',nargs=1)
-    parser.add_argument('--run_name', '-r',nargs=1)
-    parser.add_argument('-S', action='append', nargs='+')
+    parser.add_argument("TASK", choices=["download", "find"])
+    parser.add_argument("--exp_name", "-e", nargs=1)
+    parser.add_argument("--run_name", "-r", nargs=1)
+    parser.add_argument("-S", action="append", nargs="+")
     args = parser.parse_args()
 
     task = args.TASK
     if task == "find":
         S = args.S if args.S else []
-        S = [s[0] for s in S] # we only consider first positional element
-        S = [ ".".join(s.split(".")[3:]) for s in S]
+        S = [s[0] for s in S]  # we only consider first positional element
+        S = [".".join(s.split(".")[3:]) for s in S]
         S = dict(s.split("=") for s in S)
         for key, value in S.items():
             S[key] = split_string_with_lists(value)
         exp_name, run_name = args.exp_name[0], args.run_name[0]
         exp_name = exp_name.replace("_distributions", "")
-        run_name = exp_name.split("-")[0]+"_"+run_name
-        exp_name = exp_name.replace("_","-")
+        run_name = exp_name.split("-")[0] + "_" + run_name
+        exp_name = exp_name.replace("_", "-")
         print(exp_name, run_name, S)
         uncached = query_data(exp_name, run_name, S)
         print(uncached, file=sys.stderr)
     elif task == "download":
         download_data()
-

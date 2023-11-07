@@ -18,6 +18,10 @@ __LOGGER__ = logging.getLogger(__name__)
 
 
 # CLASS DEFINITIONS ############################################################
+
+# Function signatures for pipeline callbacks
+
+
 class getDataset(Protocol):
     def __call__(self) -> "tuple[Any, Any]":
         pass
@@ -61,14 +65,46 @@ def pipeline(
     **extra_params_to_log,
 ):
     """
-    get_dataset is callback because we have no common
-    interface for how to generate a dataset (?!)
-    assumes models history has "loss" and "val_loss"
-    log_file is optional and can be none.
-    params: params from params.yaml to be logged
-    plot_data is optional
-    plot_samples is optional
+    This function represents a high-level machine learning pipeline that can
+    be used to perform the experiments.
+    It includes various stages such as loading a dataset, creating a model,
+    preprocessing the dataset,
+    training the model, and logging experiment results.
+
+    Notes:
+     - get_dataset_fn is callback because we have no common
+       interface for how to generate a dataset
+     - assumes models history has "loss" and "val_loss"
+
+    Parameters:
+        experiment_name (str): The name of the MLflow experiment to
+                               log the results.
+        run_name (str): The name of the MLflow run.
+        results_path (str): The path where the results and artifacts
+                            will be stored.
+        log_file (str, optional): The path to a log file, or None.
+        seed (int): The random seed for reproducibility.
+        get_dataset_fn (callable): A function that loads and
+                                   returns the dataset.
+        dataset_kwds (dict): Keyword arguments for the
+                             dataset loading function.
+        get_model_fn (callable): A function that creates and returns the model.
+        model_kwds (dict): Keyword arguments for the model creation function.
+        preprocess_dataset (callable): A function for preprocessing
+                                       the dataset.
+        fit_kwds (dict): Keyword arguments for the model fitting function.
+        plot_data (callable, optional): A function for plotting the dataset.
+        after_fit_hook (callable): A function to be executed after
+                                   model fitting.
+        **extra_params_to_log (dict): Additional parameters to log
+                                      to params.yaml.
+
+    Returns:
+        Tuple: A tuple containing the training history, model, and
+               preprocessed dataset.
+
     """
+
     call_args = dict(filter(lambda x: not callable(x[1]), vars().items()))
     set_seed(seed)
     data, dims = get_dataset_fn(**dataset_kwds)
@@ -129,6 +165,24 @@ def pipeline(
 
 
 def prepare_pipeline(args):
+    """
+    Prepare the pipeline by configuring logging and loading parameters.
+    It creates the output path and builds the parameters from the arguments.
+
+    Expects:
+     - args.results_path
+     - args.log_file
+     - args.log_level
+     - args.stage_name
+
+
+    Parameters:
+        args: Command-line arguments and parameters.
+
+    Returns:
+        dict: A dictionary containing loaded parameters.
+    """
+
     # prepare results directory
     os.makedirs(args.results_path, exist_ok=True)
 

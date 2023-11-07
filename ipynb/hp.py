@@ -1,12 +1,13 @@
+import json
+import os
+import sys  # Import the sys module for stderr
+
 import mlflow
+import numpy as np
 import pandas as pd
 from mlflow import tracking
 from mlflow.entities import ViewType
-import yaml
-import json
-import numpy as np
-import sys  # Import the sys module for stderr
-import os
+
 
 # Define a custom function to convert NumPy objects to standard Python objects
 def numpy_to_python(obj):
@@ -16,14 +17,15 @@ def numpy_to_python(obj):
         return np.asscalar(obj)
     return obj
 
+
 # Set the MLflow tracking server URI
-#tracking_uri = "http://127.0.0.1:5000"  # Replace with your MLflow server URI
+# tracking_uri = "http://127.0.0.1:5000"  # Replace with your MLflow server URI
 tracking_uri = os.environ["MLFLOW_TRACKING_URI"]  # Replace with your MLflow server URI
 print(f"connecting with: {tracking_uri}", file=sys.stderr)
 tracking.set_tracking_uri(tracking_uri)
 
 # Retrieve all experiments and create a dictionary to map experiment IDs to names
-print(f"searching for experiments", file=sys.stderr)
+print("searching for experiments", file=sys.stderr)
 experiment_id_to_name = {}
 for exp in mlflow.search_experiments():
     print(f" - found {exp.name}", file=sys.stderr)
@@ -38,7 +40,7 @@ results_list = []
 # Initialize progress counter
 progress_counter = 0
 
-print(f"summarizing best run for each experiment", file=sys.stderr)
+print("summarizing best run for each experiment", file=sys.stderr)
 # Iterate through experiments
 for experiment_id in all_experiments:
     runs = mlflow.search_runs(
@@ -88,13 +90,16 @@ for experiment_id in all_experiments:
 
     # Update progress
     progress_counter += 1
-    print(f"Processed {progress_counter}/{len(all_experiments)} experiments", file=sys.stderr)
+    print(
+        f"Processed {progress_counter}/{len(all_experiments)} experiments",
+        file=sys.stderr,
+    )
 
 # Create a DataFrame from the list of results
 results_df = pd.DataFrame(results_list)
 
 # Print the final results DataFrame
-#print(results_df["Run Name"])
+# print(results_df["Run Name"])
 
 # Serialize the list of dictionaries to JSON with the custom function
 results_json = json.dumps(results_list, indent=4, default=numpy_to_python)
