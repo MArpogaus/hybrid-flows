@@ -1,3 +1,4 @@
+"""Mlflow utils."""
 # -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
 # AUTHOR INFORMATION ##########################################################
 # file    : mlflow.py
@@ -24,13 +25,11 @@ from mctm.utils import flatten_dict
 
 # PUBLIC FUNCTIONS ############################################################
 def log_cfg(cfg: dict):
-    """
-    Log flattened dict as parameters in the current MLflow run.
+    """Log flattened dict as parameters in the current MLflow run.
 
     :param dict cfg: Flattened dictionary of parameters and values to be logged.
     :return: None
     """
-
     flat_dict = flatten_dict(cfg)
     flat_dict = dict(filter(lambda xy: len(str(xy[1])) < 500, flat_dict.items()))
     mlflow.log_params(flat_dict)
@@ -38,8 +37,7 @@ def log_cfg(cfg: dict):
 
 @contextmanager
 def start_run_with_exception_logging(run_name):
-    """
-    Context manager for running MLflow experiment.
+    """Context manager for running MLflow experiment.
 
     This function starts an MLflow run within a context and logs any
     unhandled exceptions that occur within the context as run
@@ -53,7 +51,6 @@ def start_run_with_exception_logging(run_name):
         with start_run_with_exception_logging(run_name="My_Run"):
             # Your code here
     """
-
     # if there is already a parent run, start it first
     run_id = os.environ.get("MLFLOW_RUN_ID", False)
     if run_id:

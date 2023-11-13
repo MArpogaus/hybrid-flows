@@ -1,3 +1,4 @@
+"""Train benchmark."""
 # IMPORT PACKAGES #############################################################
 import argparse
 import os
@@ -11,11 +12,13 @@ from mctm.utils.pipeline import pipeline, prepare_pipeline
 
 
 def get_lr_schedule(**kwds):
+    """Lr schedule."""
     lr_decayed_fn = tf.keras.optimizers.schedules.CosineDecay(**kwds)
     return lr_decayed_fn
 
 
 def main(args):
+    """Experiment exec."""
     # --- prepare for execution ---
 
     # load params

@@ -1,3 +1,4 @@
+"""Provide access to malnutrition dataset."""
 from functools import partial
 
 import pandas as pd
@@ -18,20 +19,22 @@ def get_dataset(
     dtype=tf.float32,
     seed=1,
 ):
-    """
-    Loads and preprocesses a dataset for training, validation, and testing.
+    """Load and preprocesse a dataset for training, validation, and testing.
 
     :param str data_path: The path to the dataset file.
     :param list targets: List of target column names.
-    :param float test_size: The proportion of the dataset to include in the test split.
-    :param float val_size: The proportion of the dataset to include in the validation split.
-    :param list covariates: List of covariate column names. If None, inferred from the dataset.
+    :param float test_size: The proportion of the dataset to include in the
+    test split.
+    :param float val_size: The proportion of the dataset to include in the
+    validation split.
+    :param list covariates: List of covariate column names. If None, inferred
+    from the dataset.
     :param tf.dtypes.DType dtype: The data type for the tensors.
     :param int seed: Random seed for reproducibility.
-    :return: Tuple containing the training, validation, and test data tensors along with the number of targets.
+    :return: Tuple containing the training, validation, and test data tensors
+    along with the number of targets.
     :rtype: tuple
     """
-
     # Load dataset
     data = pd.read_csv(data_path, sep=r"\s+")
 
@@ -42,8 +45,12 @@ def get_dataset(
 
     # Split the dataset into train, validation, and test sets
     set_seed(seed)
-    train_val_data, test_data = train_test_split(data, test_size=test_size, shuffle=True)
-    train_data, val_data = train_test_split(train_val_data, test_size=val_size, shuffle=True)
+    train_val_data, test_data = train_test_split(
+        data, test_size=test_size, shuffle=True
+    )
+    train_data, val_data = train_test_split(
+        train_val_data, test_size=val_size, shuffle=True
+    )
 
     # Apply data scaling using column transformer
     ct = make_column_transformer(

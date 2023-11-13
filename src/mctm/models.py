@@ -2,7 +2,8 @@
 # ...
 ################################################################################
 # IMPORTS ######################################################################
-"""
+"""Classes for density regression models.
+
 The 'models' module defines classes for density regression models.
 
 It includes classes for DensityRegressionModel and HybridDensityRegressionModel,
@@ -17,8 +18,7 @@ from mctm import distributions
 
 # MODEL DEFINITIONS #########################################################
 class DensityRegressionModel(tf.keras.Model):
-    """
-    A class representing a Density Regression Model.
+    """A class representing a Density Regression Model.
 
     :ivar callable distribution_lambda: A callable representing the
                                        distribution.
@@ -29,16 +29,13 @@ class DensityRegressionModel(tf.keras.Model):
     :method call: Compute the distribution for given input arguments.
     """
 
-
     def __init__(self, dims, distribution, **kwds):
-        """
-        Initialize a DensityRegressionModel.
+        """Initialize a DensityRegressionModel.
 
         :param int dims: The dimension of the model.
         :param str distribution: The type of distribution to use.
         :param **kwds: Additional keyword arguments.
         """
-
         super().__init__()
         (
             self.distribution_lambda,
@@ -47,29 +44,25 @@ class DensityRegressionModel(tf.keras.Model):
         ) = getattr(distributions, "get_" + distribution)(dims=dims, **kwds)
 
     def call(self, *args, **kwds):
-        """
-        Compute the distribution for the given input arguments.
+        """Compute the distribution for the given input arguments.
 
         :param *args: Variable-length argument list.
         :param **kwds: Additional keyword arguments.
         :return: The computed distribution.
         :rtype: Distribution
         """
-
         return self.distribution_lambda(
             self.distribution_parameters_lambda(*args, **kwds)
         )
 
 
 class HybridDenistyRegressionModel(DensityRegressionModel):
-    """
-    A class representing a Hybrid Density Regression Model.
+    """A class representing a Hybrid Density Regression Model.
 
     :ivar DensityRegressionModel base_model: The base density regression model.
 
     :method get_base_distribution: Get the base distribution.
     """
-
 
     def __init__(
         self,
@@ -83,8 +76,7 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
         base_checkpoint_path,
         freeze_base_model,
     ):
-        """
-        Initialize a HybridDensityRegressionModel.
+        """Initialize a HybridDensityRegressionModel.
 
         :param int dims: The dimension of the model.
         :param str distribution: The type of distribution to use.
@@ -99,7 +91,6 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
                                         checkpoint.
         :param bool freeze_base_model: Whether to freeze the base model.
         """
-
         super().__init__(
             dims,
             distribution=distribution,
@@ -122,13 +113,11 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
             self.base_model.trainable = False
 
     def get_base_distribution(self, *args, **kwds):
-        """
-        Get the base distribution.
+        """Get the base distribution.
 
         :param *args: Variable-length argument list. (ignored)
         :param **kwds: Additional keyword arguments. (ignored)
         :return: The base distribution.
         :rtype: Distribution
         """
-
         return self.base_model(None)

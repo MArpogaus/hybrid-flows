@@ -1,3 +1,4 @@
+"""Visualization utils."""
 # -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
 # AUTHOR INFORMATION ###########################################################
 # file    : visualisation.py
@@ -22,8 +23,7 @@ from matplotlib import pyplot as plt
 
 # PRIVATE FUNCTIONS ############################################################
 def __joint_kde_plot__(data, x, y, **kwds):
-    """
-    Create a joint KDE (Kernel Density Estimation) plot of two variables.
+    """Create a joint KDE (Kernel Density Estimation) plot of two variables.
 
     Generates a joint KDE plot of two variables from a given dataset.
     It visualizes the distribution of the variables in a two-dimensional
@@ -36,8 +36,6 @@ def __joint_kde_plot__(data, x, y, **kwds):
     :return: The generated plot figure.
     :rtype: Figure
     """
-
-
     g = sns.jointplot(
         data=data,
         x=x,
@@ -63,8 +61,7 @@ def __joint_kde_plot__(data, x, y, **kwds):
 
 # PUBLIC FUNCTIONS #############################################################
 def get_figsize(width, fraction=1, subplots=(1, 1)):
-    """
-    Set figure dimensions to avoid scaling in LaTeX.
+    """Set figure dimensions to avoid scaling in LaTeX.
 
     :param width: float or string
                   Document width in points, or string of predefined document type.
@@ -75,7 +72,6 @@ def get_figsize(width, fraction=1, subplots=(1, 1)):
     :return: fig_dim: tuple
                      Dimensions of the figure in inches.
     """
-
     if width == "thesis":
         width_pt = 426.79135
     elif width == "beamer":
@@ -101,15 +97,13 @@ def get_figsize(width, fraction=1, subplots=(1, 1)):
 
 
 def setup_latex(fontsize=10):
-    """
-    Set up LaTeX font and text rendering for matplotlib.
+    """Set up LaTeX font and text rendering for matplotlib.
 
     This function configures LaTeX font and text rendering settings
     for matplotlib plots.
 
     :param int fontsize: Font size to use for labels and text in the plots.
     """
-
     tex_fonts = {
         # Use LaTeX to write all text
         # https://stackoverflow.com/questions/43295837/latex-was-not-able-to-process-the-following-string-blp
@@ -130,8 +124,7 @@ def setup_latex(fontsize=10):
 
 
 def plot_2d_data(X, Y, **kwds):
-    """
-    Create a 2D scatter plot for binary labeled data.
+    """Create a 2D scatter plot for binary labeled data.
 
     This function creates a 2D scatter plot for binary labeled data points.
     It separates the data points by label and visualizes them in different
@@ -146,7 +139,6 @@ def plot_2d_data(X, Y, **kwds):
     Example:
         fig = plot_2d_data(X, Y, s=20, alpha=0.6)
     """
-
     label = Y.astype(bool)
     X1, X2 = X[..., 0], X[..., 1]
     fig = plt.figure(**kwds)
@@ -164,8 +156,7 @@ def plot_2d_data(X, Y, **kwds):
 
 
 def plot_samples(dist, data, seed=1, **kwds):
-    """
-    Create a joint KDE plot of data samples and a probability distribution.
+    """Create a joint KDE plot of data samples and a probability distribution.
 
     This function generates a joint Kernel Density Estimation plot of data
     samples and a probability distribution. It visualizes the data and samples
@@ -179,7 +170,6 @@ def plot_samples(dist, data, seed=1, **kwds):
     :return: The generated plot figure.
     :rtype: Figure
     """
-
     columns = ["$y_1$", "$y_2$"]
     if len(dist.batch_shape) == 0 or dist.batch_shape[0] == 1:
         N = data.shape[0]
@@ -203,8 +193,7 @@ def plot_samples(dist, data, seed=1, **kwds):
 
 
 def plot_flow(dist, x, y, seed=1, **kwds):
-    """
-    Create joint KDE plots to visualize data transformation through a flow.
+    """Create joint KDE plots to visualize data transformation through a flow.
 
     This function generates joint Kernel Density Estimation plots to visualize
     data transformations through a flow model. It visualizes the input data,
@@ -219,7 +208,6 @@ def plot_flow(dist, x, y, seed=1, **kwds):
     :return: Figures of the joint KDE plots for data transformation.
     :rtype: tuple
     """
-
     columns = ["$y_1$", "$y_2$", "$z_{1,1}$", "$z_{1,2}$", "$z_{2,1}$", "$z_{2,2}$"]
     # forward flow (bnf in inverted)
     y = tf.convert_to_tensor(y, dtype=tf.float32)

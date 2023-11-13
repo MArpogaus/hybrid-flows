@@ -1,3 +1,4 @@
+"""Train."""
 # IMPORT PACKAGES #############################################################
 import argparse
 import logging
@@ -24,6 +25,8 @@ __LOGGER__ = logging.getLogger(__name__)
 
 
 def get_after_fit_hook(results_path, is_hybrid, **kwds):
+    """Provide after fit plot."""
+
     def plot_after_fit(model, x, y):
         fig = plot_samples(model(x), y.numpy(), seed=1, **kwds)
         fig.savefig(os.path.join(results_path, "samples.pdf"))
@@ -37,6 +40,7 @@ def get_after_fit_hook(results_path, is_hybrid, **kwds):
 
 
 def main(args):
+    """Experiment."""
     # prepare for execution:
     # - read cli arguments
     # - configure logging

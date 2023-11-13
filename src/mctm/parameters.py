@@ -11,7 +11,8 @@
 # ...
 ################################################################################
 # IMPORTS ######################################################################
-"""
+"""Functions defining ANNs.
+
 The 'parameters' module contains functions for defining ANNs based on certain
 parameters as used in various distribution models.
 
@@ -39,8 +40,7 @@ def __get_simple_fully_connected_network__(
     dtype=tf.float32,
     **kwds,
 ):
-    """
-    Create a simple fully connected neural network for parameter estimation.
+    """Create a simple fully connected neural network for parameter estimation.
 
     :param tuple input_shape: The shape of the input.
     :param list hidden_units: List of integers specifying the number of hidden
@@ -56,7 +56,6 @@ def __get_simple_fully_connected_network__(
     :return: A Keras model representing the parameter network.
     :rtype: keras.Model
     """
-
     x = K.Input(input_shape, name="input", dtype=dtype)
     inputs = [x]
 
@@ -98,15 +97,13 @@ def __get_simple_fully_connected_network__(
 
 # PUBLIC FUNCTIONS #############################################################
 def get_parameter_vector_lambda(parameters_shape, dtype):
-    """
-    Create a parameter vector as a trainable TensorFlow variable.
+    """Create a parameter vector as a trainable TensorFlow variable.
 
     :param tuple parameters_shape: The shape of the parameter vector.
     :param dtype: Data type of the parameter vector.
     :return: A callable that returns the parameter vector.
     :rtype: Callable
     """
-
     parameter_vector = tf.Variable(
         tf.random.normal(parameters_shape, dtype=dtype), trainable=True
     )
@@ -116,8 +113,7 @@ def get_parameter_vector_lambda(parameters_shape, dtype):
 def get_simple_fully_connected_parameter_network_lambda(
     parameter_shape, input_shape, **kwds
 ):
-    """
-    Create a simple fully connected parameter network for density estimation.
+    """Create a simple fully connected parameter network for density estimation.
 
     :param tuple parameter_shape: The shape of the parameter.
     :param tuple input_shape: The shape of the input to the network.
@@ -126,7 +122,6 @@ def get_simple_fully_connected_parameter_network_lambda(
              trainable variables.
     :rtype: Tuple
     """
-
     parameter_network = __get_simple_fully_connected_network__(
         input_shape=input_shape, output_shape=parameter_shape, **kwds
     )
@@ -146,7 +141,8 @@ def get_simple_fully_connected_parameter_network_lambda(
 
 
 def get_parameter_vector_or_simple_network_lambda(parameter_shape, conditional, **kwds):
-    """
+    """Create parameter vector.
+    
     Create either a parameter vector or a simple fully connected parameter
     network based on conditional flag.
 
@@ -167,8 +163,7 @@ def get_parameter_vector_or_simple_network_lambda(parameter_shape, conditional, 
 
 
 def get_autoregressive_parameter_network_lambda(parameter_shape, **kwds):
-    """
-    Create an autoregressive parameter network.
+    """Create an autoregressive parameter network.
 
     :param tuple parameter_shape: The shape of the parameter.
     :param **kwds: Additional keyword arguments.
@@ -176,7 +171,6 @@ def get_autoregressive_parameter_network_lambda(parameter_shape, **kwds):
              and its trainable variables.
     :rtype: Tuple
     """
-
     dims = parameter_shape[:1]
     params = tf.reduce_prod(parameter_shape[1:])
     parameter_network = tfb.AutoregressiveNetwork(
@@ -193,8 +187,7 @@ def get_autoregressive_parameter_network_lambda(parameter_shape, **kwds):
 def get_autoregressive_parameter_network_with_additive_conditioner_lambda(
     parameter_shape, made_kwds, x0_kwds
 ):
-    """
-    Create an autoregressive parameter network with an additive conditioner.
+    """Create an autoregressive parameter network with an additive conditioner.
 
     :param tuple parameter_shape: The shape of the parameter.
     :param made_kwds: Keyword arguments for MADE (Masked Autoregressive Flow
@@ -204,7 +197,6 @@ def get_autoregressive_parameter_network_with_additive_conditioner_lambda(
              trainable variables.
     :rtype: Tuple
     """
-
     (
         masked_autoregressive_parameter_network_lambda,
         masked_autoregressive_trainable_variables,

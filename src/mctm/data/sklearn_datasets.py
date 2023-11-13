@@ -1,3 +1,4 @@
+"""Provides access to sklearn datasets."""
 # -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
 # AUTHOR INFORMATION ###########################################################
 # file    : sklearn_datasets.py
@@ -15,6 +16,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 def get_dataset(dataset_name, n_samples, scale, **kwds):
+    """Load data."""
     X, Y = getattr(datasets, f"make_{dataset_name}")(n_samples=n_samples, **kwds)
     if scale:
         X = MinMaxScaler().fit_transform(X)

@@ -1,3 +1,4 @@
+"""Tensorflow utils."""
 # -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
 # AUTHOR INFORMATION ###########################################################
 # file    : tensorflow.py
@@ -20,12 +21,10 @@ from tensorflow import keras as K
 
 # PUBLIC FUNCTIONS #############################################################
 def set_seed(seed):
-    """
-    Set the random seed for reproducibility in NumPy and TensorFlow.
+    """Set the random seed for reproducibility in NumPy and TensorFlow.
 
     :param int seed: The random seed value to set.
     """
-
     np.random.seed(seed)
     tf.random.set_seed(seed)
 
@@ -46,7 +45,8 @@ def fit_distribution(
     callbacks=[],
     **kwds,
 ):
-    """
+    """Train model.
+    
     This function compiles and fits a probability distribution model using
     the specified settings,
     including callbacks for early stopping and learning rate reduction.
@@ -67,7 +67,6 @@ def fit_distribution(
     :return: The training history of the fitted model.
     :rtype: object
     """
-
     set_seed(seed)
     model.compile(optimizer=tf.optimizers.Adam(learning_rate=learning_rate), loss=loss)
 

@@ -11,7 +11,8 @@
 # ...
 ################################################################################
 # IMPORTS ######################################################################
-"""
+"""Functions for probability distributions.
+
 The 'distributions' module provides functions for defining and parametrizing
 probability distributions. They get used in the 'models' module.
 
@@ -43,18 +44,15 @@ from .parameters import (
 
 
 def __default_base_distribution_lambda__(dims, distribution_type="normal", **kwds):
-    """
-    Get the default base distribution as a callable.
+    """Get the default base distribution as a callable.
 
     :param int dims: The dimension of the distribution.
     :param str distribution_type: The type of distribution
-                                  (e.g., "normal", "lognormal", "uniform", "kumaraswamy").
+                    (e.g., "normal", "lognormal", "uniform", "kumaraswamy").
     :param **kwds: Additional keyword arguments for the distribution.
     :return: The default base distribution.
     :rtype: Distribution
     """
-
-
     if distribution_type == "normal":
         default_kwds = dict(loc=0.0, scale=1.0)
         default_kwds.update(**kwds)
@@ -75,18 +73,17 @@ def __default_base_distribution_lambda__(dims, distribution_type="normal", **kwd
 def __get_parametrized_flow__(
     scale, shift, unconstrained_bernstein_coefficents, clip_to_bernstein_domain, **kwds
 ):
-    """
-    Get a parametrized flow as a callable.
+    """Get a parametrized flow as a callable.
 
     :param scale: The scale of the flow.
     :param shift: The shift of the flow.
-    :param unconstrained_bernstein_coefficents: The unconstrained Bernstein coefficients.
+    :param unconstrained_bernstein_coefficents: The unconstrained
+    Bernstein coefficients.
     :param clip_to_bernstein_domain: Whether to clip to the Bernstein domain.
     :param **kwds: Additional keyword arguments.
     :return: The parametrized flow bijector.
     :rtype: bijector
     """
-
     thetas_constrain_fn = get_thetas_constrain_fn(**kwds)
 
     bijectors = []
@@ -126,8 +123,7 @@ def __get_parametrized_flow__(
 def __get_bernstein_flow_lambda__(
     dims, order, base_distribution_lambda=__default_base_distribution_lambda__, **kwds
 ):
-    """
-    Get a Bernstein Flow distribution as a callable.
+    """Get a Bernstein Flow distribution as a callable.
 
     :param int dims: The dimension of the distribution.
     :param int order: The order of the Bernstein Flow.
@@ -136,7 +132,6 @@ def __get_bernstein_flow_lambda__(
     :return: The Bernstein Flow distribution.
     :rtype: Distribution
     """
-
     pv_shape = [dims, order]
 
     def dist(pv):
@@ -153,8 +148,7 @@ def __get_bernstein_flow_lambda__(
 
 
 def __get_multivariate_bernstein_flow_lambda__(dims, order, **kwds):
-    """
-    Get a Multivariate Bernstein Flow distribution as a callable.
+    """Get a Multivariate Bernstein Flow distribution as a callable.
 
     :param int dims: The dimension of the distribution.
     :param int order: The order of the Bernstein Flow.
@@ -164,7 +158,6 @@ def __get_multivariate_bernstein_flow_lambda__(dims, order, **kwds):
     :return: The shape of the parameter vector.
     :rtype: list
     """
-
     pv_shape = [order * dims + np.sum(np.arange(dims + 1))]
 
     def dist(pv):
@@ -188,8 +181,7 @@ def __get_multivariate_bernstein_flow_lambda__(dims, order, **kwds):
 
 
 def __get_multivariate_normal_lambda__(dims):
-    """
-    Get a Multivariate Normal distribution as a callable.
+    """Get a Multivariate Normal distribution as a callable.
 
     :param int dims: The dimension of the distribution.
     :return: A callable representing the Multivariate Normal distribution.
@@ -197,7 +189,6 @@ def __get_multivariate_normal_lambda__(dims):
     :return: The shape of the parameter vector.
     :rtype: list
     """
-
     pv_shape = [dims + np.sum(np.arange(dims + 1))]
 
     def dist(pv):
@@ -216,8 +207,7 @@ def __get_trainable_distribution__(
     get_parameter_lambda_fn,
     parameter_kwds,
 ):
-    """
-    Get a trainable distribution as a callable.
+    """Get a trainable distribution as a callable.
 
     :param int dims: The dimension of the distribution.
     :param callable get_distribution_lambda_fn: A function to get the
@@ -233,7 +223,6 @@ def __get_trainable_distribution__(
     :return: List of trainable parameters.
     :rtype: list
     """
-
     distribution_lambda, parameters_shape = get_distribution_lambda_fn(
         dims=dims, **distribution_kwds
     )
@@ -244,8 +233,7 @@ def __get_trainable_distribution__(
 
 
 def __get_bijector_fn__(network, **flow_kwds):
-    """
-    Get a bijector function as a callable.
+    """Get a bijector function as a callable.
 
     :param callable network: The network to use for the bijector function.
     :param **flow_kwds: Additional keyword arguments for the flow, e.g.,
@@ -253,8 +241,6 @@ def __get_bijector_fn__(network, **flow_kwds):
     :return: A callable representing the bijector function.
     :rtype: callable
     """
-
-
     def bijector_fn(y, *arg, **kwds):
         with tf.name_scope("bnf_bjector"):
             pvector = network(y, **kwds)
@@ -267,15 +253,13 @@ def __get_bijector_fn__(network, **flow_kwds):
 
 
 def __get_num_masked__(dims, layer):
-    """
-    Compute the number of masked dimensions.
+    """Compute the number of masked dimensions.
 
     :param int dims: The total number of dimensions.
     :param int layer: The layer number.
     :return: The number of masked dimensions.
     :rtype: int
     """
-
     num_masked = dims // 2
     if dims % 2 != 0:
         num_masked += layer % 2
@@ -289,13 +273,13 @@ def get_masked_autoregressive_bernstein_flow(
     parameter_kwds,
     get_parameter_lambda_fn=get_autoregressive_parameter_network_lambda,
 ):
-    """
-    Get a Masked Autoregressive Bernstein Flow distribution as a callable.
+    """Get a Masked Autoregressive Bernstein Flow distribution as a callable.
 
     :param int dims: The dimension of the distribution.
     :param dict distribution_kwds: Keyword arguments for the distribution.
     :param dict parameter_kwds: Keyword arguments for the parameters.
-    :param callable get_parameter_lambda_fn: A function to get the parameter lambda.
+    :param callable get_parameter_lambda_fn: A function to get the parameter 
+    lambda.
     :return: A callable representing the distribution.
     :rtype: callable
     :return: A callable for parameter networks.
@@ -303,8 +287,6 @@ def get_masked_autoregressive_bernstein_flow(
     :return: List of trainable parameters.
     :rtype: list
     """
-
-
     distribution_kwds = distribution_kwds.copy()
     order = distribution_kwds.pop("order")
     base_distribution_lambda = distribution_kwds.pop(
@@ -337,13 +319,13 @@ def get_coupling_bernstein_flow(
     parameter_kwds,
     get_parameter_lambda_fn=get_simple_fully_connected_parameter_network_lambda,
 ):
-    """
-    Get a Coupling Bernstein Flow distribution as a callable.
+    """Get a Coupling Bernstein Flow distribution as a callable.
 
     :param int dims: The dimension of the distribution.
     :param dict distribution_kwds: Keyword arguments for the distribution.
     :param dict parameter_kwds: Keyword arguments for the parameters.
-    :param callable get_parameter_lambda_fn: A function to get the parameter lambda.
+    :param callable get_parameter_lambda_fn: A function to get the parameter 
+    lambda.
     :return: A callable representing the distribution.
     :rtype: callable
     :return: A callable for parameter networks.
@@ -351,7 +333,6 @@ def get_coupling_bernstein_flow(
     :return: List of trainable parameters.
     :rtype: list
     """
-
     distribution_kwds = distribution_kwds.copy()
     order = distribution_kwds.pop("order")
     base_distribution_lambda = distribution_kwds.pop(
@@ -433,9 +414,9 @@ def get_masked_autoregressive_bernstein_flow_first_dim_masked(
     parameter_kwds,
     get_parameter_lambda_fn=get_autoregressive_parameter_network_with_additive_conditioner_lambda,  # noqa: E501
 ):
-    """
-    Get a Masked Autoregressive Bernstein Flow distribution with the first
-    dimension masked as a callable.
+    """Get a Masked Autoregressive Bernstein Flow.
+    
+    Distribution with the first dimension masked as a callable.
 
     :param int dims: The dimension of the distribution.
     :param dict distribution_kwds: Keyword arguments for the distribution.
@@ -449,7 +430,6 @@ def get_masked_autoregressive_bernstein_flow_first_dim_masked(
     :return: List of trainable parameters.
     :rtype: list
     """
-
     distribution_kwds = distribution_kwds.copy()
     order = distribution_kwds.pop("order")
     base_distribution_lambda = distribution_kwds.pop(

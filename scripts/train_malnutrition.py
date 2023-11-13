@@ -1,3 +1,4 @@
+"""Train malnutrinion."""
 # IMPORT PACKAGES #############################################################
 import argparse
 import logging
@@ -21,6 +22,7 @@ __LOGGER__ = logging.getLogger(__name__)
 
 
 def plot_grid(data, **kwds):
+    """Plot sns.PairGrid."""
     sns.set_theme(style="white")
     g = sns.PairGrid(data, diag_sharey=False, **kwds)
     g.map_upper(sns.scatterplot, s=15)
@@ -32,6 +34,7 @@ def plot_grid(data, **kwds):
 
 
 def plot_data(*data, targets, frac=0.1, **kwds):
+    """Plot data."""
     train_data, _, _ = data
     data = pd.DataFrame(np.array(train_data[1]), columns=targets).sample(frac=frac)
 
@@ -40,6 +43,7 @@ def plot_data(*data, targets, frac=0.1, **kwds):
 
 
 def get_after_fit_hook(results_path, N, seed, targets, **kwds):
+    """Provide after after fit plot."""
     def plot_samples_grid(model, x, y, validation_data, **_):
         x, y = validation_data
         set_seed(seed)
@@ -64,6 +68,7 @@ def get_after_fit_hook(results_path, N, seed, targets, **kwds):
 
 
 def main(args):
+    """Experiment."""
     # prepare for execution:
     # - read cli arguments
     # - configure logging

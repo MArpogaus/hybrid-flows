@@ -1,3 +1,4 @@
+"""Script for evaluating hyperparameter search."""
 import json
 import os
 import sys  # Import the sys module for stderr
@@ -11,6 +12,7 @@ from mlflow.entities import ViewType
 
 # Define a custom function to convert NumPy objects to standard Python objects
 def numpy_to_python(obj):
+    """Numpy to python."""
     if isinstance(obj, np.ndarray):
         return obj.tolist()
     elif isinstance(obj, np.generic):

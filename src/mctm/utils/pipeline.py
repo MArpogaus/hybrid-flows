@@ -1,12 +1,13 @@
+"""Pipeline."""
 # IMPORT MODULES ###############################################################
 import logging
-import os
 import sys
 from typing import Any, Protocol
 
 import dvc.api
 import mlflow
 import numpy as np
+import os
 import yaml
 from matplotlib.pyplot import Figure
 
@@ -23,27 +24,42 @@ __LOGGER__ = logging.getLogger(__name__)
 
 
 class getDataset(Protocol):
+    """Callback."""
+
     def __call__(self) -> "tuple[Any, Any]":
+        """Call."""
         pass
 
 
 class getModel(Protocol):
+    """Callback."""
+
     def __call__(self, dataset: "tuple[Any,Any]") -> Any:
+        """Call."""
         pass
 
 
 class doPlotData(Protocol):
+    """Callback."""
+
     def __call__(self, X: Any, Y: Any) -> "Figure":
+        """Call."""
         pass
 
 
 class doPreprocessDataset(Protocol):
+    """Callback."""
+
     def __call__(self, X: Any, Y: Any, model: Any) -> "dict":
+        """Call."""
         pass
 
 
 class doAfterFit(Protocol):
+    """Callback."""
+
     def __call__(self, model: Any, x: Any, y: Any, **kwds: dict) -> None:
+        """Call."""
         pass
 
 
@@ -64,15 +80,16 @@ def pipeline(
     after_fit_hook: doAfterFit,
     **extra_params_to_log,
 ):
-    """
-    This function represents a high-level machine learning pipeline that can
+    """Pipeline.
+
+    The function represents a high-level machine learning pipeline that can
     be used to perform the experiments.
     It includes various stages such as loading a dataset, creating a model,
     preprocessing the dataset,
     training the model, and logging experiment results.
 
     Notes:
-     - get_dataset_fn is callback because we have no common
+     - get_dataset_fn is a callback because we have no common
        interface for how to generate a dataset
      - assumes models history has "loss" and "val_loss"
 
@@ -101,8 +118,6 @@ def pipeline(
              preprocessed dataset.
     :rtype: Tuple
     """
-
-
     call_args = dict(filter(lambda x: not callable(x[1]), vars().items()))
     set_seed(seed)
     data, dims = get_dataset_fn(**dataset_kwds)
@@ -163,8 +178,8 @@ def pipeline(
 
 
 def prepare_pipeline(args):
-    """
-    Prepare the pipeline by configuring logging and loading parameters.
+    """Prepare the pipeline by configuring logging and loading parameters.
+
     It creates the output path and builds the parameters from the arguments.
 
     Expects:
@@ -177,7 +192,6 @@ def prepare_pipeline(args):
     :return: A dictionary containing loaded parameters.
     :rtype: dict
     """
-
     # prepare results directory
     os.makedirs(args.results_path, exist_ok=True)
 

@@ -1,3 +1,4 @@
+"""Demostrate pipeline use."""
 # %%
 
 import numpy as np
