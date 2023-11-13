@@ -44,6 +44,7 @@ def plot_data(*data, targets, frac=0.1, **kwds):
 
 def get_after_fit_hook(results_path, N, seed, targets, **kwds):
     """Provide after after fit plot."""
+
     def plot_samples_grid(model, x, y, validation_data, **_):
         x, y = validation_data
         set_seed(seed)

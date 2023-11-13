@@ -155,6 +155,8 @@ def load_and_process_power_data(dataset_dir):
 
 def load_and_process_gas_data(dataset_dir):
     """Load data."""
+    _ = "fix pydocstyle"
+
     # https://github.com/gpapamak/maf/blob/master/datasets/gas.py
     def load_data(file):
         data = pd.read_pickle(file)
@@ -203,6 +205,8 @@ def load_and_process_gas_data(dataset_dir):
 
 def load_and_process_hepmass_data(dataset_dir):
     """Load data."""
+    _ = "fix pydocstyle"
+
     # https://github.com/gpapamak/maf/blob/master/datasets/hepmass.py
     # https://github.com/bayesiains/nsf/blob/master/data/hepmass.py
     def load_data(path):
@@ -280,6 +284,7 @@ def load_and_process_hepmass_data(dataset_dir):
 
 def load_and_process_miniboone_data(dataset_dir):
     """Load data."""
+
     def load_data(root_path):
         data = np.load(root_path)
         N_test = int(0.1 * data.shape[0])

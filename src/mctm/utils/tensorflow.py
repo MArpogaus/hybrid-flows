@@ -46,7 +46,7 @@ def fit_distribution(
     **kwds,
 ):
     """Train model.
-    
+
     This function compiles and fits a probability distribution model using
     the specified settings,
     including callbacks for early stopping and learning rate reduction.

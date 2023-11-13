@@ -241,6 +241,7 @@ def __get_bijector_fn__(network, **flow_kwds):
     :return: A callable representing the bijector function.
     :rtype: callable
     """
+
     def bijector_fn(y, *arg, **kwds):
         with tf.name_scope("bnf_bjector"):
             pvector = network(y, **kwds)
@@ -278,7 +279,7 @@ def get_masked_autoregressive_bernstein_flow(
     :param int dims: The dimension of the distribution.
     :param dict distribution_kwds: Keyword arguments for the distribution.
     :param dict parameter_kwds: Keyword arguments for the parameters.
-    :param callable get_parameter_lambda_fn: A function to get the parameter 
+    :param callable get_parameter_lambda_fn: A function to get the parameter
     lambda.
     :return: A callable representing the distribution.
     :rtype: callable
@@ -324,7 +325,7 @@ def get_coupling_bernstein_flow(
     :param int dims: The dimension of the distribution.
     :param dict distribution_kwds: Keyword arguments for the distribution.
     :param dict parameter_kwds: Keyword arguments for the parameters.
-    :param callable get_parameter_lambda_fn: A function to get the parameter 
+    :param callable get_parameter_lambda_fn: A function to get the parameter
     lambda.
     :return: A callable representing the distribution.
     :rtype: callable
@@ -415,7 +416,7 @@ def get_masked_autoregressive_bernstein_flow_first_dim_masked(
     get_parameter_lambda_fn=get_autoregressive_parameter_network_with_additive_conditioner_lambda,  # noqa: E501
 ):
     """Get a Masked Autoregressive Bernstein Flow.
-    
+
     Distribution with the first dimension masked as a callable.
 
     :param int dims: The dimension of the distribution.

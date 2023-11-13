@@ -142,7 +142,7 @@ def get_simple_fully_connected_parameter_network_lambda(
 
 def get_parameter_vector_or_simple_network_lambda(parameter_shape, conditional, **kwds):
     """Create parameter vector.
-    
+
     Create either a parameter vector or a simple fully connected parameter
     network based on conditional flag.
 

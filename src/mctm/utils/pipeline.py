@@ -1,13 +1,13 @@
 """Pipeline."""
 # IMPORT MODULES ###############################################################
 import logging
+import os
 import sys
 from typing import Any, Protocol
 
 import dvc.api
 import mlflow
 import numpy as np
-import os
 import yaml
 from matplotlib.pyplot import Figure
 

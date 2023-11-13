@@ -115,7 +115,7 @@ def load_mnist_data():
 
 def get_preprocessed_mnist_data(encoder_id):
     """Load pretrained autoencoder.
-    
+
     Load pre-trained autoencoder models and preprocessed MNIST data for
     experimentation.
 
