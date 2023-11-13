@@ -42,23 +42,21 @@ def __get_simple_fully_connected_network__(
     """
     Create a simple fully connected neural network for parameter estimation.
 
-    Parameters:
-        input_shape (tuple): The shape of the input.
-        hidden_units (list): List of integers specifying the number of hidden
-                             units in each layer.
-        activation (str): Activation function to use in hidden layers.
-        batch_norm (bool): Whether to use batch normalization.
-        output_shape (tuple): The shape of the output parameter vector.
-        conditional (bool): Flag indicating whether the network is conditional.
-        conditional_event_shape (tuple): The shape of conditional input, if
-                                         conditional is True.
-        dtype: Data type for the network.
-        **kwds: Additional keyword arguments.
-
-    Returns:
-        keras.Model: A Keras model representing the parameter network.
-
+    :param tuple input_shape: The shape of the input.
+    :param list hidden_units: List of integers specifying the number of hidden
+                              units in each layer.
+    :param str activation: Activation function to use in hidden layers.
+    :param bool batch_norm: Whether to use batch normalization.
+    :param tuple output_shape: The shape of the output parameter vector.
+    :param bool conditional: Flag indicating whether the network is conditional.
+    :param tuple conditional_event_shape: The shape of conditional input, if
+                                          conditional is True.
+    :param dtype: Data type for the network.
+    :param **kwds: Additional keyword arguments.
+    :return: A Keras model representing the parameter network.
+    :rtype: keras.Model
     """
+
     x = K.Input(input_shape, name="input", dtype=dtype)
     inputs = [x]
 
@@ -103,14 +101,12 @@ def get_parameter_vector_lambda(parameters_shape, dtype):
     """
     Create a parameter vector as a trainable TensorFlow variable.
 
-    Parameters:
-        parameters_shape (tuple): The shape of the parameter vector.
-        dtype: Data type of the parameter vector.
-
-    Returns:
-        Callable: A callable that returns the parameter vector.
-
+    :param tuple parameters_shape: The shape of the parameter vector.
+    :param dtype: Data type of the parameter vector.
+    :return: A callable that returns the parameter vector.
+    :rtype: Callable
     """
+
     parameter_vector = tf.Variable(
         tf.random.normal(parameters_shape, dtype=dtype), trainable=True
     )
@@ -123,16 +119,14 @@ def get_simple_fully_connected_parameter_network_lambda(
     """
     Create a simple fully connected parameter network for density estimation.
 
-    Parameters:
-        parameter_shape (tuple): The shape of the parameter.
-        input_shape (tuple): The shape of the input to the network.
-        **kwds: Additional keyword arguments.
-
-    Returns:
-        Tuple: A tuple containing a callable parameter network and its
-               trainable variables.
-
+    :param tuple parameter_shape: The shape of the parameter.
+    :param tuple input_shape: The shape of the input to the network.
+    :param **kwds: Additional keyword arguments.
+    :return: A tuple containing a callable parameter network and its
+             trainable variables.
+    :rtype: Tuple
     """
+
     parameter_network = __get_simple_fully_connected_network__(
         input_shape=input_shape, output_shape=parameter_shape, **kwds
     )
@@ -156,16 +150,13 @@ def get_parameter_vector_or_simple_network_lambda(parameter_shape, conditional, 
     Create either a parameter vector or a simple fully connected parameter
     network based on conditional flag.
 
-    Parameters:
-        parameter_shape (tuple): The shape of the parameter.
-        conditional (bool): Flag indicating whether to use conditional
-                            networks.
-        **kwds: Additional keyword arguments.
-
-    Returns:
-        Tuple: A tuple containing a callable parameter network and its
-               trainable variables.
-
+    :param tuple parameter_shape: The shape of the parameter.
+    :param bool conditional: Flag indicating whether to use conditional
+                             networks.
+    :param **kwds: Additional keyword arguments.
+    :return: A tuple containing a callable parameter network and its
+             trainable variables.
+    :rtype: Tuple
     """
     if conditional:
         return get_simple_fully_connected_parameter_network_lambda(
@@ -179,15 +170,13 @@ def get_autoregressive_parameter_network_lambda(parameter_shape, **kwds):
     """
     Create an autoregressive parameter network.
 
-    Parameters:
-        parameter_shape (tuple): The shape of the parameter.
-        **kwds: Additional keyword arguments.
-
-    Returns:
-        Tuple: A tuple containing a callable autoregressive parameter network
-               and its trainable variables.
-
+    :param tuple parameter_shape: The shape of the parameter.
+    :param **kwds: Additional keyword arguments.
+    :return: A tuple containing a callable autoregressive parameter network
+             and its trainable variables.
+    :rtype: Tuple
     """
+
     dims = parameter_shape[:1]
     params = tf.reduce_prod(parameter_shape[1:])
     parameter_network = tfb.AutoregressiveNetwork(
@@ -207,17 +196,15 @@ def get_autoregressive_parameter_network_with_additive_conditioner_lambda(
     """
     Create an autoregressive parameter network with an additive conditioner.
 
-    Parameters:
-        parameter_shape (tuple): The shape of the parameter.
-        made_kwds: Keyword arguments for MADE (Masked Autoregressive Flow
-                   with Autoregressive Conditioner).
-        x0_kwds: Keyword arguments for the additive conditioner network.
-
-    Returns:
-        Tuple: A tuple containing a callable parameter network and its
-               trainable variables.
-
+    :param tuple parameter_shape: The shape of the parameter.
+    :param made_kwds: Keyword arguments for MADE (Masked Autoregressive Flow
+                      with Autoregressive Conditioner).
+    :param x0_kwds: Keyword arguments for the additive conditioner network.
+    :return: A tuple containing a callable parameter network and its
+             trainable variables.
+    :rtype: Tuple
     """
+
     (
         masked_autoregressive_parameter_network_lambda,
         masked_autoregressive_trainable_variables,

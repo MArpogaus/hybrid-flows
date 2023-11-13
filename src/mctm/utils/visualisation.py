@@ -29,15 +29,14 @@ def __joint_kde_plot__(data, x, y, **kwds):
     It visualizes the distribution of the variables in a two-dimensional
     space with contours.
 
-    Parameters:
-        data: DataFrame: The dataset containing the variables to be plotted.
-        x: str: The name of the variable to plot on the x-axis.
-        y: str: The name of the variable to plot on the y-axis.
-        **kwds: Additional keyword arguments to customize the plot.
-
-    Returns:
-        Figure: The generated plot figure.
+    :param DataFrame data: The dataset containing the variables to be plotted.
+    :param str x: The name of the variable to plot on the x-axis.
+    :param str y: The name of the variable to plot on the y-axis.
+    :param **kwds: Additional keyword arguments to customize the plot.
+    :return: The generated plot figure.
+    :rtype: Figure
     """
+
 
     g = sns.jointplot(
         data=data,
@@ -64,21 +63,19 @@ def __joint_kde_plot__(data, x, y, **kwds):
 
 # PUBLIC FUNCTIONS #############################################################
 def get_figsize(width, fraction=1, subplots=(1, 1)):
-    """Set figure dimensions to avoid scaling in LaTeX.
-
-    Parameters
-    ----------
-    width: float or string
-            Document width in points, or string of predined document type
-    fraction: float, optional
-            Fraction of the width which you wish the figure to occupy
-    subplots: array-like, optional
-            The number of rows and columns of subplots.
-    Returns
-    -------
-    fig_dim: tuple
-            Dimensions of figure in inches
     """
+    Set figure dimensions to avoid scaling in LaTeX.
+
+    :param width: float or string
+                  Document width in points, or string of predefined document type.
+    :param fraction: float, optional
+                     Fraction of the width which you wish the figure to occupy.
+    :param subplots: array-like, optional
+                     The number of rows and columns of subplots.
+    :return: fig_dim: tuple
+                     Dimensions of the figure in inches.
+    """
+
     if width == "thesis":
         width_pt = 426.79135
     elif width == "beamer":
@@ -110,10 +107,9 @@ def setup_latex(fontsize=10):
     This function configures LaTeX font and text rendering settings
     for matplotlib plots.
 
-    Parameters:
-        fontsize: int, optional: Font size to use for labels and text
-                                 in the plots.
+    :param int fontsize: Font size to use for labels and text in the plots.
     """
+
     tex_fonts = {
         # Use LaTeX to write all text
         # https://stackoverflow.com/questions/43295837/latex-was-not-able-to-process-the-following-string-blp
@@ -141,13 +137,11 @@ def plot_2d_data(X, Y, **kwds):
     It separates the data points by label and visualizes them in different
     colors.
 
-    Parameters:
-        X: array: Data points to plot.
-        Y: array: Binary labels for the data points.
-        **kwds: Additional keyword arguments to customize the plot.
-
-    Returns:
-        Figure: The generated plot figure.
+    :param array X: Data points to plot.
+    :param array Y: Binary labels for the data points.
+    :param **kwds: Additional keyword arguments to customize the plot.
+    :return: The generated plot figure.
+    :rtype: Figure
 
     Example:
         fig = plot_2d_data(X, Y, s=20, alpha=0.6)
@@ -177,16 +171,13 @@ def plot_samples(dist, data, seed=1, **kwds):
     samples and a probability distribution. It visualizes the data and samples
     generated from the distribution.
 
-    Parameters:
-        dist: tfp.distributions.Distribution: A TensorFlow probability
-              distribution.
-        data: array: Data samples to compare with the distribution.
-        seed: int, optional: Random seed for generating samples.
-        **kwds: Additional keyword arguments to customize the plot.
-
-    Returns:
-        Figure: The generated plot figure.
-
+    :param tfp.distributions.Distribution dist: A TensorFlow probability
+                                                distribution.
+    :param array data: Data samples to compare with the distribution.
+    :param int seed: Random seed for generating samples, optional.
+    :param **kwds: Additional keyword arguments to customize the plot.
+    :return: The generated plot figure.
+    :rtype: Figure
     """
 
     columns = ["$y_1$", "$y_2$"]
@@ -219,16 +210,14 @@ def plot_flow(dist, x, y, seed=1, **kwds):
     data transformations through a flow model. It visualizes the input data,
     transformed data, and the transformed data's inverse.
 
-    Parameters:
-        dist: tfp.bijectors.Bijector: A TensorFlow probability bijector
-              representing the data transformation.
-        x: array: Input data to the flow transformation.
-        y: array: Transformed data after applying the flow.
-        seed: int, optional: Random seed for generating samples.
-        **kwds: Additional keyword arguments to customize the plots.
-
-    Returns:
-        tuple: Figures of the joint KDE plots for data transformation.
+    :param tfp.bijectors.Bijector dist: A TensorFlow probability bijector
+                                         representing the data transformation.
+    :param array x: Input data to the flow transformation.
+    :param array y: Transformed data after applying the flow.
+    :param int seed: Random seed for generating samples, optional.
+    :param **kwds: Additional keyword arguments to customize the plots.
+    :return: Figures of the joint KDE plots for data transformation.
+    :rtype: tuple
     """
 
     columns = ["$y_1$", "$y_2$", "$z_{1,1}$", "$z_{1,2}$", "$z_{2,1}$", "$z_{2,2}$"]

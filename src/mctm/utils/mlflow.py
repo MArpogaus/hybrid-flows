@@ -27,13 +27,10 @@ def log_cfg(cfg: dict):
     """
     Log flattened dict as parameters in the current MLflow run.
 
-    Parameters:
-        cfg (dict): Flattened in dictionary of parameters and values to
-                    be logged.
-
-    Returns:
-        None
+    :param dict cfg: Flattened dictionary of parameters and values to be logged.
+    :return: None
     """
+
     flat_dict = flatten_dict(cfg)
     flat_dict = dict(filter(lambda xy: len(str(xy[1])) < 500, flat_dict.items()))
     mlflow.log_params(flat_dict)
@@ -48,11 +45,9 @@ def start_run_with_exception_logging(run_name):
     unhandled exceptions that occur within the context as run
     tags and artifacts.
 
-    Parameters:
-        run_name (str): The name of the run in mlflow.
-
-    Returns:
-        contextlib.ExitStack: A context manager for running MLflow experiments.
+    :param str run_name: The name of the run in MLflow.
+    :return: A context manager for running MLflow experiments.
+    :rtype: contextlib.ExitStack
 
     Example:
         with start_run_with_exception_logging(run_name="My_Run"):

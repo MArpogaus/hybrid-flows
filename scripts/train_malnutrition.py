@@ -70,6 +70,7 @@ def main(args):
     # - load dvc params
     params = prepare_pipeline(args)
 
+    # store to variables
     dataset = args.dataset
     dataset_kwds = params[dataset + "_kwds"]  # [dataset]
     distribution = args.distribution
@@ -85,6 +86,7 @@ def main(args):
         parameter_kwds=parameter_kwds,
     )
 
+    # prepare base_distribution if applicable
     if "base_distribution" in distribution_params.keys():
         get_model = HybridDenistyRegressionModel
         model_kwds.update(
@@ -106,6 +108,7 @@ def main(args):
     else:
         get_model = DensityRegressionModel
 
+    # read name from env
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", args.experiment_name)
     run_name = "_".join((stage, distribution))
 

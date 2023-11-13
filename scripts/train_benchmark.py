@@ -18,8 +18,10 @@ def get_lr_schedule(**kwds):
 def main(args):
     # --- prepare for execution ---
 
+    # load params
     params = prepare_pipeline(args)
 
+    # build variables for execution
     dataset = args.dataset
     distribution = args.distribution
     stage = args.stage_name.split("@")[0]
@@ -31,9 +33,11 @@ def main(args):
 
     distribution_kwds.update(dataset_kwds)
 
+    # load name from environment
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", args.experiment_name)
     run_name = "_".join((stage, distribution))
 
+    # test mode
     if args.test_mode:
         experiment_name += "_test"
         fit_kwds.update(epochs=1)
@@ -42,12 +46,14 @@ def main(args):
     if os.environ.get("CI", False):
         fit_kwds.update(verbose=2)
 
+    # cosine_decay setup if relevant
     extra_params_to_log = {}
     if fit_kwds["learning_rate"] == "cosine_decay":
         cosine_decay_kwds = fit_kwds.pop("cosine_decay_kwds")
         fit_kwds["learning_rate"] = get_lr_schedule(**cosine_decay_kwds)
         extra_params_to_log = cosine_decay_kwds
 
+    # execute experiment
     pipeline(
         experiment_name=experiment_name,
         run_name=run_name,

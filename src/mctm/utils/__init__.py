@@ -23,15 +23,13 @@ def flatten_dict(d, parent_key="", sep="."):
     keys with the specified separator. It is a utility for working with
     configuration dictionaries and similar structures.
 
-    Parameters:
-        d (dict): The input nested dictionary to be flattened.
-        parent_key (str): Used for recursion, indicating the parent key.
-        sep (str): The separator used to concatenate keys.
-
-    Returns:
-        dict: A flattened dictionary.
-
+    :param dict d: The input nested dictionary to be flattened.
+    :param str parent_key: Used for recursion, indicating the parent key.
+    :param str sep: The separator used to concatenate keys.
+    :return: A flattened dictionary.
+    :rtype: dict
     """
+
 
     items = []
     for key, value in d.items():
@@ -51,15 +49,11 @@ def str2bool(v):
     ("true", "false", "1", "0", "yes", "no", etc.) to a Python boolean
     value (True or False).
 
-    Parameters:
-        v (str): The input string to be converted.
-
-    Returns:
-        bool: The boolean value based on the input string.
-
-    Raises:
-        argparse.ArgumentTypeError: If the input string cannot be converted
-                                    to a boolean.
+    :param str v: The input string to be converted.
+    :return: The boolean value based on the input string.
+    :rtype: bool
+    :raises argparse.ArgumentTypeError: If the input string cannot be converted
+                                        to a boolean.
     """
 
     if isinstance(v, bool):

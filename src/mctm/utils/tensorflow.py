@@ -23,9 +23,7 @@ def set_seed(seed):
     """
     Set the random seed for reproducibility in NumPy and TensorFlow.
 
-    Parameters:
-        seed (int): The random seed value to set.
-
+    :param int seed: The random seed value to set.
     """
 
     np.random.seed(seed)
@@ -53,24 +51,21 @@ def fit_distribution(
     the specified settings,
     including callbacks for early stopping and learning rate reduction.
 
-    Parameters:
-        model: The probability distribution model to fit.
-        seed (int): The random seed for reproducibility.
-        learning_rate: The learning rate for the optimizer.
-        lr_patience: The patience parameter for learning rate reduction.
-        results_path: The path to save model weights and artifacts.
-        monitor: The monitored metric for early stopping and
-                 learning rate reduction.
-        verbose: The verbosity level for training.
-        reduce_lr_on_plateau: Whether to reduce the learning rate on plateau.
-        early_stopping: Whether to enable early stopping.
-        loss (callable): The loss function for the model.
-        callbacks (list): Additional training callbacks.
-        **kwds: Additional keyword arguments for the model fitting function.
-
-    Returns:
-        object: The training history of the fitted model.
-
+    :param model: The probability distribution model to fit.
+    :param int seed: The random seed for reproducibility.
+    :param float learning_rate: The learning rate for the optimizer.
+    :param int lr_patience: The patience parameter for learning rate reduction.
+    :param str results_path: The path to save model weights and artifacts.
+    :param str monitor: The monitored metric for early stopping and
+                       learning rate reduction.
+    :param int verbose: The verbosity level for training.
+    :param bool reduce_lr_on_plateau: Whether to reduce the learning rate on plateau.
+    :param bool early_stopping: Whether to enable early stopping.
+    :param callable loss: The loss function for the model.
+    :param list callbacks: Additional training callbacks.
+    :param **kwds: Additional keyword arguments for the model fitting function.
+    :return: The training history of the fitted model.
+    :rtype: object
     """
 
     set_seed(seed)

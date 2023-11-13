@@ -17,8 +17,8 @@ def download_and_verify_data(download_path):
     """
     Downloads the preprocessed data archive and verifies its MD5 checksum.
 
-    Returns:
-        str: Path to the downloaded data archive.
+    :return: Path to the downloaded data archive.
+    :rtype: str
     """
     # Create the dataset directory if it doesn't exist
     os.makedirs(download_path, exist_ok=True)
@@ -78,11 +78,9 @@ def load_and_preprocess_data(dataset_name, dataset_path):
     """
     Loads and preprocesses the specified dataset.
 
-    Args:
-        dataset_name (str): Name of the dataset (e.g., "POWER", "GAS", etc.).
-
-    Returns:
-        tuple: Tuple containing the training, validation, and test data arrays.
+    :param str dataset_name: Name of the dataset (e.g., "POWER", "GAS", etc.).
+    :return: Tuple containing the training, validation, and test data arrays.
+    :rtype: tuple
     """
     dataset_name = dataset_name.upper()
 
@@ -321,11 +319,9 @@ def get_dataset(dataset_name, dataset_path="datasets"):
     """
     Provides access to the specified dataset.
 
-    Args:
-        dataset_name (str): Name of the dataset (e.g., "POWER", "GAS", etc.).
-
-    Returns:
-        tuple: Tuple containing the training, validation, and test data arrays.
+    :param str dataset_name: Name of the dataset (e.g., "POWER", "GAS", etc.).
+    :return: Tuple containing the training, validation, and test data arrays.
+    :rtype: tuple
     """
     return load_and_preprocess_data(dataset_name, dataset_path)
 

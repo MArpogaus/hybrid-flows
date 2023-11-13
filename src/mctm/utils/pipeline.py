@@ -76,34 +76,32 @@ def pipeline(
        interface for how to generate a dataset
      - assumes models history has "loss" and "val_loss"
 
-    Parameters:
-        experiment_name (str): The name of the MLflow experiment to
+    :param str experiment_name: The name of the MLflow experiment to
                                log the results.
-        run_name (str): The name of the MLflow run.
-        results_path (str): The path where the results and artifacts
+    :param str run_name: The name of the MLflow run.
+    :param str results_path: The path where the results and artifacts
                             will be stored.
-        log_file (str, optional): The path to a log file, or None.
-        seed (int): The random seed for reproducibility.
-        get_dataset_fn (callable): A function that loads and
+    :param str log_file: The path to a log file, or None.
+    :param int seed: The random seed for reproducibility.
+    :param callable get_dataset_fn: A function that loads and
                                    returns the dataset.
-        dataset_kwds (dict): Keyword arguments for the
+    :param dict dataset_kwds: Keyword arguments for the
                              dataset loading function.
-        get_model_fn (callable): A function that creates and returns the model.
-        model_kwds (dict): Keyword arguments for the model creation function.
-        preprocess_dataset (callable): A function for preprocessing
+    :param callable get_model_fn: A function that creates and returns the model.
+    :param dict model_kwds: Keyword arguments for the model creation function.
+    :param callable preprocess_dataset: A function for preprocessing
                                        the dataset.
-        fit_kwds (dict): Keyword arguments for the model fitting function.
-        plot_data (callable, optional): A function for plotting the dataset.
-        after_fit_hook (callable): A function to be executed after
+    :param dict fit_kwds: Keyword arguments for the model fitting function.
+    :param callable plot_data: A function for plotting the dataset.
+    :param callable after_fit_hook: A function to be executed after
                                    model fitting.
-        **extra_params_to_log (dict): Additional parameters to log
-                                      to params.yaml.
-
-    Returns:
-        Tuple: A tuple containing the training history, model, and
-               preprocessed dataset.
-
+    :param dict extra_params_to_log: Additional parameters to log
+                                     to params.yaml.
+    :return: A tuple containing the training history, model, and
+             preprocessed dataset.
+    :rtype: Tuple
     """
+
 
     call_args = dict(filter(lambda x: not callable(x[1]), vars().items()))
     set_seed(seed)
@@ -175,12 +173,9 @@ def prepare_pipeline(args):
      - args.log_level
      - args.stage_name
 
-
-    Parameters:
-        args: Command-line arguments and parameters.
-
-    Returns:
-        dict: A dictionary containing loaded parameters.
+    :param args: Command-line arguments and parameters.
+    :return: A dictionary containing loaded parameters.
+    :rtype: dict
     """
 
     # prepare results directory
