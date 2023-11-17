@@ -49,7 +49,12 @@ def extract_dataset(dataset_name, dataset_path):
     dataset_dir = os.path.join(dataset_path, dataset_name.lower())
 
     # Extract the dataset if it hasn't been extracted yet
-    if not os.path.exists(dataset_dir):
+    if not os.path.exists(dataset_dir) or (
+        os.path.exists(dataset_dir)
+        and not list(
+            filter(lambda fn: not fn.endswith(".dvc"), os.listdir(dataset_dir))
+        )
+    ):
         print(f"Extracting {dataset_name} dataset...")
         # Define the allowed file extensions
         allowed_extensions = (".csv", ".pickle", ".npy", ".hdf5")

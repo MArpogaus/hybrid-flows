@@ -22,6 +22,16 @@ stages:
     - results/unconditional_${item.distribution}_${item.dataset}/dataset.pdf
     - results/unconditional_${item.distribution}_${item.dataset}/samples.pdf
 
+  download_benchmark_data:
+    cmd: python src/mctm/data/benchmark.py | tee datasets/benchmark_stats
+    outs:
+    - datasets/data.tar.gz
+    - datasets/power/
+    - datasets/hepmass/
+    - datasets/miniboone/
+    - datasets/bsds300/
+    - datasets/benchmark_stats
+
   unconditional_benchmark:
     matrix:
       distribution: ${unconditional_benchmark_distributions}
@@ -152,7 +162,6 @@ stages:
       - malnutrition_kwds
       - malnutrition_distributions.${key}*
       deps:
-      - datasets/malnutrition
       - scripts/train_malnutrition.py
       - pyproject.toml
       - src/mctm

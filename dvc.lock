@@ -10363,3 +10363,34 @@ stages:
       hash: md5
       md5: 3e9fe29ed81d000c28c352a0d0e16763
       size: 2035
+  download_benchmark_data:
+    cmd: python src/mctm/data/benchmark.py | tee datasets/benchmark_stats
+    outs:
+    - path: datasets/benchmark_stats
+      hash: md5
+      md5: d2c8e4eeea4465d0bd5e5473f8d6a93a
+      size: 9349
+    - path: datasets/bsds300/
+      hash: md5
+      md5: e4ab795c846604419827e750c741c2ce.dir
+      size: 327602144
+      nfiles: 1
+    - path: datasets/data.tar.gz
+      hash: md5
+      md5: 9b9c9b0375315ad270eba4ce80c093ab
+      size: 856664546
+    - path: datasets/hepmass/
+      hash: md5
+      md5: 5e24c498e022d4c8b79714a6065882cf.dir
+      size: 750085192
+      nfiles: 2
+    - path: datasets/miniboone/
+      hash: md5
+      md5: 5cf3ec51bb664978790c9a45a3531e98.dir
+      size: 12551952
+      nfiles: 1
+    - path: datasets/power/
+      hash: md5
+      md5: 885e2dbe66f0670d26e959e74be98025.dir
+      size: 131154000
+      nfiles: 1
