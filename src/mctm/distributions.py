@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2023-11-17 12:55:30 (Marcel Arpogaus)
+# changed : 2023-11-17 12:58:44 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -158,7 +158,7 @@ def __get_flow_parametrization_lambda__(
             shift_bj = tfb.Shift(
                 tf.convert_to_tensor(
                     shift, dtype=unconstrained_parameters.dtype, name="shift"
-                )[None, ...],
+                ),
                 name="shift",
             )
             bijectors.append(shift_bj)
@@ -167,7 +167,7 @@ def __get_flow_parametrization_lambda__(
             scale_bj = tfb.Scale(
                 tf.convert_to_tensor(
                     scale, dtype=unconstrained_parameters.dtype, name="scale"
-                )[None, ...],
+                ),
                 name="scale",
             )
             bijectors.append(scale_bj)
