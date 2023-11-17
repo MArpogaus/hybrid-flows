@@ -1,3 +1,4 @@
+"""Util functions."""
 # -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
 # AUTHOR INFORMATION ###########################################################
 # file    : utils.py
@@ -16,6 +17,18 @@ import argparse
 
 # FUNCTION DEFINITIONS #########################################################
 def flatten_dict(d, parent_key="", sep="."):
+    """Recursively flatten a nested dictionary.
+
+    This function takes a nested dictionary and flattens it by concatenating
+    keys with the specified separator. It is a utility for working with
+    configuration dictionaries and similar structures.
+
+    :param dict d: The input nested dictionary to be flattened.
+    :param str parent_key: Used for recursion, indicating the parent key.
+    :param str sep: The separator used to concatenate keys.
+    :return: A flattened dictionary.
+    :rtype: dict
+    """
     items = []
     for key, value in d.items():
         new_key = sep.join((parent_key, str(key))) if parent_key else str(key)
@@ -27,6 +40,18 @@ def flatten_dict(d, parent_key="", sep="."):
 
 
 def str2bool(v):
+    """Convert a string to a boolean value.
+
+    This function converts a string representing a boolean value
+    ("true", "false", "1", "0", "yes", "no", etc.) to a Python boolean
+    value (True or False).
+
+    :param str v: The input string to be converted.
+    :return: The boolean value based on the input string.
+    :rtype: bool
+    :raises argparse.ArgumentTypeError: If the input string cannot be converted
+                                        to a boolean.
+    """
     if isinstance(v, bool):
         return v
     if v.lower() in ("yes", "true", "t", "y", "1"):

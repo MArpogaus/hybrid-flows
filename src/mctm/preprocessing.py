@@ -1,3 +1,14 @@
+"""Functions for preprocessing and loading.
+
+The 'preprocessing' module provides functions for data preprocessing and
+loading.
+
+It includes functions for loading a pre-trained autoencoder model, creating
+encoded datasets, normalizing images, and loading MNIST data.
+
+This module is used to prepare data for further processing and modeling.
+"""
+
 import logging
 
 import mlflow
@@ -10,6 +21,13 @@ logging.getLogger("tensorflow").setLevel(logging.NOTSET)
 
 
 def load_pretrained_autoencoder_model(runid):
+    """Load pre-trained autoencoder models from MLflow.
+
+    :param str runid: The MLflow run ID associated with the models.
+    :return: A tuple containing the generator (`g`), decoder (`f`), and latent
+             dimension (`latentdim`).
+    :rtype: tuple
+    """
     g = mlflow.pyfunc.load_model(model_uri=f"runs:/{runid}/g")
     f = mlflow.pyfunc.load_model(model_uri=f"runs:/{runid}/f")
     latentdim = f.metadata.signature.inputs.to_dict()[0]["tensor-spec"]["shape"][1]
@@ -18,6 +36,13 @@ def load_pretrained_autoencoder_model(runid):
 
 
 def create_encoded_dataset(g, ds):  # -> module data -> file mnist
+    """Create an encoded dataset using a generator (autoencoder) and a dataset.
+
+    :param mlflow.pyfunc.PyFuncModel g: The generator model.
+    :param tf.data.Dataset ds: The input dataset.
+    :return: A tuple containing the encoded dataset, xmin, xmax, and denom.
+    :rtype: tuple
+    """
     _ys = []
     _xs = []
     # with io.capture_output() as captured:
@@ -47,11 +72,23 @@ def create_encoded_dataset(g, ds):  # -> module data -> file mnist
 
 
 def normalize_img(image, label):
-    """Normalizes images: `uint8` -> `float32`."""
+    """Normalize images from `uint8` to `float32`.
+
+    :param tf.Tensor image: The image tensor.
+    :param label: The label associated with the image.
+    :return: A tuple containing the normalized image and label.
+    :rtype: tuple
+    """
     return tf.cast(image, tf.float32) / 255.0, label
 
 
 def load_mnist_data():
+    """Load and preprocess the MNIST dataset.
+
+    :return: A tuple containing training dataset, testing dataset,
+             and dataset information.
+    :rtype: tuple
+    """
     (ds_train, ds_test), ds_info = tfds.load(
         "mnist",
         split=["train", "test"],
@@ -77,6 +114,18 @@ def load_mnist_data():
 
 
 def get_preprocessed_mnist_data(encoder_id):
+    """Load pretrained autoencoder.
+
+    Load pre-trained autoencoder models and preprocessed MNIST data for
+    experimentation.
+
+    :param str encoder_id: The MLflow run ID associated with the
+                          autoencoder model.
+    :return: A tuple containing the generator (`g`), decoder (`f`), latent
+             dimension (`latentdim`), encoded training dataset, xmin, xmax,
+             and denom.
+    :rtype: tuple
+    """
     g, f, latentdim = load_pretrained_autoencoder_model(encoder_id)
     ds_train, ds_test, ds_info = load_mnist_data()
     ds_train_encoded, xmin, xmax, denom = create_encoded_dataset(g, ds_train)

@@ -1,3 +1,4 @@
+"""Access functions for benchmark datasets."""
 import hashlib
 import os
 import tarfile
@@ -14,11 +15,10 @@ MD5_CHECKSUM = "9b9c9b0375315ad270eba4ce80c093ab"
 
 
 def download_and_verify_data(download_path):
-    """
-    Downloads the preprocessed data archive and verifies its MD5 checksum.
+    """Download the preprocessed data archive and verifies its MD5 checksum.
 
-    Returns:
-        str: Path to the downloaded data archive.
+    :return: Path to the downloaded data archive.
+    :rtype: str
     """
     # Create the dataset directory if it doesn't exist
     os.makedirs(download_path, exist_ok=True)
@@ -44,6 +44,7 @@ def download_and_verify_data(download_path):
 
 
 def extract_dataset(dataset_name, dataset_path):
+    """Extract dataset."""
     data_archive_file = download_and_verify_data(dataset_path)
     dataset_dir = os.path.join(dataset_path, dataset_name.lower())
 
@@ -75,14 +76,11 @@ def extract_dataset(dataset_name, dataset_path):
 
 
 def load_and_preprocess_data(dataset_name, dataset_path):
-    """
-    Loads and preprocesses the specified dataset.
+    """Load and preprocesse the specified dataset.
 
-    Args:
-        dataset_name (str): Name of the dataset (e.g., "POWER", "GAS", etc.).
-
-    Returns:
-        tuple: Tuple containing the training, validation, and test data arrays.
+    :param str dataset_name: Name of the dataset (e.g., "POWER", "GAS", etc.).
+    :return: Tuple containing the training, validation, and test data arrays.
+    :rtype: tuple
     """
     dataset_name = dataset_name.upper()
 
@@ -107,6 +105,7 @@ def load_and_preprocess_data(dataset_name, dataset_path):
 
 
 def load_and_process_power_data(dataset_dir):
+    """Load data."""
     # https://github.com/gpapamak/maf/blob/master/datasets/power.py
 
     def load_data_split_with_noise(data):
@@ -155,6 +154,9 @@ def load_and_process_power_data(dataset_dir):
 
 
 def load_and_process_gas_data(dataset_dir):
+    """Load data."""
+    _ = "fix pydocstyle"
+
     # https://github.com/gpapamak/maf/blob/master/datasets/gas.py
     def load_data(file):
         data = pd.read_pickle(file)
@@ -202,6 +204,9 @@ def load_and_process_gas_data(dataset_dir):
 
 
 def load_and_process_hepmass_data(dataset_dir):
+    """Load data."""
+    _ = "fix pydocstyle"
+
     # https://github.com/gpapamak/maf/blob/master/datasets/hepmass.py
     # https://github.com/bayesiains/nsf/blob/master/data/hepmass.py
     def load_data(path):
@@ -215,7 +220,7 @@ def load_and_process_hepmass_data(dataset_dir):
         return data_train, data_test
 
     def load_data_no_discrete(path):
-        """Loads the positive class examples from the first 10% of the dataset."""
+        """Load the positive class examples from the first 10% of the dataset."""
         data_train, data_test = load_data(path)
 
         # Gets rid of any background noise examples i.e. class label 0.
@@ -278,6 +283,8 @@ def load_and_process_hepmass_data(dataset_dir):
 
 
 def load_and_process_miniboone_data(dataset_dir):
+    """Load data."""
+
     def load_data(root_path):
         data = np.load(root_path)
         N_test = int(0.1 * data.shape[0])
@@ -306,6 +313,7 @@ def load_and_process_miniboone_data(dataset_dir):
 
 
 def load_and_process_bsds300_data(dataset_dir):
+    """Load data."""
     # load dataset
     f = h5py.File(dataset_dir + "/BSDS300.hdf5", "r")
 
@@ -318,14 +326,11 @@ def load_and_process_bsds300_data(dataset_dir):
 
 
 def get_dataset(dataset_name, dataset_path="datasets"):
-    """
-    Provides access to the specified dataset.
+    """Provide access to the specified dataset.
 
-    Args:
-        dataset_name (str): Name of the dataset (e.g., "POWER", "GAS", etc.).
-
-    Returns:
-        tuple: Tuple containing the training, validation, and test data arrays.
+    :param str dataset_name: Name of the dataset (e.g., "POWER", "GAS", etc.).
+    :return: Tuple containing the training, validation, and test data arrays.
+    :rtype: tuple
     """
     return load_and_preprocess_data(dataset_name, dataset_path)
 

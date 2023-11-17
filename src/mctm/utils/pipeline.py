@@ -1,3 +1,4 @@
+"""Pipeline."""
 # IMPORT MODULES ###############################################################
 import logging
 import os
@@ -18,28 +19,47 @@ __LOGGER__ = logging.getLogger(__name__)
 
 
 # CLASS DEFINITIONS ############################################################
+
+# Function signatures for pipeline callbacks
+
+
 class getDataset(Protocol):
+    """Callback."""
+
     def __call__(self) -> "tuple[Any, Any]":
+        """Call."""
         pass
 
 
 class getModel(Protocol):
+    """Callback."""
+
     def __call__(self, dataset: "tuple[Any,Any]") -> Any:
+        """Call."""
         pass
 
 
 class doPlotData(Protocol):
+    """Callback."""
+
     def __call__(self, X: Any, Y: Any) -> "Figure":
+        """Call."""
         pass
 
 
 class doPreprocessDataset(Protocol):
+    """Callback."""
+
     def __call__(self, X: Any, Y: Any, model: Any) -> "dict":
+        """Call."""
         pass
 
 
 class doAfterFit(Protocol):
+    """Callback."""
+
     def __call__(self, model: Any, x: Any, y: Any, **kwds: dict) -> None:
+        """Call."""
         pass
 
 
@@ -60,14 +80,43 @@ def pipeline(
     after_fit_hook: doAfterFit,
     **extra_params_to_log,
 ):
-    """
-    get_dataset is callback because we have no common
-    interface for how to generate a dataset (?!)
-    assumes models history has "loss" and "val_loss"
-    log_file is optional and can be none.
-    params: params from params.yaml to be logged
-    plot_data is optional
-    plot_samples is optional
+    """Pipeline.
+
+    The function represents a high-level machine learning pipeline that can
+    be used to perform the experiments.
+    It includes various stages such as loading a dataset, creating a model,
+    preprocessing the dataset,
+    training the model, and logging experiment results.
+
+    Notes:
+     - get_dataset_fn is a callback because we have no common
+       interface for how to generate a dataset
+     - assumes models history has "loss" and "val_loss"
+
+    :param str experiment_name: The name of the MLflow experiment to
+                               log the results.
+    :param str run_name: The name of the MLflow run.
+    :param str results_path: The path where the results and artifacts
+                            will be stored.
+    :param str log_file: The path to a log file, or None.
+    :param int seed: The random seed for reproducibility.
+    :param callable get_dataset_fn: A function that loads and
+                                   returns the dataset.
+    :param dict dataset_kwds: Keyword arguments for the
+                             dataset loading function.
+    :param callable get_model_fn: A function that creates and returns the model.
+    :param dict model_kwds: Keyword arguments for the model creation function.
+    :param callable preprocess_dataset: A function for preprocessing
+                                       the dataset.
+    :param dict fit_kwds: Keyword arguments for the model fitting function.
+    :param callable plot_data: A function for plotting the dataset.
+    :param callable after_fit_hook: A function to be executed after
+                                   model fitting.
+    :param dict extra_params_to_log: Additional parameters to log
+                                     to params.yaml.
+    :return: A tuple containing the training history, model, and
+             preprocessed dataset.
+    :rtype: Tuple
     """
     call_args = dict(filter(lambda x: not callable(x[1]), vars().items()))
     set_seed(seed)
@@ -129,6 +178,20 @@ def pipeline(
 
 
 def prepare_pipeline(args):
+    """Prepare the pipeline by configuring logging and loading parameters.
+
+    It creates the output path and builds the parameters from the arguments.
+
+    Expects:
+     - args.results_path
+     - args.log_file
+     - args.log_level
+     - args.stage_name
+
+    :param args: Command-line arguments and parameters.
+    :return: A dictionary containing loaded parameters.
+    :rtype: dict
+    """
     # prepare results directory
     os.makedirs(args.results_path, exist_ok=True)
 

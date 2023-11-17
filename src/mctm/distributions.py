@@ -4,13 +4,22 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2023-10-17 09:29:33 (Marcel Arpogaus)
+# changed : 2023-11-17 12:55:30 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
 # ...
 ################################################################################
 # IMPORTS ######################################################################
+"""Functions for probability distributions.
+
+The 'distributions' module provides functions for defining and parametrizing
+probability distributions. They get used in the 'models' module.
+
+The module defines a list of private base functions that get used to compose
+the final model in many cases.
+"""
+
 from functools import partial
 
 import numpy as np
@@ -29,9 +38,21 @@ from .parameters import (
     get_simple_fully_connected_parameter_network_lambda,
 )
 
-
 # FUNCTIONS ####################################################################
+
+# base functions that get used in the actual functions
+
+
 def __default_base_distribution_lambda__(dims, distribution_type="normal", **kwds):
+    """Get the default base distribution as a callable.
+
+    :param int dims: The dimension of the distribution.
+    :param str distribution_type: The type of distribution
+                    (e.g., "normal", "lognormal", "uniform", "kumaraswamy").
+    :param **kwds: Additional keyword arguments for the distribution.
+    :return: The default base distribution.
+    :rtype: Distribution
+    """
     if distribution_type == "normal":
         default_kwds = dict(loc=0.0, scale=1.0)
         default_kwds.update(**kwds)
@@ -113,6 +134,17 @@ def __get_flow_parametrization_lambda__(
     get_parametrized_bijector_fn=__get_parametrized_bijector_fn__,
     **kwds,
 ):
+    """Get a parametrized flow as a callable.
+
+    :param scale: The scale of the flow.
+    :param shift: The shift of the flow.
+    :param unconstrained_bernstein_coefficents: The unconstrained
+    Bernstein coefficients.
+    :param clip_to_bernstein_domain: Whether to clip to the Bernstein domain.
+    :param **kwds: Additional keyword arguments.
+    :return: The parametrized flow bijector.
+    :rtype: bijector
+    """
     (
         bijector_fn,
         parameter_shape,
@@ -156,6 +188,15 @@ def __get_flow_parametrization_lambda__(
 def __get_elementwise_flow__(
     dims, base_distribution_lambda=__default_base_distribution_lambda__, **kwds
 ):
+    """Get a Bernstein Flow distribution as a callable.
+
+    :param int dims: The dimension of the distribution.
+    :param int order: The order of the Bernstein Flow.
+    :param base_distribution_lambda: The base distribution lambda.
+    :param **kwds: Additional keyword arguments.
+    :return: The Bernstein Flow distribution.
+    :rtype: Distribution
+    """
     flow_parametrization_lambda, parameters_shape = __get_flow_parametrization_lambda__(
         **kwds
     )
@@ -174,6 +215,15 @@ def __get_elementwise_flow__(
 
 
 def __get_multivariate_flow_lambda__(dims, **kwds):
+    """Get a Multivariate flow distribution as a callable.
+
+    :param int dims: The dimension of the distribution.
+    :param **kwds: Additional keyword arguments.
+    :return: A callable representing the Multivariate Bernstein Flow distribution.
+    :rtype: callable
+    :return: The shape of the parameter vector.
+    :rtype: list
+    """
     flow_parametrization_lambda, parameters_shape = __get_flow_parametrization_lambda__(
         **kwds
     )
@@ -203,6 +253,14 @@ def __get_multivariate_flow_lambda__(dims, **kwds):
 
 
 def __get_multivariate_normal_lambda__(dims):
+    """Get a Multivariate Normal distribution as a callable.
+
+    :param int dims: The dimension of the distribution.
+    :return: A callable representing the Multivariate Normal distribution.
+    :rtype: callable
+    :return: The shape of the parameter vector.
+    :rtype: list
+    """
     pv_shape = [dims + np.sum(np.arange(dims + 1))]
 
     def dist(pv_lambda):
@@ -223,6 +281,22 @@ def __get_trainable_distribution__(
     get_parameter_lambda_fn,
     parameter_kwds,
 ):
+    """Get a trainable distribution as a callable.
+
+    :param int dims: The dimension of the distribution.
+    :param callable get_distribution_lambda_fn: A function to get the
+                                               distribution lambda.
+    :param dict distribution_kwds: Keyword arguments for the distribution.
+    :param callable get_parameter_lambda_fn: A function to get the
+                                             parameter lambda.
+    :param dict parameter_kwds: Keyword arguments for the parameters.
+    :return: A callable representing the distribution.
+    :rtype: callable
+    :return: A callable for parameter vectors.
+    :rtype: callable
+    :return: List of trainable parameters.
+    :rtype: list
+    """
     distribution_lambda, parameters_shape = get_distribution_lambda_fn(
         dims=dims, **distribution_kwds
     )
@@ -233,6 +307,15 @@ def __get_trainable_distribution__(
 
 
 def __get_bijector_fn__(network, flow_parametrization_lambda):
+    """Get a bijector function as a callable.
+
+    :param callable network: The network to use for the bijector function.
+    :param callable flow_parametrization_lambda: function initializing the flow
+                                                 from unconstrained parameters.
+    :return: A callable representing the bijector function.
+    :rtype: callable
+    """
+
     def bijector_fn(y, *arg, **kwds):
         with tf.name_scope("bnf_bjector"):
             pvector = network(y, **kwds)
@@ -243,6 +326,13 @@ def __get_bijector_fn__(network, flow_parametrization_lambda):
 
 
 def __get_num_masked__(dims, layer):
+    """Compute the number of masked dimensions.
+
+    :param int dims: The total number of dimensions.
+    :param int layer: The layer number.
+    :return: The number of masked dimensions.
+    :rtype: int
+    """
     num_masked = dims // 2
     if dims % 2 != 0:
         num_masked += layer % 2
@@ -257,6 +347,20 @@ def get_masked_autoregressive_flow(
     get_bijector_fn=__get_bijector_fn__,
     get_parameter_lambda_fn=get_autoregressive_parameter_network_lambda,
 ):
+    """Get a Masked Autoregressive Flow distribution as a callable.
+
+    :param int dims: The dimension of the distribution.
+    :param dict distribution_kwds: Keyword arguments for the distribution.
+    :param dict parameter_kwds: Keyword arguments for the parameters.
+    :param callable get_parameter_lambda_fn: A function to get the parameter
+    lambda.
+    :return: A callable representing the distribution.
+    :rtype: callable
+    :return: A callable for parameter networks.
+    :rtype: callable
+    :return: List of trainable parameters.
+    :rtype: list
+    """
     distribution_kwds = distribution_kwds.copy()
     base_distribution_lambda = distribution_kwds.pop(
         "base_distribution_lambda", __default_base_distribution_lambda__
@@ -295,6 +399,20 @@ def get_coupling_flow(
     get_bijector_fn=__get_bijector_fn__,
     get_parameter_lambda_fn=get_simple_fully_connected_parameter_network_lambda,
 ):
+    """Get a Coupling Flow distribution as a callable.
+
+    :param int dims: The dimension of the distribution.
+    :param dict distribution_kwds: Keyword arguments for the distribution.
+    :param dict parameter_kwds: Keyword arguments for the parameters.
+    :param callable get_parameter_lambda_fn: A function to get the parameter
+    lambda.
+    :return: A callable representing the distribution.
+    :rtype: callable
+    :return: A callable for parameter networks.
+    :rtype: callable
+    :return: List of trainable parameters.
+    :rtype: list
+    """
     distribution_kwds = distribution_kwds.copy()
     base_distribution_lambda = distribution_kwds.pop(
         "base_distribution_lambda", __default_base_distribution_lambda__
@@ -376,6 +494,22 @@ def get_masked_autoregressive_flow_first_dim_masked(
     parameter_kwds,
     get_parameter_lambda_fn=get_autoregressive_parameter_network_with_additive_conditioner_lambda,  # noqa: E501
 ):
+    """Get a Masked Autoregressive Bernstein Flow.
+
+    Distribution with the first dimension masked as a callable.
+
+    :param int dims: The dimension of the distribution.
+    :param dict distribution_kwds: Keyword arguments for the distribution.
+    :param dict parameter_kwds: Keyword arguments for the parameters.
+    :param callable get_parameter_lambda_fn: A function to get the parameters.
+    :return: A callable representing the Masked Autoregressive Bernstein Flow
+             distribution with the first dimension masked.
+    :rtype: callable
+    :return: A callable for parameter networks.
+    :rtype: callable
+    :return: List of trainable parameters.
+    :rtype: list
+    """
     distribution_kwds.update(coupling_layers=1)
 
     def get_bijector_fn(parameter_network, flow_parametrization_lambda):
@@ -409,6 +543,8 @@ def get_masked_autoregressive_flow_first_dim_masked(
         get_parameter_lambda_fn=get_parameter_lambda_fn,
     )
 
+
+# actual functions that are composed of base functions
 
 get_elementwise_flow = partial(
     __get_trainable_distribution__,
