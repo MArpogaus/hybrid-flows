@@ -32,15 +32,16 @@ def set_seed(seed):
 # Construct and fit model.
 # @tf.function
 def fit_distribution(
-    model,
-    seed,
-    learning_rate,
-    lr_patience,
-    results_path,
-    monitor,
-    verbose,
-    reduce_lr_on_plateau,
-    early_stopping,
+    model: tf.keras.Model,
+    seed: int,
+    learning_rate: float,
+    lr_patience: int,
+    results_path: str,
+    monitor: str,
+    verbose: bool,
+    reduce_lr_on_plateau: bool,
+    early_stopping: bool,
+    lr_reduction_factor: float = 0.1,
     loss=lambda y, dist: -dist.log_prob(y),
     callbacks=[],
     **kwds,
@@ -61,11 +62,13 @@ def fit_distribution(
     :param int verbose: The verbosity level for training.
     :param bool reduce_lr_on_plateau: Whether to reduce the learning rate on plateau.
     :param bool early_stopping: Whether to enable early stopping.
+    :param int lr_reduction_factor: Factor by which the learning rate will be
+                                    reduced. new_lr = lr * factor.
     :param callable loss: The loss function for the model.
     :param list callbacks: Additional training callbacks.
-    :param **kwds: Additional keyword arguments for the model fitting function.
     :return: The training history of the fitted model.
     :rtype: object
+
     """
     set_seed(seed)
     model.compile(optimizer=tf.optimizers.Adam(learning_rate=learning_rate), loss=loss)
@@ -85,7 +88,7 @@ def fit_distribution(
         callbacks += [
             K.callbacks.ReduceLROnPlateau(
                 monitor=monitor,
-                factor=0.1,
+                factor=lr_reduction_factor,
                 patience=lr_patience,
                 verbose=verbose,
             )
