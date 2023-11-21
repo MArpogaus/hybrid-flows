@@ -2487,8 +2487,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -2517,8 +2517,8 @@ stages:
     outs:
     - path: results/unconditional_multivariate_normal_moons/dataset.pdf
       hash: md5
-      md5: 53fdbfbe2c22dc3febe6c3983b773a6f
-      size: 40518
+      md5: bc55408e45c399b0dba1110c0c7fdbf6
+      size: 40512
     - path: results/unconditional_multivariate_normal_moons/mcp
       hash: md5
       md5: e63da5708648d059ca144c4a8a03f5f0.dir
@@ -2530,12 +2530,12 @@ stages:
       size: 55
     - path: results/unconditional_multivariate_normal_moons/samples.pdf
       hash: md5
-      md5: db95cdddb0a0591075904d27775fdc97
-      size: 152224
+      md5: 1d34dc583bdbc9ac1f76bd1406ab20da
+      size: 152180
     - path: results/unconditional_multivariate_normal_moons/train.log
       hash: md5
-      md5: 06133608ec0aae536202c4e9e32e72c8
-      size: 10322
+      md5: 68ae85052d88242eaac3136cb91969eb
+      size: 1586
   unconditional@multivariate_normal-circles:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_multivariate_normal_circles/train.log
       --experiment-name unconditional-circles unconditional@multivariate_normal-circles
@@ -2552,8 +2552,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -2583,8 +2583,8 @@ stages:
     outs:
     - path: results/unconditional_multivariate_normal_circles/dataset.pdf
       hash: md5
-      md5: 487dd78618ef30c3306712fba1d6f6e6
-      size: 40650
+      md5: 201e4c6b7657bf071280199e9679d1ed
+      size: 40644
     - path: results/unconditional_multivariate_normal_circles/mcp
       hash: md5
       md5: 6227251cde8c6787cf98e6a4c9ec60ab.dir
@@ -2596,12 +2596,12 @@ stages:
       size: 57
     - path: results/unconditional_multivariate_normal_circles/samples.pdf
       hash: md5
-      md5: fa55ec1299c0ac8a740a4d034f13f0b2
-      size: 158266
+      md5: c3132d29c6727f997f3399506fe6f981
+      size: 158437
     - path: results/unconditional_multivariate_normal_circles/train.log
       hash: md5
-      md5: 8695e799a763395fe62c3d678566b13a
-      size: 10355
+      md5: e3fe4580740a0cd38024b20a384674b1
+      size: 1617
   conditional@bernstein_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_bernstein_flow_moons/train.log
       --experiment-name conditional-moons conditional@bernstein_flow-moons bernstein_flow
@@ -2927,13 +2927,13 @@ stages:
       size: 1104
     - path: scripts/train.py
       hash: md5
-      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
-      size: 5361
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
     - path: src/mctm
       hash: md5
-      md5: a7774b6d22c0c9aacadda3a136e1cf7d.dir
-      size: 57163
-      nfiles: 13
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
     params:
       params.yaml:
         conditional_distributions.multivariate_normal*:
@@ -2987,25 +2987,25 @@ stages:
     outs:
     - path: results/conditional_multivariate_normal_moons/dataset.pdf
       hash: md5
-      md5: 4c59828da5ba10a4b1bcbfc2b82cc203
-      size: 40518
+      md5: 91cd216999d6db1706103dc79f424a57
+      size: 40512
     - path: results/conditional_multivariate_normal_moons/mcp
       hash: md5
-      md5: a2cc609539291a033dffa2e18f6b180e.dir
+      md5: 3846873966645c5f14906b81dc8fe5e3.dir
       size: 10352
       nfiles: 3
     - path: results/conditional_multivariate_normal_moons/metrics.yaml
       hash: md5
-      md5: e31483216a15f6bb69d65294d48ddc33
+      md5: 03611152a5d4a47c605ae35c3a38802a
       size: 57
     - path: results/conditional_multivariate_normal_moons/samples.pdf
       hash: md5
-      md5: c24458b811914fe4690e63eb62acf24d
-      size: 159321
+      md5: 39b31af527e6cf1e9ca614aa27b2d1d6
+      size: 159383
     - path: results/conditional_multivariate_normal_moons/train.log
       hash: md5
-      md5: 273de40bbacbf094b3ed17a582d6e680
-      size: 2116
+      md5: 75455e5724fa7ff3b9c135c2e66dce99
+      size: 1920
   conditional@multivariate_bernstein_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_multivariate_bernstein_flow_circles/train.log
       --experiment-name conditional-circles conditional@multivariate_bernstein_flow-circles
@@ -3128,8 +3128,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -3185,25 +3185,25 @@ stages:
     outs:
     - path: results/conditional_multivariate_normal_circles/dataset.pdf
       hash: md5
-      md5: 45cc46f3ea641425f40f5fa701712e7b
-      size: 40650
+      md5: 3bbe23a73ef1d7ee5681173c0b1b25da
+      size: 40644
     - path: results/conditional_multivariate_normal_circles/mcp
       hash: md5
-      md5: bb5f4d2605cd9c91847e5e71a834d71c.dir
+      md5: 921a5f89763a274360f0fbec01f1c420.dir
       size: 10352
       nfiles: 3
     - path: results/conditional_multivariate_normal_circles/metrics.yaml
       hash: md5
-      md5: a17652232bb5eac0295f042d0176ba7b
-      size: 58
+      md5: d9d58043595a53eaffe85e79177bd2f2
+      size: 57
     - path: results/conditional_multivariate_normal_circles/samples.pdf
       hash: md5
-      md5: ba04d9636745fed3081bc72f51f3ba78
-      size: 155809
+      md5: 8d2132546125ecdcd264578f35d1293d
+      size: 155720
     - path: results/conditional_multivariate_normal_circles/train.log
       hash: md5
-      md5: 957059eeacd500db02cbdd929f6017ae
-      size: 10144
+      md5: 2322e42afb63f4d92d26c796b4722760
+      size: 1947
   unconditional_hybrid@coupling_bernstein_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_hybrid_coupling_bernstein_flow_moons/train.log
       --experiment-name unconditional-hybrid-moons unconditional_hybrid@coupling_bernstein_flow-moons
@@ -6916,8 +6916,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -6954,25 +6954,25 @@ stages:
     outs:
     - path: results/unconditional_elementwise_flow_moons/dataset.pdf
       hash: md5
-      md5: 3e31fa142feba193ad7764ab11ecf14a
-      size: 40518
+      md5: a21ff5aed0defe3b5f3b93273d2b01c2
+      size: 40512
     - path: results/unconditional_elementwise_flow_moons/mcp
       hash: md5
-      md5: 8d56e96198c2318646a25f7e423f3680.dir
+      md5: 731d34a28c8d49b44c85906c6beac39c.dir
       size: 2862
       nfiles: 3
     - path: results/unconditional_elementwise_flow_moons/metrics.yaml
       hash: md5
-      md5: 9368d700f87f4271a01d59c055220627
-      size: 58
+      md5: 8e58e2f47fecb5d3aba809c0a73cb794
+      size: 56
     - path: results/unconditional_elementwise_flow_moons/samples.pdf
       hash: md5
-      md5: 45cb9754d6c788388eaadb448dd04763
-      size: 176576
+      md5: 3fbcfd8025657ca2c7bd92adfe269e1c
+      size: 176650
     - path: results/unconditional_elementwise_flow_moons/train.log
       hash: md5
-      md5: 6187e3cd44ce1a0311a7c25ab105d2ca
-      size: 10364
+      md5: 59cdea2fd7390a52738e830b52f603a8
+      size: 1825
   unconditional@multivariate_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_multivariate_flow_circles/train.log
       --experiment-name unconditional-circles unconditional@multivariate_flow-circles
@@ -6988,8 +6988,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -7027,25 +7027,25 @@ stages:
     outs:
     - path: results/unconditional_multivariate_flow_circles/dataset.pdf
       hash: md5
-      md5: c48ad202070b920408ac1c425bc33462
-      size: 40650
+      md5: 6fe36d01902cb90774846e8a0e009ee7
+      size: 40644
     - path: results/unconditional_multivariate_flow_circles/mcp
       hash: md5
-      md5: 8444c1e7a5fbdf57fe5bf6fbe3743704.dir
+      md5: 730bb4c7eae470a246bad7c7cc7be6de.dir
       size: 2886
       nfiles: 3
     - path: results/unconditional_multivariate_flow_circles/metrics.yaml
       hash: md5
-      md5: 60f71c2b0dcb51d3a2da897fce9b0aad
+      md5: 6196dd93a994cabf0527323d048c0001
       size: 57
     - path: results/unconditional_multivariate_flow_circles/samples.pdf
       hash: md5
-      md5: 40ea2228c3c2c39f91e17d7622ac78b5
-      size: 172116
+      md5: 1289c98d20669133994a6aed01b9ec77
+      size: 172000
     - path: results/unconditional_multivariate_flow_circles/train.log
       hash: md5
-      md5: e2b9440a851929c5236c96a623bc2f11
-      size: 10401
+      md5: ce6ede85ac10f7c72fbd930dae622581
+      size: 1862
   unconditional@multivariate_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_multivariate_flow_moons/train.log
       --experiment-name unconditional-moons unconditional@multivariate_flow-moons
@@ -7057,13 +7057,13 @@ stages:
       size: 1104
     - path: scripts/train.py
       hash: md5
-      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
-      size: 5361
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
     - path: src/mctm
       hash: md5
-      md5: a7774b6d22c0c9aacadda3a136e1cf7d.dir
-      size: 57163
-      nfiles: 13
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
     params:
       params.yaml:
         datasets.moons*:
@@ -7099,8 +7099,8 @@ stages:
     outs:
     - path: results/unconditional_multivariate_flow_moons/dataset.pdf
       hash: md5
-      md5: 5613cb83fd6c316f30688dc4572f664f
-      size: 40518
+      md5: ef701718b34cde12ccb35518a4e9f27f
+      size: 40512
     - path: results/unconditional_multivariate_flow_moons/mcp
       hash: md5
       md5: 73455bbf6e95436e73e6416e0c2f63a0.dir
@@ -7112,12 +7112,12 @@ stages:
       size: 54
     - path: results/unconditional_multivariate_flow_moons/samples.pdf
       hash: md5
-      md5: a60dc93eeb7dabe02beb7cddde2b08ca
-      size: 173135
+      md5: 10fadf6875d9a46318960a2b6341b439
+      size: 173090
     - path: results/unconditional_multivariate_flow_moons/train.log
       hash: md5
-      md5: 782961114b6b3b35a5612a0b938e4f70
-      size: 3111
+      md5: 32e4919b5a2f4224f2321538f5baa495
+      size: 1830
   unconditional@masked_autoregressive_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_masked_autoregressive_flow_moons/train.log
       --experiment-name unconditional-moons unconditional@masked_autoregressive_flow-moons
@@ -7134,8 +7134,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -7175,25 +7175,25 @@ stages:
     outs:
     - path: results/unconditional_masked_autoregressive_flow_moons/dataset.pdf
       hash: md5
-      md5: 58021a5fd067b54160309a7042a2c00b
-      size: 40518
+      md5: 5a97e792f528a64640724e5de6959d9a
+      size: 40512
     - path: results/unconditional_masked_autoregressive_flow_moons/mcp
       hash: md5
-      md5: 78aca915e9e66bc8844d6fffaaca1392.dir
+      md5: 92444e6e13615b88b39452db753cbbe2.dir
       size: 33033
       nfiles: 3
     - path: results/unconditional_masked_autoregressive_flow_moons/metrics.yaml
       hash: md5
-      md5: ac0f96270294a94c13d5fc2d73e8f1db
+      md5: 6c220609a3e127d1de59e68d0a608e89
       size: 56
     - path: results/unconditional_masked_autoregressive_flow_moons/samples.pdf
       hash: md5
-      md5: 5afc89dfff4796374869260b1edceb16
-      size: 136667
+      md5: 82283d4d2920b5face585afaa3767fcf
+      size: 136905
     - path: results/unconditional_masked_autoregressive_flow_moons/train.log
       hash: md5
-      md5: 134966ebe691670344c145188486bf43
-      size: 9683
+      md5: e16c105dbc9bce123b89b6c22782c4ef
+      size: 1686
   conditional@elementwise_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_elementwise_flow_moons/train.log
       --experiment-name conditional-moons conditional@elementwise_flow-moons elementwise_flow
@@ -7209,8 +7209,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -7281,25 +7281,25 @@ stages:
     outs:
     - path: results/conditional_elementwise_flow_moons/dataset.pdf
       hash: md5
-      md5: cd38228c653528b52abecee3c20ede90
-      size: 40518
+      md5: 05e66e182d34f295254d87b516dd4f0c
+      size: 40512
     - path: results/conditional_elementwise_flow_moons/mcp
       hash: md5
-      md5: 19e97bae4bbdf35e869fe1dfc964414c.dir
+      md5: 6099aec6287ac2cac1105a1a2d17abfd.dir
       size: 29739
       nfiles: 3
     - path: results/conditional_elementwise_flow_moons/metrics.yaml
       hash: md5
-      md5: 68045d8af85d22aa459c6aa68dee2e97
+      md5: 430b2e5c6c70c7953b8c81ad800218fc
       size: 56
     - path: results/conditional_elementwise_flow_moons/samples.pdf
       hash: md5
-      md5: bbad83481ae87b97d7dc70edc6dbeba0
-      size: 180682
+      md5: cdc337eaf0266d40f1fdbfd26cc9db9b
+      size: 180548
     - path: results/conditional_elementwise_flow_moons/train.log
       hash: md5
-      md5: 287f5805263d2ad5edbe03a00c176b4c
-      size: 10747
+      md5: 31e2b264805cd40596d3b1c4f9d4b42d
+      size: 2212
   unconditional@masked_autoregressive_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_masked_autoregressive_flow_circles/train.log
       --experiment-name unconditional-circles unconditional@masked_autoregressive_flow-circles
@@ -7316,8 +7316,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -7357,25 +7357,25 @@ stages:
     outs:
     - path: results/unconditional_masked_autoregressive_flow_circles/dataset.pdf
       hash: md5
-      md5: 8f6c5f050cd4ea9fb4e8bc9317cf7788
-      size: 40650
+      md5: 686cfc898bbe0f02ece9d4a2db6c3f4e
+      size: 40644
     - path: results/unconditional_masked_autoregressive_flow_circles/mcp
       hash: md5
-      md5: 90c86352732f7d0f5735804d6b2703a2.dir
+      md5: 3fab0b63de5bdbd8483bc8430b0e4913.dir
       size: 28674
       nfiles: 3
     - path: results/unconditional_masked_autoregressive_flow_circles/metrics.yaml
       hash: md5
-      md5: 49c5de24f1abd0fb35c0a6dad8dfb330
+      md5: fd5cc3dd8771017b0c98a19601ed4aff
       size: 56
     - path: results/unconditional_masked_autoregressive_flow_circles/samples.pdf
       hash: md5
-      md5: 355d2b7e99fba34dc794e5e76245989f
-      size: 188789
+      md5: 2561a21c966637da27544ebfeadecb11
+      size: 187541
     - path: results/unconditional_masked_autoregressive_flow_circles/train.log
       hash: md5
-      md5: 87376b0a1879de8e9ef625344a0d1e14
-      size: 9909
+      md5: 6a37880c06f53cde917b2aafa8917098
+      size: 1712
   conditional@elementwise_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_elementwise_flow_circles/train.log
       --experiment-name conditional-circles conditional@elementwise_flow-circles elementwise_flow
@@ -7391,8 +7391,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -7464,25 +7464,25 @@ stages:
     outs:
     - path: results/conditional_elementwise_flow_circles/dataset.pdf
       hash: md5
-      md5: 5341c2329d793bdb54e22fdc1fe40090
-      size: 40650
+      md5: 1b4c73a00a5e33ee7301390db692270d
+      size: 40644
     - path: results/conditional_elementwise_flow_circles/mcp
       hash: md5
-      md5: 9c20be47d4f12c7a1eb5505664333424.dir
+      md5: ce71616c5fb8866b69d806467e6d4771.dir
       size: 29739
       nfiles: 3
     - path: results/conditional_elementwise_flow_circles/metrics.yaml
       hash: md5
-      md5: cfd019566dcaa0d29070e477cbf1c2fb
-      size: 55
+      md5: e9fa7c114c6dbb011c46620f4915b625
+      size: 56
     - path: results/conditional_elementwise_flow_circles/samples.pdf
       hash: md5
-      md5: 06d1023fb008a422def7fc10191510b3
-      size: 171596
+      md5: 6afce1abdd1d868fca549c262602b17d
+      size: 171558
     - path: results/conditional_elementwise_flow_circles/train.log
       hash: md5
-      md5: 7f91e6888013bffbe9d9b173e0f885aa
-      size: 10974
+      md5: d77ee4d3a7949311e2a4023918ce2a31
+      size: 2239
   unconditional@coupling_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_coupling_flow_circles/train.log
       --experiment-name unconditional-circles unconditional@coupling_flow-circles
@@ -7498,8 +7498,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -7541,25 +7541,25 @@ stages:
     outs:
     - path: results/unconditional_coupling_flow_circles/dataset.pdf
       hash: md5
-      md5: 6f9874be1a17978bcc8836341d560079
-      size: 40650
+      md5: 401d15c724cd74441813b788a6d9eb21
+      size: 40644
     - path: results/unconditional_coupling_flow_circles/mcp
       hash: md5
-      md5: e6a0d7935f70fb2f491de685c7e49d7d.dir
+      md5: bcefbe4b54e6b269c981261bba879bc4.dir
       size: 35824
       nfiles: 3
     - path: results/unconditional_coupling_flow_circles/metrics.yaml
       hash: md5
-      md5: 49d31ede6bdf5ee6e7a54e29ab0d1ef1
+      md5: 9735f74e0788c5e3edce56bd398ad337
       size: 56
     - path: results/unconditional_coupling_flow_circles/samples.pdf
       hash: md5
-      md5: 55ae6808d3e2a9a84035600256a058c6
-      size: 189132
+      md5: b3d9f623b0c245630ca190fd12857668
+      size: 190824
     - path: results/unconditional_coupling_flow_circles/train.log
       hash: md5
-      md5: 5e9fd9110ff436002d59f1f63763423c
-      size: 9889
+      md5: 36ee9397b2ade4cd7157adb9145ebbd4
+      size: 1890
   conditional@multivariate_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_multivariate_flow_circles/train.log
       --experiment-name conditional-circles conditional@multivariate_flow-circles
@@ -7575,8 +7575,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -7648,25 +7648,25 @@ stages:
     outs:
     - path: results/conditional_multivariate_flow_circles/dataset.pdf
       hash: md5
-      md5: 22c012ff81dcc5e903bebcfee48c6a4d
-      size: 40650
+      md5: 7a93a351482d1001b0458abf923eaae6
+      size: 40644
     - path: results/conditional_multivariate_flow_circles/mcp
       hash: md5
-      md5: d21afc597abede87631d4ccbf7e17472.dir
+      md5: fd0f955536ed558cdaeb2adafb15f06a.dir
       size: 30356
       nfiles: 3
     - path: results/conditional_multivariate_flow_circles/metrics.yaml
       hash: md5
-      md5: f99af989e8ace676a6a7ec8b13e4cbdc
+      md5: 61cf79fdfee4a01426f8c3002f043d6e
       size: 56
     - path: results/conditional_multivariate_flow_circles/samples.pdf
       hash: md5
-      md5: 3a14384f7a61759dc5df16e1ea526d9b
-      size: 172082
+      md5: 5162bc7211c2efef40686f54ac172e15
+      size: 172206
     - path: results/conditional_multivariate_flow_circles/train.log
       hash: md5
-      md5: 1d66f0d24845373589dccce0f10a029f
-      size: 10982
+      md5: b96f044d1139ca0c2b08b3fd244a8dc4
+      size: 2246
   conditional@multivariate_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_multivariate_flow_moons/train.log
       --experiment-name conditional-moons conditional@multivariate_flow-moons multivariate_flow
@@ -7682,8 +7682,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -7754,25 +7754,25 @@ stages:
     outs:
     - path: results/conditional_multivariate_flow_moons/dataset.pdf
       hash: md5
-      md5: 2e4e46c3d3bb8e960ec64082ea8460bd
-      size: 40518
+      md5: 6e91a353561a84e723b79a4582cd9654
+      size: 40512
     - path: results/conditional_multivariate_flow_moons/mcp
       hash: md5
-      md5: 1b767acaff82dc6fc427ab3d2da2bb6c.dir
+      md5: 0cde6cbe30e611dcf7bad99fa975ad36.dir
       size: 30356
       nfiles: 3
     - path: results/conditional_multivariate_flow_moons/metrics.yaml
       hash: md5
-      md5: 25a6ee472dbeed7fccd0d7fc0fff8344
+      md5: 1159b58f52f1391bffb0d86db9a87583
       size: 56
     - path: results/conditional_multivariate_flow_moons/samples.pdf
       hash: md5
-      md5: cd6193dbf4e9063884d68b79b53e1cf7
-      size: 180397
+      md5: db097556bebeb67f72727a4a92cf5044
+      size: 180288
     - path: results/conditional_multivariate_flow_moons/train.log
       hash: md5
-      md5: 219437e29ad7054bc6225af3f19b8890
-      size: 10954
+      md5: 7e98cb88466e655d09a24af127296f06
+      size: 2220
   conditional@masked_autoregressive_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_masked_autoregressive_flow_circles/train.log
       --experiment-name conditional-circles conditional@masked_autoregressive_flow-circles
@@ -7789,8 +7789,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -7862,25 +7862,25 @@ stages:
     outs:
     - path: results/conditional_masked_autoregressive_flow_circles/dataset.pdf
       hash: md5
-      md5: 06fcc01cfc78c2bdd7e1565f3519bd3c
-      size: 40650
+      md5: 05e53fb40e030bda4a65506fbf453bb3
+      size: 40644
     - path: results/conditional_masked_autoregressive_flow_circles/mcp
       hash: md5
-      md5: a8b3b395729be883b9dbe82fdefb4174.dir
+      md5: 13c5650fb346c7263e3a64e6568ba6b4.dir
       size: 37062
       nfiles: 3
     - path: results/conditional_masked_autoregressive_flow_circles/metrics.yaml
       hash: md5
-      md5: 412f9201e74c77fd194815d3f0ea54fc
+      md5: 477c78d228cffab673001a61e30f0cbb
       size: 56
     - path: results/conditional_masked_autoregressive_flow_circles/samples.pdf
       hash: md5
-      md5: 17199e1d3fe3a14dfd6faf04b96b7fa9
-      size: 194316
+      md5: 198144a93d03fdca4b8bb652b5c84903
+      size: 194335
     - path: results/conditional_masked_autoregressive_flow_circles/train.log
       hash: md5
-      md5: ae2ba58171b03dd486f23a020597acf2
-      size: 10285
+      md5: f0e9bd7737e90787140eb50ed9212d11
+      size: 2288
   conditional@coupling_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_coupling_flow_moons/train.log
       --experiment-name conditional-moons conditional@coupling_flow-moons coupling_flow
@@ -7896,8 +7896,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -7971,25 +7971,25 @@ stages:
     outs:
     - path: results/conditional_coupling_flow_moons/dataset.pdf
       hash: md5
-      md5: 6f7313dae3f338cad4e5d57922955122
-      size: 40518
+      md5: b8a1041ba047019c8addac24406c9699
+      size: 40512
     - path: results/conditional_coupling_flow_moons/mcp
       hash: md5
-      md5: 59a80759512d29ce458a871e4b8def0a.dir
+      md5: 99dba18e117d29a2cf2eb9ae680870be.dir
       size: 71443
       nfiles: 3
     - path: results/conditional_coupling_flow_moons/metrics.yaml
       hash: md5
-      md5: 1da4743d5119406094020201945268e6
-      size: 56
+      md5: 5b753bb698c3fe2753fd45720e8e22d5
+      size: 49
     - path: results/conditional_coupling_flow_moons/samples.pdf
       hash: md5
-      md5: d4651bf353e697d53f133c2c99c539e4
-      size: 185529
+      md5: 5ceba1c671c8040ea24164ac319e6f69
+      size: 185525
     - path: results/conditional_coupling_flow_moons/train.log
       hash: md5
-      md5: 0e4b1bf3e1a1dd31708faede1eeb6f95
-      size: 11017
+      md5: 632d4c7473d0c8fcb86e7fe3eda92b20
+      size: 2276
   unconditional_hybrid@coupling_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_hybrid_coupling_flow_moons/train.log
       --experiment-name unconditional-hybrid-moons unconditional_hybrid@coupling_flow-moons
@@ -8005,8 +8005,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -8062,37 +8062,37 @@ stages:
     outs:
     - path: results/unconditional_hybrid_coupling_flow_moons/data.pdf
       hash: md5
-      md5: 7e75c64c046e00a9bfdceee4b947f914
-      size: 174642
+      md5: 787a8d9349cf37e2901077992633459f
+      size: 146184
     - path: results/unconditional_hybrid_coupling_flow_moons/dataset.pdf
       hash: md5
-      md5: ab4b3a2a3f13bca2f5522864c663f531
-      size: 40518
+      md5: 143f90b3a0dc15bbf862de424514a01a
+      size: 40512
     - path: results/unconditional_hybrid_coupling_flow_moons/mcp
       hash: md5
-      md5: a1bbb7cf14680d929a208f44f7324876.dir
+      md5: 26c7b6bf9d62c0c73fc9ec176a01affd.dir
       size: 26438
       nfiles: 3
     - path: results/unconditional_hybrid_coupling_flow_moons/metrics.yaml
       hash: md5
-      md5: 2aef80e5c6a5085dfd82cea1d9cad336
+      md5: 8d47007afae5559aec339d56437f613d
       size: 56
     - path: results/unconditional_hybrid_coupling_flow_moons/samples.pdf
       hash: md5
-      md5: 7893309724df004b79a319dc3805d4ee
-      size: 147902
+      md5: 753b8bae4d9d6850cc47650ee96724ce
+      size: 143512
     - path: results/unconditional_hybrid_coupling_flow_moons/train.log
       hash: md5
-      md5: aba44437d2c61cc05220e87a2f9f5219
-      size: 11363
+      md5: dab891c722ef25b136e94eb794246e9a
+      size: 2842
     - path: results/unconditional_hybrid_coupling_flow_moons/z1.pdf
       hash: md5
-      md5: 88348eabcac3f57c48a241514f8a73e2
-      size: 150710
+      md5: ed2014dd52e9d56495f10189a12a00c2
+      size: 166231
     - path: results/unconditional_hybrid_coupling_flow_moons/z2.pdf
       hash: md5
-      md5: 9b8e48a0d0ace8a7adf02e50b310e7df
-      size: 120151
+      md5: a452560219533e7ae8c295e7f918a749
+      size: 126841
   unconditional_hybrid@masked_autoregressive_flow_first_dim_masked-moons:
     cmd: python scripts/train.py --log-level info --log-file
       results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_moons/train.log
@@ -8109,8 +8109,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -8172,44 +8172,44 @@ stages:
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_moons/data.pdf
       hash: md5
-      md5: a781c2d13c17e85ea08df1620a35382e
-      size: 155026
+      md5: e47176bbba2eb4687fd8e82e0b4ed53e
+      size: 158062
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_moons/dataset.pdf
       hash: md5
-      md5: adf1ccd2d56526cd5bcc956bbc9fffee
-      size: 40518
+      md5: 19c03c6f3efa75a476be5930c97b2c9b
+      size: 40512
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_moons/mcp
       hash: md5
-      md5: dc29a3a0bc499d7a1e5c86764c08e045.dir
+      md5: 8e9b091d1326e8ca35bc4387459a5090.dir
       size: 34049
       nfiles: 3
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_moons/metrics.yaml
       hash: md5
-      md5: ee3304be3ed49dde8a05bf016b77a9fa
+      md5: 806f444e44905b3e1a44a44b65862baf
       size: 55
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_moons/samples.pdf
       hash: md5
-      md5: ee14297bdd2f08682a90b29742bd014c
-      size: 149106
+      md5: 7e6900785658e449dd491d2c87bd1acc
+      size: 179164
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_moons/train.log
       hash: md5
-      md5: 47ebcb3f509ffb7bd2dfee92ceca3b94
-      size: 11631
+      md5: 8fe8649dffe10202d606be77fb015a4d
+      size: 3111
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_moons/z1.pdf
       hash: md5
-      md5: 4577c83fb8953d92e71972b33427f680
-      size: 152306
+      md5: 9be81851f772cf1c8f7f67a1a6cd6322
+      size: 157287
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_moons/z2.pdf
       hash: md5
-      md5: a222154feeda743d9760b96fc43dec0a
-      size: 120915
+      md5: 61a8725f4b5de02e31dd9ffc598a95cf
+      size: 122199
   unconditional_hybrid@masked_autoregressive_flow_first_dim_masked-circles:
     cmd: python scripts/train.py --log-level info --log-file
       results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_circles/train.log
@@ -8227,8 +8227,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -8291,44 +8291,44 @@ stages:
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_circles/data.pdf
       hash: md5
-      md5: a1cdb3acb0d17a96dee19f8a2ce7f047
-      size: 187855
+      md5: c87f7665a787db1cc27e75b9b57f3303
+      size: 190208
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_circles/dataset.pdf
       hash: md5
-      md5: 137ace83f6602d3e9a7e810eed826157
-      size: 40650
+      md5: 22d52b684333c84cf413c29767a908dd
+      size: 40644
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_circles/mcp
       hash: md5
-      md5: 53c9a38aa03cc74d9f8faa8b900afb64.dir
+      md5: b00f5829adeadfc1a9e8713e0d305928.dir
       size: 34049
       nfiles: 3
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_circles/metrics.yaml
       hash: md5
-      md5: e5ee708009889bfe7eb40e7b3498db8a
+      md5: 4663800f8d84311bee1f6638bb164703
       size: 56
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_circles/samples.pdf
       hash: md5
-      md5: 93557238c5459fb1f49102efca97c216
-      size: 190416
+      md5: 12472e3c7de20c578f475b18f88400bc
+      size: 189316
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_circles/train.log
       hash: md5
-      md5: 8a00c6ac002de4b4727988f42761c20f
-      size: 11663
+      md5: a5379ce4dc3f432c80da1865a420a1e5
+      size: 3141
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_circles/z1.pdf
       hash: md5
-      md5: f5f32bab3bb8003ef1477b2516ef85f4
-      size: 160637
+      md5: 648a39e19cd5374c467212aaeaab1279
+      size: 158625
     - path:
         results/unconditional_hybrid_masked_autoregressive_flow_first_dim_masked_circles/z2.pdf
       hash: md5
-      md5: 616caf6dc567bef6204a0bfc5feacee5
-      size: 123402
+      md5: 07b6a85df37652002f6e79ebaf3eb02d
+      size: 121363
   unconditional@elementwise_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_elementwise_flow_circles/train.log
       --experiment-name unconditional-circles unconditional@elementwise_flow-circles
@@ -8344,8 +8344,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -8383,8 +8383,8 @@ stages:
     outs:
     - path: results/unconditional_elementwise_flow_circles/dataset.pdf
       hash: md5
-      md5: 79c90318393c194b5413f9f83df15c92
-      size: 40650
+      md5: 7d9aea1b7c1cf5f36936f15afb73960d
+      size: 40644
     - path: results/unconditional_elementwise_flow_circles/mcp
       hash: md5
       md5: bebeb0b6cff9c2b47f202b940d1df274.dir
@@ -8396,12 +8396,12 @@ stages:
       size: 58
     - path: results/unconditional_elementwise_flow_circles/samples.pdf
       hash: md5
-      md5: 37e1ada50b3edd372a7dfafad4a0b691
-      size: 172337
+      md5: 6d3011f6ca23c80f9dc86dc8191c4b50
+      size: 172340
     - path: results/unconditional_elementwise_flow_circles/train.log
       hash: md5
-      md5: 514fabb170e7a8d403edf2ff03cda9cc
-      size: 9855
+      md5: ba2e65aa64dc21342a4481761341cf95
+      size: 1856
   conditional@coupling_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_coupling_flow_circles/train.log
       --experiment-name conditional-circles conditional@coupling_flow-circles coupling_flow
@@ -8417,8 +8417,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -8493,25 +8493,25 @@ stages:
     outs:
     - path: results/conditional_coupling_flow_circles/dataset.pdf
       hash: md5
-      md5: 20e24e08864c7cfbe0a6685ba0fb9355
-      size: 40650
+      md5: 30a094d5ce4be887195d06d1e15652f8
+      size: 40644
     - path: results/conditional_coupling_flow_circles/mcp
       hash: md5
-      md5: 1a3ef2c27fe97e7148c27f91f1b4f3ce.dir
+      md5: 109e8f71da4ecb430a015175971cea9c.dir
       size: 47042
       nfiles: 3
     - path: results/conditional_coupling_flow_circles/metrics.yaml
       hash: md5
-      md5: 5a2d2ae97aeda000ef7062071d95b24d
-      size: 56
+      md5: 8ccbae0d5aa85553dce39bd8a9963594
+      size: 54
     - path: results/conditional_coupling_flow_circles/samples.pdf
       hash: md5
-      md5: 9709e37c0d27fe348f20376ff476cf2c
-      size: 194731
+      md5: b6195db77d80d5100640fac7effa8e1b
+      size: 195475
     - path: results/conditional_coupling_flow_circles/train.log
       hash: md5
-      md5: 40bce8c64c7252642981bcef06c4809f
-      size: 10505
+      md5: eb9802cdbf8981acef022d70ed13d88e
+      size: 2506
   conditional@masked_autoregressive_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/conditional_masked_autoregressive_flow_moons/train.log
       --experiment-name conditional-moons conditional@masked_autoregressive_flow-moons
@@ -8524,13 +8524,13 @@ stages:
       size: 1104
     - path: scripts/train.py
       hash: md5
-      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
-      size: 5361
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
     - path: src/mctm
       hash: md5
-      md5: a7774b6d22c0c9aacadda3a136e1cf7d.dir
-      size: 57163
-      nfiles: 13
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
     params:
       params.yaml:
         conditional_distributions.masked_autoregressive_flow*:
@@ -8600,25 +8600,25 @@ stages:
     outs:
     - path: results/conditional_masked_autoregressive_flow_moons/dataset.pdf
       hash: md5
-      md5: cc28490244c4f35d08f55a6fff7b63ff
-      size: 40518
+      md5: efacfbd93e3eb7b62e96ea1d203d445e
+      size: 40512
     - path: results/conditional_masked_autoregressive_flow_moons/mcp
       hash: md5
-      md5: 48cddd5bc4ec6d6b86a4a4067c79ec5d.dir
+      md5: f5c13fa3fbe497c6a1a3fe846e2fa08a.dir
       size: 37062
       nfiles: 3
     - path: results/conditional_masked_autoregressive_flow_moons/metrics.yaml
       hash: md5
-      md5: 9e7dbb503542a8324e53a608e1b7c3e7
-      size: 55
+      md5: 3092af7cab14813361ab503b62e53cc1
+      size: 56
     - path: results/conditional_masked_autoregressive_flow_moons/samples.pdf
       hash: md5
-      md5: 6ccd86c9da5152c337d1ddea93086ff6
-      size: 185697
+      md5: bfb6321491503e0ce31d9b0b64d6f479
+      size: 186236
     - path: results/conditional_masked_autoregressive_flow_moons/train.log
       hash: md5
-      md5: 1e116e0595701fd49dc1bd3ad2a956b7
-      size: 3539
+      md5: 86ecc9bf5ca352443ea07de6657dfd8e
+      size: 2262
   unconditional@coupling_flow-moons:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_coupling_flow_moons/train.log
       --experiment-name unconditional-moons unconditional@coupling_flow-moons coupling_flow
@@ -8634,8 +8634,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -8676,25 +8676,25 @@ stages:
     outs:
     - path: results/unconditional_coupling_flow_moons/dataset.pdf
       hash: md5
-      md5: 50b9f7136865a11e480e9ac022f4250d
-      size: 40518
+      md5: 8468d5a8bb754994372c9bac98849a87
+      size: 40512
     - path: results/unconditional_coupling_flow_moons/mcp
       hash: md5
-      md5: ffbeae75072dbb7f49a0776774e8a84c.dir
+      md5: 0f1d45031acaabfa0a0c8facbf193a19.dir
       size: 35824
       nfiles: 3
     - path: results/unconditional_coupling_flow_moons/metrics.yaml
       hash: md5
-      md5: 3644bc8aa148568e177f4c4c19496c55
+      md5: 220a4ee28aeae62f8c9f22642ec3c548
       size: 56
     - path: results/unconditional_coupling_flow_moons/samples.pdf
       hash: md5
-      md5: 4919902ced0c86fe2f9de4f89ad9b931
-      size: 185755
+      md5: be3b67d7851d3fe8e5946f3862935c45
+      size: 185799
     - path: results/unconditional_coupling_flow_moons/train.log
       hash: md5
-      md5: 644ae293fb2e82d803451280ff448101
-      size: 10398
+      md5: abf74a92830d52e886bf11bab0d4b58f
+      size: 1662
   unconditional_hybrid@coupling_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_hybrid_coupling_flow_circles/train.log
       --experiment-name unconditional-hybrid-circles unconditional_hybrid@coupling_flow-circles
@@ -8710,8 +8710,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 0c2b6c100f639339f50f2f2f4d8ae572.dir
-      size: 79373
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
       nfiles: 14
     params:
       params.yaml:
@@ -8768,37 +8768,37 @@ stages:
     outs:
     - path: results/unconditional_hybrid_coupling_flow_circles/data.pdf
       hash: md5
-      md5: 606c6633958c82ad150e674cfeb28cc5
-      size: 182759
+      md5: 576596928de136bbf8e2556d7536b91b
+      size: 179095
     - path: results/unconditional_hybrid_coupling_flow_circles/dataset.pdf
       hash: md5
-      md5: 7545753eac2e46d35e7a06b5cf82c1e2
-      size: 40650
+      md5: a8f43067d920f489430c47dc69befd43
+      size: 40644
     - path: results/unconditional_hybrid_coupling_flow_circles/mcp
       hash: md5
-      md5: 9978e27a7768f42d0af20d9d677d4190.dir
+      md5: afc4f4aac9ec925ca098a8415212bbce.dir
       size: 3663170
       nfiles: 3
     - path: results/unconditional_hybrid_coupling_flow_circles/metrics.yaml
       hash: md5
-      md5: d0989f373c498ddf713db266068b0a6e
+      md5: f2ee395b8fc1ae6fcc7292732aac55f4
       size: 56
     - path: results/unconditional_hybrid_coupling_flow_circles/samples.pdf
       hash: md5
-      md5: 2860fdfbaad90552416134836f8c7fc0
-      size: 190617
+      md5: 7fe9989a7eed09cfab887a1d62722fa6
+      size: 188869
     - path: results/unconditional_hybrid_coupling_flow_circles/train.log
       hash: md5
-      md5: 8ff5a67dfff498fdef11a9c817374519
-      size: 11200
+      md5: 4d919a629ae67ba693e76a3cc4df60e6
+      size: 2677
     - path: results/unconditional_hybrid_coupling_flow_circles/z1.pdf
       hash: md5
-      md5: 4b74c16532a3ab772460202db0bc5693
-      size: 158763
+      md5: 2f123eafbb1750cfd13896e25e590fb8
+      size: 157936
     - path: results/unconditional_hybrid_coupling_flow_circles/z2.pdf
       hash: md5
-      md5: 861a7e0bd2be52460300c019ac9fbc8a
-      size: 123977
+      md5: 83efeb43cf47a622442fbe264478083e
+      size: 123206
   malnutrition@masked_autoregressive_flow:
     cmd: python scripts/train_malnutrition.py --log-level info --log-file results/conditional_masked_autoregressive_flow_malnutrition/train.log
       --experiment-name conditional-malnutrition malnutrition@masked_autoregressive_flow
@@ -8987,13 +8987,13 @@ stages:
       nfiles: 3
     - path: scripts/train.py
       hash: md5
-      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
-      size: 5361
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
     - path: src/mctm
       hash: md5
-      md5: a7774b6d22c0c9aacadda3a136e1cf7d.dir
-      size: 57163
-      nfiles: 13
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
     params:
       params.yaml:
         datasets.moons*:
@@ -9048,37 +9048,37 @@ stages:
     outs:
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_moons/data.pdf
       hash: md5
-      md5: 959761da4cac9898717c75b3f8482b5f
-      size: 172237
+      md5: 08a1311359a3a4373f462cb29092cc8f
+      size: 169907
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_moons/dataset.pdf
       hash: md5
-      md5: 32f9c0f67e6826b2386bbfeea3129a9a
-      size: 40518
+      md5: 181b375f8c26b878672b640c4d71181a
+      size: 40512
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_moons/mcp
       hash: md5
-      md5: 79bb52a109c47a0dfda7b2570994a464.dir
+      md5: f7004589e210225250b13ff2c03b12b3.dir
       size: 3661986
       nfiles: 3
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_moons/metrics.yaml
       hash: md5
-      md5: 37751daeebf15eb8b4f264c042dd62f1
+      md5: 7dcfce81c98daa1167017544e8e3877e
       size: 55
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_moons/samples.pdf
       hash: md5
-      md5: 4d5292b7167d55bd4dfcb859b4adc8f1
-      size: 159496
+      md5: 1551883fcb2096748e3b63f4dffc8045
+      size: 160619
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_moons/train.log
       hash: md5
-      md5: af844e7e0af193dc03165a3553a29865
-      size: 3633
+      md5: c0ff6f8716f985e058e96112c7d590a7
+      size: 2132
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_moons/z1.pdf
       hash: md5
-      md5: a59f33556ab99d6f844940a8269bfdd0
-      size: 162750
+      md5: 53c200f5c8329daa41d094b4da7465d4
+      size: 162207
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_moons/z2.pdf
       hash: md5
-      md5: 35fe75a6cfb024f4acfd60454fc91203
-      size: 122911
+      md5: 53b8cdcba1582f019a648d993acc1d4c
+      size: 123322
   unconditional_hybrid_pre_trained@coupling_flow-circles:
     cmd: python scripts/train.py --log-level info --log-file results/unconditional_hybrid_pre_trained_coupling_flow_circles/train.log
       --experiment-name unconditional-hybrid-pre-trained-circles unconditional_hybrid_pre_trained@coupling_flow-circles
@@ -9095,13 +9095,13 @@ stages:
       nfiles: 3
     - path: scripts/train.py
       hash: md5
-      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
-      size: 5361
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
     - path: src/mctm
       hash: md5
-      md5: a7774b6d22c0c9aacadda3a136e1cf7d.dir
-      size: 57163
-      nfiles: 13
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
     params:
       params.yaml:
         datasets.circles*:
@@ -9158,37 +9158,37 @@ stages:
     outs:
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_circles/data.pdf
       hash: md5
-      md5: 5217c1a3f4aa2851f024805dfd2ee20d
-      size: 175217
+      md5: 927076a9e8f1073950686f35587f1991
+      size: 172567
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_circles/dataset.pdf
       hash: md5
-      md5: 7e1efb0647d866f74a2cd36f6dfc3452
-      size: 40650
+      md5: a49dc7966c2c89b623af5dffb81af61f
+      size: 40644
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_circles/mcp
       hash: md5
-      md5: 2c5f33c672ed769ad43934320c525cf8.dir
+      md5: ca8815435566684ecd482a919658e80f.dir
       size: 29906
       nfiles: 3
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_circles/metrics.yaml
       hash: md5
-      md5: bdb9e23064762ee25898f48804747661
-      size: 55
+      md5: dbb440bec56a5bf66eec4e8a38c5b4fb
+      size: 56
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_circles/samples.pdf
       hash: md5
-      md5: 6e10aac4901921deea3ac37e96fa5dd0
-      size: 181531
+      md5: ea401a38d77fed7152858155c8856a1f
+      size: 183252
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_circles/train.log
       hash: md5
-      md5: 2e423dcb9836e6ac37d1ee8a8dab4114
-      size: 2187
+      md5: 6e65a80e41bb36564addf2ad425edb1b
+      size: 2168
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_circles/z1.pdf
       hash: md5
-      md5: 33a399dfa2d03328de04fef33938fedc
-      size: 157838
+      md5: 8fee6280f606073a03dbca3585077776
+      size: 157822
     - path: results/unconditional_hybrid_pre_trained_coupling_flow_circles/z2.pdf
       hash: md5
-      md5: 411726362fdfabb30fe24e05d7fd4943
-      size: 125375
+      md5: f37e579e6569b574ac1a580ef3a45115
+      size: 125448
   malnutrition@elementwise_flow:
     cmd: python scripts/train_malnutrition.py --log-level info --log-file results/conditional_elementwise_flow_malnutrition/train.log
       --experiment-name conditional-malnutrition malnutrition@elementwise_flow elementwise_flow
@@ -9283,22 +9283,22 @@ stages:
     deps:
     - path: datasets/bsds300
       hash: md5
-      md5: 56f9e227751df6d825d006ab223be482.dir
-      size: 327602241
-      nfiles: 2
+      md5: e4ab795c846604419827e750c741c2ce.dir
+      size: 327602144
+      nfiles: 1
     - path: pyproject.toml
       hash: md5
       md5: 1af4771c047df326c2ed161de7c0eb30
       size: 1104
     - path: scripts/train.py
       hash: md5
-      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
-      size: 5361
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
     - path: src/mctm
       hash: md5
-      md5: a7774b6d22c0c9aacadda3a136e1cf7d.dir
-      size: 57163
-      nfiles: 13
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
     params:
       params.yaml:
         benchmark_datasets.bsds300*:
@@ -9466,7 +9466,7 @@ stages:
       size: 53
     - path: results/unconditional_benchmark_elementwise_flow_bsds300/train.log
       hash: md5
-      md5: 2f68e2384e436ab100836e71699cca5d
+      md5: 82b7d8c2e7ecf29cbf7265e9ad554721
       size: 4237
   unconditional_benchmark@elementwise_flow-hepmass:
     cmd: python scripts/train_benchmark.py --log-level info --log-file results/unconditional_benchmark_elementwise_flow_hepmass/train.log
@@ -9476,22 +9476,22 @@ stages:
     deps:
     - path: datasets/hepmass
       hash: md5
-      md5: e45f644808654d3b59a69fb0b621d4da.dir
-      size: 750085389
-      nfiles: 4
+      md5: 5e24c498e022d4c8b79714a6065882cf.dir
+      size: 750085192
+      nfiles: 2
     - path: pyproject.toml
       hash: md5
       md5: 1af4771c047df326c2ed161de7c0eb30
       size: 1104
     - path: scripts/train.py
       hash: md5
-      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
-      size: 5361
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
     - path: src/mctm
       hash: md5
-      md5: a7774b6d22c0c9aacadda3a136e1cf7d.dir
-      size: 57163
-      nfiles: 13
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
     params:
       params.yaml:
         benchmark_datasets.hepmass*:
@@ -9575,7 +9575,7 @@ stages:
       size: 53
     - path: results/unconditional_benchmark_elementwise_flow_hepmass/train.log
       hash: md5
-      md5: 9f932aaf07bb7a9f7537aa99eb3fae4c
+      md5: 08e412449aacaf1de18f7f89d0d4c796
       size: 2036
   unconditional_benchmark@elementwise_flow-miniboone:
     cmd: python scripts/train_benchmark.py --log-level info --log-file results/unconditional_benchmark_elementwise_flow_miniboone/train.log
@@ -9585,22 +9585,22 @@ stages:
     deps:
     - path: datasets/miniboone
       hash: md5
-      md5: 37ae56e6ea2bf17b928354e89d9322e0.dir
-      size: 12552044
-      nfiles: 2
+      md5: 5cf3ec51bb664978790c9a45a3531e98.dir
+      size: 12551952
+      nfiles: 1
     - path: pyproject.toml
       hash: md5
       md5: 1af4771c047df326c2ed161de7c0eb30
       size: 1104
     - path: scripts/train.py
       hash: md5
-      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
-      size: 5361
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
     - path: src/mctm
       hash: md5
-      md5: a7774b6d22c0c9aacadda3a136e1cf7d.dir
-      size: 57163
-      nfiles: 13
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
     params:
       params.yaml:
         benchmark_datasets.miniboone*:
@@ -9728,7 +9728,7 @@ stages:
       size: 51
     - path: results/unconditional_benchmark_elementwise_flow_miniboone/train.log
       hash: md5
-      md5: b430533ceae2e5c58f389f06de1a1453
+      md5: 1006152e5452399c2ca1d320a509ac56
       size: 2358
   unconditional_benchmark@elementwise_flow-power:
     cmd: python scripts/train_benchmark.py --log-level info --log-file results/unconditional_benchmark_elementwise_flow_power/train.log
@@ -9738,22 +9738,22 @@ stages:
     deps:
     - path: datasets/power
       hash: md5
-      md5: 8b0d746c803e6e9203dfe370890df14e.dir
-      size: 131154093
-      nfiles: 2
+      md5: 885e2dbe66f0670d26e959e74be98025.dir
+      size: 131154000
+      nfiles: 1
     - path: pyproject.toml
       hash: md5
       md5: 1af4771c047df326c2ed161de7c0eb30
       size: 1104
     - path: scripts/train.py
       hash: md5
-      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
-      size: 5361
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
     - path: src/mctm
       hash: md5
-      md5: a7774b6d22c0c9aacadda3a136e1cf7d.dir
-      size: 57163
-      nfiles: 13
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
     params:
       params.yaml:
         benchmark_datasets.power*:
@@ -9807,7 +9807,7 @@ stages:
       size: 54
     - path: results/unconditional_benchmark_elementwise_flow_power/train.log
       hash: md5
-      md5: 32e651b6182ca9e24df301ded896efe5
+      md5: 5386d9321dc68170a91a08a432179331
       size: 1816
   unconditional_benchmark@masked_autoregressive_flow-bsds300:
     cmd: python scripts/train_benchmark.py --log-level info --log-file results/unconditional_benchmark_masked_autoregressive_flow_bsds300/train.log
@@ -9817,22 +9817,22 @@ stages:
     deps:
     - path: datasets/bsds300
       hash: md5
-      md5: 56f9e227751df6d825d006ab223be482.dir
-      size: 327602241
-      nfiles: 2
+      md5: e4ab795c846604419827e750c741c2ce.dir
+      size: 327602144
+      nfiles: 1
     - path: pyproject.toml
       hash: md5
       md5: 1af4771c047df326c2ed161de7c0eb30
       size: 1104
     - path: scripts/train.py
       hash: md5
-      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
-      size: 5361
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
     - path: src/mctm
       hash: md5
-      md5: a7774b6d22c0c9aacadda3a136e1cf7d.dir
-      size: 57163
-      nfiles: 13
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
     params:
       params.yaml:
         benchmark_datasets.bsds300*:
@@ -10003,7 +10003,7 @@ stages:
       size: 54
     - path: results/unconditional_benchmark_masked_autoregressive_flow_bsds300/train.log
       hash: md5
-      md5: 621f4a1273c1c60585c005c7517e415a
+      md5: aa4155a0988b7a3934431e03c32053f6
       size: 4105
   unconditional_benchmark@masked_autoregressive_flow-hepmass:
     cmd: python scripts/train_benchmark.py --log-level info --log-file results/unconditional_benchmark_masked_autoregressive_flow_hepmass/train.log
@@ -10013,22 +10013,22 @@ stages:
     deps:
     - path: datasets/hepmass
       hash: md5
-      md5: e45f644808654d3b59a69fb0b621d4da.dir
-      size: 750085389
-      nfiles: 4
+      md5: 5e24c498e022d4c8b79714a6065882cf.dir
+      size: 750085192
+      nfiles: 2
     - path: pyproject.toml
       hash: md5
       md5: 1af4771c047df326c2ed161de7c0eb30
       size: 1104
     - path: scripts/train.py
       hash: md5
-      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
-      size: 5361
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
     - path: src/mctm
       hash: md5
-      md5: a7774b6d22c0c9aacadda3a136e1cf7d.dir
-      size: 57163
-      nfiles: 13
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
     params:
       params.yaml:
         benchmark_datasets.hepmass*:
@@ -10116,7 +10116,7 @@ stages:
       size: 54
     - path: results/unconditional_benchmark_masked_autoregressive_flow_hepmass/train.log
       hash: md5
-      md5: cf489e1824d18681f16d5ea4ed3f8e64
+      md5: 1282b8faf236ca453657ac5e98d0aee0
       size: 2136
   unconditional_benchmark@masked_autoregressive_flow-miniboone:
     cmd: python scripts/train_benchmark.py --log-level info --log-file results/unconditional_benchmark_masked_autoregressive_flow_miniboone/train.log
@@ -10126,22 +10126,22 @@ stages:
     deps:
     - path: datasets/miniboone
       hash: md5
-      md5: 37ae56e6ea2bf17b928354e89d9322e0.dir
-      size: 12552044
-      nfiles: 2
+      md5: 5cf3ec51bb664978790c9a45a3531e98.dir
+      size: 12551952
+      nfiles: 1
     - path: pyproject.toml
       hash: md5
       md5: 1af4771c047df326c2ed161de7c0eb30
       size: 1104
     - path: scripts/train.py
       hash: md5
-      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
-      size: 5361
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
     - path: src/mctm
       hash: md5
-      md5: a7774b6d22c0c9aacadda3a136e1cf7d.dir
-      size: 57163
-      nfiles: 13
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
     params:
       params.yaml:
         benchmark_datasets.miniboone*:
@@ -10274,7 +10274,7 @@ stages:
       size: 54
     - path: results/unconditional_benchmark_masked_autoregressive_flow_miniboone/train.log
       hash: md5
-      md5: 08986532853dac022798a604e7711d7c
+      md5: 1b6a403e1e7e68270eb79744e70574d1
       size: 2459
   unconditional_benchmark@masked_autoregressive_flow-power:
     cmd: python scripts/train_benchmark.py --log-level info --log-file results/unconditional_benchmark_masked_autoregressive_flow_power/train.log
@@ -10284,22 +10284,22 @@ stages:
     deps:
     - path: datasets/power
       hash: md5
-      md5: 8b0d746c803e6e9203dfe370890df14e.dir
-      size: 131154093
-      nfiles: 2
+      md5: 885e2dbe66f0670d26e959e74be98025.dir
+      size: 131154000
+      nfiles: 1
     - path: pyproject.toml
       hash: md5
       md5: 1af4771c047df326c2ed161de7c0eb30
       size: 1104
     - path: scripts/train.py
       hash: md5
-      md5: 425a2e3b66a4a3cdd8d83e6d34a270a1
-      size: 5361
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
     - path: src/mctm
       hash: md5
-      md5: a7774b6d22c0c9aacadda3a136e1cf7d.dir
-      size: 57163
-      nfiles: 13
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
     params:
       params.yaml:
         benchmark_datasets.power*:
@@ -10361,7 +10361,7 @@ stages:
       size: 59
     - path: results/unconditional_benchmark_masked_autoregressive_flow_power/train.log
       hash: md5
-      md5: 3e9fe29ed81d000c28c352a0d0e16763
+      md5: 0ce507150b0ff48d4eb6f91ec58aec5a
       size: 2035
   download_benchmark_data:
     cmd: python src/mctm/data/benchmark.py | tee datasets/benchmark_stats
@@ -10394,3 +10394,235 @@ stages:
       md5: 885e2dbe66f0670d26e959e74be98025.dir
       size: 131154000
       nfiles: 1
+  unconditional_benchmark_hybrid_pre_trained@masked_autoregressive_flow_first_dim_masked-bsds300:
+    cmd: python scripts/train_benchmark.py --log-level info --log-file
+      results/unconditional_benchmark_masked_autoregressive_flow_first_dim_masked_bsds300/train.log
+      --experiment-name unconditional-benchmark-bsds300
+      unconditional_benchmark_hybrid_pre_trained@masked_autoregressive_flow_first_dim_masked-bsds300
+      masked_autoregressive_flow_first_dim_masked bsds300
+      results/unconditional_benchmark_masked_autoregressive_flow_first_dim_masked_bsds300
+      --test-mode=false
+    deps:
+    - path: datasets/bsds300
+      hash: md5
+      md5: e4ab795c846604419827e750c741c2ce.dir
+      size: 327602144
+      nfiles: 1
+    - path: pyproject.toml
+      hash: md5
+      md5: 1af4771c047df326c2ed161de7c0eb30
+      size: 1104
+    - path: results/unconditional_benchmark_elementwise_flow_bsds300/mcp
+      hash: md5
+      md5: 7e5cc84617f42261569062a73327b68f.dir
+      size: 77273
+      nfiles: 3
+    - path: scripts/train.py
+      hash: md5
+      md5: 916524801990bc4d596d19e635883808
+      size: 5431
+    - path: src/mctm
+      hash: md5
+      md5: dc0df0be415a1a86946a21cf6836a1a3.dir
+      size: 79532
+      nfiles: 14
+    params:
+      params.yaml:
+        benchmark_datasets.bsds300*:
+          scale:
+          - 0.5830000042915344
+          - 0.5929999947547913
+          - 0.6069999933242798
+          - 0.5910000205039978
+          - 0.6029999852180481
+          - 0.6179999709129333
+          - 0.5879999995231628
+          - 0.5600000023841858
+          - 0.5659999847412109
+          - 0.5720000267028809
+          - 0.6460000276565552
+          - 0.6449999809265137
+          - 0.6050000190734863
+          - 0.6370000243186951
+          - 0.6079999804496765
+          - 0.5920000076293945
+          - 0.5759999752044678
+          - 0.6110000014305115
+          - 0.5960000157356262
+          - 0.5809999704360962
+          - 0.6290000081062317
+          - 0.6309999823570251
+          - 0.6200000047683716
+          - 0.5979999899864197
+          - 0.6060000061988831
+          - 0.6190000176429749
+          - 0.6510000228881836
+          - 0.6439999938011169
+          - 0.6269999742507935
+          - 0.6520000100135803
+          - 0.6050000190734863
+          - 0.6039999723434448
+          - 0.5989999771118164
+          - 0.6100000143051147
+          - 0.640999972820282
+          - 0.5870000123977661
+          - 0.5830000042915344
+          - 0.6359999775886536
+          - 0.628000020980835
+          - 0.5680000185966492
+          - 0.609000027179718
+          - 0.6150000095367432
+          - 0.6190000176429749
+          - 0.6119999885559082
+          - 0.6389999985694885
+          - 0.6470000147819519
+          - 0.6330000162124634
+          - 0.574999988079071
+          - 0.5839999914169312
+          - 0.6039999723434448
+          - 0.6039999723434448
+          - 0.6740000247955322
+          - 0.625
+          - 0.6069999933242798
+          - 0.5889999866485596
+          - 0.5960000157356262
+          - 0.5569999814033508
+          - 0.5709999799728394
+          - 0.5580000281333923
+          - 0.6019999980926514
+          - 0.5770000219345093
+          - 0.5680000185966492
+          - 0.5789999961853027
+          shift:
+          - 0.8690000176429749
+          - 0.8519999980926514
+          - 0.8309999704360962
+          - 0.8270000219345093
+          - 0.8370000123977661
+          - 0.8100000023841858
+          - 0.871999979019165
+          - 0.9139999747276306
+          - 0.8820000290870667
+          - 0.847000002861023
+          - 0.7630000114440918
+          - 0.7710000276565552
+          - 0.8050000071525574
+          - 0.800000011920929
+          - 0.7950000166893005
+          - 0.8510000109672546
+          - 0.8199999928474426
+          - 0.722000002861023
+          - 0.7960000038146973
+          - 0.8849999904632568
+          - 0.7680000066757202
+          - 0.8050000071525574
+          - 0.7929999828338623
+          - 0.847000002861023
+          - 0.7770000100135803
+          - 0.753000020980835
+          - 0.7620000243186951
+          - 0.7889999747276306
+          - 0.7929999828338623
+          - 0.7229999899864197
+          - 0.8489999771118164
+          - 0.8140000104904175
+          - 0.8149999976158142
+          - 0.7900000214576721
+          - 0.7710000276565552
+          - 0.8799999952316284
+          - 0.8460000157356262
+          - 0.7799999713897705
+          - 0.7770000100135803
+          - 0.8399999737739563
+          - 0.7710000276565552
+          - 0.7979999780654907
+          - 0.8220000267028809
+          - 0.847000002861023
+          - 0.7760000228881836
+          - 0.753000020980835
+          - 0.765999972820282
+          - 0.8880000114440918
+          - 0.8299999833106995
+          - 0.7929999828338623
+          - 0.7419999837875366
+          - 0.6990000009536743
+          - 0.8080000281333923
+          - 0.8299999833106995
+          - 0.8259999752044678
+          - 0.843999981880188
+          - 0.8500000238418579
+          - 0.8450000286102295
+          - 0.8970000147819519
+          - 0.800000011920929
+          - 0.8690000176429749
+          - 0.8740000128746033
+          - 0.8460000157356262
+        log-level: info
+        seed: 1
+        unconditional_benchmark_hybrid_pre_trained_distributions.masked_autoregressive_flow_first_dim_masked.bsds300*:
+          distribution_kwds:
+            bijector_name: bernstein_poly
+            order: 80
+            low: 0
+            high: 1
+            smooth_bounds: true
+            allow_flexible_bounds: true
+            shift: false
+            scale: false
+          freeze_base_model: true
+          base_checkpoint_path: unconditional_benchmark_elementwise_flow
+          parameter_kwds:
+            made_kwds:
+              hidden_units:
+              - 512
+              - 512
+              - 512
+              activation: relu
+            x0_kwds:
+              hidden_units:
+              - 64
+              - 64
+              - 64
+              activation: relu
+              batch_norm: false
+              kernel_initializer: glorot_uniform
+              bias_initializer: zeros
+          base_distribution: elementwise_flow
+          base_distribution_kwds:
+            bijector_name: bernstein_poly
+            order: 100
+            low: -3
+            high: 3
+            smooth_bounds: true
+            allow_flexible_bounds: true
+            shift: false
+            scale: false
+          base_parameter_kwds:
+            conditional: false
+            dtype: float32
+          fit_kwds:
+            epochs: 10000
+            batch_size: 128
+            learning_rate: 0.01
+            lr_patience: 5
+            reduce_lr_on_plateau: true
+            early_stopping: true
+            verbose: true
+            monitor: val_loss
+    outs:
+    - path:
+        results/unconditional_benchmark_masked_autoregressive_flow_first_dim_masked_bsds300/mcp
+      hash: md5
+      md5: 477b83eb7ceb49d35c6d31de44baad03.dir
+      size: 41230648
+      nfiles: 3
+    - path:
+        results/unconditional_benchmark_masked_autoregressive_flow_first_dim_masked_bsds300/metrics.yaml
+      hash: md5
+      md5: 00f09086cf0865562068892b31e2c18c
+      size: 55
+    - path:
+        results/unconditional_benchmark_masked_autoregressive_flow_first_dim_masked_bsds300/train.log
+      hash: md5
+      md5: 1276b191cacd422c4cc9f971f24863ca
+      size: 4982
