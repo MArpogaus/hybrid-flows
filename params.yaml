@@ -5,11 +5,11 @@ testmode: false
 
 datasets:
   moons:
-    n_samples: 10240
+    n_samples: 500
     noise: 0.05
     scale: [0.05, 0.95]
   circles:
-    n_samples: 10240
+    n_samples: 2000
     noise: 0.05
     factor: 0.5
     scale: [0.05, 0.95]
@@ -294,22 +294,16 @@ benchmark_datasets:
     - 0.834
     - 1.742
 
-malnutrition_kwds:
-  data_path: datasets/malnutrition/india.raw
-  targets: [stunting, wasting, underweight]
-  covariates: [mage]
-
 common:
   fit_kwds: &fit_kwds
     epochs: 10000
-    batch_size: 256
-    early_stopping: 4
-    learning_rate: 0.01
-    lr_patience: 50
-    lr_reduction_factor: 0.5
-    monitor: val_loss
+    validation_split: 0.1
+    batch_size: 1024
+    lr_patience: 100
     reduce_lr_on_plateau: true
+    early_stopping: true
     verbose: true
+    monitor: val_loss
   distribution_kwds: &distribution_kwds
     bijector_name: bernstein_poly
     low: -4
@@ -336,7 +330,11 @@ unconditional_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.05
+        lr_patience: 100
+        lr_reduction_factor: 0.5
+        early_stopping: 4
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -346,7 +344,10 @@ unconditional_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.005
+        lr_patience: 100
+        lr_reduction_factor: 0.1
 
   multivariate_flow:
     moons:
@@ -358,7 +359,10 @@ unconditional_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.005
+        lr_patience: 100
+        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -368,7 +372,10 @@ unconditional_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.005
+        lr_patience: 100
+        lr_reduction_factor: 0.1
 
   multivariate_normal:
     moons:
@@ -378,7 +385,10 @@ unconditional_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.05
+        lr_patience: 100
+        lr_reduction_factor: 0.1
     circles:
       distribution_kwds: {}
       parameter_kwds:
@@ -386,7 +396,10 @@ unconditional_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.05
+        lr_patience: 100
+        lr_reduction_factor: 0.1
 
   coupling_flow:
     moons:
@@ -403,7 +416,10 @@ unconditional_distributions:
         dropout: 0
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.001
+        lr_patience: 100
+        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -418,7 +434,10 @@ unconditional_distributions:
         dropout: 0
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.001
+        lr_patience: 100
+        lr_reduction_factor: 0.1
 
   masked_autoregressive_flow:
     moons:
@@ -433,7 +452,10 @@ unconditional_distributions:
         activation: relu
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.05
+        lr_patience: 100
+        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -445,7 +467,10 @@ unconditional_distributions:
         activation: relu
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.01
+        lr_patience: 100
+        lr_reduction_factor: 0.1
 
 unconditional_benchmark_distributions:
   elementwise_flow:
@@ -458,6 +483,7 @@ unconditional_benchmark_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split:
         batch_size: 32
         learning_rate: 0.01
         lr_patience: 10
@@ -471,6 +497,7 @@ unconditional_benchmark_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split:
         batch_size: 32
         learning_rate: 0.01
         lr_patience: 10
@@ -484,6 +511,7 @@ unconditional_benchmark_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split:
         batch_size: 32
         learning_rate: 0.01
         lr_patience: 10
@@ -497,6 +525,7 @@ unconditional_benchmark_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split:
         batch_size: 32
         learning_rate: 0.01
         lr_patience: 10
@@ -504,69 +533,544 @@ unconditional_benchmark_distributions:
 
   masked_autoregressive_flow:
     power:
-      distribution_kwds:
-        <<: *distribution_kwds
-        order: 100
-      parameter_kwds:
-        hidden_units:
-        - 512
-        - 512
-        activation: relu
       fit_kwds:
-        <<: *fit_kwds
-        batch_size: 256
-        learning_rate: 0.001
-        lr_patience: 10
-        lr_reduction_factor: 0.8
-        early_stopping: 5
-    hepmass:
-      distribution_kwds:
-        <<: *distribution_kwds
-        order: 100
-      parameter_kwds:
-        hidden_units:
-        - 512
-        - 512
-        activation: relu
-      fit_kwds:
-        <<: *fit_kwds
-        batch_size: 256
-        learning_rate: 0.001
-        lr_patience: 10
-        lr_reduction_factor: 0.8
-        early_stopping: 5
-    miniboone:
-      distribution_kwds:
-        <<: *distribution_kwds
-        order: 100
-      parameter_kwds:
-        hidden_units:
-        - 512
-        - 512
-        activation: relu
-      fit_kwds:
-        <<: *fit_kwds
-        batch_size: 256
-        learning_rate: 0.001
-        lr_patience: 10
-        lr_reduction_factor: 0.8
-        early_stopping: 5
-    bsds300:
-      distribution_kwds:
-        <<: *distribution_kwds
-        order: 100
-      parameter_kwds:
-        hidden_units:
-        - 512
-        - 512
-        activation: relu
-      fit_kwds:
-        <<: *fit_kwds
-        batch_size: 256
+        batch_size: 128
+        early_stopping: true
+        epochs: 10000
         learning_rate: 0.01
-        lr_patience: 25
-        lr_reduction_factor: 0.5
-        early_stopping: 4
+        lr_patience: 10
+        monitor: val_loss
+        reduce_lr_on_plateau: true
+        verbose: 2
+      distribution: masked_autoregressive_bernstein_flow
+      distribution_kwds:
+        allow_flexible_bounds: false
+        base_distribution_kwds:
+          concentration0: 5
+          concentration1: 2
+          distribution_type: kumaraswamy
+        high: 0.999
+        low: 0.001
+        order: 100
+        scale:
+        - 0.094
+        - 0.103
+        - 0.068
+        - 0.071
+        - 0.259
+        - 0.283
+        shift:
+        - 0.971
+        - 5.456
+        - 0.273
+        - 0.319
+        - 0.834
+        - 1.742
+        smooth_bounds: true
+      parameter_kwds:
+        activation: elu
+        hidden_units:
+        - 256
+        - 256
+        - 256
+        kernel_initializer: he_normal
+    hepmass:
+      fit_kwds:
+        batch_size: 128
+        early_stopping: true
+        epochs: 10000
+        learning_rate: 0.001
+        lr_patience: 10
+        monitor: val_loss
+        reduce_lr_on_plateau: true
+        verbose: 2
+      distribution: masked_autoregressive_bernstein_flow
+      distribution_kwds:
+        allow_flexible_bounds: false
+        base_distribution_kwds:
+          concentration0: 5
+          concentration1: 2
+          distribution_type: kumaraswamy
+        clip_to_bernstein_domain: false
+        high: 0.999
+        low: 0.001
+        order: 100
+        scale:
+        - 0.1239
+        - 0.1383
+        - 0.2021
+        - 0.0648
+        - 0.2022
+        - 0.0709
+        - 0.1148
+        - 0.2022
+        - 0.0806
+        - 0.1278
+        - 0.202
+        - 0.0928
+        - 0.1388
+        - 0.2022
+        - 0.1109
+        - 0.1521
+        - 0.202
+        - 0.0782
+        - 0.0645
+        - 0.0441
+        - 0.1059
+        shift:
+        - 2.7185
+        - 3.0382
+        - 2.0813
+        - 9.6636
+        - 2.0774
+        - 6.2201
+        - 3.6592
+        - 2.0762
+        - 4.9618
+        - 3.2846
+        - 2.0777
+        - 3.7834
+        - 3.0268
+        - 2.0786
+        - 2.4003
+        - 2.7624
+        - 2.0787
+        - 3.6851
+        - 4.0974
+        - 7.1135
+        - 3.0255
+        smooth_bounds: true
+      parameter_kwds:
+        activation: elu
+        hidden_units:
+        - 256
+        - 256
+        - 256
+        kernel_initializer: he_normal
+    bsds300:
+      fit_kwds:
+        batch_size: 512
+        early_stopping: true
+        epochs: 10000
+        learning_rate: 0.01
+        lr_patience: 15
+        monitor: val_loss
+        reduce_lr_on_plateau: true
+        verbose: 2
+      distribution: masked_autoregressive_bernstein_flow
+      distribution_kwds:
+        allow_flexible_bounds: false
+        base_distribution_kwds:
+          concentration0: 5
+          concentration1: 2
+          distribution_type: kumaraswamy
+        clip_to_bernstein_domain: false
+        high: 0.999
+        low: 0.001
+        order: 100
+        scale:
+        - 0.41659998893737793
+        - 0.42329999804496765
+        - 0.43380001187324524
+        - 0.42239999771118164
+        - 0.4309999942779541
+        - 0.4415999948978424
+        - 0.4198000133037567
+        - 0.39969998598098755
+        - 0.4196999967098236
+        - 0.40849998593330383
+        - 0.46160000562667847
+        - 0.46709999442100525
+        - 0.43220001459121704
+        - 0.45559999346733093
+        - 0.4341999888420105
+        - 0.42320001125335693
+        - 0.41110000014305115
+        - 0.43639999628067017
+        - 0.4542999863624573
+        - 0.42320001125335693
+        - 0.46650001406669617
+        - 0.4505000114440918
+        - 0.4431000053882599
+        - 0.4269999861717224
+        - 0.4334999918937683
+        - 0.44209998846054077
+        - 0.4724000096321106
+        - 0.462799996137619
+        - 0.45980000495910645
+        - 0.4657999873161316
+        - 0.43220001459121704
+        - 0.43149998784065247
+        - 0.42800000309944153
+        - 0.435699999332428
+        - 0.4577000141143799
+        - 0.439300000667572
+        - 0.41620001196861267
+        - 0.4542999863624573
+        - 0.44850000739097595
+        - 0.40540000796318054
+        - 0.4350000023841858
+        - 0.44200000166893005
+        - 0.44179999828338623
+        - 0.4374000132083893
+        - 0.4577000141143799
+        - 0.46219998598098755
+        - 0.45239999890327454
+        - 0.4104999899864197
+        - 0.4171999990940094
+        - 0.4316999912261963
+        - 0.43140000104904175
+        - 0.4837999939918518
+        - 0.4465999901294708
+        - 0.43320000171661377
+        - 0.4203999936580658
+        - 0.4255000054836273
+        - 0.4072999954223633
+        - 0.41110000014305115
+        - 0.3986000120639801
+        - 0.43700000643730164
+        - 0.41190001368522644
+        - 0.4058000147342682
+        - 0.41339999437332153
+        shift:
+        - 1.0306999683380127
+        - 1.01010000705719
+        - 0.9848999977111816
+        - 0.9800999760627747
+        - 0.9926000237464905
+        - 0.9603000283241272
+        - 1.0347000360488892
+        - 1.0843000411987305
+        - 1.0469000339508057
+        - 1.003999948501587
+        - 0.9032999873161316
+        - 0.9136999845504761
+        - 0.9534000158309937
+        - 0.9480999708175659
+        - 0.9422000050544739
+        - 1.0094000101089478
+        - 0.972000002861023
+        - 0.8550000190734863
+        - 0.9434999823570251
+        - 1.0500999689102173
+        - 0.909500002861023
+        - 0.9544000029563904
+        - 0.9394999742507935
+        - 1.0041999816894531
+        - 0.917900025844574
+        - 0.8917999863624573
+        - 0.902400016784668
+        - 0.9350000023841858
+        - 0.9391999840736389
+        - 0.8554999828338623
+        - 1.0074000358581543
+        - 0.9652000069618225
+        - 0.9664000272750854
+        - 0.935699999332428
+        - 0.9135000109672546
+        - 1.0443999767303467
+        - 1.0032000541687012
+        - 0.9236999750137329
+        - 0.9197999835014343
+        - 0.9959999918937683
+        - 0.9128999710083008
+        - 0.9452000260353088
+        - 0.9740999937057495
+        - 1.0039000511169434
+        - 0.9194999933242798
+        - 0.8916000127792358
+        - 0.9072999954223633
+        - 1.0535999536514282
+        - 0.9842000007629395
+        - 0.9395999908447266
+        - 0.878600001335144
+        - 0.8270999789237976
+        - 0.9574999809265137
+        - 0.9839000105857849
+        - 0.9797000288963318
+        - 1.001099944114685
+        - 1.0077999830245972
+        - 1.0020999908447266
+        - 1.0638999938964844
+        - 0.9480999708175659
+        - 1.030500054359436
+        - 1.0365999937057495
+        - 1.0033999681472778
+        smooth_bounds: true
+      parameter_kwds:
+        activation: relu
+        hidden_units:
+        - 128
+        - 128
+        - 128
+  distribution_kwds:
+    allow_flexible_bounds: false
+    base_distribution_kwds:
+      concentration0: 5
+      concentration1: 2
+      distribution_type: kumaraswamy
+    clip_to_bernstein_domain: false
+    high: 0.999
+    low: 0.001
+    order: 100
+    scale:
+    - 0.41659998893737793
+    - 0.42329999804496765
+    - 0.43380001187324524
+    - 0.42239999771118164
+    - 0.4309999942779541
+    - 0.4415999948978424
+    - 0.4198000133037567
+    - 0.39969998598098755
+    - 0.4196999967098236
+    - 0.40849998593330383
+    - 0.46160000562667847
+    - 0.46709999442100525
+    - 0.43220001459121704
+    - 0.45559999346733093
+    - 0.4341999888420105
+    - 0.42320001125335693
+    - 0.41110000014305115
+    - 0.43639999628067017
+    - 0.4542999863624573
+    - 0.42320001125335693
+    - 0.46650001406669617
+    - 0.4505000114440918
+    - 0.4431000053882599
+    - 0.4269999861717224
+    - 0.4334999918937683
+    - 0.44209998846054077
+    - 0.4724000096321106
+    - 0.462799996137619
+    - 0.45980000495910645
+    - 0.4657999873161316
+    - 0.43220001459121704
+    - 0.43149998784065247
+    - 0.42800000309944153
+    - 0.435699999332428
+    - 0.4577000141143799
+    - 0.439300000667572
+    - 0.41620001196861267
+    - 0.4542999863624573
+    - 0.44850000739097595
+    - 0.40540000796318054
+    - 0.4350000023841858
+    - 0.44200000166893005
+    - 0.44179999828338623
+    - 0.4374000132083893
+    - 0.4577000141143799
+    - 0.46219998598098755
+    - 0.45239999890327454
+    - 0.4104999899864197
+    - 0.4171999990940094
+    - 0.4316999912261963
+    - 0.43140000104904175
+    - 0.4837999939918518
+    - 0.4465999901294708
+    - 0.43320000171661377
+    - 0.4203999936580658
+    - 0.4255000054836273
+    - 0.4072999954223633
+    - 0.41110000014305115
+    - 0.3986000120639801
+    - 0.43700000643730164
+    - 0.41190001368522644
+    - 0.4058000147342682
+    - 0.41339999437332153
+    shift:
+    - 1.0306999683380127
+    - 1.01010000705719
+    - 0.9848999977111816
+    - 0.9800999760627747
+    - 0.9926000237464905
+    - 0.9603000283241272
+    - 1.0347000360488892
+    - 1.0843000411987305
+    - 1.0469000339508057
+    - 1.003999948501587
+    - 0.9032999873161316
+    - 0.9136999845504761
+    - 0.9534000158309937
+    - 0.9480999708175659
+    - 0.9422000050544739
+    - 1.0094000101089478
+    - 0.972000002861023
+    - 0.8550000190734863
+    - 0.9434999823570251
+    - 1.0500999689102173
+    - 0.909500002861023
+    - 0.9544000029563904
+    - 0.9394999742507935
+    - 1.0041999816894531
+    - 0.917900025844574
+    - 0.8917999863624573
+    - 0.902400016784668
+    - 0.9350000023841858
+    - 0.9391999840736389
+    - 0.8554999828338623
+    - 1.0074000358581543
+    - 0.9652000069618225
+    - 0.9664000272750854
+    - 0.935699999332428
+    - 0.9135000109672546
+    - 1.0443999767303467
+    - 1.0032000541687012
+    - 0.9236999750137329
+    - 0.9197999835014343
+    - 0.9959999918937683
+    - 0.9128999710083008
+    - 0.9452000260353088
+    - 0.9740999937057495
+    - 1.0039000511169434
+    - 0.9194999933242798
+    - 0.8916000127792358
+    - 0.9072999954223633
+    - 1.0535999536514282
+    - 0.9842000007629395
+    - 0.9395999908447266
+    - 0.878600001335144
+    - 0.8270999789237976
+    - 0.9574999809265137
+    - 0.9839000105857849
+    - 0.9797000288963318
+    - 1.001099944114685
+    - 1.0077999830245972
+    - 1.0020999908447266
+    - 1.0638999938964844
+    - 0.9480999708175659
+    - 1.030500054359436
+    - 1.0365999937057495
+    - 1.0033999681472778
+    smooth_bounds: true
+  parameter_kwds:
+    activation: relu
+    hidden_units:
+    - 128
+    - 128
+    - 128
+    fit_kwds:
+      batch_size: 512
+      early_stopping: true
+      epochs: 10000
+      learning_rate: 0.01
+      lr_patience: 15
+      monitor: val_loss
+      reduce_lr_on_plateau: true
+      verbose: 2
+
+    miniboone:
+      fit_kwds:
+        batch_size: 32
+        early_stopping: true
+        epochs: 10000
+        learning_rate: 0.01
+        lr_patience: 10
+        monitor: val_loss
+        reduce_lr_on_plateau: true
+        verbose: 2
+      distribution: masked_autoregressive_bernstein_flow
+      distribution_kwds:
+        allow_flexible_bounds: true
+        clip_to_bernstein_domain: false
+        high: 3
+        low: -3
+        order: 100
+        scale:
+        - 0.077
+        - 0.104
+        - 0.067
+        - 0.072
+        - 0.079
+        - 0.108
+        - 0.109
+        - 0.084
+        - 0.089
+        - 0.059
+        - 0.217
+        - 0.245
+        - 0.088
+        - 0.14
+        - 0.146
+        - 0.031
+        - 0.083
+        - 0.076
+        - 0.041
+        - 0.078
+        - 0.064
+        - 0.054
+        - 0.035
+        - 0.083
+        - 0.067
+        - 0.069
+        - 0.084
+        - 0.082
+        - 0.091
+        - 0.195
+        - 0.113
+        - 0.096
+        - 0.105
+        - 0.061
+        - 0.068
+        - 0.124
+        - 0.056
+        - 0.052
+        - 0.05
+        - 0.039
+        - 0.087
+        - 0.037
+        - 0.089
+        shift:
+        - 2.458
+        - 1.196
+        - 0.486
+        - 3.986
+        - 1.493
+        - 3.299
+        - 6.532
+        - 4.468
+        - 3.209
+        - 6.292
+        - 1.354
+        - 3.1
+        - 1.936
+        - 1.467
+        - 1.431
+        - 0.605
+        - 4.038
+        - 6.412
+        - 11.065
+        - 6.695
+        - 2.277
+        - 17.097
+        - 23.507
+        - 2.892
+        - 3.575
+        - 5.509
+        - 2.479
+        - 7.019
+        - 1.43
+        - 3.615
+        - 3.516
+        - 2.471
+        - 5.522
+        - 3.692
+        - 3.254
+        - 3.201
+        - 11.395
+        - 1.905
+        - 1.687
+        - 21.02
+        - 1.853
+        - 7.052
+        - 5.306
+        smooth_bounds: true
+      parameter_kwds:
+        activation: elu
+        hidden_units:
+        - 64
+        - 64
+        - 64
+        kernel_initializer: he_normal
 
 unconditional_benchmark_hybrid_pre_trained_distributions:
   masked_autoregressive_flow_first_dim_masked:
@@ -727,6 +1231,7 @@ unconditional_benchmark_hybrid_pre_trained_distributions:
         lr_patience: 5
         lr_reduction_factor: 0.8
 
+
 conditional_distributions:
   elementwise_flow:
     moons:
@@ -744,7 +1249,10 @@ conditional_distributions:
         input_shape: 1
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.01
+        lr_patience: 100
+        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -760,7 +1268,10 @@ conditional_distributions:
         input_shape: 1
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.05
+        lr_patience: 100
+        lr_reduction_factor: 0.1
 
   multivariate_flow:
     moons:
@@ -778,7 +1289,10 @@ conditional_distributions:
         input_shape: 1
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.01
+        lr_patience: 100
+        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -794,7 +1308,10 @@ conditional_distributions:
         input_shape: 1
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.005
+        lr_patience: 100
+        lr_reduction_factor: 0.1
 
   multivariate_normal:
     moons:
@@ -810,7 +1327,10 @@ conditional_distributions:
         input_shape: 1
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.05
+        lr_patience: 100
+        lr_reduction_factor: 0.1
     circles:
       distribution_kwds: {}
       parameter_kwds:
@@ -824,7 +1344,10 @@ conditional_distributions:
         input_shape: 1
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.05
+        lr_patience: 100
+        lr_reduction_factor: 0.1
 
   masked_autoregressive_flow:
     moons:
@@ -842,7 +1365,10 @@ conditional_distributions:
         conditional_event_shape: 1
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.01
+        lr_patience: 100
+        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -858,7 +1384,10 @@ conditional_distributions:
         conditional_event_shape: 1
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.05
+        lr_patience: 100
+        lr_reduction_factor: 0.1
 
   coupling_flow:
     moons:
@@ -878,7 +1407,10 @@ conditional_distributions:
         conditional_event_shape: 1
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.01
+        lr_patience: 100
+        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -895,7 +1427,10 @@ conditional_distributions:
         conditional_event_shape: 1
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.01
+        lr_patience: 100
+        lr_reduction_factor: 0.1
 
 unconditional_hybrid_distributions:
   masked_autoregressive_flow_first_dim_masked:
@@ -929,7 +1464,10 @@ unconditional_hybrid_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.01
+        lr_patience: 100
+        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -960,7 +1498,10 @@ unconditional_hybrid_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 512
+        learning_rate: 0.01
+        lr_patience: 500
+        lr_reduction_factor: 0.1
 
   coupling_flow:
     moons:
@@ -989,7 +1530,11 @@ unconditional_hybrid_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 128
+        learning_rate: 0.01
+        early_stopping: 10
+        lr_patience: 10
+        lr_reduction_factor: 0.9
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1015,7 +1560,10 @@ unconditional_hybrid_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.005
+        lr_patience: 100
+        lr_reduction_factor: 0.1
 
 unconditional_hybrid_pre_trained_distributions:
   # masked_autoregressive_flow:
@@ -1057,8 +1605,7 @@ unconditional_hybrid_pre_trained_distributions:
         hidden_units:
         - 8
         - 8
-        - 8
-        activation: relu
+        activation: sigmoid
         batch_norm: false
         dropout: 0
         # kernel_initializer: ones
@@ -1073,7 +1620,11 @@ unconditional_hybrid_pre_trained_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.01
+        lr_patience: 25
+        early_stopping: 4
+        lr_reduction_factor: 0.5
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1085,9 +1636,9 @@ unconditional_hybrid_pre_trained_distributions:
       base_checkpoint_path: unconditional_elementwise_flow_circles/mcp/weights
       parameter_kwds:
         hidden_units:
-        - 8
-        - 8
-        - 8
+        - 16
+        - 16
+        - 16
         activation: relu
         batch_norm: false
         dropout: 0
@@ -1100,7 +1651,10 @@ unconditional_hybrid_pre_trained_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split: 0.1
+        batch_size: 1024
+        learning_rate: 0.005
+        lr_patience: 100
+        lr_reduction_factor: 0.1
 
 malnutrition_distributions:
   elementwise_flow:
@@ -1175,8 +1729,12 @@ malnutrition_distributions:
       conditional_event_shape: 1
     fit_kwds:
       <<: *fit_kwds
-      validation_split: 0.1
       batch_size: 512
       learning_rate: 0.001
       lr_patience: 50
       lr_reduction_factor: 0.1
+
+malnutrition_kwds:
+  data_path: datasets/malnutrition/india.raw
+  targets: [stunting, wasting, underweight]
+  covariates: [mage]
