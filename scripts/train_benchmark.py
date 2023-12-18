@@ -1,7 +1,6 @@
 """Train benchmark."""
 # IMPORT PACKAGES #############################################################
 import argparse
-import logging
 import os
 
 import tensorflow as tf
@@ -19,31 +18,17 @@ def get_lr_schedule(**kwds):
     return lr_decayed_fn
 
 
-def main(
-    experiment_name,
-    results_path,
-    log_file,
-    log_level,
-    dataset,
-    stage_name,
-    distribution,
-    params,
-    test_mode,
-):
-    """Experiment exec.
-
-    params should be as defined in params.yaml
-    """
-
-    logging.info(
-        f"\nrunning with\n\n{experiment_name=}\n{results_path=}\n{log_file=}\n{log_level=}\n{dataset=}\n{stage_name=}\n{distribution=}\n{params=}\n{test_mode}\n"
-    )
-
+def main(args):
+    """Experiment exec."""
     # --- prepare for execution ---
+
+    # load params
+    params = prepare_pipeline(args)
+
     # build variables for execution
-    dataset = dataset
-    distribution = distribution
-    stage = stage_name.split("@")[0]
+    dataset = args.dataset
+    distribution = args.distribution
+    stage = args.stage_name.split("@")[0]
     distribution_params = params[stage + "_distributions"][distribution][dataset]
     distribution_kwds = distribution_params["distribution_kwds"]
     fit_kwds = distribution_params["fit_kwds"]
@@ -55,7 +40,9 @@ def main(
     dataset_kwds["scale"] = shift_and_scale["scale"]
     dataset_kwds["shift"] = shift_and_scale["shift"]
 
-    distribution_kwds.update(**shift_and_scale)
+    print(dataset_kwds)
+
+    distribution_kwds.update(dataset_kwds)
 
     model_kwds = dict(
         distribution=distribution,
@@ -84,11 +71,11 @@ def main(
     else:
         get_model = DensityRegressionModel
 
-    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
+    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", args.experiment_name)
     run_name = "_".join((stage, distribution))
 
     # test mode
-    if test_mode:
+    if args.test_mode:
         experiment_name += "_test"
         fit_kwds.update(epochs=1)
 
@@ -104,11 +91,11 @@ def main(
         extra_params_to_log = cosine_decay_kwds
 
     # execute experiment
-    history, model, preprocessed = pipeline(
+    pipeline(
         experiment_name=experiment_name,
         run_name=run_name,
-        results_path=results_path,
-        log_file=log_file,
+        results_path=args.results_path,
+        log_file=args.log_file,
         seed=params["seed"],
         get_dataset_fn=get_dataset,
         dataset_kwds={"dataset_name": dataset},
@@ -127,8 +114,6 @@ def main(
         after_fit_hook=None,
         **extra_params_to_log,
     )
-
-    return history, model, preprocessed
 
 
 if __name__ == "__main__":
@@ -165,17 +150,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # load params
-    params = prepare_pipeline(args)
-
-    main(
-        args.experiment_name,
-        args.results_path,
-        args.log_file,
-        args.log_level,
-        args.dataset,
-        args.stage_name,
-        args.distribution,
-        params,
-        args.test_mode,
-    )
+    main(args)
