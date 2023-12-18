@@ -3,6 +3,7 @@
 import logging
 import os
 import sys
+from contextlib import nullcontext
 from typing import Any, Protocol
 
 import dvc.api
@@ -114,22 +115,27 @@ def pipeline(
     :rtype: Tuple
     """
     call_args = dict(filter(lambda x: not callable(x[1]), vars().items()))
-    # Drop Callback functions from MLFlow logging
-    call_args["fit_kwds"].pop("callbacks", None)
-
     set_seed(seed)
     data, dims = get_dataset_fn(**dataset_kwds)
     model = get_model_fn(dims=dims, **model_kwds)
 
     # Evaluate Model
     if experiment_name:
-        mlflow.set_experiment(experiment_name)
-        __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
-    with start_run_with_exception_logging(run_name=run_name):
+        try:
+            mlflow.set_experiment(experiment_name)
+            context = start_run_with_exception_logging(run_name=run_name)
+            log_mlflow = True
+            __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
+        except Exception:
+            __LOGGER__.warn("Failed logging to MLFlow Experiment: %s", experiment_name)
+            log_mlflow = False
+            context = nullcontext()
+    with context:
         # Auto log all MLflow entities
-        mlflow.autolog()
-        mlflow.log_dict(call_args, "params.yaml")
-        log_cfg(call_args)
+        if log_mlflow:
+            mlflow.autolog()
+            mlflow.log_dict(call_args, "params.yaml")
+            log_cfg(call_args)
 
         if plot_data:
             fig = plot_data(*data)
@@ -159,15 +165,20 @@ def pipeline(
         __LOGGER__.info("best validation loss: %s", min_val_loss)
         __LOGGER__.info("minimum reached after %s epochs", min_idx)
 
-        mlflow.log_metric("best_epoch", min_idx)
-        mlflow.log_metric("final_epoch", epochs)
-        mlflow.log_metric("min_loss", min_loss)
-        mlflow.log_metric("min_val_loss", min_val_loss)
+        if log_mlflow:
+            mlflow.log_metric("best_epoch", min_idx)
+            mlflow.log_metric("final_epoch", epochs)
+            mlflow.log_metric("min_loss", min_loss)
+            mlflow.log_metric("min_val_loss", min_val_loss)
 
         with open(os.path.join(results_path, "metrics.yaml"), "w+") as results_file:
             yaml.dump({"loss": min_loss, "val_loss": min_val_loss}, results_file)
 
-        mlflow.log_artifacts(results_path)
+        if log_file and log_mlflow:
+            mlflow.log_artifact(log_file)
+
+        if log_mlflow:
+            mlflow.log_artifacts(results_path)
 
         return hist, model, preprocessed
 
@@ -193,9 +204,8 @@ def prepare_pipeline(args):
     # configure logging
     handlers = [logging.StreamHandler(sys.stdout)]
     if args.log_file:
-        log_file = os.path.join(args.results_path, args.log_file)
         handlers += [
-            logging.FileHandler(log_file),
+            logging.FileHandler(args.log_file),
         ]
     logging.basicConfig(
         level=args.log_level.upper(),
