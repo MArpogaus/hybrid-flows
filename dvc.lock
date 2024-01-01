@@ -119,8 +119,8 @@ stages:
       size: 5431
     - path: src/mctm
       hash: md5
-      md5: 1c4d557c6e5dc3341f257a44a062eedb.dir
-      size: 80242
+      md5: dcfe538d7edb930e60022986f36286f5.dir
+      size: 80187
       nfiles: 14
     params:
       params.yaml:
@@ -143,25 +143,25 @@ stages:
           fit_kwds:
             epochs: 10000
             validation_split:
-            batch_size: 373
-            lr_patience: 7
+            batch_size: 87
+            lr_patience: 5
             reduce_lr_on_plateau: true
             early_stopping: true
             verbose: true
             monitor: val_loss
-            learning_rate: 0.004919703071742458
+            learning_rate: 0.006797537543994487
             lr_reduction_factor: 0.1
     outs:
     - path: results/unconditional_benchmark_elementwise_flow_miniboone/mcp
       hash: md5
-      md5: 7c751722e856667aacc28665a84c360f.dir
+      md5: e35c9fba435ba06660e0f555f1fd0c8a.dir
       size: 53273
       nfiles: 3
     - path: results/unconditional_benchmark_elementwise_flow_miniboone/metrics.yaml
       hash: md5
-      md5: e9e0674449005f42d3a9e1c1ac70de6b
+      md5: 37a6d282b435782aa00176a2331b6774
       size: 52
     - path: results/unconditional_benchmark_elementwise_flow_miniboone/train.log
       hash: md5
-      md5: ca49790bb830346899f7f2de043c96f8
-      size: 3629
+      md5: f08d60c51e7217ab9ab8b6850a9d5e6d
+      size: 3628
