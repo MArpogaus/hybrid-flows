@@ -374,9 +374,9 @@ unconditional_benchmark_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split:
-        batch_size: 373
-        learning_rate: 0.004919703071742458
-        lr_patience: 7
+        batch_size: 87
+        learning_rate: 0.006797537543994487
+        lr_patience: 5
         lr_reduction_factor: 0.1
         epochs: 10000
         reduce_lr_on_plateau: true

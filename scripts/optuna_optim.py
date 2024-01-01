@@ -8,7 +8,12 @@ import subprocess
 import optuna
 import yaml
 from optuna.samplers import CmaEsSampler
+from train_benchmark import main
+from types import SimpleNamespace
+from collections import defaultdict
 
+def nested_dictionary():
+    return defaultdict(nested_dictionary)
 
 def run_cmd(command: str):
     process = subprocess.Popen(command, shell=True)
@@ -27,47 +32,48 @@ read_results = f"cat results/{model}_{distribution}_{dataset}/metrics.yaml"
 
 
 def run_exp_with_overrides(overrides: dict):
-    overrides = [(o[0]) + "=" + str(o[1]) for o in overrides.items()]
-    overrides = [f'"{o}"' for o in overrides]
-    overrides = " -S ".join(overrides)
+    log_level = "info"
+    log_file = f"results/{model}_{distribution}_{dataset}/train.log"
+    experiment_name = f"{model}_{dataset}"
+    stage_name = f"{model}@{distribution}-{dataset}"
+    results_path = f"results/{model}_{distribution}_{dataset}"
 
-    cmd = f"dvc exp run {model}@{distribution}-{dataset} -S {overrides}"
-    print(f"executing {cmd}")
-    run_cmd(cmd)
-    with open(f"results/{model}_{distribution}_{dataset}/metrics.yaml", "r") as file:
-        metrics = yaml.safe_load(file)
-        return float(metrics["val_loss"])
+    args = SimpleNamespace(log_file=log_file, log_level=log_level, test_mode=True, experiment_name=experiment_name, stage_name=stage_name, distribution=distribution, dataset=dataset, results_path=results_path)
+
+    history, _, _ = main(args, overrides)
+
+    val_loss = history.history["val_loss"]
+
+    return val_loss
+
+    #cmd = f"dvc exp run {model}@{distribution}-{dataset} -S {overrides}"
+    #print(f"executing {cmd}")
+    #run_cmd(cmd)
+    #with open(f"results/{model}_{distribution}_{dataset}/metrics.yaml", "r") as file:
+    #    metrics = yaml.safe_load(file)
+    #    return float(metrics["val_loss"])
 
 
 study = optuna.create_study(sampler=CmaEsSampler(), directions=["minimize"])
 
 
 def objective(trial):
-    key_batch_size = (
-        f"{model}_distributions.{distribution}.{dataset}.fit_kwds.batch_size"
-    )
-    key_learning_rate = (
-        f"{model}_distributions.{distribution}.{dataset}.fit_kwds.learning_rate"
-    )
-    key_patience = (
-        f"{model}_distributions.{distribution}.{dataset}.fit_kwds.lr_patience"
-    )
-
-    batch_size = trial.suggest_int(key_batch_size, 32, 512)
-    learning_rate = trial.suggest_float(key_learning_rate, 0.001, 0.01)
-    patience = trial.suggest_int(key_patience, 5, 10)
+    #SEED
+    
+    batch_size = trial.suggest_int("batch_size", 32, 512)
+    #learning_rate = trial.suggest_float(key_learning_rate, 0.001, 0.01)
+    #patience = trial.suggest_int(key_patience, 5, 10)
     # n_hidden_layers = 3
 
-    overrides = {
-        key_batch_size: batch_size,
-        key_learning_rate: learning_rate,
-        key_patience: patience,
-    }
+    overrides = nested_dictionary()
+    overrides[f"{model}_distributions"][distribution][dataset]["fit_kwds"]["batch_size"] = batch_size
     val_loss = run_exp_with_overrides(overrides)
     return val_loss
 
-
-study.optimize(objective, n_trials=100)
+import time
+start_time = time.time()
+study.optimize(objective, n_trials=3, n_jobs=1)
+end_time = time.time()
 
 optimum = study.best_params
 
@@ -88,3 +94,4 @@ with open("study.pickle", "wb") as handle:
 
 print(study.best_trial)
 print(study.best_value)
+print(end_time - start_time)

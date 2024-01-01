@@ -17,14 +17,32 @@ def get_lr_schedule(**kwds):
     lr_decayed_fn = tf.keras.optimizers.schedules.CosineDecay(**kwds)
     return lr_decayed_fn
 
+def update_nested_dict(original, update):
+    for key, value in update.items():
+        if isinstance(value, dict) and key in original and isinstance(original[key], dict):
+            update_nested_dict(original[key], value)
+        else:
+            original[key] = value
 
-def main(args):
-    """Experiment exec."""
+def main(args, overrides=dict()):
+    """Experiment exec.
+    
+    args should be:
+     - args.results_path
+     - args.log_file
+     - args.log_level
+     - args.stage_name
+
+    as documented in prepare_pipeline
+    """
     # --- prepare for execution ---
 
     # load params
     params = prepare_pipeline(args)
 
+    # replace overrides
+    update_nested_dict(params, overrides)
+    
     # build variables for execution
     dataset = args.dataset
     distribution = args.distribution
@@ -42,7 +60,7 @@ def main(args):
 
     print(dataset_kwds)
 
-    distribution_kwds.update(dataset_kwds)
+    distribution_kwds.update(**shift_and_scale)
 
     model_kwds = dict(
         distribution=distribution,
@@ -91,7 +109,7 @@ def main(args):
         extra_params_to_log = cosine_decay_kwds
 
     # execute experiment
-    pipeline(
+    history, model, preprocessed = pipeline(
         experiment_name=experiment_name,
         run_name=run_name,
         results_path=args.results_path,
@@ -114,6 +132,9 @@ def main(args):
         after_fit_hook=None,
         **extra_params_to_log,
     )
+
+    print(params)
+    return history, model, preprocessed
 
 
 if __name__ == "__main__":
