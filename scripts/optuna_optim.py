@@ -58,7 +58,7 @@ def build_args(
     args = SimpleNamespace(
         log_file=log_file,
         log_level=log_level,
-        test_mode=False,
+        test_mode=True,
         experiment_name=experiment_name,
         stage_name=stage_name,
         distribution=distribution,
@@ -160,15 +160,7 @@ with mlflow.start_run(nested=True) as run:
             "\n writing result to _data.json_."
         )
     )
-    
-mlflow.set_experiment(
-    f"optuna-optim-{args_inverse(args)[2]}_{args_inverse(args)[1]}_{args_inverse(args)[0]}"
-)
-with mlflow.start_run():
     mlflow.log_dict(optimum, "optimal_parameters.json")
-    mlflow.log_metric("min_val_loss", study.best_value)
-    mlflow.log_metric("best_trial", study.best_trial.number)
-    mlflow.log_metric("optim_duration", end_time - start_time)
 
     with open("study.pickle", "wb") as handle:
         pickle.dump(study, handle, protocol=pickle.HIGHEST_PROTOCOL)

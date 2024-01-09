@@ -1,6 +1,7 @@
 """Train benchmark."""
 # IMPORT PACKAGES #############################################################
 import argparse
+import logging
 import os
 
 import tensorflow as tf
@@ -17,36 +18,32 @@ def get_lr_schedule(**kwds):
     lr_decayed_fn = tf.keras.optimizers.schedules.CosineDecay(**kwds)
     return lr_decayed_fn
 
-def update_nested_dict(original, update):
-    for key, value in update.items():
-        if isinstance(value, dict) and key in original and isinstance(original[key], dict):
-            update_nested_dict(original[key], value)
-        else:
-            original[key] = value
 
-def main(args, overrides=dict()):
+def main(
+    experiment_name,
+    results_path,
+    log_file,
+    log_level,
+    dataset,
+    stage_name,
+    distribution,
+    params,
+    test_mode,
+):
     """Experiment exec.
-    
-    args should be:
-     - args.results_path
-     - args.log_file
-     - args.log_level
-     - args.stage_name
 
-    as documented in prepare_pipeline
+    params should be as defined in params.yaml
     """
+
+    logging.info(
+        f"\nrunning with\n\n{experiment_name=}\n{results_path=}\n{log_file=}\n{log_level=}\n{dataset=}\n{stage_name=}\n{distribution=}\n{params=}\n{test_mode}\n"
+    )
+
     # --- prepare for execution ---
-
-    # load params
-    params = prepare_pipeline(args)
-
-    # replace overrides
-    update_nested_dict(params, overrides)
-    
     # build variables for execution
-    dataset = args.dataset
-    distribution = args.distribution
-    stage = args.stage_name.split("@")[0]
+    dataset = dataset
+    distribution = distribution
+    stage = stage_name.split("@")[0]
     distribution_params = params[stage + "_distributions"][distribution][dataset]
     distribution_kwds = distribution_params["distribution_kwds"]
     fit_kwds = distribution_params["fit_kwds"]
@@ -57,8 +54,6 @@ def main(args, overrides=dict()):
     shift_and_scale = compute_shift_and_scale([dataset])[dataset]
     dataset_kwds["scale"] = shift_and_scale["scale"]
     dataset_kwds["shift"] = shift_and_scale["shift"]
-
-    print(dataset_kwds)
 
     distribution_kwds.update(**shift_and_scale)
 
@@ -89,11 +84,11 @@ def main(args, overrides=dict()):
     else:
         get_model = DensityRegressionModel
 
-    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", args.experiment_name)
+    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
     run_name = "_".join((stage, distribution))
 
     # test mode
-    if args.test_mode:
+    if test_mode:
         experiment_name += "_test"
         fit_kwds.update(epochs=1)
 
@@ -112,8 +107,8 @@ def main(args, overrides=dict()):
     history, model, preprocessed = pipeline(
         experiment_name=experiment_name,
         run_name=run_name,
-        results_path=args.results_path,
-        log_file=args.log_file,
+        results_path=results_path,
+        log_file=log_file,
         seed=params["seed"],
         get_dataset_fn=get_dataset,
         dataset_kwds={"dataset_name": dataset},
@@ -133,7 +128,6 @@ def main(args, overrides=dict()):
         **extra_params_to_log,
     )
 
-    print(params)
     return history, model, preprocessed
 
 
@@ -171,4 +165,17 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    main(args)
+    # load params
+    params = prepare_pipeline(args)
+
+    main(
+        args.experiment_name,
+        args.results_path,
+        args.log_file,
+        args.log_level,
+        args.dataset,
+        args.stage_name,
+        args.distribution,
+        params,
+        args.test_mode,
+    )
