@@ -27,40 +27,28 @@ def main(args):
 
     # build variables for execution
     dataset = args.dataset
+    results_path = args.results_path
     distribution = args.distribution
+
     stage = args.stage_name.split("@")[0]
-    distribution_params = params[stage + "_distributions"][distribution][dataset]
-    distribution_kwds = distribution_params["distribution_kwds"]
-    fit_kwds = distribution_params["fit_kwds"]
-    parameter_kwds = distribution_params["parameter_kwds"]
     dataset_kwds = params["benchmark_datasets"][dataset]
+    model_kwds = params[stage + "_distributions"][distribution][dataset]
+    fit_kwds = model_kwds.pop("fit_kwds")
 
-    distribution_kwds.update(dataset_kwds)
-
-    model_kwds = dict(
+    model_kwds.update(
         distribution=distribution,
-        distribution_kwds=distribution_kwds,
-        parameter_kwds=parameter_kwds,
     )
+    model_kwds["distribution_kwds"].update(dataset_kwds)
 
-    if "base_distribution" in distribution_params.keys():
+    if "base_distribution" in model_kwds.keys():
         get_model = HybridDenistyRegressionModel
-        model_kwds.update(
-            freeze_base_model=distribution_params["freeze_base_model"],
-            base_checkpoint_path=(
-                f'results/{distribution_params["base_checkpoint_path"]}_{dataset}/mcp/weights'  # noqa: E501
-                if distribution_params["base_checkpoint_path"]
-                else False
-            ),
-            base_distribution=distribution_params["base_distribution"],
-            base_distribution_kwds=distribution_params["base_distribution_kwds"],
-            base_parameter_kwds=distribution_params["base_parameter_kwds"],
-        )
-        if not distribution_params["base_checkpoint_path"]:
+        if not model_kwds["base_checkpoint_path"]:
             fit_kwds.update(
                 loss=lambda y, dist: -dist.log_prob(y)
                 - tfd.Independent(dist.distribution).log_prob(y)
             )
+        else:
+            model_kwds.update(base_checkpoint_path_prefix=results_path.split("/", 1)[0])
     else:
         get_model = DensityRegressionModel
 
@@ -87,7 +75,7 @@ def main(args):
     pipeline(
         experiment_name=experiment_name,
         run_name=run_name,
-        results_path=args.results_path,
+        results_path=results_path,
         log_file=args.log_file,
         seed=params["seed"],
         get_dataset_fn=get_dataset,

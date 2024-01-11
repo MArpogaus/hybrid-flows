@@ -10,6 +10,7 @@ It includes classes for DensityRegressionModel and HybridDensityRegressionModel,
 which are built on distribution from the 'distributions' module.
 
 """
+import os
 
 import tensorflow as tf
 
@@ -75,6 +76,7 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
         base_parameter_kwds,
         base_checkpoint_path,
         freeze_base_model,
+        base_checkpoint_path_prefix="./",
     ):
         """Initialize a HybridDensityRegressionModel.
 
@@ -108,7 +110,9 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
             parameter_kwds=base_parameter_kwds,
         )
         if base_checkpoint_path:
-            self.base_model.load_weights(base_checkpoint_path)
+            self.base_model.load_weights(
+                os.path.join(base_checkpoint_path_prefix, base_checkpoint_path)
+            )
         if freeze_base_model:
             self.base_model.trainable = False
 
