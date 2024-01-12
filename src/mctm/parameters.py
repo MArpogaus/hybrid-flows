@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-08-24 16:15:23 (Marcel Arpogaus)
-# changed : 2023-10-10 14:26:17 (Marcel Arpogaus)
+# changed : 2024-01-12 17:14:12 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -71,17 +71,17 @@ def __get_simple_fully_connected_network__(
 
     for i, h in enumerate(hidden_units):
         x = K.layers.Dense(
-            h, activation=None, name=f"hidden{i}_layer", dtype=dtype, **kwds
+            h, activation=None, name=f"hidden_layer_{i}", dtype=dtype, **kwds
         )(x)
         if conditional:
             c_out = K.layers.Dense(
                 h,
                 activation=None,
-                name=f"conditional_hidden{i}_layer",
+                name=f"conditional_hidden_layer_{i}",
                 dtype=dtype,
                 **kwds,
             )(c)
-            x = K.layers.Add(name=f"add_c_out{i}", dtype=dtype)([x, c_out])
+            x = K.layers.Add(name=f"add_c_out_{i}", dtype=dtype)([x, c_out])
         x = K.layers.Activation(activation, dtype=dtype)(x)
 
     pv = K.layers.Dense(
