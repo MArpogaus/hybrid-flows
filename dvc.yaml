@@ -101,6 +101,8 @@ stages:
     - results/unconditional_hybrid_${item.distribution}_${item.dataset}/z1.pdf
     - results/unconditional_hybrid_${item.distribution}_${item.dataset}/z2.pdf
     - results/unconditional_hybrid_${item.distribution}_${item.dataset}/samples.pdf
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/copula_contour.pdf
+    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/copula_surface.pdf
 
   unconditional_hybrid_pre_trained:
     matrix:
@@ -128,6 +130,8 @@ stages:
     - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/z1.pdf
     - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/z2.pdf
     - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/samples.pdf
+    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/copula_contour.pdf
+    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/copula_surface.pdf
 
   unconditional_benchmark_hybrid_pre_trained:
     matrix:

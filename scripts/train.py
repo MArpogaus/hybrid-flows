@@ -16,6 +16,7 @@ from mctm.utils.pipeline import pipeline, prepare_pipeline
 from mctm.utils.visualisation import (
     get_figsize,
     plot_2d_data,
+    plot_copula_function,
     plot_flow,
     plot_samples,
     setup_latex,
@@ -35,6 +36,15 @@ def get_after_fit_hook(results_path, is_hybrid, **kwds):
             fig1.savefig(os.path.join(results_path, "data.pdf"))
             fig2.savefig(os.path.join(results_path, "z1.pdf"))
             fig3.savefig(os.path.join(results_path, "z2.pdf"))
+
+            # Plot Copula
+            # Contour Plot
+            c_fig = plot_copula_function(model(x), y, "contour", -0.1, 1.1, 1000)
+            c_fig.savefig(os.path.join(results_path, "copula_contour.pdf"))
+
+            # Surface Plot
+            c_fig = plot_copula_function(model(x), y, "surface", -0.1, 1.1, 1000)
+            c_fig.savefig(os.path.join(results_path, "copula_surface.pdf"))
 
     return plot_after_fit
 

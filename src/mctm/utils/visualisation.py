@@ -230,10 +230,70 @@ def plot_flow(dist, x, y, seed=1, **kwds):
     # plot joint
     fig1 = __joint_kde_plot__(data=df, x=columns[0], y=columns[1], **kwds)
 
-    # plot copula
+    # plot independent
     fig2 = __joint_kde_plot__(data=df, x=columns[2], y=columns[3], **kwds)
 
     # plot base
     fig3 = __joint_kde_plot__(data=df, x=columns[4], y=columns[5], **kwds)
 
     return fig1, fig2, fig3
+
+
+def plot_copula_function(dist, y, kind, x_min, x_max, n, **kwds):
+    dist_z1 = dist.distribution
+
+    x = np.linspace(x_min, x_max, n)
+    xx, yy = np.meshgrid(x, x)
+    grid = np.stack([xx.flatten(), yy.flatten()], -1)
+
+    p_y = dist.prob(grid).numpy()
+    p_z1 = dist_z1.prob(grid).numpy()
+
+    # c(y) = p_y(y) / p_z1(y)
+    c = p_y / p_z1
+    c = np.where(p_z1 < 1e-4, 0, c)  # for numerical stability
+
+    if kind == "surface":
+        fig = plt.figure(figsize=plt.figaspect(0.3))
+        ax = fig.add_subplot(131, projection="3d")
+        ax.plot_surface(
+            xx,
+            yy,
+            p_y.reshape(-1, n),
+            cmap="plasma",
+            linewidth=0,
+            antialiased=False,
+            alpha=0.5,
+            **kwds,
+        )
+        ax = fig.add_subplot(132, projection="3d")
+        ax.plot_surface(
+            xx,
+            yy,
+            p_z1.reshape(-1, n),
+            cmap="plasma",
+            linewidth=0,
+            antialiased=False,
+            alpha=0.5,
+            **kwds,
+        )
+        ax = fig.add_subplot(133, projection="3d")
+        ax.plot_surface(
+            xx,
+            yy,
+            c.reshape(-1, n),
+            cmap="plasma",
+            linewidth=0,
+            antialiased=False,
+            alpha=0.5,
+            **kwds,
+        )
+        return fig
+    elif kind == "contour":
+        fig, axs = plt.subplots(1, 3, figsize=plt.figaspect(0.3))
+        axs[0].contourf(xx, yy, p_y.reshape(n, n), **kwds)
+        axs[1].contourf(xx, yy, p_z1.reshape(n, n), **kwds)
+        axs[2].contourf(xx, yy, c.reshape(n, n), **kwds)
+        return fig
+    else:
+        raise ValueError(f"{kind=} undefined")
