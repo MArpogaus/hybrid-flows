@@ -306,11 +306,10 @@ common:
     monitor: val_loss
   distribution_kwds: &distribution_kwds
     bijector_name: bernstein_poly
-    order: 50
-    low: -3
-    high: 3
-    smooth_bounds: true
-    allow_flexible_bounds: true
+    low: -4
+    high: 4
+    smooth_bounds: false
+    allow_flexible_bounds: false
     shift: false
     scale: false
     # bijector_name: quadratic_spline
@@ -323,20 +322,23 @@ common:
 unconditional_distributions:
   elementwise_flow:
     moons:
-      distribution_kwds: *distribution_kwds
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: &elementwise_flow_moons_order 20
       parameter_kwds:
         conditional: false
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        batch_size: 1024
-        learning_rate: 0.05
-        lr_patience: 100
-        lr_reduction_factor: 0.1
+        batch_size: 32
+        learning_rate: 0.1
+        lr_patience: 15
+        lr_reduction_factor: 0.9
+        early_stopping: 15
     circles:
       distribution_kwds:
         <<: *distribution_kwds
-        order: 80
+        order: &elementwise_flow_circles_order 80
       parameter_kwds:
         conditional: false
         dtype: float32
@@ -399,39 +401,6 @@ unconditional_distributions:
         lr_patience: 100
         lr_reduction_factor: 0.1
 
-  masked_autoregressive_flow:
-    moons:
-      distribution_kwds:
-        <<: *distribution_kwds
-        order: 50
-      parameter_kwds:
-        hidden_units:
-        - 16
-        - 16
-        - 16
-        activation: relu
-      fit_kwds:
-        <<: *fit_kwds
-        batch_size: 1024
-        learning_rate: 0.05
-        lr_patience: 100
-        lr_reduction_factor: 0.1
-    circles:
-      distribution_kwds:
-        <<: *distribution_kwds
-        order: 50
-      parameter_kwds:
-        hidden_units:
-        - 16
-        - 16
-        activation: relu
-      fit_kwds:
-        <<: *fit_kwds
-        batch_size: 1024
-        learning_rate: 0.01
-        lr_patience: 100
-        lr_reduction_factor: 0.1
-
   coupling_flow:
     moons:
       distribution_kwds:
@@ -465,6 +434,39 @@ unconditional_distributions:
         <<: *fit_kwds
         batch_size: 512
         learning_rate: 0.001
+        lr_patience: 100
+        lr_reduction_factor: 0.1
+
+  masked_autoregressive_flow:
+    moons:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 50
+      parameter_kwds:
+        hidden_units:
+        - 16
+        - 16
+        - 16
+        activation: relu
+      fit_kwds:
+        <<: *fit_kwds
+        batch_size: 1024
+        learning_rate: 0.05
+        lr_patience: 100
+        lr_reduction_factor: 0.1
+    circles:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 50
+      parameter_kwds:
+        hidden_units:
+        - 16
+        - 16
+        activation: relu
+      fit_kwds:
+        <<: *fit_kwds
+        batch_size: 1024
+        learning_rate: 0.01
         lr_patience: 100
         lr_reduction_factor: 0.1
 
@@ -961,7 +963,7 @@ unconditional_hybrid_distributions:
     moons:
       distribution_kwds:
         <<: *distribution_kwds
-        order: 100
+        order: 25
         low: 0
         high: 1
       freeze_base_model: false
@@ -972,14 +974,16 @@ unconditional_hybrid_distributions:
           activation: relu
         x0_kwds:
           hidden_units:
-          - 16
-          - 16
+          - 32
+          - 32
           activation: relu
           batch_norm: false
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
       base_distribution: elementwise_flow
-      base_distribution_kwds: *distribution_kwds
+      base_distribution_kwds:
+        <<: *distribution_kwds
+        order: *elementwise_flow_moons_order
       base_parameter_kwds:
         conditional: false
         dtype: float32
@@ -987,7 +991,7 @@ unconditional_hybrid_distributions:
         <<: *fit_kwds
         batch_size: 512
         learning_rate: 0.01
-        lr_patience: 500
+        lr_patience: 100
         lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
@@ -1010,7 +1014,9 @@ unconditional_hybrid_distributions:
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
       base_distribution: elementwise_flow
-      base_distribution_kwds: *distribution_kwds
+      base_distribution_kwds:
+        <<: *distribution_kwds
+        order: *elementwise_flow_circles_order
       base_parameter_kwds:
         conditional: false
         dtype: float32
@@ -1026,28 +1032,32 @@ unconditional_hybrid_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 1
-        order: 80
+        order: 25
         low: 0
         high: 1
       freeze_base_model: false
       base_checkpoint_path: false
       parameter_kwds:
         hidden_units:
-        - 16
-        - 16
+        - 1024
+        - 1024
+        - 1024
         activation: relu
         batch_norm: false
       base_distribution: elementwise_flow
-      base_distribution_kwds: *distribution_kwds
+      base_distribution_kwds:
+        <<: *distribution_kwds
+        order: 25
       base_parameter_kwds:
         conditional: false
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        batch_size: 512
-        learning_rate: 0.05
-        lr_patience: 100
-        lr_reduction_factor: 0.1
+        batch_size: 128
+        learning_rate: 0.01
+        early_stopping: 10
+        lr_patience: 10
+        lr_reduction_factor: 0.9
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1064,7 +1074,9 @@ unconditional_hybrid_distributions:
         activation: relu
         batch_norm: false
       base_distribution: elementwise_flow
-      base_distribution_kwds: *distribution_kwds
+      base_distribution_kwds:
+        <<: *distribution_kwds
+        order: 25
       base_parameter_kwds:
         conditional: false
         dtype: float32
@@ -1106,28 +1118,34 @@ unconditional_hybrid_pre_trained_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 1
-        order: 80
+        order: 20
         low: 0
         high: 1
       freeze_base_model: true
-      base_checkpoint_path: unconditional_elementwise_flow
+      base_checkpoint_path: unconditional_elementwise_flow_moons/mcp/weights
       parameter_kwds:
         hidden_units:
-        - 512
-        - 512
-        activation: relu
+        - 8
+        - 8
+        activation: sigmoid
         batch_norm: false
+        # kernel_initializer: ones
+        kernel_regularizer: l2
+        activity_regularizer: l1_l2
       base_distribution: elementwise_flow
-      base_distribution_kwds: *distribution_kwds
+      base_distribution_kwds:
+        <<: *distribution_kwds
+        order: *elementwise_flow_moons_order
       base_parameter_kwds:
         conditional: false
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        batch_size: 512
+        batch_size: 32
         learning_rate: 0.01
         lr_patience: 100
-        lr_reduction_factor: 0.1
+        early_stopping: 4
+        lr_reduction_factor: 0.5
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1136,7 +1154,7 @@ unconditional_hybrid_pre_trained_distributions:
         low: 0
         high: 1
       freeze_base_model: true
-      base_checkpoint_path: unconditional_elementwise_flow
+      base_checkpoint_path: unconditional_elementwise_flow_circles/mcp/weights
       parameter_kwds:
         hidden_units:
         - 16
@@ -1147,7 +1165,7 @@ unconditional_hybrid_pre_trained_distributions:
       base_distribution: elementwise_flow
       base_distribution_kwds:
         <<: *distribution_kwds
-        order: 80
+        order: *elementwise_flow_circles_order
       base_parameter_kwds:
         conditional: false
         dtype: float32
@@ -1160,7 +1178,9 @@ unconditional_hybrid_pre_trained_distributions:
 
 malnutrition_distributions:
   elementwise_flow:
-    distribution_kwds: *distribution_kwds
+    distribution_kwds:
+      <<: *distribution_kwds
+      ^^order: 25
     parameter_kwds:
       conditional: true
       activation: relu
@@ -1177,7 +1197,9 @@ malnutrition_distributions:
       lr_reduction_factor: 0.1
 
   multivariate_flow:
-    distribution_kwds: *distribution_kwds
+    distribution_kwds:
+      <<: *distribution_kwds
+      order: 25
     parameter_kwds:
       conditional: true
       activation: relu
@@ -1211,7 +1233,9 @@ malnutrition_distributions:
       lr_reduction_factor: 0.1
 
   masked_autoregressive_flow:
-    distribution_kwds: *distribution_kwds
+    distribution_kwds:
+      <<: *distribution_kwds
+      order: 25
     parameter_kwds:
       hidden_units:
       - 16
