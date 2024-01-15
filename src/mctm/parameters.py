@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-08-24 16:15:23 (Marcel Arpogaus)
-# changed : 2024-01-12 17:14:12 (Marcel Arpogaus)
+# changed : 2024-01-15 11:40:16 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -35,6 +35,7 @@ def __get_simple_fully_connected_network__(
     activation,
     batch_norm,
     output_shape,
+    dropout,
     conditional=False,
     conditional_event_shape=None,
     dtype=tf.float32,
@@ -73,6 +74,8 @@ def __get_simple_fully_connected_network__(
         x = K.layers.Dense(
             h, activation=None, name=f"hidden_layer_{i}", dtype=dtype, **kwds
         )(x)
+        if dropout > 0:
+            x = K.layers.Dropout(dropout)(x)
         if conditional:
             c_out = K.layers.Dense(
                 h,
@@ -81,6 +84,8 @@ def __get_simple_fully_connected_network__(
                 dtype=dtype,
                 **kwds,
             )(c)
+            if dropout > 0:
+                c_out = K.layers.Dropout(dropout)(c_out)
             x = K.layers.Add(name=f"add_c_out_{i}", dtype=dtype)([x, c_out])
         x = K.layers.Activation(activation, dtype=dtype)(x)
 
