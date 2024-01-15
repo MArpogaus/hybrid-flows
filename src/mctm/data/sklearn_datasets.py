@@ -19,5 +19,5 @@ def get_dataset(dataset_name, n_samples, scale, **kwds):
     """Load data."""
     X, Y = getattr(datasets, f"make_{dataset_name}")(n_samples=n_samples, **kwds)
     if scale:
-        X = MinMaxScaler().fit_transform(X)
+        X = MinMaxScaler(feature_range=tuple(scale)).fit_transform(X)
     return (X, Y), X.shape[-1]
