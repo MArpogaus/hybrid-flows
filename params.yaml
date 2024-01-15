@@ -5,14 +5,14 @@ testmode: false
 
 datasets:
   moons:
-    n_samples: 2000
+    n_samples: 5000
     noise: 0.05
-    scale: true
+    scale: [0.05, 0.95]
   circles:
     n_samples: 2000
     noise: 0.05
     factor: 0.5
-    scale: true
+    scale: [0.05, 0.95]
 
 benchmark_datasets:
   bsds300:
@@ -308,7 +308,7 @@ common:
     bijector_name: bernstein_poly
     low: -4
     high: 4
-    smooth_bounds: false
+    smooth_bounds: true
     allow_flexible_bounds: false
     shift: false
     scale: false
@@ -324,17 +324,17 @@ unconditional_distributions:
     moons:
       distribution_kwds:
         <<: *distribution_kwds
-        order: &elementwise_flow_moons_order 20
+        order: &elementwise_flow_moons_order 50
       parameter_kwds:
         conditional: false
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        batch_size: 32
-        learning_rate: 0.1
-        lr_patience: 15
-        lr_reduction_factor: 0.9
-        early_stopping: 15
+        batch_size: 1024
+        learning_rate: 0.05
+        lr_patience: 100
+        lr_reduction_factor: 0.5
+        early_stopping: 4
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -413,6 +413,7 @@ unconditional_distributions:
         - 16
         activation: relu
         batch_norm: false
+        dropout: 0
       fit_kwds:
         <<: *fit_kwds
         batch_size: 512
@@ -430,6 +431,7 @@ unconditional_distributions:
         - 16
         activation: relu
         batch_norm: false
+        dropout: 0
       fit_kwds:
         <<: *fit_kwds
         batch_size: 512
@@ -619,7 +621,7 @@ unconditional_benchmark_hybrid_pre_trained_distributions:
         low: 0
         high: 1
       freeze_base_model: true
-      base_checkpoint_path: unconditional_benchmark_elementwise_flow
+      base_checkpoint_path: unconditional_benchmark_elementwise_flow_power/mcp/weights
       parameter_kwds:
         made_kwds:
           hidden_units:
@@ -634,6 +636,7 @@ unconditional_benchmark_hybrid_pre_trained_distributions:
           - 64
           activation: relu
           batch_norm: false
+          dropout: 0
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
       base_distribution: elementwise_flow
@@ -657,7 +660,7 @@ unconditional_benchmark_hybrid_pre_trained_distributions:
         low: 0
         high: 1
       freeze_base_model: true
-      base_checkpoint_path: unconditional_benchmark_elementwise_flow
+      base_checkpoint_path: unconditional_benchmark_elementwise_flow_hepmass/mcp/weights
       parameter_kwds:
         made_kwds:
           hidden_units:
@@ -672,6 +675,7 @@ unconditional_benchmark_hybrid_pre_trained_distributions:
           - 64
           activation: relu
           batch_norm: false
+          dropout: 0
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
       base_distribution: elementwise_flow
@@ -695,7 +699,7 @@ unconditional_benchmark_hybrid_pre_trained_distributions:
         low: 0
         high: 1
       freeze_base_model: true
-      base_checkpoint_path: unconditional_benchmark_elementwise_flow
+      base_checkpoint_path: unconditional_benchmark_elementwise_flow_bsds300/mcp/weights
       parameter_kwds:
         made_kwds:
           hidden_units:
@@ -710,6 +714,7 @@ unconditional_benchmark_hybrid_pre_trained_distributions:
           - 64
           activation: relu
           batch_norm: false
+          dropout: 0
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
       base_distribution: elementwise_flow
@@ -733,7 +738,7 @@ unconditional_benchmark_hybrid_pre_trained_distributions:
         low: 0
         high: 1
       freeze_base_model: true
-      base_checkpoint_path: unconditional_benchmark_elementwise_flow
+      base_checkpoint_path: unconditional_benchmark_elementwise_flow_miniboone/mcp/weights
       parameter_kwds:
         made_kwds:
           hidden_units:
@@ -748,6 +753,7 @@ unconditional_benchmark_hybrid_pre_trained_distributions:
           - 64
           activation: relu
           batch_norm: false
+          dropout: 0
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
       base_distribution: elementwise_flow
@@ -776,6 +782,7 @@ conditional_distributions:
         conditional: true
         activation: relu
         batch_norm: true
+        dropout: 0
         hidden_units:
         - 16
         - 16
@@ -794,6 +801,7 @@ conditional_distributions:
         conditional: true
         activation: relu
         batch_norm: true
+        dropout: 0
         hidden_units:
         - 16
         - 16
@@ -814,6 +822,7 @@ conditional_distributions:
         conditional: true
         activation: relu
         batch_norm: true
+        dropout: 0
         hidden_units:
         - 16
         - 16
@@ -832,6 +841,7 @@ conditional_distributions:
         conditional: true
         activation: relu
         batch_norm: true
+        dropout: 0
         hidden_units:
         - 16
         - 16
@@ -850,6 +860,7 @@ conditional_distributions:
         conditional: true
         activation: relu
         batch_norm: true
+        dropout: 0
         hidden_units:
         - 16
         - 16
@@ -866,6 +877,7 @@ conditional_distributions:
         conditional: true
         activation: relu
         batch_norm: true
+        dropout: 0
         hidden_units:
         - 16
         - 16
@@ -930,6 +942,7 @@ conditional_distributions:
         - 16
         activation: relu
         batch_norm: false,
+        dropout: 0
         conditional: True,
         conditional_event_shape: 1
       fit_kwds:
@@ -949,6 +962,7 @@ conditional_distributions:
         - 16
         activation: relu
         batch_norm: false,
+        dropout: 0
         conditional: True,
         conditional_event_shape: 1
       fit_kwds:
@@ -978,6 +992,7 @@ unconditional_hybrid_distributions:
           - 32
           activation: relu
           batch_norm: false
+          dropout: 0
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
       base_distribution: elementwise_flow
@@ -1011,6 +1026,7 @@ unconditional_hybrid_distributions:
           - 16
           activation: relu
           batch_norm: false
+          dropout: 0
           kernel_initializer: glorot_uniform
           bias_initializer: zeros
       base_distribution: elementwise_flow
@@ -1044,6 +1060,7 @@ unconditional_hybrid_distributions:
         - 1024
         activation: relu
         batch_norm: false
+        dropout: 0
       base_distribution: elementwise_flow
       base_distribution_kwds:
         <<: *distribution_kwds
@@ -1073,6 +1090,7 @@ unconditional_hybrid_distributions:
         - 512
         activation: relu
         batch_norm: false
+        dropout: 0
       base_distribution: elementwise_flow
       base_distribution_kwds:
         <<: *distribution_kwds
@@ -1118,7 +1136,7 @@ unconditional_hybrid_pre_trained_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         coupling_layers: 1
-        order: 20
+        order: 50
         low: 0
         high: 1
       freeze_base_model: true
@@ -1129,9 +1147,10 @@ unconditional_hybrid_pre_trained_distributions:
         - 8
         activation: sigmoid
         batch_norm: false
+        dropout: 0
         # kernel_initializer: ones
-        kernel_regularizer: l2
-        activity_regularizer: l1_l2
+        # kernel_regularizer: l2
+        # activity_regularizer: l1_l2
       base_distribution: elementwise_flow
       base_distribution_kwds:
         <<: *distribution_kwds
@@ -1141,9 +1160,9 @@ unconditional_hybrid_pre_trained_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        batch_size: 32
+        batch_size: 1024
         learning_rate: 0.01
-        lr_patience: 100
+        lr_patience: 25
         early_stopping: 4
         lr_reduction_factor: 0.5
     circles:
@@ -1162,6 +1181,7 @@ unconditional_hybrid_pre_trained_distributions:
         - 16
         activation: relu
         batch_norm: false
+        dropout: 0
       base_distribution: elementwise_flow
       base_distribution_kwds:
         <<: *distribution_kwds
@@ -1185,6 +1205,7 @@ malnutrition_distributions:
       conditional: true
       activation: relu
       batch_norm: true
+      dropout: 0
       hidden_units:
       - 16
       - 16
@@ -1204,6 +1225,7 @@ malnutrition_distributions:
       conditional: true
       activation: relu
       batch_norm: true
+      dropout: 0
       hidden_units:
       - 16
       - 16
@@ -1221,6 +1243,7 @@ malnutrition_distributions:
       conditional: true
       activation: relu
       batch_norm: true
+      dropout: 0
       hidden_units:
       - 16
       - 16
