@@ -28,7 +28,6 @@ class getDataset(Protocol):
 
     def __call__(self) -> "tuple[Any, Any]":
         """Call."""
-        pass
 
 
 class getModel(Protocol):
@@ -36,7 +35,6 @@ class getModel(Protocol):
 
     def __call__(self, dataset: "tuple[Any,Any]") -> Any:
         """Call."""
-        pass
 
 
 class doPlotData(Protocol):
@@ -44,7 +42,6 @@ class doPlotData(Protocol):
 
     def __call__(self, X: Any, Y: Any) -> "Figure":
         """Call."""
-        pass
 
 
 class doPreprocessDataset(Protocol):
@@ -52,7 +49,6 @@ class doPreprocessDataset(Protocol):
 
     def __call__(self, X: Any, Y: Any, model: Any) -> "dict":
         """Call."""
-        pass
 
 
 class doAfterFit(Protocol):
@@ -60,7 +56,6 @@ class doAfterFit(Protocol):
 
     def __call__(self, model: Any, x: Any, y: Any, **kwds: dict) -> None:
         """Call."""
-        pass
 
 
 # PUBLIC FUNCTIONS #############################################################
@@ -123,6 +118,9 @@ def pipeline(
     data, dims = get_dataset_fn(**dataset_kwds)
     model = get_model_fn(dims=dims, **model_kwds)
 
+    # prepare results directory
+    os.makedirs(results_path, exist_ok=True)
+
     # Evaluate Model
     if experiment_name:
         mlflow.set_experiment(experiment_name)
@@ -169,9 +167,6 @@ def pipeline(
         with open(os.path.join(results_path, "metrics.yaml"), "w+") as results_file:
             yaml.dump({"loss": min_loss, "val_loss": min_val_loss}, results_file)
 
-        if log_file:
-            mlflow.log_artifact(log_file)
-
         mlflow.log_artifacts(results_path)
 
         return hist, model, preprocessed
@@ -192,14 +187,12 @@ def prepare_pipeline(args):
     :return: A dictionary containing loaded parameters.
     :rtype: dict
     """
-    # prepare results directory
-    os.makedirs(args.results_path, exist_ok=True)
-
     # configure logging
     handlers = [logging.StreamHandler(sys.stdout)]
     if args.log_file:
+        log_file = os.path.join(args.results_path, args.log_file)
         handlers += [
-            logging.FileHandler(args.log_file),
+            logging.FileHandler(log_file),
         ]
     logging.basicConfig(
         level=args.log_level.upper(),

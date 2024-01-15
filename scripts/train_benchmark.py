@@ -18,19 +18,24 @@ def get_lr_schedule(**kwds):
     return lr_decayed_fn
 
 
-def main(args):
-    """Experiment exec."""
-    # --- prepare for execution ---
+def run(
+    experiment_name,
+    results_path,
+    log_file,
+    log_level,
+    dataset,
+    stage_name,
+    distribution,
+    params,
+    test_mode,
+):
+    """Experiment exec.
 
-    # load params
-    params = prepare_pipeline(args)
+    params should be as defined in params.yaml
+    """
 
-    # build variables for execution
-    dataset = args.dataset
-    results_path = args.results_path
-    distribution = args.distribution
-
-    stage = args.stage_name.split("@")[0]
+    # define dataset, model and fit parameters
+    stage = stage_name.split("@")[0]
     dataset_kwds = params["benchmark_datasets"][dataset]
     model_kwds = params[stage + "_distributions"][distribution][dataset]
     fit_kwds = model_kwds.pop("fit_kwds")
@@ -52,11 +57,11 @@ def main(args):
     else:
         get_model = DensityRegressionModel
 
-    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", args.experiment_name)
+    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
     run_name = "_".join((stage, distribution))
 
     # test mode
-    if args.test_mode:
+    if test_mode:
         experiment_name += "_test"
         fit_kwds.update(epochs=1)
 
@@ -72,11 +77,11 @@ def main(args):
         extra_params_to_log = cosine_decay_kwds
 
     # execute experiment
-    pipeline(
+    history, model, preprocessed = pipeline(
         experiment_name=experiment_name,
         run_name=run_name,
         results_path=results_path,
-        log_file=args.log_file,
+        log_file=log_file,
         seed=params["seed"],
         get_dataset_fn=get_dataset,
         dataset_kwds={"dataset_name": dataset},
@@ -95,6 +100,8 @@ def main(args):
         after_fit_hook=None,
         **extra_params_to_log,
     )
+
+    return history, model, preprocessed
 
 
 if __name__ == "__main__":
@@ -131,4 +138,17 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    main(args)
+    # load params
+    params = prepare_pipeline(args)
+
+    run(
+        args.experiment_name,
+        args.results_path,
+        args.log_file,
+        args.log_level,
+        args.dataset,
+        args.stage_name,
+        args.distribution,
+        params,
+        args.test_mode,
+    )

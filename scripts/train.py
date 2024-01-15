@@ -49,19 +49,24 @@ def get_after_fit_hook(results_path, is_hybrid, **kwds):
     return plot_after_fit
 
 
-def main(args):
-    """Experiment."""
-    # prepare for execution:
-    # - read cli arguments
-    # - configure logging
-    # - load dvc params
-    params = prepare_pipeline(args)
+def run(
+    experiment_name,
+    results_path,
+    log_file,
+    log_level,
+    dataset,
+    stage_name,
+    distribution,
+    params,
+    test_mode,
+):
+    """Experiment exec.
 
-    dataset = args.dataset
-    results_path = args.results_path
+    params should be as defined in params.yaml
+    """
+
     dataset_kwds = params["datasets"][dataset]
-    distribution = args.distribution
-    stage = args.stage_name.split("@")[0]
+    stage = stage_name.split("@")[0]
     model_kwds = params[stage + "_distributions"][distribution][dataset]
     fit_kwds = model_kwds.pop("fit_kwds")
 
@@ -81,10 +86,10 @@ def main(args):
     else:
         get_model = DensityRegressionModel
 
-    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", args.experiment_name)
+    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
     run_name = "_".join((stage, distribution))
 
-    if args.test_mode:
+    if test_mode:
         __LOGGER__.info("Running in test-mode")
         experiment_name += "_test"
         fit_kwds.update(epochs=1)
@@ -101,11 +106,11 @@ def main(args):
     fig_width = get_figsize(params["textwidth"], fraction=0.5)[0]
 
     # actually execute training
-    pipeline(
+    return pipeline(
         experiment_name=experiment_name,
         run_name=run_name,
         results_path=results_path,
-        log_file=args.log_file,
+        log_file=log_file,
         seed=params["seed"],
         get_dataset_fn=get_dataset,
         dataset_kwds={"dataset_name": dataset, **dataset_kwds},
@@ -118,7 +123,7 @@ def main(args):
         fit_kwds=fit_kwds,
         plot_data=partial(plot_2d_data, figsize=(fig_width, fig_width)),
         after_fit_hook=get_after_fit_hook(
-            results_path=args.results_path,
+            results_path=results_path,
             is_hybrid=get_model == HybridDenistyRegressionModel,
             height=fig_width,
         ),
@@ -159,4 +164,17 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    main(args)
+    # load params
+    params = prepare_pipeline(args)
+
+    run(
+        args.experiment_name,
+        args.results_path,
+        args.log_file,
+        args.log_level,
+        args.dataset,
+        args.stage_name,
+        args.distribution,
+        params,
+        args.test_mode,
+    )
