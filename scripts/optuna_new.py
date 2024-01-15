@@ -63,9 +63,14 @@ def get_objective(
             distribution,
             dataset,
         )
+
+        # prepare results directory
+        trial_results_path = os.path.join(results_path, str(trial.number))
+        os.makedirs(trial_results_path, exist_ok=True)
+
         history, _, _ = run(
             experiment_name=experiment_name,
-            results_path=os.path.join(results_path, str(trial.number)),
+            results_path=trial_results_path,
             log_file=log_file,
             log_level=log_level,
             dataset=dataset,

@@ -118,9 +118,6 @@ def pipeline(
     data, dims = get_dataset_fn(**dataset_kwds)
     model = get_model_fn(dims=dims, **model_kwds)
 
-    # prepare results directory
-    os.makedirs(results_path, exist_ok=True)
-
     # Evaluate Model
     if experiment_name:
         mlflow.set_experiment(experiment_name)
@@ -187,6 +184,9 @@ def prepare_pipeline(args):
     :return: A dictionary containing loaded parameters.
     :rtype: dict
     """
+    # prepare results directory
+    os.makedirs(args.results_path, exist_ok=True)
+
     # configure logging
     handlers = [logging.StreamHandler(sys.stdout)]
     if args.log_file:
