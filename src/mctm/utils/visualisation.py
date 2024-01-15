@@ -123,7 +123,7 @@ def setup_latex(fontsize=10):
     plt.rcParams.update(tex_fonts)
 
 
-def plot_2d_data(X, Y, **kwds):
+def plot_2d_data(X, Y, plot_kwds=dict(s=5, alpha=0.7), **kwds):
     """Create a 2D scatter plot for binary labeled data.
 
     This function creates a 2D scatter plot for binary labeled data points.
@@ -137,13 +137,13 @@ def plot_2d_data(X, Y, **kwds):
     :rtype: Figure
 
     Example:
-        fig = plot_2d_data(X, Y, s=20, alpha=0.6)
+        fig = plot_2d_data(X, Y, width=8)
     """
     label = Y.astype(bool)
     X1, X2 = X[..., 0], X[..., 1]
     fig = plt.figure(**kwds)
-    plt.scatter(X1[label], X2[label], s=10, color="blue")
-    plt.scatter(X1[~label], X2[~label], s=10, color="red")
+    plt.scatter(X1[label], X2[label], color="blue", **plot_kwds)
+    plt.scatter(X1[~label], X2[~label], color="red", **plot_kwds)
     plt.axis("equal")
     plt.legend(
         ["label: 1", "label: 0"],
