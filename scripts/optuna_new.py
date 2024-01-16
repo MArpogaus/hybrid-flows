@@ -32,9 +32,14 @@ def suggest_new_params(
 
     for d in parameter_space_definition:
         p = model_kwds
-        for key in d["name"].split("."):
-            p = p[key]
-        p = getattr(trial, f'suggest_{d["type"]}')(d["name"], **d["kwargs"])
+        keys = d["name"].split(".")
+        for k in keys[:-1]:
+            p = p[k]
+
+        key = keys[-1]
+        if key.isdigit():
+            key = int(key)
+        p[key] = getattr(trial, f'suggest_{d["type"]}')(d["name"], **d["kwargs"])
 
     return params
 
@@ -102,9 +107,16 @@ def run_study(
     test_mode,
     n_trials,
     n_jobs,
+    study_name,
+    load_study_from_storage,
 ):
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
     run_name = "_".join(("optuna", stage_name, distribution, dataset))
+
+    if test_mode:
+        __LOGGER__.info("Running in test-mode")
+        run_name += "_test"
+        n_trials = 4
 
     mlflow.set_experiment(experiment_name)
     __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
@@ -119,7 +131,11 @@ def run_study(
         # Seed?
         set_seed(1)
 
-        study = optuna.create_study(sampler=CmaEsSampler(), directions=["minimize"])
+        study_kwds = dict(study_name=study_name, sampler=CmaEsSampler())
+        if load_study_from_storage:
+            study = optuna.load_study(storage=load_study_from_storage, **study_kwds)
+        else:
+            study = optuna.create_study(directions=["minimize"], **study_kwds)
 
         objective = get_objective(
             model_train_script_name=model_train_script_name,
@@ -130,12 +146,14 @@ def run_study(
             dataset=dataset,
             stage_name=stage_name,
             distribution=distribution,
-            initial_params=inital_params,
-            parameter_space_definition=parameter_space_definition,
+            initial_params=deepcopy(inital_params),
+            parameter_space_definition=deepcopy(parameter_space_definition),
             test_mode=test_mode,
         )
 
-        study.optimize(objective, n_trials=n_trials, n_jobs=n_jobs)
+        study.optimize(
+            objective, n_trials=n_trials, n_jobs=n_jobs, show_progress_bar=True
+        )
         optimum = study.best_params
 
         __LOGGER__.info(
@@ -158,30 +176,55 @@ def run_study(
 # %% if main
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Optimize Hyperparameters of a model")
-    parser.add_argument("--log-file", type=str, help="path for log file")
     parser.add_argument(
-        "--log-level", type=str, default="INFO", help="logging severaty level"
+        "--log-file",
+        type=str,
+        help="path for log file",
     )
     parser.add_argument(
-        "--test-mode", default=False, type=str2bool, help="activate test-mode"
+        "--log-level",
+        type=str,
+        default="INFO",
+        help="logging severaty level",
     )
     parser.add_argument(
-        "--experiment-name", type=str, help="MLFlow experiment name", required=True
+        "--test-mode",
+        default=False,
+        type=str2bool,
+        help="activate test-mode",
     )
     parser.add_argument(
-        "--n_trials",
+        "--experiment-name",
+        type=str,
+        help="MLFlow experiment name",
+        required=True,
+    )
+    parser.add_argument(
+        "--n-trials",
         type=int,
         help="number of trials to run.",
     )
     parser.add_argument(
-        "--n_jobs",
+        "--n-jobs",
         type=int,
-        help="number of trials to run.",
+        default=1,
+        help="number of threads to run.",
+    )
+    parser.add_argument(
+        "--study-name",
+        type=str,
+        help="name of the study.",
+    )
+    parser.add_argument(
+        "--load-study-from-storage",
+        default=False,
+        type=str,
+        help="Load and continue existing study fro provided storage",
     )
     parser.add_argument(
         "stage_name",
         type=str,
-        help="name of dvstage",
+        help="name of dvc stage",
     )
     parser.add_argument(
         "distribution",
@@ -207,10 +250,47 @@ if __name__ == "__main__":
         return {"name": name, "type": type, "kwargs": kwargs}
 
     parameter_space_definition = [
-        def_param("fit_kwds.batch_size", "int", low=32, high=1024),
-        def_param("fit_kwds.learning_rate", "float", low=0.001, high=0.1),
-        def_param("fit_kwds.lr_patience", "int", low=5, high=100),
-        def_param("fit_kwds.early_stopping", "int", low=0, high=4),
+        def_param(
+            "fit_kwds.batch_size",
+            "int",
+            low=32,
+            high=1024,
+        ),
+        def_param(
+            "fit_kwds.learning_rate",
+            "float",
+            low=0.001,
+            high=0.1,
+        ),
+        def_param(
+            "fit_kwds.lr_patience",
+            "int",
+            low=5,
+            high=100,
+        ),
+        def_param(
+            "fit_kwds.early_stopping",
+            "int",
+            low=0,
+            high=4,
+        ),
+        def_param(
+            "distribution_kwds.order",
+            "int",
+            low=10,
+            high=100,
+        ),
+        def_param(
+            "parameter_kwds.activation",
+            "categorical",
+            choices=["relu", "sigmoid", "tanh"],
+        ),
+        def_param(
+            "parameter_kwds.hidden_units.0",
+            "int",
+            low=4,
+            high=1024,
+        ),
     ]
 
     if "benchmark" in args.stage_name:
@@ -234,4 +314,6 @@ if __name__ == "__main__":
         test_mode=args.test_mode,
         n_trials=args.n_trials,
         n_jobs=args.n_jobs,
+        study_name=args.study_name,
+        load_study_from_storage=args.load_study_from_storage,
     )
