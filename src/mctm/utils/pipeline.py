@@ -114,6 +114,9 @@ def pipeline(
     :rtype: Tuple
     """
     call_args = dict(filter(lambda x: not callable(x[1]), vars().items()))
+    # Drop Callback functions from MLFlow logging
+    call_args["fit_kwds"].pop("callbacks")
+
     set_seed(seed)
     data, dims = get_dataset_fn(**dataset_kwds)
     model = get_model_fn(dims=dims, **model_kwds)
