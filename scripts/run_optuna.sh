@@ -41,7 +41,7 @@ TRIALS=$4
 JOBS=$5
 
 STUDY_NAME=${STAGE_NAME}_${DISTRIBUTION}_${DATASET}
-DB_NAME=${STUDY_NAME}.db
+DB_NAME=optuna/optuna_study_${STUDY_NAME}.db
 RESULTS_PATH=results/optuna/${STUDY_NAME}
 PARAMETER_SPACE_DEFINITION_FILE=optuna/parameter_space_definition_${STUDY_NAME}.yaml
 
@@ -66,6 +66,7 @@ run_optuna_script() {
 
 for ((seed = 1; seed <= $JOBS; seed++)); do
 	run_optuna_script $seed &
+    sleep 1
 done
 
 wait # Wait for all the background jobs to finish
