@@ -160,7 +160,6 @@ def load_and_process_power_data(dataset_dir):
 
 def load_and_process_gas_data(dataset_dir):
     """Load data."""
-    _ = "fix pydocstyle"
 
     # https://github.com/gpapamak/maf/blob/master/datasets/gas.py
     def load_data(file):
@@ -210,7 +209,6 @@ def load_and_process_gas_data(dataset_dir):
 
 def load_and_process_hepmass_data(dataset_dir):
     """Load data."""
-    _ = "fix pydocstyle"
 
     # https://github.com/gpapamak/maf/blob/master/datasets/hepmass.py
     # https://github.com/bayesiains/nsf/blob/master/data/hepmass.py
