@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-01-15 10:51:54 (Marcel Arpogaus)
+# changed : 2024-01-17 11:41:21 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -25,12 +25,12 @@ from functools import partial
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
+from bernstein_flow.activations import get_thetas_constrain_fn
 from bernstein_flow.bijectors import BernsteinBijectorLinearExtrapolate
 from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 from tensorflow_probability.python.internal import prefer_static
 
-from .activations import get_thetas_constrain_fn
 from .parameters import (
     get_autoregressive_parameter_network_lambda,
     get_autoregressive_parameter_network_with_additive_conditioner_lambda,
