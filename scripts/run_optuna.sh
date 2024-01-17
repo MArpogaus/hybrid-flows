@@ -61,6 +61,7 @@ run_optuna_script() {
 		--study-name=${STUDY_NAME} \
 		--load-study=sqlite:///${DB_NAME} \
 		--n-trials=${TRIALS} \
+        --use-pruning=true \
 		--seed=$1
 }
 

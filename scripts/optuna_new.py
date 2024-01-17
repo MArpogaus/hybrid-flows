@@ -9,7 +9,10 @@ from copy import deepcopy
 import mlflow
 import numpy as np
 import yaml
-from optuna.samplers import CmaEsSampler
+from optuna.integration import TFKerasPruningCallback
+from optuna.pruners import SuccessiveHalvingPruner
+from optuna.samplers import TPESampler
+from optuna.trial import TrialState
 
 import optuna
 from mctm.utils import str2bool
@@ -23,6 +26,7 @@ from mctm.utils.pipeline import (
 __LOGGER__ = logging.getLogger(__name__)
 __RUN_ID_ATTRIBUTE_KEY__ = "mlflow_run_id"
 __BEST_VALUE_ATTRIBUTE_KEY__ = "best_value"
+__EVALUATION_METRIC__ = "val_loss"
 
 
 # %% function definitions
@@ -33,6 +37,7 @@ def suggest_new_params(
     stage_name,
     distribution,
     dataset,
+    use_pruning,
 ):
     params = deepcopy(inital_params)
     stage = stage_name.split("@")[0]
@@ -49,6 +54,12 @@ def suggest_new_params(
             key = int(key)
         p[key] = getattr(trial, f'suggest_{d["type"]}')(d["name"], **d["kwargs"])
 
+    # Add KerasPruningCallback checks for pruning condition every epoch
+    if use_pruning:
+        model_kwds["fit_kwds"]["callbacks"] = [
+            TFKerasPruningCallback(trial, __EVALUATION_METRIC__)
+        ]
+
     return params
 
 
@@ -64,6 +75,7 @@ def get_objective(
     initial_params,
     parameter_space_definition,
     test_mode,
+    use_pruning,
 ):
     run = importlib.import_module(model_train_script_name).run
 
@@ -75,6 +87,7 @@ def get_objective(
             stage,
             distribution,
             dataset,
+            use_pruning,
         )
 
         # prepare results directory
@@ -93,8 +106,8 @@ def get_objective(
             test_mode=test_mode,
         )
 
-        min_idx = np.argmin(history.history["val_loss"])
-        val_loss = history.history["val_loss"][min_idx]
+        min_idx = np.argmin(history.history[__EVALUATION_METRIC__])
+        val_loss = history.history[__EVALUATION_METRIC__][min_idx]
 
         return val_loss
 
@@ -109,21 +122,35 @@ def best_value_callback(study, frozen_trial):
 
     winner = study.user_attrs.get(__BEST_VALUE_ATTRIBUTE_KEY__, np.inf)
 
-    if study.best_value and winner < study.best_value:
+    if study.best_value and winner > study.best_value:
         study.set_user_attr(__BEST_VALUE_ATTRIBUTE_KEY__, study.best_value)
+        mlflow.log_metric("best_value", min(winner, study.best_value))
+        mlflow.log_dict(study.best_params, "optimal_parameters.yaml")
+
         if winner:
-            improvement_percent = (
-                abs(winner - study.best_value) / study.best_value
-            ) * 100
+            relative_improvement = abs(winner - study.best_value) / study.best_value
             __LOGGER__.info(
                 f"Trial {frozen_trial.number} achieved value: {frozen_trial.value} "
-                f"with {improvement_percent: .4f}% improvement"
+                f"with {relative_improvement * 100: .4f}% improvement"
             )
+            mlflow.log_metric("relative_improvement", relative_improvement)
         else:
             __LOGGER__.info(
                 f"Initial trial {frozen_trial.number} "
                 f"achieved value: {frozen_trial.value}"
             )
+
+
+def reprot_pruned_trials(study, _):
+    pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
+    complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
+    __LOGGER__.info("Study statistics: ")
+    __LOGGER__.info(f"Number of finished trials: {len(study.trials)}")
+    __LOGGER__.info(f"Number of pruned trials: {len(pruned_trials)}")
+    __LOGGER__.info(f"Number of complete trials: {len(complete_trials)}")
+
+    mlflow.log_metric("pruned_trials", len(pruned_trials))
+    mlflow.log_metric("complete_trials", len(complete_trials))
 
 
 def run_study(
@@ -143,6 +170,7 @@ def run_study(
     study_name,
     load_study_from_storage,
     seed,
+    use_pruning,
 ):
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
 
@@ -159,7 +187,15 @@ def run_study(
 
     # Seed?
     set_seed(seed)
-    study_kwds = dict(study_name=study_name, sampler=CmaEsSampler(seed=seed))
+    study_kwds = dict(study_name=study_name, sampler=TPESampler(seed=seed))
+
+    if use_pruning:
+        study_kwds["pruner"] = SuccessiveHalvingPruner(
+            min_resource="auto",
+            reduction_factor=4,
+            min_early_stopping_rate=0,
+            bootstrap_count=0,
+        )
     if load_study_from_storage:
         study = optuna.load_study(storage=load_study_from_storage, **study_kwds)
         # If a study has been started before, a parent may already exists run
@@ -189,6 +225,7 @@ def run_study(
             initial_params=deepcopy(inital_params),
             parameter_space_definition=deepcopy(parameter_space_definition),
             test_mode=test_mode,
+            use_pruning=use_pruning,
         )
 
         study.optimize(
@@ -196,30 +233,19 @@ def run_study(
             n_trials=n_trials,
             n_jobs=n_jobs,
             show_progress_bar=True,
-            callbacks=[best_value_callback],
+            callbacks=[best_value_callback, reprot_pruned_trials],
         )
-        best_params = study.best_params
-
-        winner = study.user_attrs.get(__BEST_VALUE_ATTRIBUTE_KEY__, np.inf)
 
         __LOGGER__.info(
-            f"finished hyperparameter optimization with optimum:\n{best_params}"
+            f"Best value achieved ({study.best_value=}) "
+            f"in trial {study.best_trial.number}, "
+            f"with parameters: {study.best_params}"
         )
 
-        if study.best_value < winner:
-            __LOGGER__.info(
-                f"This run achieved an new optimum ({study.best_value=}) "
-                f"in trial {study.best_trial.number}. "
-                "Logging results with MLFlow."
-            )
-
-            mlflow.log_dict(best_params, "optimal_parameters.yaml")
-            mlflow.log_metric("min_val_loss", study.best_value)
-            mlflow.log_metric("best_trial", study.best_trial.number)
-            if not load_study_from_storage:
-                with open("study.pickle", "wb") as handle:
-                    pickle.dump(study, handle, protocol=pickle.HIGHEST_PROTOCOL)
-                mlflow.log_artifact("study.pickle")
+        if not load_study_from_storage:
+            with open("study.pickle", "wb") as handle:
+                pickle.dump(study, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            mlflow.log_artifact("study.pickle")
 
         if optuna.visualization.is_available():
             fig = optuna.visualization.plot_optimization_history(study)
@@ -269,6 +295,12 @@ if __name__ == "__main__":
         default=False,
         type=str,
         help="Load and continue existing study fro provided storage",
+    )
+    parser.add_argument(
+        "--use-pruning",
+        default=False,
+        type=str,
+        help="Prune the trials using Asynchronous Successive Halving Algorithm",
     )
     parser.add_argument(
         "--experiment-name",
@@ -343,4 +375,5 @@ if __name__ == "__main__":
         study_name=args.study_name,
         load_study_from_storage=args.load_study_from_storage,
         seed=args.seed,
+        use_pruning=args.use_pruning,
     )
