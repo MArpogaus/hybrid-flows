@@ -39,11 +39,11 @@ def get_after_fit_hook(results_path, is_hybrid, **kwds):
 
             # Plot Copula
             # Contour Plot
-            c_fig = plot_copula_function(model(x), y, "contour", -0.1, 1.1, 1000)
+            c_fig = plot_copula_function(model(x), y, "contour", -0.1, 1.1, 200)
             c_fig.savefig(os.path.join(results_path, "copula_contour.pdf"))
 
             # Surface Plot
-            c_fig = plot_copula_function(model(x), y, "surface", -0.1, 1.1, 1000)
+            c_fig = plot_copula_function(model(x), y, "surface", -0.1, 1.1, 200)
             c_fig.savefig(os.path.join(results_path, "copula_surface.pdf"))
 
     return plot_after_fit

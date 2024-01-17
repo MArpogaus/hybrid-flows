@@ -4,6 +4,9 @@
 datasets/
 mlflow_data.feather
 .virtual_documents/
+study.pickle
+data.json
+
 ### Emacs ###
 # -*- mode: gitignore; -*-
 *~
