@@ -147,7 +147,7 @@ def run_study(
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
 
     stage = stage_name.split("@")[0]
-    run_name = "_".join(("optuna", study_name, stage, distribution, dataset))
+    run_name = "_".join(("optuna", study_name))
     print(run_name)
     if test_mode:
         __LOGGER__.info("Running in test-mode")

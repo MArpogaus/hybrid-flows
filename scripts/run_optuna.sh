@@ -29,27 +29,25 @@ while getopts ":h" option; do
 done
 
 # Set variables based on provided arguments
-shift $((OPTIND - 1))
-if [ "$#" -ne 6 ]; then
-	echo "Error: 6 arguments required."
+if [ "$#" -ne 5 ]; then
+	echo "Error: 5 arguments required."
 	usage
 fi
 
 STAGE_NAME=$1
 DISTRIBUTION=$2
 DATASET=$3
-STUDY_NAME=$4
-TRIALS=$5
-JOBS=$6
+TRIALS=$4
+JOBS=$5
 
-DB_NAME=${STUDY_NAME//-/_}.db
-
-RESULTS_PATH=results/optuna/${STAGE_NAME}_${DISTRIBUTION}_${DATASET}
-PARAMETER_SPACE_DEFINITION_FILE=optuna/parameter_space_definition_${STAGE_NAME}_${DISTRIBUTION}_${DATASET}.yaml
+STUDY_NAME=${STAGE_NAME}_${DISTRIBUTION}_${DATASET}
+DB_NAME=${STUDY_NAME}.db
+RESULTS_PATH=results/optuna/${STUDY_NAME}
+PARAMETER_SPACE_DEFINITION_FILE=optuna/parameter_space_definition_${STUDY_NAME}.yaml
 
 # Create study
 if [ ! -e $DB_NAME ]; then
-	optuna create-study --study-name "test-study" --storage sqlite:///$DB_NAME --directions minimize
+	optuna create-study --study-name "${STUDY_NAME}" --storage sqlite:///$DB_NAME --directions minimize
 fi
 
 run_optuna_script() {
@@ -66,8 +64,8 @@ run_optuna_script() {
 		--seed=$1
 }
 
-for ((seed=1; seed<=$JOBS; seed++)); do
-    run_optuna_script $seed &
+for ((seed = 1; seed <= $JOBS; seed++)); do
+	run_optuna_script $seed &
 done
 
-wait  # Wait for all the background jobs to finish
+wait # Wait for all the background jobs to finish
