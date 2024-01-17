@@ -11,7 +11,7 @@
 # LICENSE #####################################################################
 # ...
 ###############################################################################
-# REQUIRED MODULES #############################################################
+# REQUIRED MODULES ############################################################
 import logging
 import os
 import tempfile
@@ -36,7 +36,7 @@ def log_cfg(cfg: dict):
 
 
 @contextmanager
-def start_run_with_exception_logging(run_name):
+def start_run_with_exception_logging(**kwds):
     """Context manager for running MLflow experiment.
 
     This function starts an MLflow run within a context and logs any
@@ -56,10 +56,7 @@ def start_run_with_exception_logging(run_name):
     if run_id:
         mlflow.start_run()
 
-    run = mlflow.start_run(
-        run_name=run_name,
-        nested=mlflow.active_run() is not None,
-    )
+    run = mlflow.start_run(nested=mlflow.active_run() is not None, **kwds)
     try:
         yield run
     except Exception as e:
