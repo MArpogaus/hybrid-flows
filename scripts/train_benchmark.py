@@ -62,7 +62,7 @@ def run(
 
     # test mode
     if test_mode:
-        experiment_name += "_test"
+        run_name += "_test"
         fit_kwds.update(epochs=1)
 
     # don't show progress bar if running from CI

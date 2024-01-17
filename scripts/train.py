@@ -91,7 +91,7 @@ def run(
 
     if test_mode:
         __LOGGER__.info("Running in test-mode")
-        experiment_name += "_test"
+        run_name += "_test"
         fit_kwds.update(epochs=1)
 
     # configure mpl to use latex
