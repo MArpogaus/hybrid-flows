@@ -140,6 +140,19 @@ def best_value_callback(study, frozen_trial):
                 f"achieved value: {frozen_trial.value}"
             )
 
+    if optuna.visualization.is_available():
+        for plot_fn_name in (
+            "plot_contour",
+            "plot_optimization_history",
+            "plot_parallel_coordinate",
+            "plot_param_importances",
+            "plot_rank",
+            "plot_slice",
+            "plot_timeline",
+        ):
+            fig = getattr(optuna.visualization, plot_fn_name)(study)
+            mlflow.log_figure(fig, f"{plot_fn_name}.html")
+
 
 def reprot_pruned_trials(study, _):
     pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
@@ -246,10 +259,6 @@ def run_study(
             with open("study.pickle", "wb") as handle:
                 pickle.dump(study, handle, protocol=pickle.HIGHEST_PROTOCOL)
             mlflow.log_artifact("study.pickle")
-
-        if optuna.visualization.is_available():
-            fig = optuna.visualization.plot_optimization_history(study)
-            mlflow.log_figure(fig, "optim_history.html")
 
         return study.best_params
 
