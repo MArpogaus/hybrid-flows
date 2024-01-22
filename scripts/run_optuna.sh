@@ -5,22 +5,28 @@ set -o pipefail
 # Function to display the script usage
 usage() {
 	echo "Usage: $0 [-h] STAGE_NAME DISTRIBUTION DATASET STUDY_NAME JOBS"
+    echo "Example: ./scripts/run_optuna.sh -t unconditional_benchmark masked_autoregressive_flow power 10 2"
+    echo "NOTE: There needs to be a file in optuna directory for the respective arguments."
 	echo "    -h               Display this help message"
+    echo "    -t               Test mode"
 	echo "    STAGE_NAME       Name of the stage"
 	echo "    DISTRIBUTION     Distribution type"
 	echo "    DATASET          Dataset name"
-	echo "    STUDY_NAME       Study name"
 	echo "    TRAILS           Number trials per jobs"
 	echo "    JOBS             Number of jobs"
 	exit 1
 }
 
 # Parse command line arguments
-while getopts ":h" option; do
+while getopts ":h:t" option; do
 	case "$option" in
 	h)
 		usage
 		;;
+    t)
+        TEST_MODE="--test-mode True"
+        shift
+        ;;
 	*)
 		echo "Error: Invalid option -$OPTARG"
 		usage
@@ -39,6 +45,7 @@ DISTRIBUTION=$2
 DATASET=$3
 TRIALS=$4
 JOBS=$5
+TEST_MODE="${TEST_MODE:-}"
 
 STUDY_NAME=${STAGE_NAME}_${DISTRIBUTION}_${DATASET}
 DB_NAME=optuna/optuna_study_${STUDY_NAME}.db
@@ -62,7 +69,8 @@ run_optuna_script() {
 		--load-study=sqlite:///${DB_NAME} \
 		--n-trials=${TRIALS} \
         --use-pruning=true \
-		--seed=$1
+		--seed=$1 \
+        ${TEST_MODE}
 }
 
 for ((seed = 1; seed <= $JOBS; seed++)); do
