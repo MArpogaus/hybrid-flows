@@ -15,8 +15,6 @@ from mctm.data.sklearn_datasets import get_dataset as get_train_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
 from mctm.utils import str2bool
 from mctm.utils.pipeline import pipeline, prepare_pipeline
-
-# +++ train specific?
 from mctm.utils.visualisation import (
     get_figsize,
     plot_2d_data,
@@ -60,17 +58,10 @@ def get_after_fit_hook(results_path, is_hybrid, **kwds):
     return plot_after_fit
 
 
-# --- train specific?
-
-
-# +++ for benchmark
 def get_lr_schedule(**kwds):
     """Lr schedule."""
     lr_decayed_fn = tf.keras.optimizers.schedules.CosineDecay(**kwds)
     return lr_decayed_fn
-
-
-# --- for benchmark
 
 
 def run(
@@ -91,7 +82,6 @@ def run(
 
     IS_BENCHMARK = "benchmark" in stage_name
 
-    # define dataset, model and fit parameters
     stage = stage_name.split("@")[0]
     dataset_kwds = (
         params["datasets"][dataset]
@@ -136,18 +126,18 @@ def run(
     # don't show progress bar if running from CI
     if os.environ.get("CI", False):
         fit_kwds.update(verbose=2)
-
     if not IS_BENCHMARK:
         fig_width = get_figsize(params["textwidth"], fraction=0.5)[0]
 
-    # cosine_decay setup if relevant
     extra_params_to_log = {}
-    if fit_kwds["learning_rate"] == "cosine_decay":
-        cosine_decay_kwds = fit_kwds.pop("cosine_decay_kwds")
-        fit_kwds["learning_rate"] = get_lr_schedule(**cosine_decay_kwds)
-        extra_params_to_log = cosine_decay_kwds
+    if IS_BENCHMARK:
+        # cosine_decay setup if relevant
+        if fit_kwds["learning_rate"] == "cosine_decay":
+            cosine_decay_kwds = fit_kwds.pop("cosine_decay_kwds")
+            fit_kwds["learning_rate"] = get_lr_schedule(**cosine_decay_kwds)
+            extra_params_to_log = cosine_decay_kwds
 
-    # actually execute training experiment
+    # actually execute training
     history, model, preprocessed = pipeline(
         experiment_name=experiment_name,
         run_name=run_name,
@@ -161,32 +151,31 @@ def run(
         get_model_fn=get_model,
         model_kwds=model_kwds,
         preprocess_dataset=lambda data, model: {
-            "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype)
-            if not IS_BENCHMARK
-            else tf.ones_like(
-                data[0], dtype=model.dtype
-            ),  # TODO: is this distinction relevant?
+            "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype),
             "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
-            "validation_data": (  # TODO: can train accept validation_data?
+        }
+        if not IS_BENCHMARK
+        else {
+            "x": tf.ones_like(data[0], dtype=model.dtype),
+            "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
+            "validation_data": (
                 tf.ones_like(data[1], dtype=model.dtype),
                 tf.convert_to_tensor(data[1], dtype=model.dtype),
             ),
         },
         fit_kwds=fit_kwds,
-        plot_data=None
-        if IS_BENCHMARK
-        else partial(plot_2d_data, figsize=(fig_width, fig_width)),
-        after_fit_hook=None
-        if IS_BENCHMARK
-        else get_after_fit_hook(
+        plot_data=partial(plot_2d_data, figsize=(fig_width, fig_width))
+        if not IS_BENCHMARK
+        else None,
+        after_fit_hook=get_after_fit_hook(
             results_path=results_path,
             is_hybrid=get_model == HybridDenistyRegressionModel,
             height=fig_width,
-        ),
+        )
+        if not IS_BENCHMARK
+        else None,
         **extra_params_to_log,
     )
-
-    return history, model, preprocessed
 
 
 if __name__ == "__main__":
