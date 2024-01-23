@@ -10,10 +10,13 @@ import numpy as np
 import tensorflow as tf
 from tensorflow_probability import distributions as tfd
 
-from mctm.data.sklearn_datasets import get_dataset
+from mctm.data.benchmark import get_dataset as get_benchmark_dataset
+from mctm.data.sklearn_datasets import get_dataset as get_train_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
 from mctm.utils import str2bool
 from mctm.utils.pipeline import pipeline, prepare_pipeline
+
+# +++ train specific?
 from mctm.utils.visualisation import (
     get_figsize,
     plot_2d_data,
@@ -57,6 +60,19 @@ def get_after_fit_hook(results_path, is_hybrid, **kwds):
     return plot_after_fit
 
 
+# --- train specific?
+
+
+# +++ for benchmark
+def get_lr_schedule(**kwds):
+    """Lr schedule."""
+    lr_decayed_fn = tf.keras.optimizers.schedules.CosineDecay(**kwds)
+    return lr_decayed_fn
+
+
+# --- for benchmark
+
+
 def run(
     experiment_name,
     results_path,
@@ -73,14 +89,23 @@ def run(
     params should be as defined in params.yaml
     """
 
-    dataset_kwds = params["datasets"][dataset]
+    IS_BENCHMARK = "benchmark" in stage_name
+
+    # define dataset, model and fit parameters
     stage = stage_name.split("@")[0]
+    dataset_kwds = (
+        params["datasets"][dataset]
+        if not IS_BENCHMARK
+        else params["benchmark_datasets"][dataset]
+    )
     model_kwds = params[stage + "_distributions"][distribution][dataset]
     fit_kwds = model_kwds.pop("fit_kwds")
 
     model_kwds.update(
         distribution=distribution,
     )
+    if IS_BENCHMARK:
+        model_kwds["distribution_kwds"].update(dataset_kwds)
 
     if "base_distribution" in model_kwds.keys():
         get_model = HybridDenistyRegressionModel
@@ -97,6 +122,7 @@ def run(
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
     run_name = "_".join((stage, distribution))
 
+    # test mode config
     if test_mode:
         __LOGGER__.info("Running in test-mode")
         run_name += "_test"
@@ -111,31 +137,56 @@ def run(
     if os.environ.get("CI", False):
         fit_kwds.update(verbose=2)
 
-    fig_width = get_figsize(params["textwidth"], fraction=0.5)[0]
+    if not IS_BENCHMARK:
+        fig_width = get_figsize(params["textwidth"], fraction=0.5)[0]
 
-    # actually execute training
-    return pipeline(
+    # cosine_decay setup if relevant
+    extra_params_to_log = {}
+    if fit_kwds["learning_rate"] == "cosine_decay":
+        cosine_decay_kwds = fit_kwds.pop("cosine_decay_kwds")
+        fit_kwds["learning_rate"] = get_lr_schedule(**cosine_decay_kwds)
+        extra_params_to_log = cosine_decay_kwds
+
+    # actually execute training experiment
+    history, model, preprocessed = pipeline(
         experiment_name=experiment_name,
         run_name=run_name,
         results_path=results_path,
         log_file=log_file,
         seed=params["seed"],
-        get_dataset_fn=get_dataset,
-        dataset_kwds={"dataset_name": dataset, **dataset_kwds},
+        get_dataset_fn=get_benchmark_dataset if IS_BENCHMARK else get_train_dataset,
+        dataset_kwds={"dataset_name": dataset, **dataset_kwds}
+        if not IS_BENCHMARK
+        else {"dataset_name": dataset},
         get_model_fn=get_model,
         model_kwds=model_kwds,
         preprocess_dataset=lambda data, model: {
-            "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype),
+            "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype)
+            if not IS_BENCHMARK
+            else tf.ones_like(
+                data[0], dtype=model.dtype
+            ),  # TODO: is this distinction relevant?
             "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
+            "validation_data": (  # TODO: can train accept validation_data?
+                tf.ones_like(data[1], dtype=model.dtype),
+                tf.convert_to_tensor(data[1], dtype=model.dtype),
+            ),
         },
         fit_kwds=fit_kwds,
-        plot_data=partial(plot_2d_data, figsize=(fig_width, fig_width)),
-        after_fit_hook=get_after_fit_hook(
+        plot_data=None
+        if IS_BENCHMARK
+        else partial(plot_2d_data, figsize=(fig_width, fig_width)),
+        after_fit_hook=None
+        if IS_BENCHMARK
+        else get_after_fit_hook(
             results_path=results_path,
             is_hybrid=get_model == HybridDenistyRegressionModel,
             height=fig_width,
         ),
+        **extra_params_to_log,
     )
+
+    return history, model, preprocessed
 
 
 if __name__ == "__main__":

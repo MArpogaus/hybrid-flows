@@ -361,7 +361,7 @@ if __name__ == "__main__":
         parameter_space_definition = yaml.safe_load(f)
 
     if "benchmark" in args.stage_name:
-        model_train_script_name = "train_benchmark"
+        model_train_script_name = "train"
     elif "malnutrition" in args.stage_name:
         model_train_script_name = "train_malnutrition"
     else:
