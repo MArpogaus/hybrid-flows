@@ -297,7 +297,6 @@ benchmark_datasets:
 common:
   fit_kwds: &fit_kwds
     epochs: 10000
-    validation_split: 0.1
     batch_size: 1024
     lr_patience: 100
     reduce_lr_on_plateau: true
@@ -330,6 +329,7 @@ unconditional_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.05
         lr_patience: 100
@@ -344,6 +344,7 @@ unconditional_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.005
         lr_patience: 100
@@ -359,6 +360,7 @@ unconditional_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.005
         lr_patience: 100
@@ -372,6 +374,7 @@ unconditional_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.005
         lr_patience: 100
@@ -385,6 +388,7 @@ unconditional_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.05
         lr_patience: 100
@@ -396,6 +400,7 @@ unconditional_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.05
         lr_patience: 100
@@ -416,6 +421,7 @@ unconditional_distributions:
         dropout: 0
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.001
         lr_patience: 100
@@ -434,6 +440,7 @@ unconditional_distributions:
         dropout: 0
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.001
         lr_patience: 100
@@ -452,6 +459,7 @@ unconditional_distributions:
         activation: relu
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.05
         lr_patience: 100
@@ -467,6 +475,7 @@ unconditional_distributions:
         activation: relu
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.01
         lr_patience: 100
@@ -483,7 +492,6 @@ unconditional_benchmark_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split:
         batch_size: 32
         learning_rate: 0.01
         lr_patience: 10
@@ -497,7 +505,6 @@ unconditional_benchmark_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split:
         batch_size: 32
         learning_rate: 0.01
         lr_patience: 10
@@ -511,7 +518,6 @@ unconditional_benchmark_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split:
         batch_size: 32
         learning_rate: 0.01
         lr_patience: 10
@@ -525,7 +531,6 @@ unconditional_benchmark_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        validation_split:
         batch_size: 32
         learning_rate: 0.01
         lr_patience: 10
@@ -536,28 +541,18 @@ unconditional_benchmark_distributions:
       distribution_kwds:
         <<: *distribution_kwds
         order: 100
-        base_distribution_kwds:
-          distribution_type: kumaraswamy
-          concentration1: 2
-          concentration0: 5
-        low: 0.001
-        high: 0.999
-        smooth_bounds: true
-        allow_flexible_bounds: false
       parameter_kwds:
         hidden_units:
         - 512
         - 512
-        - 512
-        activation: elu
-        kernel_initializer: he_normal
+        activation: relu
       fit_kwds:
         <<: *fit_kwds
-        validation_split:
-        batch_size: 128
+        batch_size: 256
         learning_rate: 0.001
         lr_patience: 10
         lr_reduction_factor: 0.8
+        early_stopping: 5
     hepmass:
       distribution_kwds:
         <<: *distribution_kwds
@@ -566,33 +561,30 @@ unconditional_benchmark_distributions:
         hidden_units:
         - 512
         - 512
-        - 512
-        activation: elu
-        kernel_initializer: he_normal
+        activation: relu
       fit_kwds:
         <<: *fit_kwds
-        validation_split:
-        batch_size: 128
+        batch_size: 256
         learning_rate: 0.001
         lr_patience: 10
         lr_reduction_factor: 0.8
+        early_stopping: 5
     bsds300:
       distribution_kwds:
         <<: *distribution_kwds
         order: 100
       parameter_kwds:
         hidden_units:
-        - 128
-        - 128
-        - 128
+        - 512
+        - 512
         activation: relu
       fit_kwds:
         <<: *fit_kwds
-        validation_split:
-        batch_size: 512
-        learning_rate: 0.01
+        batch_size: 256
+        learning_rate: 0.001
         lr_patience: 10
-        lr_reduction_factor: 0.1
+        lr_reduction_factor: 0.8
+        early_stopping: 5
     miniboone:
       distribution_kwds:
         <<: *distribution_kwds
@@ -601,16 +593,14 @@ unconditional_benchmark_distributions:
         hidden_units:
         - 512
         - 512
-        - 512
-        activation: elu
-        kernel_initializer: he_normal
+        activation: relu
       fit_kwds:
         <<: *fit_kwds
-        validation_split:
-        batch_size: 128
+        batch_size: 256
         learning_rate: 0.001
         lr_patience: 10
         lr_reduction_factor: 0.8
+        early_stopping: 5
 
 unconditional_benchmark_hybrid_pre_trained_distributions:
   masked_autoregressive_flow_first_dim_masked:
@@ -1269,6 +1259,7 @@ malnutrition_distributions:
       conditional_event_shape: 1
     fit_kwds:
       <<: *fit_kwds
+      validation_split: 0.1
       batch_size: 512
       learning_rate: 0.001
       lr_patience: 50
