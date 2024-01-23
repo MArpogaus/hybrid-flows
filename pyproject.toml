@@ -39,8 +39,8 @@ optuna = [
   'plotly~=5.18.0'
 ]
 train = [
-  'dvc[ssh]==3.40.*',
-  'mlflow==2.9.*'
+  'dvc[ssh]==3.30.*',
+  'mlflow==2.8.*'
 ]
 
 [tool.autoflake]

@@ -338,9 +338,11 @@ def get_dataset(dataset_name, dataset_path="datasets"):
     return load_and_preprocess_data(dataset_name, dataset_path)
 
 
-def compute_shift_and_scale(datasets=["POWER", "HEPMASS", "MINIBOONE", "BSDS300"]):
+if __name__ == "__main__":
+    import yaml
+
     shift_and_scale = {}
-    for dataset_name in datasets:
+    for dataset_name in ("POWER", "HEPMASS", "MINIBOONE", "BSDS300"):
         print(f"=== {dataset_name} ===")
         (train_data, validation_data, _), dims = get_dataset(dataset_name)
         print(f"{dims=}")
@@ -377,13 +379,5 @@ def compute_shift_and_scale(datasets=["POWER", "HEPMASS", "MINIBOONE", "BSDS300"
         shift_and_scale[dataset_name.lower()] = dict(
             scale=scale.tolist(), shift=shift.tolist()
         )
-
-    return shift_and_scale
-
-
-if __name__ == "__main__":
-    import yaml
-
-    shift_and_scale = compute_shift_and_scale()
 
     print(yaml.safe_dump({"benchmark_datasets": shift_and_scale}))

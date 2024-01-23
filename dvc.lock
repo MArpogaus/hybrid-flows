@@ -165,3 +165,78 @@ stages:
       hash: md5
       md5: f08d60c51e7217ab9ab8b6850a9d5e6d
       size: 3628
+  unconditional@elementwise_flow-moons:
+    cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
+      unconditional-moons unconditional@elementwise_flow-moons elementwise_flow moons
+      results/unconditional_elementwise_flow_moons --test-mode=false
+    deps:
+    - path: pyproject.toml
+      hash: md5
+      md5: f04546362686cf891a3c1b7df83d1e0b
+      size: 1104
+    - path: scripts/train.py
+      hash: md5
+      md5: a216b3ff24913f3fc214536f688a6863
+      size: 5363
+    - path: src/mctm
+      hash: md5
+      md5: 47df8cbf8f952ced6226c2a6e1242e7b.dir
+      size: 85219
+      nfiles: 15
+    params:
+      params.yaml:
+        datasets.moons*:
+          n_samples: 500
+          noise: 0.05
+          scale:
+          - 0.05
+          - 0.95
+        log-level: info
+        seed: 1
+        textwidth: 487.8225
+        unconditional_distributions.elementwise_flow.moons*:
+          distribution_kwds:
+            bijector_name: bernstein_poly
+            low: -4
+            high: 4
+            smooth_bounds: true
+            allow_flexible_bounds: false
+            shift: false
+            scale: false
+            order: 50
+          parameter_kwds:
+            conditional: false
+            dtype: float32
+          fit_kwds:
+            epochs: 10000
+            validation_split: 0.1
+            batch_size: 1024
+            lr_patience: 100
+            reduce_lr_on_plateau: true
+            early_stopping: 4
+            verbose: true
+            monitor: val_loss
+            learning_rate: 0.05
+            lr_reduction_factor: 0.5
+    outs:
+    - path: results/unconditional_elementwise_flow_moons/dataset.pdf
+      hash: md5
+      md5: e13f28c6d560e634c204da1c526bf7e4
+      size: 16826
+    - path: results/unconditional_elementwise_flow_moons/mcp
+      hash: md5
+      md5: b0a257cafb0c6baa08481b49aba25e51.dir
+      size: 2862
+      nfiles: 3
+    - path: results/unconditional_elementwise_flow_moons/metrics.yaml
+      hash: md5
+      md5: e9cdde1243ea9ce8df95f69c6536a306
+      size: 57
+    - path: results/unconditional_elementwise_flow_moons/samples.pdf
+      hash: md5
+      md5: 7566d4e8442c5f94bd0b909c9c45832f
+      size: 118507
+    - path: results/unconditional_elementwise_flow_moons/train.log
+      hash: md5
+      md5: 8864275204fe5b3c774e3c4778a5e059
+      size: 1614

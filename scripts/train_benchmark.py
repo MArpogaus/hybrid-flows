@@ -1,13 +1,12 @@
 """Train benchmark."""
 # IMPORT PACKAGES #############################################################
 import argparse
-import logging
 import os
 
 import tensorflow as tf
 from tensorflow_probability import distributions as tfd
 
-from mctm.data.benchmark import compute_shift_and_scale, get_dataset
+from mctm.data.benchmark import get_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
 from mctm.utils import str2bool
 from mctm.utils.pipeline import pipeline, prepare_pipeline
@@ -19,7 +18,7 @@ def get_lr_schedule(**kwds):
     return lr_decayed_fn
 
 
-def main(
+def run(
     experiment_name,
     results_path,
     log_file,
@@ -35,52 +34,26 @@ def main(
     params should be as defined in params.yaml
     """
 
-    logging.info(
-        f"\nrunning with\n\n{experiment_name=}\n{results_path=}\n{log_file=}\n{log_level=}\n{dataset=}\n{stage_name=}\n{distribution=}\n{params=}\n{test_mode}\n"
-    )
-
-    # --- prepare for execution ---
-    # build variables for execution
-    dataset = dataset
-    distribution = distribution
+    # define dataset, model and fit parameters
     stage = stage_name.split("@")[0]
-    distribution_params = params[stage + "_distributions"][distribution][dataset]
-    distribution_kwds = distribution_params["distribution_kwds"]
-    fit_kwds = distribution_params["fit_kwds"]
-    parameter_kwds = distribution_params["parameter_kwds"]
     dataset_kwds = params["benchmark_datasets"][dataset]
+    model_kwds = params[stage + "_distributions"][distribution][dataset]
+    fit_kwds = model_kwds.pop("fit_kwds")
 
-    # compute shift and scale parameters from dataset
-    shift_and_scale = compute_shift_and_scale([dataset])[dataset]
-    dataset_kwds["scale"] = shift_and_scale["scale"]
-    dataset_kwds["shift"] = shift_and_scale["shift"]
-
-    distribution_kwds.update(**shift_and_scale)
-
-    model_kwds = dict(
+    model_kwds.update(
         distribution=distribution,
-        distribution_kwds=distribution_kwds,
-        parameter_kwds=parameter_kwds,
     )
+    model_kwds["distribution_kwds"].update(dataset_kwds)
 
-    if "base_distribution" in distribution_params.keys():
+    if "base_distribution" in model_kwds.keys():
         get_model = HybridDenistyRegressionModel
-        model_kwds.update(
-            freeze_base_model=distribution_params["freeze_base_model"],
-            base_checkpoint_path=(
-                f'results/{distribution_params["base_checkpoint_path"]}_{dataset}/mcp/weights'  # noqa: E501
-                if distribution_params["base_checkpoint_path"]
-                else False
-            ),
-            base_distribution=distribution_params["base_distribution"],
-            base_distribution_kwds=distribution_params["base_distribution_kwds"],
-            base_parameter_kwds=distribution_params["base_parameter_kwds"],
-        )
-        if not distribution_params["base_checkpoint_path"]:
+        if not model_kwds["base_checkpoint_path"]:
             fit_kwds.update(
                 loss=lambda y, dist: -dist.log_prob(y)
                 - tfd.Independent(dist.distribution).log_prob(y)
             )
+        else:
+            model_kwds.update(base_checkpoint_path_prefix=results_path.split("/", 1)[0])
     else:
         get_model = DensityRegressionModel
 
@@ -89,7 +62,7 @@ def main(
 
     # test mode
     if test_mode:
-        experiment_name += "_test"
+        run_name += "_test"
         fit_kwds.update(epochs=1)
 
     # don't show progress bar if running from CI
@@ -168,7 +141,7 @@ if __name__ == "__main__":
     # load params
     params = prepare_pipeline(args)
 
-    main(
+    run(
         args.experiment_name,
         args.results_path,
         args.log_file,
