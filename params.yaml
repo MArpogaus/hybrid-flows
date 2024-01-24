@@ -294,6 +294,11 @@ benchmark_datasets:
     - 0.834
     - 1.742
 
+malnutrition_kwds:
+  data_path: datasets/malnutrition/india.raw
+  targets: [stunting, wasting, underweight]
+  covariates: [mage]
+
 common:
   fit_kwds: &fit_kwds
     epochs: 10000
@@ -569,22 +574,6 @@ unconditional_benchmark_distributions:
         lr_patience: 10
         lr_reduction_factor: 0.8
         early_stopping: 5
-    bsds300:
-      distribution_kwds:
-        <<: *distribution_kwds
-        order: 100
-      parameter_kwds:
-        hidden_units:
-        - 512
-        - 512
-        activation: relu
-      fit_kwds:
-        <<: *fit_kwds
-        batch_size: 256
-        learning_rate: 0.001
-        lr_patience: 10
-        lr_reduction_factor: 0.8
-        early_stopping: 5
     miniboone:
       distribution_kwds:
         <<: *distribution_kwds
@@ -601,6 +590,22 @@ unconditional_benchmark_distributions:
         lr_patience: 10
         lr_reduction_factor: 0.8
         early_stopping: 5
+    bsds300:
+      distribution_kwds:
+        <<: *distribution_kwds
+        order: 100
+      parameter_kwds:
+        hidden_units:
+        - 512
+        - 512
+        activation: relu
+      fit_kwds:
+        <<: *fit_kwds
+        batch_size: 256
+        learning_rate: 0.01
+        lr_patience: 25
+        lr_reduction_factor: 0.5
+        early_stopping: 4
 
 unconditional_benchmark_hybrid_pre_trained_distributions:
   masked_autoregressive_flow_first_dim_masked:
@@ -761,7 +766,6 @@ unconditional_benchmark_hybrid_pre_trained_distributions:
         lr_patience: 5
         lr_reduction_factor: 0.8
 
-
 conditional_distributions:
   elementwise_flow:
     moons:
@@ -779,6 +783,7 @@ conditional_distributions:
         input_shape: 1
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.01
         lr_patience: 100
@@ -798,6 +803,7 @@ conditional_distributions:
         input_shape: 1
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.05
         lr_patience: 100
@@ -819,6 +825,7 @@ conditional_distributions:
         input_shape: 1
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.01
         lr_patience: 100
@@ -838,6 +845,7 @@ conditional_distributions:
         input_shape: 1
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.005
         lr_patience: 100
@@ -857,6 +865,7 @@ conditional_distributions:
         input_shape: 1
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.05
         lr_patience: 100
@@ -874,6 +883,7 @@ conditional_distributions:
         input_shape: 1
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.05
         lr_patience: 100
@@ -895,6 +905,7 @@ conditional_distributions:
         conditional_event_shape: 1
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.01
         lr_patience: 100
@@ -914,6 +925,7 @@ conditional_distributions:
         conditional_event_shape: 1
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.05
         lr_patience: 100
@@ -937,6 +949,7 @@ conditional_distributions:
         conditional_event_shape: 1
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.01
         lr_patience: 100
@@ -957,6 +970,7 @@ conditional_distributions:
         conditional_event_shape: 1
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.01
         lr_patience: 100
@@ -994,6 +1008,7 @@ unconditional_hybrid_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.01
         lr_patience: 100
@@ -1028,6 +1043,7 @@ unconditional_hybrid_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 512
         learning_rate: 0.01
         lr_patience: 500
@@ -1060,6 +1076,7 @@ unconditional_hybrid_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 128
         learning_rate: 0.01
         early_stopping: 10
@@ -1090,6 +1107,7 @@ unconditional_hybrid_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.005
         lr_patience: 100
@@ -1133,8 +1151,8 @@ unconditional_hybrid_pre_trained_distributions:
       base_checkpoint_path: unconditional_elementwise_flow_moons/mcp/weights
       parameter_kwds:
         hidden_units:
-        - 8
-        - 8
+        - 16
+        - 512
         activation: sigmoid
         batch_norm: false
         dropout: 0
@@ -1150,11 +1168,12 @@ unconditional_hybrid_pre_trained_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
-        batch_size: 1024
+        validation_split: 0.1
+        batch_size: 512
         learning_rate: 0.01
         lr_patience: 25
-        early_stopping: 4
-        lr_reduction_factor: 0.5
+        early_stopping: 5
+        lr_reduction_factor: 0.8
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1181,6 +1200,7 @@ unconditional_hybrid_pre_trained_distributions:
         dtype: float32
       fit_kwds:
         <<: *fit_kwds
+        validation_split: 0.1
         batch_size: 1024
         learning_rate: 0.005
         lr_patience: 100
@@ -1264,8 +1284,3 @@ malnutrition_distributions:
       learning_rate: 0.001
       lr_patience: 50
       lr_reduction_factor: 0.1
-
-malnutrition_kwds:
-  data_path: datasets/malnutrition/india.raw
-  targets: [stunting, wasting, underweight]
-  covariates: [mage]
