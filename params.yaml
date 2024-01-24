@@ -5,11 +5,11 @@ testmode: false
 
 datasets:
   moons:
-    n_samples: 500
+    n_samples: 10240
     noise: 0.05
     scale: [0.05, 0.95]
   circles:
-    n_samples: 2000
+    n_samples: 10240
     noise: 0.05
     factor: 0.5
     scale: [0.05, 0.95]
@@ -302,12 +302,13 @@ malnutrition_kwds:
 common:
   fit_kwds: &fit_kwds
     epochs: 10000
-    batch_size: 1024
-    lr_patience: 100
-    reduce_lr_on_plateau: true
-    early_stopping: true
-    verbose: true
+    batch_size: 256
+    early_stopping: 4
+    lr_patience: 20
+    lr_reduction_factor: 0.5
     monitor: val_loss
+    reduce_lr_on_plateau: true
+    verbose: true
   distribution_kwds: &distribution_kwds
     bijector_name: bernstein_poly
     low: -4
@@ -335,11 +336,6 @@ unconditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.05
-        lr_patience: 100
-        lr_reduction_factor: 0.5
-        early_stopping: 4
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -350,10 +346,6 @@ unconditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.005
-        lr_patience: 100
-        lr_reduction_factor: 0.1
 
   multivariate_flow:
     moons:
@@ -366,10 +358,6 @@ unconditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.005
-        lr_patience: 100
-        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -380,10 +368,6 @@ unconditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.005
-        lr_patience: 100
-        lr_reduction_factor: 0.1
 
   multivariate_normal:
     moons:
@@ -394,10 +378,6 @@ unconditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.05
-        lr_patience: 100
-        lr_reduction_factor: 0.1
     circles:
       distribution_kwds: {}
       parameter_kwds:
@@ -406,10 +386,6 @@ unconditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.05
-        lr_patience: 100
-        lr_reduction_factor: 0.1
 
   coupling_flow:
     moons:
@@ -427,10 +403,6 @@ unconditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.001
-        lr_patience: 100
-        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -446,10 +418,6 @@ unconditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.001
-        lr_patience: 100
-        lr_reduction_factor: 0.1
 
   masked_autoregressive_flow:
     moons:
@@ -465,10 +433,6 @@ unconditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.05
-        lr_patience: 100
-        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -481,10 +445,6 @@ unconditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.01
-        lr_patience: 100
-        lr_reduction_factor: 0.1
 
 unconditional_benchmark_distributions:
   elementwise_flow:
@@ -784,10 +744,6 @@ conditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.01
-        lr_patience: 100
-        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -804,10 +760,6 @@ conditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.05
-        lr_patience: 100
-        lr_reduction_factor: 0.1
 
   multivariate_flow:
     moons:
@@ -826,10 +778,6 @@ conditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.01
-        lr_patience: 100
-        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -846,10 +794,6 @@ conditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.005
-        lr_patience: 100
-        lr_reduction_factor: 0.1
 
   multivariate_normal:
     moons:
@@ -866,10 +810,6 @@ conditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.05
-        lr_patience: 100
-        lr_reduction_factor: 0.1
     circles:
       distribution_kwds: {}
       parameter_kwds:
@@ -884,10 +824,6 @@ conditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.05
-        lr_patience: 100
-        lr_reduction_factor: 0.1
 
   masked_autoregressive_flow:
     moons:
@@ -906,10 +842,6 @@ conditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.01
-        lr_patience: 100
-        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -926,10 +858,6 @@ conditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.05
-        lr_patience: 100
-        lr_reduction_factor: 0.1
 
   coupling_flow:
     moons:
@@ -950,10 +878,6 @@ conditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.01
-        lr_patience: 100
-        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -971,10 +895,6 @@ conditional_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 100
-        lr_reduction_factor: 0.1
 
 unconditional_hybrid_distributions:
   masked_autoregressive_flow_first_dim_masked:
@@ -1009,10 +929,6 @@ unconditional_hybrid_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 100
-        lr_reduction_factor: 0.1
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1044,10 +960,6 @@ unconditional_hybrid_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 500
-        lr_reduction_factor: 0.1
 
   coupling_flow:
     moons:
@@ -1077,11 +989,6 @@ unconditional_hybrid_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 128
-        learning_rate: 0.01
-        early_stopping: 10
-        lr_patience: 10
-        lr_reduction_factor: 0.9
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1108,10 +1015,6 @@ unconditional_hybrid_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.005
-        lr_patience: 100
-        lr_reduction_factor: 0.1
 
 unconditional_hybrid_pre_trained_distributions:
   # masked_autoregressive_flow:
@@ -1151,9 +1054,10 @@ unconditional_hybrid_pre_trained_distributions:
       base_checkpoint_path: unconditional_elementwise_flow_moons/mcp/weights
       parameter_kwds:
         hidden_units:
-        - 16
-        - 512
-        activation: sigmoid
+        - 8
+        - 8
+        - 8
+        activation: relu
         batch_norm: false
         dropout: 0
         # kernel_initializer: ones
@@ -1169,11 +1073,6 @@ unconditional_hybrid_pre_trained_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 512
-        learning_rate: 0.01
-        lr_patience: 25
-        early_stopping: 5
-        lr_reduction_factor: 0.8
     circles:
       distribution_kwds:
         <<: *distribution_kwds
@@ -1185,9 +1084,9 @@ unconditional_hybrid_pre_trained_distributions:
       base_checkpoint_path: unconditional_elementwise_flow_circles/mcp/weights
       parameter_kwds:
         hidden_units:
-        - 16
-        - 16
-        - 16
+        - 8
+        - 8
+        - 8
         activation: relu
         batch_norm: false
         dropout: 0
@@ -1201,10 +1100,6 @@ unconditional_hybrid_pre_trained_distributions:
       fit_kwds:
         <<: *fit_kwds
         validation_split: 0.1
-        batch_size: 1024
-        learning_rate: 0.005
-        lr_patience: 100
-        lr_reduction_factor: 0.1
 
 malnutrition_distributions:
   elementwise_flow:

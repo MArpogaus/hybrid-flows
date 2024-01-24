@@ -6,6 +6,7 @@ import os
 from functools import partial
 from shutil import which
 
+import numpy as np
 import tensorflow as tf
 from tensorflow_probability import distributions as tfd
 
@@ -29,7 +30,14 @@ def get_after_fit_hook(results_path, is_hybrid, **kwds):
     """Provide after fit plot."""
 
     def plot_after_fit(model, x, y):
-        fig = plot_samples(model(x), y.numpy(), seed=1, **kwds)
+        # Generating random indices
+        indices = np.random.choice(len(x), size=2000, replace=False)
+
+        # Selecting elements based on the indices
+        x = x.numpy()[indices]
+        y = y.numpy()[indices]
+
+        fig = plot_samples(model(x), y, seed=1, **kwds)
         fig.savefig(os.path.join(results_path, "samples.pdf"))
         if is_hybrid:
             fig1, fig2, fig3 = plot_flow(model(x), x, y, seed=1, **kwds)
