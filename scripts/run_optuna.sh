@@ -9,6 +9,7 @@ usage() {
     echo "NOTE: There needs to be a file in optuna directory for the respective arguments."
 	echo "    -h               Display this help message"
     echo "    -t               Test mode"
+    echo "    -d               Log level debug (info otherwise)"
 	echo "    STAGE_NAME       Name of the stage"
 	echo "    DISTRIBUTION     Distribution type"
 	echo "    DATASET          Dataset name"
@@ -18,14 +19,16 @@ usage() {
 }
 
 # Parse command line arguments
-while getopts ":h:t" option; do
+while getopts "htd" option; do
 	case "$option" in
 	h)
 		usage
 		;;
     t)
         TEST_MODE="--test-mode True"
-        shift
+        ;;
+    d)
+        LOG_LEVEL="--log-level debug"
         ;;
 	*)
 		echo "Error: Invalid option -$OPTARG"
@@ -33,6 +36,7 @@ while getopts ":h:t" option; do
 		;;
 	esac
 done
+shift $(( OPTIND - 1 )) # remove flags from args
 
 # Set variables based on provided arguments
 if [ "$#" -ne 5 ]; then
@@ -46,6 +50,7 @@ DATASET=$3
 TRIALS=$4
 JOBS=$5
 TEST_MODE="${TEST_MODE:-}"
+LOG_LEVEL="${LOG_LEVEL:-}"
 
 STUDY_NAME=${STAGE_NAME}_${DISTRIBUTION}_${DATASET}
 DB_NAME=optuna/optuna_study_${STUDY_NAME}.db
@@ -70,7 +75,8 @@ run_optuna_script() {
 		--n-trials=${TRIALS} \
         --use-pruning=true \
 		--seed=$1 \
-        ${TEST_MODE}
+        ${TEST_MODE} \
+        ${LOG_LEVEL}
 }
 
 for ((seed = 1; seed <= $JOBS; seed++)); do

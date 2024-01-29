@@ -39,7 +39,9 @@ def suggest_new_params(
     dataset,
     use_pruning,
 ):
+    __LOGGER__.debug(f"{trial}: {use_pruning=}")
     params = deepcopy(inital_params)
+    return params
     stage = stage_name.split("@")[0]
     model_kwds = params[stage + "_distributions"][distribution][dataset]
 
@@ -209,6 +211,8 @@ def run_study(
             min_early_stopping_rate=0,
             bootstrap_count=0,
         )
+
+    __LOGGER__.debug(f"{load_study_from_storage=}")
     if load_study_from_storage:
         study = optuna.load_study(storage=load_study_from_storage, **study_kwds)
         # If a study has been started before, a parent may already exists run
@@ -242,12 +246,13 @@ def run_study(
         )
 
         study.optimize(
-            objective,
-            n_trials=n_trials,
-            n_jobs=n_jobs,
-            show_progress_bar=True,
-            callbacks=[best_value_callback, reprot_pruned_trials],
-        )
+                objective,
+                n_trials=n_trials,
+                n_jobs=n_jobs,
+                show_progress_bar=True,
+                callbacks=[best_value_callback, reprot_pruned_trials],
+            )
+
 
         __LOGGER__.info(
             f"Best value achieved ({study.best_value=}) "

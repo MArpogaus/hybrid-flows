@@ -1,13 +1,10 @@
 - kwargs:
-    high: 1024
-    low: 128
-  name: fit_kwds.batch_size
-  type: int
-- kwargs:
-    high: 0.1
-    low: 0.001
+    choices:
+     - cosine_decay
+     - exponential_decay
+     - polynomial_decay
   name: fit_kwds.learning_rate
-  type: float
+  type: categorical
 - kwargs:
     high: 0.9
     low: 0.1
@@ -35,15 +32,38 @@
     - tanh
   name: parameter_kwds.activation
   type: categorical
-- kwargs:
-    choices: &hidden_units [4, 8, 16, 32, 128, 256, 512, 1024]
-  name: parameter_kwds.hidden_units.0
-  type: categorical
-- kwargs:
-    choices: *hidden_units
-  name: parameter_kwds.hidden_units.1
-  type: categorical
-- kwargs:
-    choices: *hidden_units
-  name: parameter_kwds.hidden_units.2
-  type: categorical
+- name: fit_kwds.cosine_decay_kwds.initial_learning_rate
+  type: float
+  kwargs:
+    high: 0.1
+    low: 0.001
+- name: fit_kwds.cosine_decay_kwds.decay_steps
+  type: int
+  kwargs:
+    high: 10000
+    low: 100
+- name: fit_kwds.exponential_decay_kwds.initial_learning_rate
+  type: float
+  kwargs:
+    high: 0.1
+    low: 0.001
+- name: fit_kwds.exponential_decay_kwds.decay_steps
+  type: int
+  kwargs:
+    high: 10000
+    low: 100
+- name: fit_kwds.polynomial_decay_kwds.initial_learning_rate
+  type: float
+  kwargs:
+    high: 0.1
+    low: 0.001
+- name: fit_kwds.polynomial_decay_kwds.decay_steps
+  type: int
+  kwargs:
+    high: 10000
+    low: 100
+- name: fit_kwds.polynomial_decay_kwds.power
+  type: int
+  kwargs:
+    high: 3
+    low: 1
