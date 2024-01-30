@@ -75,11 +75,11 @@ def fit_distribution(
     if weight_decay:
         # NOTE: This is only working with recent versions of TF,
         #       which are atm not (yet) compatible with BNF.
-        optimizer = tf.optimizers.AdamW(
+        optimizer = K.optimizers.AdamW(
             learning_rate=learning_rate, weight_decay=weight_decay
         )
     else:
-        optimizer = tf.optimizers.Adam(learning_rate=learning_rate)
+        optimizer = K.optimizers.Adam(learning_rate=learning_rate)
     model.compile(optimizer=optimizer, loss=loss)
 
     callbacks += [

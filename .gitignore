@@ -1,6 +1,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/r,python,jupyternotebooks,emacs,linux,macos,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=r,python,jupyternotebooks,emacs,linux,macos,windows
 
+optuna/*.db
 datasets/
 mlflow_data.feather
 .virtual_documents/

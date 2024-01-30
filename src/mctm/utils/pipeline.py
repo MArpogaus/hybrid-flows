@@ -127,6 +127,7 @@ def pipeline(
         __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
     with start_run_with_exception_logging(run_name=run_name):
         # Auto log all MLflow entities
+
         mlflow.autolog()
         mlflow.log_dict(call_args, "params.yaml")
         log_cfg(call_args)

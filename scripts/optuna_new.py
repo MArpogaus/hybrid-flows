@@ -29,29 +29,6 @@ __BEST_VALUE_ATTRIBUTE_KEY__ = "best_value"
 __EVALUATION_METRIC__ = "val_loss"
 
 
-def check_condition(condition, model_params):
-    if condition is None:
-        return True
-
-    # __LOGGER__.debug(f"---------------------")
-    # __LOGGER__.debug(f"{condition}")
-    # __LOGGER__.debug(f"{model_params.keys()}")
-    # __LOGGER__.debug(f"{type(condition)}")
-    __LOGGER__.debug(f"-->")
-
-    keys = list(condition.keys())[0].split(".")
-    p = model_params
-    for k in keys:
-        __LOGGER__.debug(k)
-        __LOGGER__.debug(p.keys())
-        p = p.get(k)
-        if p is None:
-            return False
-    __LOGGER__.debug(f"res:")
-    __LOGGER__.debug(p)
-    return p == list(condition.values())[0]
-
-
 # %% function definitions
 def suggest_new_params(
     trial,
@@ -80,9 +57,6 @@ def suggest_new_params(
             key = int(key)
         __LOGGER__.debug(f"trial keyword ({trial.number}): {d['name']}, {d['type']}")
         v = getattr(trial, f'suggest_{d["type"]}')(d["name"], **d["kwargs"])
-        # if check_condition(d.get("condition"), model_kwds): #TODO: verwerfen if nicht working, wenn condition gibt prüfen, none auch true
-        __LOGGER__.debug(f"pk {p}, {k}")
-
         p[key] = v
 
     # Add KerasPruningCallback checks for pruning condition every epoch
@@ -241,8 +215,11 @@ def run_study(
             bootstrap_count=0,
         )
 
-    __LOGGER__.debug(f"{load_study_from_storage=}")
     if load_study_from_storage:
+        __LOGGER__.warn(
+            f"loading study from storage {load_study_from_storage}."
+            " This can confuse parameter definitions."
+        )
         study = optuna.load_study(storage=load_study_from_storage, **study_kwds)
         # If a study has been started before, a parent may already exists run
         run_id = study.user_attrs.get(__RUN_ID_ATTRIBUTE_KEY__, None)

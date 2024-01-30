@@ -134,23 +134,24 @@ def run(
         fig_width = get_figsize(params["textwidth"], fraction=0.5)[0]
 
     extra_params_to_log = {}
-    # if IS_BENCHMARK:
-    #     # cosine_decay setup if relevant
-    #     if fit_kwds["learning_rate"] == "cosine_decay":
-    #         decay_kwds = fit_kwds.pop("cosine_decay_kwds")
-    #         decay = tf.keras.optimizers.schedules.CosineDecay
-    #         fit_kwds["learning_rate"] = get_lr_schedule(decay, **decay_kwds)
-    #         extra_params_to_log = decay_kwds
-    #     elif fit_kwds["learning_rate"] == "exponential_decay":
-    #         decay_kwds = fit_kwds.pop("exponential_decay_kwds")
-    #         decay = tf.keras.optimizers.schedules.ExponentialDecay
-    #         fit_kwds["learning_rate"] = get_lr_schedule(decay, **decay_kwds)
-    #         extra_params_to_log = decay_kwds
-    #     elif fit_kwds["learning_rate"] == "polynomial_decay":
-    #         decay_kwds = fit_kwds.pop("polynomial_decay_kwds")
-    #         decay = tf.keras.optimizers.schedules.PolynomialDecay
-    #         fit_kwds["learning_rate"] = get_lr_schedule(decay, **decay_kwds)
-    #         extra_params_to_log = decay_kwds
+    if IS_BENCHMARK:
+        # cosine_decay setup if relevant
+        if isinstance(fit_kwds["learning_rate"], str):
+            schedule_key = fit_kwds["learning_rate"]
+            __LOGGER__.info(f"{schedule_key=}")
+            S = tf.keras.optimizers.schedules
+            schedulers = {
+                "cosine_decay": S.CosineDecay,
+                "exponential_decay": S.ExponentialDecay,
+                "polynomial_decay": S.PolynomialDecay,
+            }
+            decay_kwds = fit_kwds.pop(schedule_key + "_kwds")
+            fit_kwds["learning_rate"] = get_lr_schedule(
+                schedulers[schedule_key], **decay_kwds
+            )
+            extra_params_to_log = decay_kwds
+            for key in schedulers.keys():
+                fit_kwds.pop(key + "_kwds", None)
 
     # actually execute training
     history, model, preprocessed = pipeline(
@@ -191,6 +192,8 @@ def run(
         else None,
         **extra_params_to_log,
     )
+
+    return history, model, preprocessed
 
 
 if __name__ == "__main__":

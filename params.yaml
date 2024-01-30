@@ -655,11 +655,11 @@ unconditional_benchmark_distributions:
         batch_size: 128
         learning_rate: 0.001
         lr_patience: 10
-        reduce_lr_on_plateau: true
+        reduce_lr_on_plateau: false
         early_stopping: true
         verbose: true
         monitor: val_loss
-        # cosine_decay_kwds: 
+        # cosine_decay_kwds:
         #   initial_learning_rate: 0.01
         #   decay_steps: 1000
         # exponential_decay_kwds:
