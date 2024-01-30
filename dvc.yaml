@@ -36,7 +36,7 @@ stages:
     matrix:
       distribution: ${unconditional_benchmark_distributions}
       dataset: ${benchmark_datasets}
-    cmd: python scripts/train_benchmark.py --log-level ${log-level} --log-file train.log --experiment-name unconditional-benchmark-${item.dataset} unconditional_benchmark@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_benchmark_${item.distribution}_${item.dataset} --test-mode=${testmode}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name unconditional-benchmark-${item.dataset} unconditional_benchmark@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_benchmark_${item.distribution}_${item.dataset} --test-mode=${testmode}
     params:
     - log-level
     - seed

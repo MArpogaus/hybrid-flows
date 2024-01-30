@@ -58,14 +58,15 @@ def get_after_fit_hook(results_path, is_hybrid, **kwds):
     return plot_after_fit
 
 
-def get_lr_schedule(decay,**kwds):
+def get_lr_schedule(decay, **kwds):
     """Lr schedule.
 
-        decay: function like tf.keras.optimizers.schedules.CosineDecay
-        kwds: kewyowrds that get passed into decay function.
+    decay: function like tf.keras.optimizers.schedules.CosineDecay
+    kwds: kewyowrds that get passed into decay function.
     """
     lr_decayed_fn = decay(**kwds)
     return lr_decayed_fn
+
 
 def run(
     experiment_name,
@@ -133,23 +134,23 @@ def run(
         fig_width = get_figsize(params["textwidth"], fraction=0.5)[0]
 
     extra_params_to_log = {}
-    if IS_BENCHMARK:
-        # cosine_decay setup if relevant
-        if fit_kwds["learning_rate"] == "cosine_decay":
-            decay_kwds = fit_kwds.pop("cosine_decay_kwds")
-            decay = tf.keras.optimizers.schedules.CosineDecay
-            fit_kwds["learning_rate"] = get_lr_schedule(decay, **decay_kwds)
-            extra_params_to_log = decay_kwds
-        elif fit_kwds["learning_rate"] == "exponential_decay":
-            decay_kwds = fit_kwds.pop("exponential_decay_kwds")
-            decay = tf.keras.optimizers.schedules.ExponentialDecay
-            fit_kwds["learning_rate"] = get_lr_schedule(decay, **decay_kwds)
-            extra_params_to_log = decay_kwds
-        elif fit_kwds["learning_rate"] == "polynomial_decay":
-            decay_kwds = fit_kwds.pop("polynomial_decay_kwds")
-            decay = tf.keras.optimizers.schedules.PolynomialDecay
-            fit_kwds["learning_rate"] = get_lr_schedule(decay, **decay_kwds)
-            extra_params_to_log = decay_kwds
+    # if IS_BENCHMARK:
+    #     # cosine_decay setup if relevant
+    #     if fit_kwds["learning_rate"] == "cosine_decay":
+    #         decay_kwds = fit_kwds.pop("cosine_decay_kwds")
+    #         decay = tf.keras.optimizers.schedules.CosineDecay
+    #         fit_kwds["learning_rate"] = get_lr_schedule(decay, **decay_kwds)
+    #         extra_params_to_log = decay_kwds
+    #     elif fit_kwds["learning_rate"] == "exponential_decay":
+    #         decay_kwds = fit_kwds.pop("exponential_decay_kwds")
+    #         decay = tf.keras.optimizers.schedules.ExponentialDecay
+    #         fit_kwds["learning_rate"] = get_lr_schedule(decay, **decay_kwds)
+    #         extra_params_to_log = decay_kwds
+    #     elif fit_kwds["learning_rate"] == "polynomial_decay":
+    #         decay_kwds = fit_kwds.pop("polynomial_decay_kwds")
+    #         decay = tf.keras.optimizers.schedules.PolynomialDecay
+    #         fit_kwds["learning_rate"] = get_lr_schedule(decay, **decay_kwds)
+    #         extra_params_to_log = decay_kwds
 
     # actually execute training
     history, model, preprocessed = pipeline(

@@ -29,6 +29,29 @@ __BEST_VALUE_ATTRIBUTE_KEY__ = "best_value"
 __EVALUATION_METRIC__ = "val_loss"
 
 
+def check_condition(condition, model_params):
+    if condition is None:
+        return True
+
+    # __LOGGER__.debug(f"---------------------")
+    # __LOGGER__.debug(f"{condition}")
+    # __LOGGER__.debug(f"{model_params.keys()}")
+    # __LOGGER__.debug(f"{type(condition)}")
+    __LOGGER__.debug(f"-->")
+
+    keys = list(condition.keys())[0].split(".")
+    p = model_params
+    for k in keys:
+        __LOGGER__.debug(k)
+        __LOGGER__.debug(p.keys())
+        p = p.get(k)
+        if p is None:
+            return False
+    __LOGGER__.debug(f"res:")
+    __LOGGER__.debug(p)
+    return p == list(condition.values())[0]
+
+
 # %% function definitions
 def suggest_new_params(
     trial,
@@ -41,7 +64,6 @@ def suggest_new_params(
 ):
     __LOGGER__.debug(f"{trial}: {use_pruning=}")
     params = deepcopy(inital_params)
-    return params
     stage = stage_name.split("@")[0]
     model_kwds = params[stage + "_distributions"][distribution][dataset]
 
@@ -49,12 +71,19 @@ def suggest_new_params(
         p = model_kwds
         keys = d["name"].split(".")
         for k in keys[:-1]:
+            if k not in p.keys():
+                p[k] = {}
             p = p[k]
 
         key = keys[-1]
         if key.isdigit():
             key = int(key)
-        p[key] = getattr(trial, f'suggest_{d["type"]}')(d["name"], **d["kwargs"])
+        __LOGGER__.debug(f"trial keyword ({trial.number}): {d['name']}, {d['type']}")
+        v = getattr(trial, f'suggest_{d["type"]}')(d["name"], **d["kwargs"])
+        # if check_condition(d.get("condition"), model_kwds): #TODO: verwerfen if nicht working, wenn condition gibt prüfen, none auch true
+        __LOGGER__.debug(f"pk {p}, {k}")
+
+        p[key] = v
 
     # Add KerasPruningCallback checks for pruning condition every epoch
     if use_pruning:
@@ -246,13 +275,12 @@ def run_study(
         )
 
         study.optimize(
-                objective,
-                n_trials=n_trials,
-                n_jobs=n_jobs,
-                show_progress_bar=True,
-                callbacks=[best_value_callback, reprot_pruned_trials],
-            )
-
+            objective,
+            n_trials=n_trials,
+            n_jobs=n_jobs,
+            show_progress_bar=True,
+            callbacks=[best_value_callback, reprot_pruned_trials],
+        )
 
         __LOGGER__.info(
             f"Best value achieved ({study.best_value=}) "
