@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-01-17 11:41:21 (Marcel Arpogaus)
+# changed : 2024-01-24 17:36:50 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -95,10 +95,13 @@ def get_spline_param_constrain_fn(nbins, interval_width, min_bin_width, min_slop
     return constrain_fn
 
 
-def __get_parametrized_bijector_fn__(bijector_name, **kwds):
+def __get_parametrized_bijector_fn__(
+    bijector_name, parameter_constrain_fn=None, **kwds
+):
     if bijector_name == "bernstein_poly":
         parameters_shape = [kwds.pop("order")]
-        parameter_constrain_fn = get_thetas_constrain_fn(**kwds)
+        if parameter_constrain_fn is None:
+            parameter_constrain_fn = get_thetas_constrain_fn(**kwds)
 
         def bijector_fn(unconstrained_parameters):
             constrained_parameters = parameter_constrain_fn(unconstrained_parameters)
@@ -111,7 +114,8 @@ def __get_parametrized_bijector_fn__(bijector_name, **kwds):
     elif bijector_name == "quadratic_spline":
         parameters_shape = [kwds["nbins"] * 3 - 1]
         range_min = kwds.pop("range_min")
-        parameter_constrain_fn = get_spline_param_constrain_fn(**kwds)
+        if parameter_constrain_fn is None:
+            parameter_constrain_fn = get_spline_param_constrain_fn(**kwds)
 
         def bijector_fn(unconstrained_parameters):
             constrained_parameters = parameter_constrain_fn(unconstrained_parameters)
