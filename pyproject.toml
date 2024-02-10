@@ -10,7 +10,7 @@ classifiers = [
   "Programming Language :: Python :: 3.10"
 ]
 dependencies = [
-  'bernstein_flow @ git+https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector.git@70a7fa3',
+  'bernstein_flow @ git+https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector.git@8d800f0',
   'tensorflow-datasets==4.9.*',
   'seaborn==0.13.*'
 ]

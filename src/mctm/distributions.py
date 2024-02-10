@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-01-24 17:36:50 (Marcel Arpogaus)
+# changed : 2024-02-10 09:01:50 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -26,7 +26,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 from bernstein_flow.activations import get_thetas_constrain_fn
-from bernstein_flow.bijectors import BernsteinBijectorLinearExtrapolate
+from bernstein_flow.bijectors import BernsteinBijector
 from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 from tensorflow_probability.python.internal import prefer_static
@@ -39,8 +39,6 @@ from .parameters import (
 )
 
 # FUNCTIONS ####################################################################
-
-# base functions that get used in the actual functions
 
 
 def __default_base_distribution_lambda__(dims, distribution_type="normal", **kwds):
@@ -105,9 +103,7 @@ def __get_parametrized_bijector_fn__(
 
         def bijector_fn(unconstrained_parameters):
             constrained_parameters = parameter_constrain_fn(unconstrained_parameters)
-            bijector = BernsteinBijectorLinearExtrapolate(
-                constrained_parameters, name=bijector_name
-            )
+            bijector = BernsteinBijector(constrained_parameters, name=bijector_name)
 
             return bijector
 
@@ -157,7 +153,8 @@ def __get_flow_parametrization_lambda__(
     def flow_parametrization_lambda(unconstrained_parameters):
         bijectors = []
 
-        # ŷ = a1(x)*(y + b1(x))
+        # ŷ = a1(x)*(y + b1(x)) = f2(f1(y,x),x)
+        # f1 = y + b1(x)
         if shift:
             shift_bj = tfb.Shift(
                 tf.convert_to_tensor(
@@ -167,6 +164,7 @@ def __get_flow_parametrization_lambda__(
             )
             bijectors.append(shift_bj)
 
+        # f2 = a1(x) * y
         if scale:
             scale_bj = tfb.Scale(
                 tf.convert_to_tensor(
@@ -176,15 +174,19 @@ def __get_flow_parametrization_lambda__(
             )
             bijectors.append(scale_bj)
 
-        # Flexible Transformation Function
+        # f3: Flexible Transformation Function
         bijectors.append(bijector_fn(unconstrained_parameters))
 
-        # tfp uses the invers T⁻¹ to calculate the log_prob
-        # lets change the direction here by first reversing the list to get f₃ ∘ f₂ ∘ f₁
-        bijectors = list(reversed(bijectors))
+        if len(bijectors) == 1:
+            flow = bijectors[0]
+        else:
+            # the Chain bijector uses reversed list in the forward call.
+            # We change the direction by first reversing the list to get f₃ ∘ f₂ ∘ f₁
+            # and then invert it to get T = f₃⁻¹ ∘ f₂⁻¹ ∘ f₁⁻¹ and T⁻¹ = f₁ ∘ f₂ ∘ f₂
+            bijectors = list(reversed(bijectors))
+            flow = tfb.Chain(bijectors)
 
-        # and now invert it to get T = f₃⁻¹ ∘ f₂⁻¹ ∘ f₁⁻¹ and T⁻¹ = f₁ ∘ f₂ ∘ f₂
-        return tfb.Invert(tfb.Chain(bijectors))
+        return tfb.Invert(flow)
 
     return flow_parametrization_lambda, parameter_shape
 
@@ -240,9 +242,7 @@ def __get_multivariate_flow_lambda__(dims, **kwds):
         shape = tf.concat((bs, [dims, num_params]), 0)
 
         unconstrained_parameters = tf.reshape(pv[..., : num_params * dims], shape)
-        scale_tril = tfp.bijectors.FillScaleTriL()(
-            pv[..., num_params * dims:]  # fmt: skip
-        )
+        scale_tril = tfp.bijectors.FillScaleTriL()(pv[..., num_params * dims :])
 
         mv_normal = tfd.MultivariateNormalTriL(loc=0, scale_tril=scale_tril)
 
@@ -324,7 +324,9 @@ def __get_bijector_fn__(network, flow_parametrization_lambda):
         with tf.name_scope("bnf_bjector"):
             pvector = network(y, **kwds)
 
-            return flow_parametrization_lambda(pvector)
+            flow = flow_parametrization_lambda(pvector)
+
+            return flow
 
     return bijector_fn
 
@@ -457,10 +459,7 @@ def get_coupling_flow(
     def distribution_lambda(parameter_networks):
         bijectors = []
         # tfp uses the invers T⁻¹ to calculate the log_prob
-        # the Chain bijector uses reversed list in the forward call so we want the
-        # chained bijectors in the order f₁ ∘ f₂ ∘ … ∘ fᵢ and use their inverse
-        # to get T = f₃⁻¹ ∘ … ∘ f₂⁻¹ ∘ f₁⁻¹ and T⁻¹ = f₁ ∘ f₂ ∘ f₂
-
+        # so we use the invers here to use scale parameters inferred from the data
         if shift:
             shift_t = tf.convert_to_tensor(shift, name="shift")[None, ...]
             f1_shift = tfb.Shift(shift_t, name="f1_shift")
@@ -470,6 +469,7 @@ def get_coupling_flow(
             f1_scale = tfb.Scale(scale_t, name="f1_scale")
             bijectors.append(tfb.Invert(f1_scale))
 
+        # Variable amount of RealNVP Layers
         for layer, network in enumerate(parameter_networks):
             nm = num_masked if num_masked else __get_num_masked__(dims, layer)
             permutation = list(range(nm, dims)) + list(range(nm))
