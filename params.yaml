@@ -5,11 +5,11 @@ testmode: false
 
 datasets:
   moons:
-    n_samples: 10240
+    n_samples: 16384
     noise: 0.05
     scale: [0.05, 0.95]
   circles:
-    n_samples: 10240
+    n_samples: 16384
     noise: 0.05
     factor: 0.5
     scale: [0.05, 0.95]
@@ -305,17 +305,17 @@ common:
     batch_size: 256
     early_stopping: 4
     learning_rate: 0.01
-    lr_patience: 50
+    lr_patience: 25
     lr_reduction_factor: 0.5
     monitor: val_loss
     reduce_lr_on_plateau: true
     verbose: true
   distribution_kwds: &distribution_kwds
     bijector_name: bernstein_poly
-    low: -4
-    high: 4
+    low: -2
+    high: 2
     smooth_bounds: true
-    allow_flexible_bounds: false
+    allow_flexible_bounds: true
     shift: false
     scale: false
     # bijector_name: quadratic_spline
