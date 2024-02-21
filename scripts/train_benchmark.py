@@ -4,12 +4,11 @@ import argparse
 import os
 
 import tensorflow as tf
-from tensorflow_probability import distributions as tfd
-
 from mctm.data.benchmark import get_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
 from mctm.utils import str2bool
 from mctm.utils.pipeline import pipeline, prepare_pipeline
+from tensorflow_probability import distributions as tfd
 
 
 def get_lr_schedule(**kwds):

@@ -9,14 +9,13 @@ from shutil import which
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from tensorflow_probability import distributions as tfd
-
 from mctm.data.malnutrion import get_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
 from mctm.utils import str2bool
 from mctm.utils.pipeline import pipeline, prepare_pipeline
 from mctm.utils.tensorflow import set_seed
 from mctm.utils.visualisation import get_figsize, setup_latex
+from tensorflow_probability import distributions as tfd
 
 __LOGGER__ = logging.getLogger(__name__)
 

@@ -8,8 +8,6 @@ from shutil import which
 
 import numpy as np
 import tensorflow as tf
-from tensorflow_probability import distributions as tfd
-
 from mctm.data.sklearn_datasets import get_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
 from mctm.utils import str2bool
@@ -22,8 +20,12 @@ from mctm.utils.visualisation import (
     plot_samples,
     setup_latex,
 )
+from tensorflow_probability import distributions as tfd
 
 __LOGGER__ = logging.getLogger(__name__)
+# tf.debugging.experimental.enable_dump_debug_info(
+#     "tfdbg2_logdir", tensor_debug_mode="FULL_HEALTH", circular_buffer_size=-1
+# )
 
 
 def get_after_fit_hook(results_path, is_hybrid, **kwds):

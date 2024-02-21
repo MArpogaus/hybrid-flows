@@ -9,18 +9,18 @@ from copy import deepcopy
 import mlflow
 import numpy as np
 import yaml
-from optuna.integration import TFKerasPruningCallback
-from optuna.pruners import SuccessiveHalvingPruner
-from optuna.samplers import TPESampler
-from optuna.trial import TrialState
-
-import optuna
 from mctm.utils import str2bool
 from mctm.utils.pipeline import (
     prepare_pipeline,
     set_seed,
     start_run_with_exception_logging,
 )
+
+import optuna
+from optuna.integration import TFKerasPruningCallback
+from optuna.pruners import SuccessiveHalvingPruner
+from optuna.samplers import TPESampler
+from optuna.trial import TrialState
 
 # %% global objects
 __LOGGER__ = logging.getLogger(__name__)

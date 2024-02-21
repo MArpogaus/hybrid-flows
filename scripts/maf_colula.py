@@ -6,11 +6,10 @@ import numpy as np
 import seaborn as sns
 import tensorflow as tf
 import yaml
-from tensorflow_probability import distributions as tfd
-
 from mctm.data.sklearn_datasets import get_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
 from mctm.utils.visualisation import plot_2d_data, plot_copula_function, plot_samples
+from tensorflow_probability import distributions as tfd
 
 # %% Globals
 params_file_path = "../params.yaml"
