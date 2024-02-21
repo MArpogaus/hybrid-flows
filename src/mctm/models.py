@@ -44,7 +44,7 @@ class DensityRegressionModel(tf.keras.Model):
             self.trainable_parameters,
         ) = getattr(distributions, "get_" + distribution)(dims=dims, **kwds)
 
-    def call(self, *args, **kwds):
+    def call(self, inputs, **kwds):
         """Compute the distribution for the given input arguments.
 
         :param *args: Variable-length argument list.
@@ -53,7 +53,7 @@ class DensityRegressionModel(tf.keras.Model):
         :rtype: Distribution
         """
         return self.distribution_lambda(
-            self.distribution_parameters_lambda(*args, **kwds)
+            self.distribution_parameters_lambda(inputs, **kwds)
         )
 
 

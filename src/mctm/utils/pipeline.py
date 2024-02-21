@@ -120,6 +120,7 @@ def pipeline(
     set_seed(seed)
     data, dims = get_dataset_fn(**dataset_kwds)
     model = get_model_fn(dims=dims, **model_kwds)
+    model.build([None, dims])
 
     # Evaluate Model
     if experiment_name:
