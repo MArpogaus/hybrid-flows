@@ -1,13 +1,14 @@
 [build-system]
 build-backend = 'setuptools.build_meta'
-requires = ['setuptools >= 61.0.0']
+requires = ["setuptools >= 61", "setuptools_scm>=7"]
 
 [project]
 classifiers = [
   "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10"
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11"
 ]
 dependencies = [
   'bernstein_flow @ git+https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector.git@8d800f0',
@@ -24,6 +25,7 @@ requires-python = '>=3.7.0'
 develop = [
   'mctm[train]',
   'pre-commit',
+  'commitizen',
   'python-lsp-ruff',
   'python-lsp-server[all]',
   'ruff'
@@ -38,6 +40,14 @@ train = [
   'dvc[ssh]==3.43.*',
   'mlflow==2.10.*'
 ]
+
+[tool.commitizen]
+major_version_zero = true
+name = "cz_conventional_commits"
+tag_format = "v$version"
+update_changelog_on_bump = true
+version_provider = "scm"
+version_scheme = "pep440"
 
 [tool.ruff]
 indent-width = 4
@@ -64,5 +74,7 @@ ignore = []
 select = ["I", "E", "F"]
 unfixable = []
 
-[tool.setuptools.dynamic]
-version = {attr = 'mctm.__version__'}
+[tool.setuptools_scm]
+# https://stackoverflow.com/a/74404703
+# omits local version, useful because pypi does not support it
+local_scheme = "no-local-version"
