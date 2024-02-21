@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-02-10 09:01:50 (Marcel Arpogaus)
+# changed : 2024-02-21 16:33:21 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -25,12 +25,12 @@ from functools import partial
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
-from bernstein_flow.activations import get_thetas_constrain_fn
 from bernstein_flow.bijectors import BernsteinBijector
 from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 from tensorflow_probability.python.internal import prefer_static
 
+from .activations import get_thetas_constrain_fn
 from .parameters import (
     get_autoregressive_parameter_network_lambda,
     get_autoregressive_parameter_network_with_additive_conditioner_lambda,
@@ -210,12 +210,13 @@ def __get_elementwise_flow__(
 
     def dist(pv_lambda):
         pv = pv_lambda()
-        return tfd.TransformedDistribution(
+        dist = tfd.TransformedDistribution(
             distribution=base_distribution_lambda(
                 dims, **kwds.pop("base_distribution_kwds", {})
             ),
             bijector=flow_parametrization_lambda(pv),
         )
+        return dist
 
     return dist, pv_shape
 
