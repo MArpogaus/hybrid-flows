@@ -24,9 +24,6 @@ from mctm.utils.visualisation import (
 from tensorflow_probability import distributions as tfd
 
 __LOGGER__ = logging.getLogger(__name__)
-# tf.debugging.experimental.enable_dump_debug_info(
-#     "tfdbg2_logdir", tensor_debug_mode="FULL_HEALTH", circular_buffer_size=-1
-# )
 
 
 def get_after_fit_hook(results_path, is_hybrid, **kwds):
@@ -60,14 +57,22 @@ def get_after_fit_hook(results_path, is_hybrid, **kwds):
     return plot_after_fit
 
 
-def get_lr_schedule(decay, **kwds):
+def get_learning_rate(fit_kwds):
     """Lr schedule.
 
-    decay: function like tf.keras.optimizers.schedules.CosineDecay
+    decay: name of a scheduler in `tf.keras.optimizers.schedules` (i.e. CosineDecay)
     kwds: kewyowrds that get passed into decay function.
     """
-    lr_decayed_fn = decay(**kwds)
-    return lr_decayed_fn
+    if isinstance(fit_kwds["learning_rate"], str):
+        scheduler_name = fit_kwds["learning_rate"]
+        scheduler_kwds = fit_kwds.pop(scheduler_name + "_kwds")
+        __LOGGER__.info(f"{scheduler_name=}({scheduler_kwds})")
+        return getattr(
+            tf.keras.optimizers.schedules,
+            "".join(map(str.title, scheduler_name.split("_"))),
+        )(**scheduler_kwds), scheduler_kwds
+    else:
+        return fit_kwds["learning_rate"], {}
 
 
 def run(
@@ -86,22 +91,16 @@ def run(
     params should be as defined in params.yaml
     """
 
-    IS_BENCHMARK = "benchmark" in stage_name
-
     stage = stage_name.split("@")[0]
-    dataset_kwds = (
-        params["datasets"][dataset]
-        if not IS_BENCHMARK
-        else params["benchmark_datasets"][dataset]
-    )
     model_kwds = params[stage + "_distributions"][distribution][dataset]
     fit_kwds = model_kwds.pop("fit_kwds")
+
+    learning_rate, extra_params_to_log = get_learning_rate(fit_kwds)
+    fit_kwds["learning_rate"] = learning_rate
 
     model_kwds.update(
         distribution=distribution,
     )
-    if IS_BENCHMARK:
-        model_kwds["distribution_kwds"].update(dataset_kwds)
 
     if "base_distribution" in model_kwds.keys():
         get_model = HybridDenistyRegressionModel
@@ -114,6 +113,49 @@ def run(
             model_kwds.update(base_checkpoint_path_prefix=results_path.split("/", 1)[0])
     else:
         get_model = DensityRegressionModel
+
+    if "benchmark" in stage_name:
+        get_dataset_fn = get_benchmark_dataset
+        dataset_kwds = {
+            "dataset_name": dataset,
+        }
+        model_kwds["distribution_kwds"].update(
+            **params["benchmark_datasets"][dataset],
+        )
+
+        def preprocess_dataset(data, model):
+            return {
+                "x": tf.ones_like(data[0], dtype=model.dtype),
+                "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
+                "validation_data": (
+                    tf.ones_like(data[1], dtype=model.dtype),
+                    tf.convert_to_tensor(data[1], dtype=model.dtype),
+                ),
+            }
+
+        plot_data = None
+        after_fit_hook = False
+    else:
+        get_dataset_fn = get_train_dataset
+        dataset_kwds = {
+            "dataset_name": dataset,
+            **params["datasets"][dataset],
+        }
+
+        def preprocess_dataset(data, model):
+            return {
+                "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype),
+                "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
+            }
+
+        fig_width = get_figsize(params["textwidth"], fraction=0.5)[0]
+
+        plot_data = partial(plot_2d_data, figsize=(fig_width, fig_width))
+        after_fit_hook = get_after_fit_hook(
+            results_path=results_path,
+            is_hybrid=get_model == HybridDenistyRegressionModel,
+            height=fig_width,
+        )
 
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
     run_name = "_".join((stage, distribution))
@@ -132,28 +174,6 @@ def run(
     # don't show progress bar if running from CI
     if os.environ.get("CI", False):
         fit_kwds.update(verbose=2)
-    if not IS_BENCHMARK:
-        fig_width = get_figsize(params["textwidth"], fraction=0.5)[0]
-
-    extra_params_to_log = {}
-    if IS_BENCHMARK:
-        # cosine_decay setup if relevant
-        if isinstance(fit_kwds["learning_rate"], str):
-            schedule_key = fit_kwds["learning_rate"]
-            __LOGGER__.info(f"{schedule_key=}")
-            S = tf.keras.optimizers.schedules
-            schedulers = {
-                "cosine_decay": S.CosineDecay,
-                "exponential_decay": S.ExponentialDecay,
-                "polynomial_decay": S.PolynomialDecay,
-            }
-            decay_kwds = fit_kwds.pop(schedule_key + "_kwds")
-            fit_kwds["learning_rate"] = get_lr_schedule(
-                schedulers[schedule_key], **decay_kwds
-            )
-            extra_params_to_log = decay_kwds
-            for key in schedulers.keys():
-                fit_kwds.pop(key + "_kwds", None)
 
     # actually execute training
     history, model, preprocessed = pipeline(
@@ -162,36 +182,14 @@ def run(
         results_path=results_path,
         log_file=log_file,
         seed=params["seed"],
-        get_dataset_fn=get_benchmark_dataset if IS_BENCHMARK else get_train_dataset,
-        dataset_kwds={"dataset_name": dataset, **dataset_kwds}
-        if not IS_BENCHMARK
-        else {"dataset_name": dataset},
+        get_dataset_fn=get_dataset_fn,
+        dataset_kwds=dataset_kwds,
         get_model_fn=get_model,
         model_kwds=model_kwds,
-        preprocess_dataset=lambda data, model: {
-            "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype),
-            "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
-        }
-        if not IS_BENCHMARK
-        else {
-            "x": tf.ones_like(data[0], dtype=model.dtype),
-            "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
-            "validation_data": (
-                tf.ones_like(data[1], dtype=model.dtype),
-                tf.convert_to_tensor(data[1], dtype=model.dtype),
-            ),
-        },
+        preprocess_dataset=preprocess_dataset,
         fit_kwds=fit_kwds,
-        plot_data=partial(plot_2d_data, figsize=(fig_width, fig_width))
-        if not IS_BENCHMARK
-        else None,
-        after_fit_hook=get_after_fit_hook(
-            results_path=results_path,
-            is_hybrid=get_model == HybridDenistyRegressionModel,
-            height=fig_width,
-        )
-        if not IS_BENCHMARK
-        else None,
+        plot_data=plot_data,
+        after_fit_hook=after_fit_hook,
         **extra_params_to_log,
     )
 
