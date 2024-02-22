@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-02-22 17:09:14 (Marcel Arpogaus)
+# changed : 2024-02-22 20:46:54 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -328,7 +328,6 @@ def __get_bijector_fn__(network, flow_parametrization_lambda):
     def bijector_fn(y, *arg, **kwds):
         with tf.name_scope("bnf_bjector"):
             pvector = network(y, **kwds)
-            tf.print(pvector)
             flow = flow_parametrization_lambda(pvector)
 
             return flow
