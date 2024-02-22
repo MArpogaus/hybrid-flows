@@ -107,7 +107,7 @@ def fit_distribution(
             K.callbacks.EarlyStopping(
                 monitor=monitor,
                 patience=(early_stopping if isinstance(early_stopping, int) else 3)
-                * lr_patience,
+                * (lr_patience if reduce_lr_on_plateau else 1),
                 restore_best_weights=True,
                 verbose=verbose,
             )
