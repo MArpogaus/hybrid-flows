@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-02-21 16:33:21 (Marcel Arpogaus)
+# changed : 2024-02-22 17:09:14 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -41,7 +41,9 @@ from .parameters import (
 # FUNCTIONS ####################################################################
 
 
-def __default_base_distribution_lambda__(dims, distribution_type="normal", **kwds):
+def __default_base_distribution_lambda__(
+    dims, distribution_type="normal", is_joint=True, **kwds
+):
     """Get the default base distribution as a callable.
 
     :param int dims: The dimension of the distribution.
@@ -65,7 +67,9 @@ def __default_base_distribution_lambda__(dims, distribution_type="normal", **kwd
         dist = tfd.Kumaraswamy(**kwds)
     else:
         raise ValueError(f"Unsupported distribution type {distribution_type}.")
-    return tfd.Sample(dist, sample_shape=[dims])
+    if is_joint:
+        dist = tfd.Sample(dist, sample_shape=[dims])
+    return dist
 
 
 def get_spline_param_constrain_fn(nbins, interval_width, min_bin_width, min_slope):
@@ -212,7 +216,7 @@ def __get_elementwise_flow__(
         pv = pv_lambda()
         dist = tfd.TransformedDistribution(
             distribution=base_distribution_lambda(
-                dims, **kwds.pop("base_distribution_kwds", {})
+                dims, is_joint=False, **kwds.pop("base_distribution_kwds", {})
             ),
             bijector=flow_parametrization_lambda(pv),
         )
@@ -324,7 +328,7 @@ def __get_bijector_fn__(network, flow_parametrization_lambda):
     def bijector_fn(y, *arg, **kwds):
         with tf.name_scope("bnf_bjector"):
             pvector = network(y, **kwds)
-
+            tf.print(pvector)
             flow = flow_parametrization_lambda(pvector)
 
             return flow
