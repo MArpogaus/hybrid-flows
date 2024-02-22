@@ -39,6 +39,7 @@ def suggest_new_params(
     dataset,
     use_pruning,
 ):
+    __LOGGER__.debug(f"{trial}: {use_pruning=}")
     params = deepcopy(inital_params)
     stage = stage_name.split("@")[0]
     model_kwds = params[stage + "_distributions"][distribution][dataset]
@@ -47,12 +48,16 @@ def suggest_new_params(
         p = model_kwds
         keys = d["name"].split(".")
         for k in keys[:-1]:
+            if k not in p.keys():
+                p[k] = {}
             p = p[k]
 
         key = keys[-1]
         if key.isdigit():
             key = int(key)
-        p[key] = getattr(trial, f'suggest_{d["type"]}')(d["name"], **d["kwargs"])
+        __LOGGER__.debug(f"trial keyword ({trial.number}): {d['name']}, {d['type']}")
+        v = getattr(trial, f'suggest_{d["type"]}')(d["name"], **d["kwargs"])
+        p[key] = v
 
     # Add KerasPruningCallback checks for pruning condition every epoch
     if use_pruning:
@@ -209,7 +214,12 @@ def run_study(
             min_early_stopping_rate=0,
             bootstrap_count=0,
         )
+
     if load_study_from_storage:
+        __LOGGER__.warn(
+            f"loading study from storage {load_study_from_storage}."
+            " This can confuse parameter definitions."
+        )
         study = optuna.load_study(storage=load_study_from_storage, **study_kwds)
         # If a study has been started before, a parent may already exists run
         run_id = study.user_attrs.get(__RUN_ID_ATTRIBUTE_KEY__, None)
@@ -361,7 +371,7 @@ if __name__ == "__main__":
         parameter_space_definition = yaml.safe_load(f)
 
     if "benchmark" in args.stage_name:
-        model_train_script_name = "train_benchmark"
+        model_train_script_name = "train"
     elif "malnutrition" in args.stage_name:
         model_train_script_name = "train_malnutrition"
     else:
