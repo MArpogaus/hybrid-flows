@@ -281,7 +281,7 @@ unconditional_benchmark_distributions:
         - 64
         activation: tanh
       fit_kwds:
-    <<: *benchmark_fit_kwds
+        <<: *benchmark_fit_kwds
     hepmass:
       distribution_kwds:
         <<: *benchmark_distribution_kwds
