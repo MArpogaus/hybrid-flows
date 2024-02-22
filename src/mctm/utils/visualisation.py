@@ -171,10 +171,7 @@ def plot_samples(dist, data, seed=1, **kwds):
     :rtype: Figure
     """
     columns = ["$y_1$", "$y_2$"]
-    if len(dist.batch_shape) == 0 or dist.batch_shape[0] == 1:
-        N = data.shape[0]
-    else:
-        N = 1
+    N = data.shape[0]
 
     # Use the fitted distribution.
     start = time.time()
