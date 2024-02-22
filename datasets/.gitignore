@@ -1,1 +1,15 @@
-/data.tar.gz
+/bsds300_test.npy
+/bsds300_train.npy
+/bsds300_validate.npy
+/gas_test.npy
+/gas_train.npy
+/gas_validate.npy
+/hepmass_test.npy
+/hepmass_train.npy
+/hepmass_validate.npy
+/miniboone_test.npy
+/miniboone_train.npy
+/miniboone_validate.npy
+/power_test.npy
+/power_train.npy
+/power_validate.npy

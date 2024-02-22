@@ -1,0 +1,5 @@
+outs:
+- md5: 34d2db1b9624a6600d4fa650460d96d8
+  size: 5083760
+  hash: md5
+  path: miniboone_train.npy

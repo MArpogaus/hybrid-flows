@@ -1,0 +1,5 @@
+outs:
+- md5: e9fcc5f84740aa2ee46be1e58fe07962
+  size: 12600128
+  hash: md5
+  path: bsds300_validate.npy

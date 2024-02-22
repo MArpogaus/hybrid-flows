@@ -1,0 +1,5 @@
+outs:
+- md5: f30275cd143cca95848f60ab0b35281c
+  size: 627584
+  hash: md5
+  path: miniboone_test.npy

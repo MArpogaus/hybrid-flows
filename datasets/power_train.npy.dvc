@@ -1,0 +1,5 @@
+outs:
+- md5: b4e926bbb226067d4f02b51fa2849ca2
+  size: 39838136
+  hash: md5
+  path: power_train.npy

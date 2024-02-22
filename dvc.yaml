@@ -22,16 +22,6 @@ stages:
     - results/unconditional_${item.distribution}_${item.dataset}/dataset.pdf
     - results/unconditional_${item.distribution}_${item.dataset}/samples.pdf
 
-  download_benchmark_data:
-    cmd: python src/mctm/data/benchmark.py | tee datasets/benchmark_stats
-    outs:
-    - datasets/data.tar.gz
-    - datasets/power/
-    - datasets/hepmass/
-    - datasets/miniboone/
-    - datasets/bsds300/
-    - datasets/benchmark_stats
-
   unconditional_benchmark:
     matrix:
       distribution: ${unconditional_benchmark_distributions}
@@ -43,7 +33,8 @@ stages:
     - benchmark_datasets.${item.dataset}*
     - unconditional_benchmark_distributions.${item.distribution}.${item.dataset}*
     deps:
-    - datasets/${item.dataset}
+    - datasets/${item.dataset}_train.npy
+    - datasets/${item.dataset}_validate.npy
     - scripts/train.py
     - pyproject.toml
     - src/mctm
