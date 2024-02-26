@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <marcel dot arpogaus at gmail dot com>
 #
 # created : 2022-03-10 15:39:04 (Marcel Arpogaus)
-# changed : 2024-02-20 19:15:42 (Marcel Arpogaus)
+# changed : 2024-02-22 15:53:31 (Marcel Arpogaus)
 # DESCRIPTION #################################################################
 # ...
 # LICENSE #####################################################################
@@ -38,7 +38,8 @@ def get_thetas_constrain_fn(
                 low_theta -= tf.math.softplus(diff[..., :1])
                 diff = diff[..., 1:]
         else:
-            low_theta = diff[..., :1]
+            shift = tf.math.log(2.0) * tf.cast(diff.shape[-1], dtype) / 2
+            low_theta = diff[..., :1] - shift
             diff = diff[..., 1:]
 
         if high is not None:
@@ -66,7 +67,7 @@ def get_thetas_constrain_fn(
                 high_theta - low_theta - (tf.cast(diff.shape[-1], dtype) * eps)
             )
         else:
-            diff_positive = tf.math.softplus(diff, axis=-1)
+            diff_positive = tf.math.softplus(diff)
 
         c = tf.concat(
             (
