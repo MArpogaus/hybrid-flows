@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-02-27 11:20:13 (Marcel Arpogaus)
+# changed : 2024-02-27 11:30:03 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -434,33 +434,27 @@ def get_masked_autoregressive_flow(
     :rtype: list
     """
     distribution_kwds = distribution_kwds.copy()
-    base_distribution_lambda = distribution_kwds.pop(
-        "base_distribution_lambda", __default_base_distribution_lambda__
-    )
-    base_distribution_kwds = distribution_kwds.pop("base_distribution_kwds", {})
+    num_layers = distribution_kwds.pop("num_layers", 1)
 
-    flow_parametrization_lambda, parameters_shape = __get_flow_parametrization_lambda__(
-        **distribution_kwds
-    )
+    def get_parameter_lambda_fn_for_layer(_, parameters_shape):
+        parameter_shape = [dims] + parameters_shape
+        return get_parameter_lambda_fn(parameter_shape, **parameter_kwds)
 
-    parameter_shape = [dims] + parameters_shape
-    parameter_network_lambda, trainable_variables = get_parameter_lambda_fn(
-        parameter_shape, **parameter_kwds
-    )
-
-    def distribution_lambda(parameter_network):
+    def get_bijectors_for_layer(_, network, flow_parametrization_lambda):
         bijector_fn = get_bijector_fn(
-            network=parameter_network,
+            network=network,
             flow_parametrization_lambda=flow_parametrization_lambda,
         )
 
-        distribution = tfd.TransformedDistribution(
-            distribution=base_distribution_lambda(dims, **base_distribution_kwds),
-            bijector=tfb.MaskedAutoregressiveFlow(bijector_fn=bijector_fn),
-        )
-        return distribution
+        return [tfb.MaskedAutoregressiveFlow(bijector_fn=bijector_fn)]
 
-    return distribution_lambda, parameter_network_lambda, trainable_variables
+    return __get_stacked_flow__(
+        dims=dims,
+        num_layers=num_layers,
+        distribution_kwds=distribution_kwds,
+        get_parameter_lambda_fn_for_layer=get_parameter_lambda_fn_for_layer,
+        get_bijectors_for_layer=get_bijectors_for_layer,
+    )
 
 
 def get_coupling_flow(
@@ -486,7 +480,7 @@ def get_coupling_flow(
     :rtype: list
     """
     distribution_kwds = distribution_kwds.copy()
-    coupling_layers = distribution_kwds.pop("coupling_layers")
+    num_layers = distribution_kwds.pop("num_layers", 1)
 
     def get_parameter_lambda_fn_for_layer(layer, parameters_shape):
         nm = num_masked if num_masked else __get_num_masked__(dims, layer)
@@ -509,7 +503,7 @@ def get_coupling_flow(
         )
 
         permutation = list(range(nm, dims)) + list(range(nm))
-        if coupling_layers % 2 != 0 and layer == (coupling_layers - 1):
+        if num_layers % 2 != 0 and layer == (num_layers - 1):
             print("uneven number of coupling layers -> skipping last permutation")
         else:
             bijectors.append(tfb.Permute(permutation=permutation))
@@ -518,7 +512,7 @@ def get_coupling_flow(
 
     return __get_stacked_flow__(
         dims=dims,
-        num_layers=coupling_layers,
+        num_layers=num_layers,
         distribution_kwds=distribution_kwds,
         get_parameter_lambda_fn_for_layer=get_parameter_lambda_fn_for_layer,
         get_bijectors_for_layer=get_bijectors_for_layer,
@@ -547,7 +541,7 @@ def get_masked_autoregressive_flow_first_dim_masked(
     :return: List of trainable parameters.
     :rtype: list
     """
-    distribution_kwds.update(coupling_layers=1)
+    distribution_kwds.update(num_layers=1)
 
     def get_bijector_fn(parameter_network, flow_parametrization_lambda):
         bijector_fn = __get_bijector_fn__(
