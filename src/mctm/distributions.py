@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-02-22 20:46:54 (Marcel Arpogaus)
+# changed : 2024-02-27 11:20:13 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -349,6 +349,68 @@ def __get_num_masked__(dims, layer):
     return num_masked
 
 
+def __get_stacked_flow__(
+    dims,
+    num_layers,
+    distribution_kwds,
+    get_parameter_lambda_fn_for_layer,
+    get_bijectors_for_layer,
+):
+    distribution_kwds = distribution_kwds.copy()
+    base_distribution_lambda = distribution_kwds.pop(
+        "base_distribution_lambda", __default_base_distribution_lambda__
+    )
+    base_distribution_kwds = distribution_kwds.pop("base_distribution_kwds", {})
+
+    # scale and shift have to be applied on all dimensions before the first
+    # coupling layers so let's remove them from the kwds to skip them in the
+    # following calls of __get_bijector_fn__
+    scale = distribution_kwds.pop("scale", False)
+    shift = distribution_kwds.pop("shift", False)
+
+    distribution_kwds.update(scale=False, shift=False)
+
+    flow_parametrization_lambda, parameters_shape = __get_flow_parametrization_lambda__(
+        **distribution_kwds
+    )
+
+    parameter_networks = []
+    trainable_variables = []
+    for layer in range(num_layers):
+        network, variables = get_parameter_lambda_fn_for_layer(layer, parameters_shape)
+        parameter_networks.append(network)
+        trainable_variables.append(variables)
+
+    def parameter_lambda(conditional_input=None, **kwds):
+        return list(map(lambda net: net(conditional_input, **kwds), parameter_networks))
+
+    def distribution_lambda(parameter_networks):
+        bijectors = []
+        # tfp uses the invers T⁻¹ to calculate the log_prob
+        # so we use the invers here to use scale parameters inferred from the data
+        if shift:
+            shift_t = tf.convert_to_tensor(shift, name="shift")[None, ...]
+            f1_shift = tfb.Shift(shift_t, name="f1_shift")
+            bijectors.append(tfb.Invert(f1_shift))
+        if scale:
+            scale_t = tf.convert_to_tensor(scale, name="scale")[None, ...]
+            f1_scale = tfb.Scale(scale_t, name="f1_scale")
+            bijectors.append(tfb.Invert(f1_scale))
+
+        # Stack bijectors
+        for layer, network in enumerate(parameter_networks):
+            bijectors.extend(
+                get_bijectors_for_layer(layer, network, flow_parametrization_lambda)
+            )
+
+        return tfd.TransformedDistribution(
+            distribution=base_distribution_lambda(dims, **base_distribution_kwds),
+            bijector=tfb.Chain(bijectors),
+        )
+
+    return distribution_lambda, parameter_lambda, trainable_variables
+
+
 # PUBLIC FUNCTIONS #############################################################
 def get_masked_autoregressive_flow(
     dims,
@@ -424,76 +486,43 @@ def get_coupling_flow(
     :rtype: list
     """
     distribution_kwds = distribution_kwds.copy()
-    base_distribution_lambda = distribution_kwds.pop(
-        "base_distribution_lambda", __default_base_distribution_lambda__
-    )
-    base_distribution_kwds = distribution_kwds.pop("base_distribution_kwds", {})
     coupling_layers = distribution_kwds.pop("coupling_layers")
 
-    # scale and shift have to be applied on all dimensions before the first
-    # coupling layers so let's remove them from the kwds to skip them in the
-    # following calls of __get_bijector_fn__
-    scale = distribution_kwds.pop("scale", False)
-    shift = distribution_kwds.pop("shift", False)
-
-    distribution_kwds.update(scale=False, shift=False)
-
-    flow_parametrization_lambda, parameters_shape = __get_flow_parametrization_lambda__(
-        **distribution_kwds
-    )
-
-    parameter_shape = [dims] + parameters_shape
-
-    parameter_networks = []
-    trainable_variables = []
-    for layer in range(coupling_layers):
+    def get_parameter_lambda_fn_for_layer(layer, parameters_shape):
         nm = num_masked if num_masked else __get_num_masked__(dims, layer)
         parameter_shape = [dims - nm] + parameters_shape
-        network, variables = get_parameter_lambda_fn(
+        return get_parameter_lambda_fn(
             input_shape=nm,
             parameter_shape=parameter_shape,
             **parameter_kwds,
         )
-        parameter_networks.append(network)
-        trainable_variables.append(variables)
 
-    def parameter_lambda(conditional_input=None, **kwds):
-        return list(map(lambda net: net(conditional_input, **kwds), parameter_networks))
+    def get_bijectors_for_layer(layer, network, flow_parametrization_lambda):
+        nm = num_masked if num_masked else __get_num_masked__(dims, layer)
 
-    def distribution_lambda(parameter_networks):
         bijectors = []
-        # tfp uses the invers T⁻¹ to calculate the log_prob
-        # so we use the invers here to use scale parameters inferred from the data
-        if shift:
-            shift_t = tf.convert_to_tensor(shift, name="shift")[None, ...]
-            f1_shift = tfb.Shift(shift_t, name="f1_shift")
-            bijectors.append(tfb.Invert(f1_shift))
-        if scale:
-            scale_t = tf.convert_to_tensor(scale, name="scale")[None, ...]
-            f1_scale = tfb.Scale(scale_t, name="f1_scale")
-            bijectors.append(tfb.Invert(f1_scale))
-
-        # Variable amount of RealNVP Layers
-        for layer, network in enumerate(parameter_networks):
-            nm = num_masked if num_masked else __get_num_masked__(dims, layer)
-            permutation = list(range(nm, dims)) + list(range(nm))
-            bijectors.append(
-                tfb.RealNVP(
-                    num_masked=nm,
-                    bijector_fn=get_bijector_fn(network, flow_parametrization_lambda),
-                )
+        bijectors.append(
+            tfb.RealNVP(
+                num_masked=nm,
+                bijector_fn=get_bijector_fn(network, flow_parametrization_lambda),
             )
-            if coupling_layers % 2 != 0 and layer == (coupling_layers - 1):
-                print("uneven number of coupling layers -> skipping last permutation")
-            else:
-                bijectors.append(tfb.Permute(permutation=permutation))
-
-        return tfd.TransformedDistribution(
-            distribution=base_distribution_lambda(dims, **base_distribution_kwds),
-            bijector=tfb.Chain(bijectors),
         )
 
-    return distribution_lambda, parameter_lambda, trainable_variables
+        permutation = list(range(nm, dims)) + list(range(nm))
+        if coupling_layers % 2 != 0 and layer == (coupling_layers - 1):
+            print("uneven number of coupling layers -> skipping last permutation")
+        else:
+            bijectors.append(tfb.Permute(permutation=permutation))
+
+        return bijectors
+
+    return __get_stacked_flow__(
+        dims=dims,
+        num_layers=coupling_layers,
+        distribution_kwds=distribution_kwds,
+        get_parameter_lambda_fn_for_layer=get_parameter_lambda_fn_for_layer,
+        get_bijectors_for_layer=get_bijectors_for_layer,
+    )
 
 
 def get_masked_autoregressive_flow_first_dim_masked(
