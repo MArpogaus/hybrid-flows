@@ -145,7 +145,8 @@ def best_value_callback(study, frozen_trial):
                 f"achieved value: {frozen_trial.value}"
             )
 
-    if optuna.visualization.is_available():
+    complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
+    if optuna.visualization.is_available() and len(complete_trials) > 1:
         for plot_fn_name in (
             "plot_contour",
             "plot_optimization_history",
