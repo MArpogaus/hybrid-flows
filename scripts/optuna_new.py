@@ -130,8 +130,9 @@ def best_value_callback(study, frozen_trial):
     """
 
     winner = study.user_attrs.get(__BEST_VALUE_ATTRIBUTE_KEY__, np.inf)
+    complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
 
-    if study.best_value and winner > study.best_value:
+    if len(complete_trials) >= 1 and winner > study.best_value:
         study.set_user_attr(__BEST_VALUE_ATTRIBUTE_KEY__, study.best_value)
         mlflow.log_metric("best_value", min(winner, study.best_value))
         mlflow.log_dict(study.best_params, "optimal_parameters.yaml")
@@ -149,7 +150,6 @@ def best_value_callback(study, frozen_trial):
                 f"achieved value: {frozen_trial.value}"
             )
 
-    complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
     if optuna.visualization.is_available() and len(complete_trials) > 1:
         for plot_fn_name in (
             "plot_contour",
