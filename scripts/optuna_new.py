@@ -56,7 +56,11 @@ def suggest_new_params(
         if key.isdigit():
             key = int(key)
         __LOGGER__.debug(f"trial keyword ({trial.number}): {d['name']}, {d['type']}")
-        v = getattr(trial, f'suggest_{d["type"]}')(d["name"], **d["kwargs"])
+        if d["type"] == "choose_from_list":
+            options = d["list"]
+            v = options[trial.suggest_int(d["name"], low=0, high=len(options) - 1)]
+        else:
+            v = getattr(trial, f'suggest_{d["type"]}')(d["name"], **d["kwargs"])
         p[key] = v
 
     # Add KerasPruningCallback checks for pruning condition every epoch

@@ -17,45 +17,44 @@
 #     choices: *hidden_units
 #   name: parameter_kwds.hidden_units.2
 #   type: categorical
-- kwargs:
-    choices:
-    - bijector_name: quadratic_spline
-      nbins: 32
-      interval_width: 3
-      range_min: -3
-      min_bin_width: 1e-3
-      min_slope: 1e-3
-      num_layers: 1
-    - bijector_name: quadratic_spline
-      nbins: 10
-      interval_width: 3
-      range_min: -3
-      min_bin_width: 1e-3
-      min_slope: 1e-3
-      num_layers: 2
-    - bijector_name: bernstein_poly
-      order: 100
-      low: -2
-      high: 2
-      smooth_bounds: true
-      allow_flexible_bounds: true
-      num_layers: 1
-    - bijector_name: bernstein_poly
-      order: 100
-      low: -4
-      high: 4
-      smooth_bounds: true
-      allow_flexible_bounds: false
-      num_layers: 1
-    - bijector_name: bernstein_poly
-      order: 12
-      low: 0
-      high: 1
-      smooth_bounds: true
-      allow_flexible_bounds: true
-      num_layers: 2
+- list:
+  - bijector_name: quadratic_spline
+    nbins: 32
+    interval_width: 6
+    range_min: -3
+    min_bin_width: 0.001
+    min_slope: 0.001
+    num_layers: 1
+  - bijector_name: quadratic_spline
+    nbins: 10
+    interval_width: 6
+    range_min: -3
+    min_bin_width: 0.001
+    min_slope: 0.001
+    num_layers: 2
+  - bijector_name: bernstein_poly
+    order: 100
+    low: -2
+    high: 2
+    smooth_bounds: true
+    allow_flexible_bounds: true
+    num_layers: 1
+  - bijector_name: bernstein_poly
+    order: 100
+    low: -4
+    high: 4
+    smooth_bounds: true
+    allow_flexible_bounds: false
+    num_layers: 1
+  - bijector_name: bernstein_poly
+    order: 12
+    low: 0
+    high: 1
+    smooth_bounds: true
+    allow_flexible_bounds: true
+    num_layers: 2
   name: distribution_kwds
-  type: categorical
+  type: choose_from_list
 - name: fit_kwds.polynomial_decay_kwds.initial_learning_rate
   type: float
   kwargs:
@@ -70,4 +69,4 @@
   type: float
   kwargs:
     high: 2
-    low: -1
+    low: 0.1
