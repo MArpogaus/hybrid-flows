@@ -31,11 +31,12 @@ def get_after_fit_hook(results_path, is_hybrid, **kwds):
 
     def plot_after_fit(model, x, y):
         # Generating random indices
-        indices = np.random.choice(len(x), size=2000, replace=False)
+        if len(x) > 2000:
+            indices = np.random.choice(len(x), size=2000, replace=False)
 
-        # Selecting elements based on the indices
-        x = x.numpy()[indices]
-        y = y.numpy()[indices]
+            # Selecting elements based on the indices
+            x = x.numpy()[indices]
+            y = y.numpy()[indices]
 
         fig = plot_samples(model(x), y, seed=1, **kwds)
         fig.savefig(os.path.join(results_path, "samples.pdf"))
@@ -116,9 +117,7 @@ def run(
 
     if "benchmark" in stage_name:
         get_dataset_fn = get_benchmark_dataset
-        dataset_kwds = {
-            "dataset_name": dataset,
-        }
+        dataset_kwds = {"dataset_name": dataset, "test_mode": test_mode}
         model_kwds["distribution_kwds"].update(
             **params["benchmark_datasets"][dataset],
         )
@@ -139,6 +138,7 @@ def run(
         get_dataset_fn = get_train_dataset
         dataset_kwds = {
             "dataset_name": dataset,
+            "test_mode": test_mode,
             **params["datasets"][dataset],
         }
 

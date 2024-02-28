@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 
-def get_dataset(dataset_name, dataset_path="datasets"):
+def get_dataset(dataset_name, dataset_path="datasets", test_mode=False):
     """Provide access to the specified dataset.
 
     :param str dataset_name: Name of the dataset (e.g., "POWER", "GAS", etc.).
@@ -19,7 +19,10 @@ def get_dataset(dataset_name, dataset_path="datasets"):
 
     dims = train_data.shape[-1]
 
-    return (train_data, validation_data, test_data), dims
+    if test_mode:
+        return (train_data[1000:], validation_data[1000:], test_data[1000:]), dims
+    else:
+        return (train_data, validation_data, test_data), dims
 
 
 if __name__ == "__main__":
