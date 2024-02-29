@@ -59,7 +59,6 @@ class PolynomialWarmupAndCosineDecay(
             decay_steps=decay_steps - warmup - stationary,
         )
 
-    @tf.function
     def __call__(self, step: tf.Tensor) -> tf.Tensor:
         """Compute the learning rate for the current training step.
 
@@ -77,9 +76,26 @@ class PolynomialWarmupAndCosineDecay(
             The learning rate for the current training step.
 
         """
-        if step <= self.warmup:
+        # if step <= self.warmup:
+        #     return self.warmup_scheduler(step)
+        # elif step <= self.warmup + self.stationary:
+        #     return self.max_learning_rate
+        # else:
+        #     return self.cooldown_scheduler(step - self.warmup - self.stationary)
+        is_warmup = tf.less(step, self.warmup)
+
+        def warmup():
             return self.warmup_scheduler(step)
-        elif step <= self.warmup + self.stationary:
+
+        is_stationary = tf.less(step, self.warmup + self.stationary)
+
+        def stationary():
             return self.max_learning_rate
-        else:
+
+        def cooldown():
             return self.cooldown_scheduler(step - self.warmup - self.stationary)
+
+        return tf.case(
+            [(is_warmup, warmup), (is_stationary, stationary)],
+            default=cooldown,
+        )
