@@ -38,7 +38,7 @@ class LearningRateLogger(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         if logs is None or "lr" in logs:
             return
-        logs["lr"] = self.model.optimizer.lr
+        logs["lr"] = self.model.optimizer.lr.numpy()
 
 
 # Construct and fit model.
