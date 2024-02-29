@@ -3,6 +3,7 @@
 import logging
 import os
 import sys
+from copy import deepcopy
 from typing import Any, Protocol
 
 import dvc.api
@@ -113,7 +114,8 @@ def pipeline(
              preprocessed dataset.
     :rtype: Tuple
     """
-    call_args = dict(filter(lambda x: not callable(x[1]), vars().items()))
+
+    call_args = dict(filter(lambda x: not callable(x[1]), deepcopy(vars()).items()))
     # Drop Callback functions from MLFlow logging
     call_args["fit_kwds"].pop("callbacks", None)
 
