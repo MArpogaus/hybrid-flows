@@ -76,26 +76,37 @@ class PolynomialWarmupAndCosineDecay(
             The learning rate for the current training step.
 
         """
-        # if step <= self.warmup:
-        #     return self.warmup_scheduler(step)
-        # elif step <= self.warmup + self.stationary:
-        #     return self.max_learning_rate
-        # else:
-        #     return self.cooldown_scheduler(step - self.warmup - self.stationary)
-        is_warmup = tf.less(step, self.warmup)
+        with tf.name_scope(self.__class__.__name__):
+            step = tf.convert_to_tensor(step)
+            warmup = tf.convert_to_tensor(self.warmup, dtype=step.dtype)
+            stationary = tf.convert_to_tensor(self.stationary, dtype=step.dtype)
+            tf.print(step)
+            # if step <= self.warmup:
+            #     return self.warmup_scheduler(step)
+            # elif (step > self.warmup) & (step <= self.warmup + self.stationary):
+            #     return self.max_learning_rate
+            # else:
+            #     return self.cooldown_scheduler(step - self.warmup - self.stationary)
+            is_warmup = step <= warmup
 
-        def warmup():
-            return self.warmup_scheduler(step)
+            def warmup_fn():
+                return self.warmup_scheduler(step)
 
-        is_stationary = tf.less(step, self.warmup + self.stationary)
+            is_stationary = ~is_warmup & (step <= warmup + stationary)
 
-        def stationary():
-            return self.max_learning_rate
+            def stationary_fn():
+                return self.max_learning_rate
 
-        def cooldown():
-            return self.cooldown_scheduler(step - self.warmup - self.stationary)
+            def cooldown_fn():
+                return self.cooldown_scheduler(step - warmup - stationary)
 
-        return tf.case(
-            [(is_warmup, warmup), (is_stationary, stationary)],
-            default=cooldown,
-        )
+            tf.print(is_warmup, is_stationary)
+            lr = tf.case(
+                [(is_warmup, warmup_fn), (is_stationary, stationary_fn)],
+                default=cooldown_fn,
+                exclusive=True,
+            )
+
+            tf.print(lr)
+
+            return lr
