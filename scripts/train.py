@@ -70,14 +70,14 @@ def get_learning_rate(fit_kwds):
         schduler_class_name = "".join(map(str.title, scheduler_name.split("_")))
         scheduler_kwds = fit_kwds["learning_rate"]["scheduler_kwds"]
         __LOGGER__.info(f"{scheduler_name=}({scheduler_kwds})")
-        return getattr(
-            tf.keras.optimizers.schedules,
+        scheduler = getattr(
+            mctm.scheduler,
             schduler_class_name,
-            getattr(
-                mctm.scheduler,
-                schduler_class_name,
-            ),
-        )(**scheduler_kwds), fit_kwds["learning_rate"]
+            getattr(tf.keras.optimizers.schedules, schduler_class_name, None),
+        )(**scheduler_kwds)
+
+        fit_kwds["callbacks"] = [tf.keras.callbacks.LearningRateScheduler(scheduler)]
+        return scheduler_kwds["initial_learning_rate"], fit_kwds["learning_rate"]
     else:
         return fit_kwds["learning_rate"], {}
 
@@ -170,7 +170,7 @@ def run(
     if test_mode:
         __LOGGER__.info("Running in test-mode")
         run_name += "_test"
-        fit_kwds.update(epochs=1)
+        fit_kwds.update(epochs=20)
 
     # configure mpl to use latex
     if which("latex"):
