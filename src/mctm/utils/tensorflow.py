@@ -92,7 +92,7 @@ def fit_distribution(
         )
     else:
         optimizer = K.optimizers.Adam(learning_rate=learning_rate)
-    model.compile(optimizer=optimizer, loss=loss)
+    model.compile(optimizer=optimizer, loss=loss, jit_compile=True)
 
     callbacks += [
         K.callbacks.ModelCheckpoint(
