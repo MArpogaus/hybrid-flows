@@ -20,7 +20,7 @@ def get_dataset(dataset_name, dataset_path="datasets", test_mode=False):
     dims = train_data.shape[-1]
 
     if test_mode:
-        return (train_data[1000:], validation_data[1000:], test_data[1000:]), dims
+        return (train_data[:1000], validation_data[:1000], test_data[:1000]), dims
     else:
         return (train_data, validation_data, test_data), dims
 
