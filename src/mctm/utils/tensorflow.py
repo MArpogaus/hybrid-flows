@@ -29,6 +29,18 @@ def set_seed(seed):
     tf.random.set_seed(seed)
 
 
+# ref: https://stackoverflow.com/a/65044316
+class LearningRateLogger(tf.keras.callbacks.Callback):
+    def __init__(self):
+        super().__init__()
+        self._supports_tf_logs = True
+
+    def on_epoch_end(self, epoch, logs=None):
+        if logs is None or "lr" in logs:
+            return
+        logs["lr"] = self.model.optimizer.lr
+
+
 # Construct and fit model.
 # @tf.function
 def fit_distribution(
@@ -92,6 +104,7 @@ def fit_distribution(
             save_best_only=True,
         ),
         K.callbacks.TerminateOnNaN(),
+        LearningRateLogger(),
     ]
     if reduce_lr_on_plateau:
         callbacks += [
