@@ -6,6 +6,7 @@ import os
 from functools import partial
 from shutil import which
 
+import mctm.scheduler
 import numpy as np
 import tensorflow as tf
 from mctm.data.benchmark import get_dataset as get_benchmark_dataset
@@ -64,14 +65,19 @@ def get_learning_rate(fit_kwds):
     decay: name of a scheduler in `tf.keras.optimizers.schedules` (i.e. CosineDecay)
     kwds: kewyowrds that get passed into decay function.
     """
-    if isinstance(fit_kwds["learning_rate"], str):
-        scheduler_name = fit_kwds["learning_rate"]
-        scheduler_kwds = fit_kwds.pop(scheduler_name + "_kwds")
+    if isinstance(fit_kwds["learning_rate"], dict):
+        scheduler_name = fit_kwds["learning_rate"]["scheduler_name"]
+        schduler_class_name = "".join(map(str.title, scheduler_name.split("_")))
+        scheduler_kwds = fit_kwds["learning_rate"]["scheduler_kwds"]
         __LOGGER__.info(f"{scheduler_name=}({scheduler_kwds})")
         return getattr(
             tf.keras.optimizers.schedules,
-            "".join(map(str.title, scheduler_name.split("_"))),
-        )(**scheduler_kwds), scheduler_kwds
+            schduler_class_name,
+            getattr(
+                mctm.scheduler,
+                schduler_class_name,
+            ),
+        )(**scheduler_kwds), fit_kwds["learning_rate"]
     else:
         return fit_kwds["learning_rate"], {}
 
