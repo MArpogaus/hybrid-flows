@@ -205,18 +205,20 @@ def plot_flow(dist, x, y, seed=1, **kwds):
     :return: Figures of the joint KDE plots for data transformation.
     :rtype: tuple
     """
+    base_dist = dist.distribution.distribution
     columns = ["$y_1$", "$y_2$", "$z_{1,1}$", "$z_{1,2}$", "$z_{2,1}$", "$z_{2,2}$"]
-    # forward flow (bnf in inverted)
     y = tf.convert_to_tensor(y, dtype=tf.float32)
+
+    # inverse flow
     z1 = dist.bijector.inverse(y)
-    z2 = dist.distribution.bijector.inverse(z1)
+    z2 = base_dist.bijector.inverse(z1)
     df_inv = pd.DataFrame(np.concatenate([y, z1, z2], 1), columns=columns).assign(
         label=x, source="data"
     )
 
-    # inverse flow
-    z2 = dist.distribution.distribution.sample(y.shape[0], seed=seed)
-    z1 = dist.distribution.bijector.forward(z2)
+    # forward flow (bnf in inverted)
+    z2 = base_dist.distribution.sample(y.shape, seed=seed)
+    z1 = base_dist.bijector.forward(z2)
     yy = dist.bijector.forward(z1)
     df_fwd = pd.DataFrame(
         np.concatenate([yy, z1, z2], 1),

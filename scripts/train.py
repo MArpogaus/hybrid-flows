@@ -22,7 +22,6 @@ from mctm.utils.visualisation import (
     plot_samples,
     setup_latex,
 )
-from tensorflow_probability import distributions as tfd
 
 __LOGGER__ = logging.getLogger(__name__)
 
@@ -113,8 +112,7 @@ def run(
         get_model = HybridDenistyRegressionModel
         if not model_kwds["base_checkpoint_path"]:
             fit_kwds.update(
-                loss=lambda y, dist: -dist.log_prob(y)
-                - tfd.Independent(dist.distribution).log_prob(y)
+                loss=lambda y, dist: -dist.log_prob(y) - dist.distribution.log_prob(y)
             )
         else:
             model_kwds.update(base_checkpoint_path_prefix=results_path.split("/", 1)[0])

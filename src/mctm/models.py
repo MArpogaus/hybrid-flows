@@ -13,6 +13,7 @@ which are built on distribution from the 'distributions' module.
 import os
 
 import tensorflow as tf
+from tensorflow_probability import distributions as tfd
 
 from mctm import distributions
 
@@ -124,4 +125,4 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
         :return: The base distribution.
         :rtype: Distribution
         """
-        return self.base_model(None)
+        return tfd.Independent(self.base_model(None), 1)
