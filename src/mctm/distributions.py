@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-02-27 11:30:03 (Marcel Arpogaus)
+# changed : 2024-03-07 16:14:34 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -21,6 +21,7 @@ the final model in many cases.
 """
 
 from functools import partial
+from itertools import chain
 
 import numpy as np
 import tensorflow as tf
@@ -30,20 +31,69 @@ from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 from tensorflow_probability.python.internal import prefer_static
 
-from .activations import get_thetas_constrain_fn
+from .activations import get_spline_param_constrain_fn, get_thetas_constrain_fn
 from .parameters import (
-    get_autoregressive_parameter_network_lambda,
-    get_autoregressive_parameter_network_with_additive_conditioner_lambda,
-    get_parameter_vector_or_simple_network_lambda,
-    get_simple_fully_connected_parameter_network_lambda,
+    get_autoregressive_parameter_network_fn,
+    get_autoregressive_parameter_network_with_additive_conditioner_fn,
+    get_parameter_vector_or_simple_network_fn,
+    get_simple_fully_connected_parameter_network_fn,
 )
 
+
 # FUNCTIONS ####################################################################
+def __get_multivariate_normal_fn__(dims):
+    """Get a Multivariate Normal distribution as a callable.
+
+    :param int dims: The dimension of the distribution.
+    :return: A callable representing the Multivariate Normal distribution.
+    :rtype: callable
+    :return: The shape of the parameter vector.
+    :rtype: list
+    """
+    pv_shape = [dims + np.sum(np.arange(dims + 1))]
+
+    def dist(parameters):
+        loc = parameters[..., :dims]
+        scale_tril = tfp.bijectors.FillScaleTriL()(parameters[..., dims:])
+        mv_normal = tfd.MultivariateNormalTriL(loc=loc, scale_tril=scale_tril)
+        return mv_normal
+
+    return dist, pv_shape
 
 
-def __default_base_distribution_lambda__(
-    dims, distribution_type="normal", is_joint=True, **kwds
+def __get_trainable_distribution__(
+    dims,
+    get_distribution_fn,
+    distribution_kwds,
+    get_parameter_fn,
+    parameter_kwds,
 ):
+    """Get a trainable distribution as a callable.
+
+    :param int dims: The dimension of the distribution.
+    :param callable get_distribution_fn: A function to get the
+                                               distribution lambda.
+    :param dict distribution_kwds: Keyword arguments for the distribution.
+    :param callable get_parameter_fn: A function to get the
+                                             parameter lambda.
+    :param dict parameter_kwds: Keyword arguments for the parameters.
+    :return: A callable representing the distribution.
+    :rtype: callable
+    :return: A callable for parameter vectors.
+    :rtype: callable
+    :return: List of trainable parameters.
+    :rtype: list
+    """
+    distribution_fn, parameters_shape = get_distribution_fn(
+        dims=dims, **distribution_kwds
+    )
+    parameter_fn, trainable_parameters = get_parameter_fn(
+        parameters_shape, **parameter_kwds
+    )
+    return distribution_fn, parameter_fn, trainable_parameters
+
+
+def __get_base_distribution__(dims, distribution_type="normal", is_joint=True, **kwds):
     """Get the default base distribution as a callable.
 
     :param int dims: The dimension of the distribution.
@@ -70,31 +120,6 @@ def __default_base_distribution_lambda__(
     if is_joint:
         dist = tfd.Sample(dist, sample_shape=[dims])
     return dist
-
-
-def get_spline_param_constrain_fn(nbins, interval_width, min_bin_width, min_slope):
-    def _bin_positions(x):
-        return (
-            tf.math.softmax(x, axis=-1) * (interval_width - nbins * min_bin_width)
-            + min_bin_width
-        )
-
-    def _slopes(x):
-        return tf.math.softplus(x) + min_slope
-
-    def constrain_fn(unconstrained_parameters):
-        # shape: [dims, 3*nbins - 1 ]
-        bin_widths, bin_heights, knot_slopes = tf.split(
-            unconstrained_parameters, [nbins, nbins, nbins - 1], axis=-1
-        )
-
-        return dict(
-            bin_widths=_bin_positions(bin_widths),
-            bin_heights=_bin_positions(bin_heights),
-            knot_slopes=_slopes(knot_slopes),
-        )
-
-    return constrain_fn
 
 
 def __get_parametrized_bijector_fn__(
@@ -131,7 +156,7 @@ def __get_parametrized_bijector_fn__(
     return bijector_fn, parameters_shape
 
 
-def __get_flow_parametrization_lambda__(
+def __get_flow_parametrization_fn__(
     scale,
     shift,
     bijector_name,
@@ -154,7 +179,7 @@ def __get_flow_parametrization_lambda__(
         parameter_shape,
     ) = get_parametrized_bijector_fn(bijector_name, **kwds)
 
-    def flow_parametrization_lambda(unconstrained_parameters):
+    def flow_parametrization_fn(unconstrained_parameters):
         bijectors = []
 
         # ŷ = a1(x)*(y + b1(x)) = f2(f1(y,x),x)
@@ -192,40 +217,56 @@ def __get_flow_parametrization_lambda__(
 
         return tfb.Invert(flow)
 
-    return flow_parametrization_lambda, parameter_shape
+    return flow_parametrization_fn, parameter_shape
+
+
+def __get_transformed_distribution_fn__(
+    dims,
+    flow_parametrization_fn,
+    get_base_distribution=__get_base_distribution__,
+    **kwds,
+):
+    def distribution_fn(parameters):
+        base_distribution = get_base_distribution(dims, **kwds)
+        bijector = flow_parametrization_fn(parameters)
+        return tfd.TransformedDistribution(
+            distribution=base_distribution,
+            bijector=bijector,
+        )
+
+    return distribution_fn
 
 
 def __get_elementwise_flow__(
-    dims, base_distribution_lambda=__default_base_distribution_lambda__, **kwds
+    dims,
+    get_base_distribution=__get_base_distribution__,
+    base_distribution_kwds={},
+    **kwds,
 ):
     """Get a Bernstein Flow distribution as a callable.
 
     :param int dims: The dimension of the distribution.
     :param int order: The order of the Bernstein Flow.
-    :param base_distribution_lambda: The base distribution lambda.
+    :param get_base_distribution: The base distribution lambda.
     :param **kwds: Additional keyword arguments.
     :return: The Bernstein Flow distribution.
     :rtype: Distribution
     """
-    flow_parametrization_lambda, parameters_shape = __get_flow_parametrization_lambda__(
-        **kwds
-    )
+    flow_parametrization_fn, parameters_shape = __get_flow_parametrization_fn__(**kwds)
     pv_shape = [dims] + parameters_shape
 
-    def dist(pv_lambda):
-        pv = pv_lambda()
-        dist = tfd.TransformedDistribution(
-            distribution=base_distribution_lambda(
-                dims, is_joint=False, **kwds.pop("base_distribution_kwds", {})
-            ),
-            bijector=flow_parametrization_lambda(pv),
-        )
-        return dist
+    distribution_fn = __get_transformed_distribution_fn__(
+        dims,
+        flow_parametrization_fn,
+        get_base_distribution=get_base_distribution,
+        is_joint=False,
+        **base_distribution_kwds,
+    )
 
-    return dist, pv_shape
+    return distribution_fn, pv_shape
 
 
-def __get_multivariate_flow_lambda__(dims, **kwds):
+def __get_multivariate_flow_fn__(dims, **kwds):
     """Get a Multivariate flow distribution as a callable.
 
     :param int dims: The dimension of the distribution.
@@ -235,104 +276,113 @@ def __get_multivariate_flow_lambda__(dims, **kwds):
     :return: The shape of the parameter vector.
     :rtype: list
     """
-    flow_parametrization_lambda, parameters_shape = __get_flow_parametrization_lambda__(
-        **kwds
-    )
+    flow_parametrization_fn, parameters_shape = __get_flow_parametrization_fn__(**kwds)
     num_params = np.sum(parameters_shape)
     pv_shape = [num_params * dims + np.sum(np.arange(dims + 1))]
 
-    def dist(pv_lambda):
-        pv = pv_lambda()
-        bs = prefer_static.shape(pv)[:-1]
+    def distribution_fn(parameters):
+        bs = prefer_static.shape(parameters)[:-1]
         shape = tf.concat((bs, [dims, num_params]), 0)
 
-        unconstrained_parameters = tf.reshape(pv[..., : num_params * dims], shape)
-        scale_tril = tfp.bijectors.FillScaleTriL()(pv[..., num_params * dims :])
+        unconstrained_parameters = tf.reshape(
+            parameters[..., : num_params * dims], shape
+        )
+        scale_tril = tfp.bijectors.FillScaleTriL()(parameters[..., num_params * dims :])
 
         mv_normal = tfd.MultivariateNormalTriL(loc=0, scale_tril=scale_tril)
 
         return tfd.TransformedDistribution(
             distribution=mv_normal,
-            bijector=flow_parametrization_lambda(
+            bijector=flow_parametrization_fn(
                 unconstrained_parameters,
             ),
         )
 
-    return dist, pv_shape
+    return distribution_fn, pv_shape
 
 
-def __get_multivariate_normal_lambda__(dims):
-    """Get a Multivariate Normal distribution as a callable.
-
-    :param int dims: The dimension of the distribution.
-    :return: A callable representing the Multivariate Normal distribution.
-    :rtype: callable
-    :return: The shape of the parameter vector.
-    :rtype: list
-    """
-    pv_shape = [dims + np.sum(np.arange(dims + 1))]
-
-    def dist(pv_lambda):
-        pv = pv_lambda()
-
-        loc = pv[..., :dims]
-        scale_tril = tfp.bijectors.FillScaleTriL()(pv[..., dims:])
-        mv_normal = tfd.MultivariateNormalTriL(loc=loc, scale_tril=scale_tril)
-        return mv_normal
-
-    return dist, pv_shape
-
-
-def __get_trainable_distribution__(
+def __get_stacked_flow_parametrization_fn__(
     dims,
-    get_distribution_lambda_fn,
-    distribution_kwds,
-    get_parameter_lambda_fn,
-    parameter_kwds,
+    num_layers,
+    get_parameter_fn_for_layer,
+    get_bijectors_for_layer,
+    **kwds,
 ):
-    """Get a trainable distribution as a callable.
+    flow_kwds = kwds.copy()
 
-    :param int dims: The dimension of the distribution.
-    :param callable get_distribution_lambda_fn: A function to get the
-                                               distribution lambda.
-    :param dict distribution_kwds: Keyword arguments for the distribution.
-    :param callable get_parameter_lambda_fn: A function to get the
-                                             parameter lambda.
-    :param dict parameter_kwds: Keyword arguments for the parameters.
-    :return: A callable representing the distribution.
-    :rtype: callable
-    :return: A callable for parameter vectors.
-    :rtype: callable
-    :return: List of trainable parameters.
-    :rtype: list
-    """
-    distribution_lambda, parameters_shape = get_distribution_lambda_fn(
-        dims=dims, **distribution_kwds
+    # scale and shift have to be applied on all dimensions before the first
+    # coupling layers so let's remove them from the kwds to skip them in the
+    # following calls of __get_bijector_fn__
+    scale = flow_kwds.pop("scale", False)
+    shift = flow_kwds.pop("shift", False)
+
+    flow_kwds.update(scale=False, shift=False)
+
+    flow_parametrization_fn, parameters_shape = __get_flow_parametrization_fn__(
+        **flow_kwds
     )
-    parameter_vector_lambda, trainable_parameters = get_parameter_lambda_fn(
-        parameters_shape, **parameter_kwds
+
+    parameter_networks = []
+    trainable_variables = []
+    for layer in range(num_layers):
+        network, variables = get_parameter_fn_for_layer(layer, parameters_shape)
+        parameter_networks.append(network)
+        trainable_variables.append(variables)
+
+    def parameter_fn(conditional_input, **kwds):
+        return list(map(lambda net: net(conditional_input, **kwds), parameter_networks))
+
+    def stacked_flow_parametrization_fn(parameter_networks):
+        bijectors = []
+        # tfp uses the invers T⁻¹ to calculate the log_prob
+        # so we use the invers here to use scale parameters inferred from the data
+        if shift:
+            shift_t = tf.convert_to_tensor(shift, name="shift")[None, ...]
+            f1_shift = tfb.Shift(shift_t, name="f1_shift")
+            bijectors.append(tfb.Invert(f1_shift))
+        if scale:
+            scale_t = tf.convert_to_tensor(scale, name="scale")[None, ...]
+            f1_scale = tfb.Scale(scale_t, name="f1_scale")
+            bijectors.append(tfb.Invert(f1_scale))
+
+        # Stack bijectors
+        for layer, network in enumerate(parameter_networks):
+            bijectors.extend(
+                get_bijectors_for_layer(layer, network, flow_parametrization_fn)
+            )
+
+        return tfb.Chain(bijectors)
+
+    return (
+        stacked_flow_parametrization_fn,
+        parameter_fn,
+        chain.from_iterable(trainable_variables),
     )
-    return distribution_lambda, parameter_vector_lambda, trainable_parameters
 
 
-def __get_bijector_fn__(network, flow_parametrization_lambda):
-    """Get a bijector function as a callable.
+def __get_stacked_flow__(
+    dims,
+    get_base_distribution=__get_base_distribution__,
+    base_distribution_kwds={},
+    **kwds,
+):
+    (
+        flow_parametrization_fn,
+        parameter_fn,
+        trainable_variables,
+    ) = __get_stacked_flow_parametrization_fn__(
+        dims,
+        **kwds,
+    )
 
-    :param callable network: The network to use for the bijector function.
-    :param callable flow_parametrization_lambda: function initializing the flow
-                                                 from unconstrained parameters.
-    :return: A callable representing the bijector function.
-    :rtype: callable
-    """
+    distribution_fn = __get_transformed_distribution_fn__(
+        dims,
+        flow_parametrization_fn,
+        get_base_distribution=get_base_distribution,
+        **base_distribution_kwds,
+    )
 
-    def bijector_fn(y, *arg, **kwds):
-        with tf.name_scope("bnf_bjector"):
-            pvector = network(y, **kwds)
-            flow = flow_parametrization_lambda(pvector)
-
-            return flow
-
-    return bijector_fn
+    return distribution_fn, parameter_fn, trainable_variables
 
 
 def __get_num_masked__(dims, layer):
@@ -349,128 +399,41 @@ def __get_num_masked__(dims, layer):
     return num_masked
 
 
-def __get_stacked_flow__(
-    dims,
-    num_layers,
-    distribution_kwds,
-    get_parameter_lambda_fn_for_layer,
-    get_bijectors_for_layer,
-):
-    distribution_kwds = distribution_kwds.copy()
-    base_distribution_lambda = distribution_kwds.pop(
-        "base_distribution_lambda", __default_base_distribution_lambda__
-    )
-    base_distribution_kwds = distribution_kwds.pop("base_distribution_kwds", {})
+def __get_bijector_fn__(network, flow_parametrization_fn):
+    """Get a bijector function as a callable.
 
-    # scale and shift have to be applied on all dimensions before the first
-    # coupling layers so let's remove them from the kwds to skip them in the
-    # following calls of __get_bijector_fn__
-    scale = distribution_kwds.pop("scale", False)
-    shift = distribution_kwds.pop("shift", False)
+    :param callable network: The network to use for the bijector function.
+    :param callable flow_parametrization_fn: function initializing the flow
+                                                 from unconstrained parameters.
+    :return: A callable representing the bijector function.
+    :rtype: callable
+    """
 
-    distribution_kwds.update(scale=False, shift=False)
+    def bijector_fn(y, *arg, **kwds):
+        with tf.name_scope("bnf_bjector"):
+            pvector = network(y, **kwds)
+            flow = flow_parametrization_fn(pvector)
 
-    flow_parametrization_lambda, parameters_shape = __get_flow_parametrization_lambda__(
-        **distribution_kwds
-    )
+            return flow
 
-    parameter_networks = []
-    trainable_variables = []
-    for layer in range(num_layers):
-        network, variables = get_parameter_lambda_fn_for_layer(layer, parameters_shape)
-        parameter_networks.append(network)
-        trainable_variables.append(variables)
-
-    def parameter_lambda(conditional_input=None, **kwds):
-        return list(map(lambda net: net(conditional_input, **kwds), parameter_networks))
-
-    def distribution_lambda(parameter_networks):
-        bijectors = []
-        # tfp uses the invers T⁻¹ to calculate the log_prob
-        # so we use the invers here to use scale parameters inferred from the data
-        if shift:
-            shift_t = tf.convert_to_tensor(shift, name="shift")[None, ...]
-            f1_shift = tfb.Shift(shift_t, name="f1_shift")
-            bijectors.append(tfb.Invert(f1_shift))
-        if scale:
-            scale_t = tf.convert_to_tensor(scale, name="scale")[None, ...]
-            f1_scale = tfb.Scale(scale_t, name="f1_scale")
-            bijectors.append(tfb.Invert(f1_scale))
-
-        # Stack bijectors
-        for layer, network in enumerate(parameter_networks):
-            bijectors.extend(
-                get_bijectors_for_layer(layer, network, flow_parametrization_lambda)
-            )
-
-        return tfd.TransformedDistribution(
-            distribution=base_distribution_lambda(dims, **base_distribution_kwds),
-            bijector=tfb.Chain(bijectors),
-        )
-
-    return distribution_lambda, parameter_lambda, trainable_variables
+    return bijector_fn
 
 
 # PUBLIC FUNCTIONS #############################################################
-def get_masked_autoregressive_flow(
-    dims,
-    distribution_kwds,
-    parameter_kwds,
-    get_bijector_fn=__get_bijector_fn__,
-    get_parameter_lambda_fn=get_autoregressive_parameter_network_lambda,
-):
-    """Get a Masked Autoregressive Flow distribution as a callable.
-
-    :param int dims: The dimension of the distribution.
-    :param dict distribution_kwds: Keyword arguments for the distribution.
-    :param dict parameter_kwds: Keyword arguments for the parameters.
-    :param callable get_parameter_lambda_fn: A function to get the parameter
-    lambda.
-    :return: A callable representing the distribution.
-    :rtype: callable
-    :return: A callable for parameter networks.
-    :rtype: callable
-    :return: List of trainable parameters.
-    :rtype: list
-    """
-    distribution_kwds = distribution_kwds.copy()
-    num_layers = distribution_kwds.pop("num_layers", 1)
-
-    def get_parameter_lambda_fn_for_layer(_, parameters_shape):
-        parameter_shape = [dims] + parameters_shape
-        return get_parameter_lambda_fn(parameter_shape, **parameter_kwds)
-
-    def get_bijectors_for_layer(_, network, flow_parametrization_lambda):
-        bijector_fn = get_bijector_fn(
-            network=network,
-            flow_parametrization_lambda=flow_parametrization_lambda,
-        )
-
-        return [tfb.MaskedAutoregressiveFlow(bijector_fn=bijector_fn)]
-
-    return __get_stacked_flow__(
-        dims=dims,
-        num_layers=num_layers,
-        distribution_kwds=distribution_kwds,
-        get_parameter_lambda_fn_for_layer=get_parameter_lambda_fn_for_layer,
-        get_bijectors_for_layer=get_bijectors_for_layer,
-    )
-
-
 def get_coupling_flow(
     dims,
     distribution_kwds,
     parameter_kwds,
     num_masked=None,
     get_bijector_fn=__get_bijector_fn__,
-    get_parameter_lambda_fn=get_simple_fully_connected_parameter_network_lambda,
+    get_parameter_fn=get_simple_fully_connected_parameter_network_fn,
 ):
     """Get a Coupling Flow distribution as a callable.
 
     :param int dims: The dimension of the distribution.
     :param dict distribution_kwds: Keyword arguments for the distribution.
     :param dict parameter_kwds: Keyword arguments for the parameters.
-    :param callable get_parameter_lambda_fn: A function to get the parameter
+    :param callable get_parameter_fn: A function to get the parameter
     lambda.
     :return: A callable representing the distribution.
     :rtype: callable
@@ -481,24 +444,28 @@ def get_coupling_flow(
     """
     distribution_kwds = distribution_kwds.copy()
     num_layers = distribution_kwds.pop("num_layers", 1)
+    get_base_dsitribution = distribution_kwds.pop(
+        "get_base_distribution", __get_base_distribution__
+    )
+    base_distribution_kwds = distribution_kwds.pop("base_distribution_kwds", {})
 
-    def get_parameter_lambda_fn_for_layer(layer, parameters_shape):
+    def get_parameter_fn_for_layer(layer, parameters_shape):
         nm = num_masked if num_masked else __get_num_masked__(dims, layer)
         parameter_shape = [dims - nm] + parameters_shape
-        return get_parameter_lambda_fn(
+        return get_parameter_fn(
             input_shape=nm,
             parameter_shape=parameter_shape,
             **parameter_kwds,
         )
 
-    def get_bijectors_for_layer(layer, network, flow_parametrization_lambda):
+    def get_bijectors_for_layer(layer, network, flow_parametrization_fn):
         nm = num_masked if num_masked else __get_num_masked__(dims, layer)
 
         bijectors = []
         bijectors.append(
             tfb.RealNVP(
                 num_masked=nm,
-                bijector_fn=get_bijector_fn(network, flow_parametrization_lambda),
+                bijector_fn=get_bijector_fn(network, flow_parametrization_fn),
             )
         )
 
@@ -513,9 +480,62 @@ def get_coupling_flow(
     return __get_stacked_flow__(
         dims=dims,
         num_layers=num_layers,
-        distribution_kwds=distribution_kwds,
-        get_parameter_lambda_fn_for_layer=get_parameter_lambda_fn_for_layer,
+        get_parameter_fn_for_layer=get_parameter_fn_for_layer,
         get_bijectors_for_layer=get_bijectors_for_layer,
+        get_base_distribution=get_base_dsitribution,
+        base_distribution_kwds=base_distribution_kwds,
+        **distribution_kwds,
+    )
+
+
+def get_masked_autoregressive_flow(
+    dims,
+    distribution_kwds,
+    parameter_kwds,
+    get_bijector_fn=__get_bijector_fn__,
+    get_parameter_fn=get_autoregressive_parameter_network_fn,
+):
+    """Get a Masked Autoregressive Flow distribution as a callable.
+
+    :param int dims: The dimension of the distribution.
+    :param dict distribution_kwds: Keyword arguments for the distribution.
+    :param dict parameter_kwds: Keyword arguments for the parameters.
+    :param callable get_parameter_fn: A function to get the parameter
+    lambda.
+    :return: A callable representing the distribution.
+    :rtype: callable
+    :return: A callable for parameter networks.
+    :rtype: callable
+    :return: List of trainable parameters.
+    :rtype: list
+    """
+    distribution_kwds = distribution_kwds.copy()
+    num_layers = distribution_kwds.pop("num_layers", 1)
+    get_base_dsitribution = distribution_kwds.pop(
+        "get_base_distribution", __get_base_distribution__
+    )
+    base_distribution_kwds = distribution_kwds.pop("base_distribution_kwds", {})
+
+    def get_parameter_fn_for_layer(_, parameters_shape):
+        parameter_shape = [dims] + parameters_shape
+        return get_parameter_fn(parameter_shape, **parameter_kwds)
+
+    def get_bijectors_for_layer(_, network, flow_parametrization_fn):
+        bijector_fn = get_bijector_fn(
+            network=network,
+            flow_parametrization_fn=flow_parametrization_fn,
+        )
+
+        return [tfb.MaskedAutoregressiveFlow(bijector_fn=bijector_fn)]
+
+    return __get_stacked_flow__(
+        dims=dims,
+        num_layers=num_layers,
+        get_parameter_fn_for_layer=get_parameter_fn_for_layer,
+        get_bijectors_for_layer=get_bijectors_for_layer,
+        get_base_distribution=get_base_dsitribution,
+        base_distribution_kwds=base_distribution_kwds,
+        **distribution_kwds,
     )
 
 
@@ -523,7 +543,7 @@ def get_masked_autoregressive_flow_first_dim_masked(
     dims,
     distribution_kwds,
     parameter_kwds,
-    get_parameter_lambda_fn=get_autoregressive_parameter_network_with_additive_conditioner_lambda,  # noqa: E501
+    get_parameter_fn=get_autoregressive_parameter_network_with_additive_conditioner_fn,  # noqa: E501
 ):
     """Get a Masked Autoregressive Bernstein Flow.
 
@@ -532,7 +552,7 @@ def get_masked_autoregressive_flow_first_dim_masked(
     :param int dims: The dimension of the distribution.
     :param dict distribution_kwds: Keyword arguments for the distribution.
     :param dict parameter_kwds: Keyword arguments for the parameters.
-    :param callable get_parameter_lambda_fn: A function to get the parameters.
+    :param callable get_parameter_fn: A function to get the parameters.
     :return: A callable representing the Masked Autoregressive Bernstein Flow
              distribution with the first dimension masked.
     :rtype: callable
@@ -543,10 +563,10 @@ def get_masked_autoregressive_flow_first_dim_masked(
     """
     distribution_kwds.update(num_layers=1)
 
-    def get_bijector_fn(parameter_network, flow_parametrization_lambda):
+    def get_bijector_fn(parameter_network, flow_parametrization_fn):
         bijector_fn = __get_bijector_fn__(
             network=parameter_network,
-            flow_parametrization_lambda=flow_parametrization_lambda,
+            flow_parametrization_fn=flow_parametrization_fn,
         )
         maf_bijector = tfb.MaskedAutoregressiveFlow(bijector_fn=bijector_fn)
 
@@ -571,24 +591,23 @@ def get_masked_autoregressive_flow_first_dim_masked(
         parameter_kwds=parameter_kwds,
         num_masked=1,
         get_bijector_fn=get_bijector_fn,
-        get_parameter_lambda_fn=get_parameter_lambda_fn,
+        get_parameter_fn=get_parameter_fn,
     )
 
 
 # actual functions that are composed of base functions
-
 get_elementwise_flow = partial(
     __get_trainable_distribution__,
-    get_distribution_lambda_fn=__get_elementwise_flow__,
-    get_parameter_lambda_fn=get_parameter_vector_or_simple_network_lambda,
+    get_distribution_fn=__get_elementwise_flow__,
+    get_parameter_fn=get_parameter_vector_or_simple_network_fn,
 )
 get_multivariate_flow = partial(
     __get_trainable_distribution__,
-    get_distribution_lambda_fn=__get_multivariate_flow_lambda__,
-    get_parameter_lambda_fn=get_parameter_vector_or_simple_network_lambda,
+    get_distribution_fn=__get_multivariate_flow_fn__,
+    get_parameter_fn=get_parameter_vector_or_simple_network_fn,
 )
 get_multivariate_normal = partial(
     __get_trainable_distribution__,
-    get_distribution_lambda_fn=__get_multivariate_normal_lambda__,
-    get_parameter_lambda_fn=get_parameter_vector_or_simple_network_lambda,
+    get_distribution_fn=__get_multivariate_normal_fn__,
+    get_parameter_fn=get_parameter_vector_or_simple_network_fn,
 )

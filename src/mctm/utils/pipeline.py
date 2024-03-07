@@ -60,6 +60,46 @@ class doAfterFit(Protocol):
 
 
 # PUBLIC FUNCTIONS #############################################################
+def prepare_pipeline(args):
+    """Prepare the pipeline by configuring logging and loading parameters.
+
+    It creates the output path and builds the parameters from the arguments.
+
+    Expects:
+     - args.results_path
+     - args.log_file
+     - args.log_level
+     - args.stage_name
+
+    :param args: Command-line arguments and parameters.
+    :return: A dictionary containing loaded parameters.
+    :rtype: dict
+    """
+    # prepare results directory
+    os.makedirs(args.results_path, exist_ok=True)
+
+    # configure logging
+    handlers = [logging.StreamHandler(sys.stdout)]
+    if args.log_file:
+        log_file = os.path.join(args.results_path, args.log_file)
+        handlers += [
+            logging.FileHandler(log_file),
+        ]
+    logging.basicConfig(
+        level=args.log_level.upper(),
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        handlers=handlers,
+    )
+
+    __LOGGER__.info("CLI arguments: %s", vars(args))
+
+    # load params
+    params = dvc.api.params_show(stages=args.stage_name)
+    __LOGGER__.info("DVC params: %s", params)
+
+    return params
+
+
 def pipeline(
     experiment_name: str,
     run_name: str,
@@ -122,7 +162,6 @@ def pipeline(
     set_seed(seed)
     data, dims = get_dataset_fn(**dataset_kwds)
     model = get_model_fn(dims=dims, **model_kwds)
-    model.build([None, dims])
 
     # Evaluate Model
     if experiment_name:
@@ -174,43 +213,3 @@ def pipeline(
         mlflow.log_artifacts(results_path)
 
         return hist, model, preprocessed
-
-
-def prepare_pipeline(args):
-    """Prepare the pipeline by configuring logging and loading parameters.
-
-    It creates the output path and builds the parameters from the arguments.
-
-    Expects:
-     - args.results_path
-     - args.log_file
-     - args.log_level
-     - args.stage_name
-
-    :param args: Command-line arguments and parameters.
-    :return: A dictionary containing loaded parameters.
-    :rtype: dict
-    """
-    # prepare results directory
-    os.makedirs(args.results_path, exist_ok=True)
-
-    # configure logging
-    handlers = [logging.StreamHandler(sys.stdout)]
-    if args.log_file:
-        log_file = os.path.join(args.results_path, args.log_file)
-        handlers += [
-            logging.FileHandler(log_file),
-        ]
-    logging.basicConfig(
-        level=args.log_level.upper(),
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-        handlers=handlers,
-    )
-
-    __LOGGER__.info("CLI arguments: %s", vars(args))
-
-    # load params
-    params = dvc.api.params_show(stages=args.stage_name)
-    __LOGGER__.info("DVC params: %s", params)
-
-    return params

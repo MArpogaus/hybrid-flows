@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-08-24 16:15:23 (Marcel Arpogaus)
-# changed : 2024-01-15 11:40:16 (Marcel Arpogaus)
+# changed : 2024-03-07 16:13:52 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -101,7 +101,7 @@ def __get_simple_fully_connected_network__(
 
 
 # PUBLIC FUNCTIONS #############################################################
-def get_parameter_vector_lambda(parameters_shape, dtype):
+def get_parameter_vector_fn(parameters_shape, dtype):
     """Create a parameter vector as a trainable TensorFlow variable.
 
     :param tuple parameters_shape: The shape of the parameter vector.
@@ -112,10 +112,10 @@ def get_parameter_vector_lambda(parameters_shape, dtype):
     parameter_vector = tf.Variable(
         tf.random.normal(parameters_shape, dtype=dtype), trainable=True
     )
-    return lambda *_, **__: lambda: parameter_vector, parameter_vector
+    return lambda *_, **__: parameter_vector, parameter_vector
 
 
-def get_simple_fully_connected_parameter_network_lambda(
+def get_simple_fully_connected_parameter_network_fn(
     parameter_shape, input_shape, **kwds
 ):
     """Create a simple fully connected parameter network for density estimation.
@@ -134,18 +134,18 @@ def get_simple_fully_connected_parameter_network_lambda(
 
     if kwds.get("conditional", False):
 
-        def parameter_network_lambda(conditional_input=None, **kwds):
+        def parameter_network_fn(conditional_input, **kwds):
             return lambda x: parameter_network([x, conditional_input], **kwds)
 
     else:
 
-        def parameter_network_lambda(*_, **kwds):
-            return lambda x: parameter_network(x, **kwds)
+        def parameter_network_fn(conditional_input, **kwds):
+            return partial(parameter_network, **kwds)
 
-    return parameter_network_lambda, parameter_network.trainable_variables
+    return parameter_network_fn, parameter_network.trainable_variables
 
 
-def get_parameter_vector_or_simple_network_lambda(parameter_shape, conditional, **kwds):
+def get_parameter_vector_or_simple_network_fn(parameter_shape, conditional, **kwds):
     """Create parameter vector.
 
     Create either a parameter vector or a simple fully connected parameter
@@ -166,15 +166,12 @@ def get_parameter_vector_or_simple_network_lambda(parameter_shape, conditional, 
         )
         parameter_network.build(input_shape)
 
-        def parameter_network_lambda(conditional_input, **kwds):
-            return lambda *_: parameter_network(conditional_input, **kwds)
-
-        return parameter_network_lambda, parameter_network.trainable_variables
+        return parameter_network, parameter_network.trainable_variables
     else:
-        return get_parameter_vector_lambda(parameter_shape, **kwds)
+        return get_parameter_vector_fn(parameter_shape, **kwds)
 
 
-def get_autoregressive_parameter_network_lambda(parameter_shape, **kwds):
+def get_autoregressive_parameter_network_fn(parameter_shape, **kwds):
     """Create an autoregressive parameter network.
 
     :param tuple parameter_shape: The shape of the parameter.
@@ -190,13 +187,13 @@ def get_autoregressive_parameter_network_lambda(parameter_shape, **kwds):
     )
     parameter_network.build(dims)
 
-    def parameter_network_lambda(conditional_input=None, **kwds):
+    def parameter_network_fn(conditional_input=None, **kwds):
         return partial(parameter_network, conditional_input=conditional_input, **kwds)
 
-    return parameter_network_lambda, parameter_network.trainable_variables
+    return parameter_network_fn, parameter_network.trainable_variables
 
 
-def get_autoregressive_parameter_network_with_additive_conditioner_lambda(
+def get_autoregressive_parameter_network_with_additive_conditioner_fn(
     parameter_shape, input_shape, made_kwds, x0_kwds
 ):
     """Create an autoregressive parameter network with an additive conditioner.
@@ -210,25 +207,23 @@ def get_autoregressive_parameter_network_with_additive_conditioner_lambda(
     :rtype: Tuple
     """
     (
-        masked_autoregressive_parameter_network_lambda,
+        masked_autoregressive_parameter_network_fn,
         masked_autoregressive_trainable_variables,
-    ) = get_autoregressive_parameter_network_lambda(
+    ) = get_autoregressive_parameter_network_fn(
         parameter_shape,
         **made_kwds,
     )
 
     (
-        x0_parameter_network_lambda,
+        x0_parameter_network_fn,
         x0_trainable_variables,
-    ) = get_simple_fully_connected_parameter_network_lambda(
+    ) = get_simple_fully_connected_parameter_network_fn(
         parameter_shape=parameter_shape, input_shape=input_shape, **x0_kwds
     )
 
-    def parameter_lambda(conditional_input=None, **kwds):
-        made_net = masked_autoregressive_parameter_network_lambda(
-            conditional_input, **kwds
-        )
-        x0_net = x0_parameter_network_lambda(conditional_input, **kwds)
+    def parameter_fn(conditional_input=None, **kwds):
+        made_net = masked_autoregressive_parameter_network_fn(conditional_input, **kwds)
+        x0_net = x0_parameter_network_fn(conditional_input, **kwds)
 
         def call(x, conditional_input):
             pv1 = made_net(x)
@@ -240,4 +235,4 @@ def get_autoregressive_parameter_network_with_additive_conditioner_lambda(
     trainable_parameters = (
         masked_autoregressive_trainable_variables + x0_trainable_variables
     )
-    return parameter_lambda, trainable_parameters
+    return parameter_fn, trainable_parameters

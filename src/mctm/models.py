@@ -40,8 +40,8 @@ class DensityRegressionModel(tf.keras.Model):
         """
         super().__init__()
         (
-            self.distribution_lambda,
-            self.distribution_parameters_lambda,
+            self.distribuition_fn,
+            self.parameter_fn,
             self.trainable_parameters,
         ) = getattr(distributions, "get_" + distribution)(dims=dims, **kwds)
 
@@ -53,9 +53,8 @@ class DensityRegressionModel(tf.keras.Model):
         :return: The computed distribution.
         :rtype: Distribution
         """
-        return self.distribution_lambda(
-            self.distribution_parameters_lambda(inputs, **kwds)
-        )
+        parameters = self.parameter_fn(inputs, **kwds)
+        return self.distribuition_fn(parameters)
 
 
 class HybridDenistyRegressionModel(DensityRegressionModel):
@@ -98,7 +97,7 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
             dims,
             distribution=distribution,
             distribution_kwds={
-                "base_distribution_lambda": self.get_base_distribution,
+                "get_base_distribution": self.get_base_distribution,
                 **distribution_kwds,
             },
             parameter_kwds=parameter_kwds,
