@@ -154,7 +154,7 @@ stages:
       - log-level
       - seed
       - textwidth
-      - malnutrition_kwds
+      - malnutrition_kwargs
       - malnutrition_distributions.${key}*
       deps:
       - scripts/train_malnutrition.py

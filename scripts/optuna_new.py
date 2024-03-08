@@ -42,10 +42,10 @@ def suggest_new_params(
     __LOGGER__.debug(f"{trial}: {use_pruning=}")
     params = deepcopy(inital_params)
     stage = stage_name.split("@")[0]
-    model_kwds = params[stage + "_distributions"][distribution][dataset]
+    model_kwargs = params[stage + "_distributions"][distribution][dataset]
 
     for d in parameter_space_definition:
-        p = model_kwds
+        p = model_kwargs
         keys = d["name"].split(".")
         for k in keys[:-1]:
             if k not in p.keys():
@@ -65,7 +65,7 @@ def suggest_new_params(
 
     # Add KerasPruningCallback checks for pruning condition every epoch
     if use_pruning:
-        model_kwds["fit_kwds"]["callbacks"] = [
+        model_kwargs["fit_kwargs"]["callbacks"] = [
             TFKerasPruningCallback(trial, __EVALUATION_METRIC__)
         ]
 
@@ -124,11 +124,9 @@ def get_objective(
 
 
 def best_value_callback(study, frozen_trial):
-    """
-    Logging callback that will report when a new trial iteration improves upon
+    """Logging callback that will report when a new trial iteration improves upon
     existing best trial values.
     """
-
     winner = study.user_attrs.get(__BEST_VALUE_ATTRIBUTE_KEY__, np.inf)
     complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
 
@@ -210,10 +208,10 @@ def run_study(
 
     # Seed?
     set_seed(seed)
-    study_kwds = dict(study_name=study_name, sampler=TPESampler(seed=seed))
+    study_kwargs = dict(study_name=study_name, sampler=TPESampler(seed=seed))
 
     if use_pruning:
-        study_kwds["pruner"] = SuccessiveHalvingPruner(
+        study_kwargs["pruner"] = SuccessiveHalvingPruner(
             min_resource="auto",
             reduction_factor=4,
             min_early_stopping_rate=0,
@@ -225,11 +223,11 @@ def run_study(
             f"loading study from storage {load_study_from_storage}."
             " This can confuse parameter definitions."
         )
-        study = optuna.load_study(storage=load_study_from_storage, **study_kwds)
+        study = optuna.load_study(storage=load_study_from_storage, **study_kwargs)
         # If a study has been started before, a parent may already exists run
         run_id = study.user_attrs.get(__RUN_ID_ATTRIBUTE_KEY__, None)
     else:
-        study = optuna.create_study(directions=["minimize"], **study_kwds)
+        study = optuna.create_study(directions=["minimize"], **study_kwargs)
         run_id = None
 
     with start_run_with_exception_logging(run_name=run_name, run_id=run_id) as run:

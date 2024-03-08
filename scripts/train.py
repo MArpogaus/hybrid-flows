@@ -26,7 +26,7 @@ from mctm.utils.visualisation import (
 __LOGGER__ = logging.getLogger(__name__)
 
 
-def get_after_fit_hook(results_path, is_hybrid, **kwds):
+def get_after_fit_hook(results_path, is_hybrid, **kwargs):
     """Provide after fit plot."""
 
     def plot_after_fit(model, x, y):
@@ -38,10 +38,10 @@ def get_after_fit_hook(results_path, is_hybrid, **kwds):
             x = x.numpy()[indices]
             y = y.numpy()[indices]
 
-        fig = plot_samples(model(x), y, seed=1, **kwds)
+        fig = plot_samples(model(x), y, seed=1, **kwargs)
         fig.savefig(os.path.join(results_path, "samples.pdf"))
         if is_hybrid:
-            fig1, fig2, fig3 = plot_flow(model(x), x, y, seed=1, **kwds)
+            fig1, fig2, fig3 = plot_flow(model(x), x, y, seed=1, **kwargs)
             fig1.savefig(os.path.join(results_path, "data.pdf"))
             fig2.savefig(os.path.join(results_path, "z1.pdf"))
             fig3.savefig(os.path.join(results_path, "z2.pdf"))
@@ -58,27 +58,27 @@ def get_after_fit_hook(results_path, is_hybrid, **kwds):
     return plot_after_fit
 
 
-def get_learning_rate(fit_kwds):
+def get_learning_rate(fit_kwargs):
     """Lr schedule.
 
     decay: name of a scheduler in `tf.keras.optimizers.schedules` (i.e. CosineDecay)
-    kwds: kewyowrds that get passed into decay function.
+    kwargs: kewyowrds that get passed into decay function.
     """
-    if isinstance(fit_kwds["learning_rate"], dict):
-        scheduler_name = fit_kwds["learning_rate"]["scheduler_name"]
+    if isinstance(fit_kwargs["learning_rate"], dict):
+        scheduler_name = fit_kwargs["learning_rate"]["scheduler_name"]
         schduler_class_name = "".join(map(str.title, scheduler_name.split("_")))
-        scheduler_kwds = fit_kwds["learning_rate"]["scheduler_kwds"]
-        __LOGGER__.info(f"{scheduler_name=}({scheduler_kwds})")
+        scheduler_kwargs = fit_kwargs["learning_rate"]["scheduler_kwargs"]
+        __LOGGER__.info(f"{scheduler_name=}({scheduler_kwargs})")
         scheduler = getattr(
             mctm.scheduler,
             schduler_class_name,
             getattr(tf.keras.optimizers.schedules, schduler_class_name, None),
-        )(**scheduler_kwds)
+        )(**scheduler_kwargs)
 
-        fit_kwds["callbacks"] = [tf.keras.callbacks.LearningRateScheduler(scheduler)]
-        return scheduler_kwds["initial_learning_rate"], fit_kwds["learning_rate"]
+        fit_kwargs["callbacks"] = [tf.keras.callbacks.LearningRateScheduler(scheduler)]
+        return scheduler_kwargs["initial_learning_rate"], fit_kwargs["learning_rate"]
     else:
-        return fit_kwds["learning_rate"], {}
+        return fit_kwargs["learning_rate"], {}
 
 
 def run(
@@ -96,33 +96,34 @@ def run(
 
     params should be as defined in params.yaml
     """
-
     stage = stage_name.split("@")[0]
-    model_kwds = params[stage + "_distributions"][distribution][dataset]
-    fit_kwds = model_kwds.pop("fit_kwds")
+    model_kwargs = params[stage + "_distributions"][distribution][dataset]
+    fit_kwargs = model_kwargs.pop("fit_kwargs")
 
-    learning_rate, extra_params_to_log = get_learning_rate(fit_kwds)
-    fit_kwds["learning_rate"] = learning_rate
+    learning_rate, extra_params_to_log = get_learning_rate(fit_kwargs)
+    fit_kwargs["learning_rate"] = learning_rate
 
-    model_kwds.update(
+    model_kwargs.update(
         distribution=distribution,
     )
 
-    if "base_distribution" in model_kwds.keys():
+    if "base_distribution" in model_kwargs.keys():
         get_model = HybridDenistyRegressionModel
-        if not model_kwds["base_checkpoint_path"]:
-            fit_kwds.update(
+        if not model_kwargs["base_checkpoint_path"]:
+            fit_kwargs.update(
                 loss=lambda y, dist: -dist.log_prob(y) - dist.distribution.log_prob(y)
             )
         else:
-            model_kwds.update(base_checkpoint_path_prefix=results_path.split("/", 1)[0])
+            model_kwargs.update(
+                base_checkpoint_path_prefix=results_path.split("/", 1)[0]
+            )
     else:
         get_model = DensityRegressionModel
 
     if "benchmark" in stage_name:
         get_dataset_fn = get_benchmark_dataset
-        dataset_kwds = {"dataset_name": dataset, "test_mode": test_mode}
-        model_kwds["distribution_kwds"].update(
+        dataset_kwargs = {"dataset_name": dataset, "test_mode": test_mode}
+        model_kwargs["distribution_kwargs"].update(
             **params["benchmark_datasets"][dataset],
         )
 
@@ -140,7 +141,7 @@ def run(
         after_fit_hook = False
     else:
         get_dataset_fn = get_train_dataset
-        dataset_kwds = {
+        dataset_kwargs = {
             "dataset_name": dataset,
             "test_mode": test_mode,
             **params["datasets"][dataset],
@@ -168,7 +169,7 @@ def run(
     if test_mode:
         __LOGGER__.info("Running in test-mode")
         run_name += "_test"
-        fit_kwds.update(epochs=20)
+        fit_kwargs.update(epochs=2)
 
     # configure mpl to use latex
     if which("latex"):
@@ -177,7 +178,7 @@ def run(
 
     # don't show progress bar if running from CI
     if os.environ.get("CI", False):
-        fit_kwds.update(verbose=2)
+        fit_kwargs.update(verbose=2)
 
     # actually execute training
     history, model, preprocessed = pipeline(
@@ -187,11 +188,11 @@ def run(
         log_file=log_file,
         seed=params["seed"],
         get_dataset_fn=get_dataset_fn,
-        dataset_kwds=dataset_kwds,
+        dataset_kwargs=dataset_kwargs,
         get_model_fn=get_model,
-        model_kwds=model_kwds,
+        model_kwargs=model_kwargs,
         preprocess_dataset=preprocess_dataset,
-        fit_kwds=fit_kwds,
+        fit_kwargs=fit_kwargs,
         plot_data=plot_data,
         after_fit_hook=after_fit_hook,
         **extra_params_to_log,

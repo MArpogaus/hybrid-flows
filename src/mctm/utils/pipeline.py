@@ -55,7 +55,7 @@ class doPreprocessDataset(Protocol):
 class doAfterFit(Protocol):
     """Callback."""
 
-    def __call__(self, model: Any, x: Any, y: Any, **kwds: dict) -> None:
+    def __call__(self, model: Any, x: Any, y: Any, **kwargs: dict) -> None:
         """Call."""
 
 
@@ -107,11 +107,11 @@ def pipeline(
     log_file: str,
     seed: int,
     get_dataset_fn: getDataset,
-    dataset_kwds: dict,
+    dataset_kwargs: dict,
     get_model_fn: getModel,
-    model_kwds: dict,
+    model_kwargs: dict,
     preprocess_dataset: doPreprocessDataset,
-    fit_kwds: dict,
+    fit_kwargs: dict,
     plot_data: doPlotData,
     after_fit_hook: doAfterFit,
     **extra_params_to_log,
@@ -124,7 +124,8 @@ def pipeline(
     preprocessing the dataset,
     training the model, and logging experiment results.
 
-    Notes:
+    Notes
+    -----
      - get_dataset_fn is a callback because we have no common
        interface for how to generate a dataset
      - assumes models history has "loss" and "val_loss"
@@ -138,13 +139,13 @@ def pipeline(
     :param int seed: The random seed for reproducibility.
     :param callable get_dataset_fn: A function that loads and
                                    returns the dataset.
-    :param dict dataset_kwds: Keyword arguments for the
+    :param dict dataset_kwargs: Keyword arguments for the
                              dataset loading function.
     :param callable get_model_fn: A function that creates and returns the model.
-    :param dict model_kwds: Keyword arguments for the model creation function.
+    :param dict model_kwargs: Keyword arguments for the model creation function.
     :param callable preprocess_dataset: A function for preprocessing
                                        the dataset.
-    :param dict fit_kwds: Keyword arguments for the model fitting function.
+    :param dict fit_kwargs: Keyword arguments for the model fitting function.
     :param callable plot_data: A function for plotting the dataset.
     :param callable after_fit_hook: A function to be executed after
                                    model fitting.
@@ -153,15 +154,15 @@ def pipeline(
     :return: A tuple containing the training history, model, and
              preprocessed dataset.
     :rtype: Tuple
-    """
 
+    """
     call_args = dict(filter(lambda x: not callable(x[1]), deepcopy(vars()).items()))
     # Drop Callback functions from MLFlow logging
-    call_args["fit_kwds"].pop("callbacks", None)
+    call_args["fit_kwargs"].pop("callbacks", None)
 
     set_seed(seed)
-    data, dims = get_dataset_fn(**dataset_kwds)
-    model = get_model_fn(dims=dims, **model_kwds)
+    data, dims = get_dataset_fn(**dataset_kwargs)
+    model = get_model_fn(dims=dims, **model_kwargs)
 
     # Evaluate Model
     if experiment_name:
@@ -188,7 +189,7 @@ def pipeline(
             seed=seed,
             results_path=results_path,
             **preprocessed,
-            **fit_kwds,
+            **fit_kwargs,
         )
 
         if after_fit_hook:

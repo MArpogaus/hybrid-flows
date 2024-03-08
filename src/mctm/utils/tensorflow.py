@@ -30,7 +30,7 @@ def set_seed(seed):
 
 
 # Construct and fit model.
-# @tf.function
+# TODO: implement a custom training loop
 def fit_distribution(
     model: tf.keras.Model,
     seed: int,
@@ -45,7 +45,7 @@ def fit_distribution(
     weight_decay: float = None,
     loss=lambda y, dist: -dist.log_prob(y),
     callbacks=[],
-    **kwds,
+    **kwargs,
 ):
     """Train model.
 
@@ -116,5 +116,5 @@ def fit_distribution(
         shuffle=True,
         callbacks=callbacks,
         verbose=verbose,
-        **kwds,
+        **kwargs,
     )

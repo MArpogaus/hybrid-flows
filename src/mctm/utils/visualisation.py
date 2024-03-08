@@ -11,30 +11,36 @@
 # LICENSE ######################################################################
 # ...
 ################################################################################
-
 import time
+from typing import Any, Tuple, Union
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import tensorflow as tf
-from matplotlib import pyplot as plt
+import tensorflow_probability as tfp
 
 
-# PRIVATE FUNCTIONS ############################################################
-def __joint_kde_plot__(data, x, y, **kwds):
-    """Create a joint KDE (Kernel Density Estimation) plot of two variables.
+def _joint_kde_plot(data: pd.DataFrame, x: str, y: str, **kwargs) -> plt.Figure:
+    """Generate a joint KDE plot of two variables from a dataset.
 
-    Generates a joint KDE plot of two variables from a given dataset.
-    It visualizes the distribution of the variables in a two-dimensional
-    space with contours.
+    Parameters
+    ----------
+    data
+        The dataset containing the variables to be plotted.
+    x
+        The name of the variable to plot on the x-axis.
+    y
+        The name of the variable to plot on the y-axis.
+    kwargs
+        Keyword arguments passed to `sns.jointplot`
 
-    :param DataFrame data: The dataset containing the variables to be plotted.
-    :param str x: The name of the variable to plot on the x-axis.
-    :param str y: The name of the variable to plot on the y-axis.
-    :param **kwds: Additional keyword arguments to customize the plot.
-    :return: The generated plot figure.
-    :rtype: Figure
+    Returns
+    -------
+    plt.Figure
+        The generated plot figure.
+
     """
     g = sns.jointplot(
         data=data,
@@ -45,7 +51,7 @@ def __joint_kde_plot__(data, x, y, **kwds):
         s=10,
         xlim=(data[x].quantile(q=0.001) - 0.1, data[x].quantile(q=0.999) + 0.1),
         ylim=(data[y].quantile(q=0.001) - 0.1, data[y].quantile(q=0.999) + 0.1),
-        **kwds,
+        **kwargs,
     )
     g.plot_joint(sns.kdeplot, legend=False)
     sns.move_legend(
@@ -59,18 +65,24 @@ def __joint_kde_plot__(data, x, y, **kwds):
     return g.figure
 
 
-# PUBLIC FUNCTIONS #############################################################
-def get_figsize(width, fraction=1, subplots=(1, 1)):
+def get_figsize(
+    width: Union[str, float], fraction: float = 1, subplots: Tuple[int, int] = (1, 1)
+) -> Tuple[float, float]:
     """Set figure dimensions to avoid scaling in LaTeX.
 
-    :param width: float or string
-                  Document width in points, or string of predefined document type.
-    :param fraction: float, optional
-                     Fraction of the width which you wish the figure to occupy.
-    :param subplots: array-like, optional
-                     The number of rows and columns of subplots.
-    :return: fig_dim: tuple
-                     Dimensions of the figure in inches.
+    Parameters
+    ----------
+    width
+        Document width in points, or string of predefined document type.
+    fraction
+        Fraction of the width which you wish the figure to occupy.
+    subplots
+        The number of rows and columns of subplots.
+
+    Returns
+    -------
+        Dimensions of the figure in inches.
+
     """
     if width == "thesis":
         width_pt = 426.79135
@@ -93,16 +105,17 @@ def get_figsize(width, fraction=1, subplots=(1, 1)):
     # Figure height in inches
     fig_height_in = fig_width_in * golden_ratio * (subplots[0] / subplots[1])
 
-    return (fig_width_in, fig_height_in)
+    return fig_width_in, fig_height_in
 
 
-def setup_latex(fontsize=10):
+def setup_latex(fontsize: int = 10) -> None:
     """Set up LaTeX font and text rendering for matplotlib.
 
-    This function configures LaTeX font and text rendering settings
-    for matplotlib plots.
+    Parameters
+    ----------
+    fontsize
+        Font size to use for labels and text in the plots.
 
-    :param int fontsize: Font size to use for labels and text in the plots.
     """
     tex_fonts = {
         # Use LaTeX to write all text
@@ -123,27 +136,32 @@ def setup_latex(fontsize=10):
     plt.rcParams.update(tex_fonts)
 
 
-def plot_2d_data(X, Y, plot_kwds=dict(s=5, alpha=0.7), **kwds):
+def plot_2d_data(
+    X: np.ndarray, Y: np.ndarray, plot_kwargs: dict = dict(s=5, alpha=0.7), **kwargs
+) -> plt.Figure:
     """Create a 2D scatter plot for binary labeled data.
 
-    This function creates a 2D scatter plot for binary labeled data points.
-    It separates the data points by label and visualizes them in different
-    colors.
+    Parameters
+    ----------
+    X
+        Data points to plot.
+    Y
+        Binary labels for the data points.
+    plot_kwargs
+        Keyword arguments passed to `plt.scatter`
+    kwargs
+        Keyword arguments passed to `plt.figure`
 
-    :param array X: Data points to plot.
-    :param array Y: Binary labels for the data points.
-    :param **kwds: Additional keyword arguments to customize the plot.
-    :return: The generated plot figure.
-    :rtype: Figure
+    Returns
+    -------
+        The generated plot figure.
 
-    Example:
-        fig = plot_2d_data(X, Y, width=8)
     """
     label = Y.astype(bool)
     X1, X2 = X[..., 0], X[..., 1]
-    fig = plt.figure(**kwds)
-    plt.scatter(X1[label], X2[label], color="blue", **plot_kwds)
-    plt.scatter(X1[~label], X2[~label], color="red", **plot_kwds)
+    fig = plt.figure(**kwargs)
+    plt.scatter(X1[label], X2[label], color="blue", **plot_kwargs)
+    plt.scatter(X1[~label], X2[~label], color="red", **plot_kwargs)
     plt.axis("equal")
     plt.legend(
         ["label: 1", "label: 0"],
@@ -155,20 +173,26 @@ def plot_2d_data(X, Y, plot_kwds=dict(s=5, alpha=0.7), **kwds):
     return fig
 
 
-def plot_samples(dist, data, seed=1, **kwds):
+def plot_samples(
+    dist: tfp.distributions.Distribution, data: np.ndarray, seed: int = 1, **kwargs
+) -> plt.Figure:
     """Create a joint KDE plot of data samples and a probability distribution.
 
-    This function generates a joint Kernel Density Estimation plot of data
-    samples and a probability distribution. It visualizes the data and samples
-    generated from the distribution.
+    Parameters
+    ----------
+    dist
+        A TensorFlow probability distribution.
+    data
+        Data samples to compare with the distribution.
+    seed
+        Random seed for generating samples.
+    kwargs
+        Keyword arguments passed to `_joint_kde_plot`
 
-    :param tfp.distributions.Distribution dist: A TensorFlow probability
-                                                distribution.
-    :param array data: Data samples to compare with the distribution.
-    :param int seed: Random seed for generating samples, optional.
-    :param **kwds: Additional keyword arguments to customize the plot.
-    :return: The generated plot figure.
-    :rtype: Figure
+    Returns
+    -------
+        The generated plot figure.
+
     """
     columns = ["$y_1$", "$y_2$"]
     if len(dist.batch_shape) == 0 or dist.batch_shape[0] == data.shape[-1]:
@@ -176,37 +200,40 @@ def plot_samples(dist, data, seed=1, **kwds):
     else:
         N = []
 
-    # Use the fitted distribution.
     start = time.time()
     samples = dist.sample(N, seed=seed).numpy().squeeze()
     end = time.time()
-    print(f"sampling took {end-start} seconds.")
+    print(f"sampling took {end - start} seconds.")
 
-    df1 = pd.DataFrame(columns=columns, data=data)
-    df1 = df1.assign(source="data")
-
-    df2 = pd.DataFrame(columns=columns, data=samples)
-    df2 = df2.assign(source="model")
-
+    df1 = pd.DataFrame(columns=columns, data=data).assign(source="data")
+    df2 = pd.DataFrame(columns=columns, data=samples).assign(source="model")
     df = pd.concat([df1, df2])
-    return __joint_kde_plot__(data=df, x=columns[0], y=columns[1], **kwds)
+
+    return _joint_kde_plot(data=df, x=columns[0], y=columns[1], **kwargs)
 
 
-def plot_flow(dist, x, y, seed=1, **kwds):
+def plot_flow(
+    dist: tfp.bijectors.Bijector, x: np.ndarray, y: np.ndarray, seed: int = 1, **kwargs
+) -> Tuple[plt.Figure, plt.Figure, plt.Figure]:
     """Create joint KDE plots to visualize data transformation through a flow.
 
-    This function generates joint Kernel Density Estimation plots to visualize
-    data transformations through a flow model. It visualizes the input data,
-    transformed data, and the transformed data's inverse.
+    Parameters
+    ----------
+    dist
+        A TensorFlow probability bijector representing the data transformation.
+    x
+        Input data to the flow transformation.
+    y
+        Transformed data after applying the flow.
+    seed
+        Random seed for generating samples.
+    kwargs
+        Keyword arguments passed to `_joint_kde_plot`
 
-    :param tfp.bijectors.Bijector dist: A TensorFlow probability bijector
-                                         representing the data transformation.
-    :param array x: Input data to the flow transformation.
-    :param array y: Transformed data after applying the flow.
-    :param int seed: Random seed for generating samples, optional.
-    :param **kwds: Additional keyword arguments to customize the plots.
-    :return: Figures of the joint KDE plots for data transformation.
-    :rtype: tuple
+    Returns
+    -------
+        Figures of the joint KDE plots for data transformation.
+
     """
     base_dist = dist.distribution.distribution
     columns = ["$y_1$", "$y_2$", "$z_{1,1}$", "$z_{1,2}$", "$z_{2,1}$", "$z_{2,2}$"]
@@ -230,18 +257,44 @@ def plot_flow(dist, x, y, seed=1, **kwds):
     df = pd.concat((df_inv, df_fwd))
 
     # plot joint
-    fig1 = __joint_kde_plot__(data=df, x=columns[0], y=columns[1], **kwds)
+    fig1 = _joint_kde_plot(data=df, x=columns[0], y=columns[1], **kwargs)
 
     # plot independent
-    fig2 = __joint_kde_plot__(data=df, x=columns[2], y=columns[3], **kwds)
+    fig2 = _joint_kde_plot(data=df, x=columns[2], y=columns[3], **kwargs)
 
     # plot base
-    fig3 = __joint_kde_plot__(data=df, x=columns[4], y=columns[5], **kwds)
+    fig3 = _joint_kde_plot(data=df, x=columns[4], y=columns[5], **kwargs)
 
     return fig1, fig2, fig3
 
 
-def plot_copula_function(dist, y, kind, x_min, x_max, n, **kwds):
+def plot_copula_function(
+    dist: Any, y: np.ndarray, kind: str, x_min: float, x_max: float, n: int, **kwargs
+) -> plt.Figure:
+    """Plot copula function either as surface or contour.
+
+    Parameters
+    ----------
+    dist
+        Copula distribution from TensorFlow Probability.
+    y
+        Data points for the Copula function.
+    kind
+        Type of plot to generate ('surface' or 'contour').
+    x_min
+        Minimum value for the x-axis.
+    x_max
+        Maximum value for the x-axis.
+    n
+        Number of points to generate between x_min and x_max.
+    kwargs
+        Keyword arguments passed to plot function.
+
+    Returns
+    -------
+        Generated Matplotlib figure.
+
+    """
     dist_z1 = dist.distribution
 
     x = np.linspace(x_min, x_max, n)
@@ -266,7 +319,7 @@ def plot_copula_function(dist, y, kind, x_min, x_max, n, **kwds):
             linewidth=0,
             antialiased=False,
             alpha=0.5,
-            **kwds,
+            **kwargs,
         )
         ax = fig.add_subplot(132, projection="3d")
         ax.plot_surface(
@@ -277,7 +330,7 @@ def plot_copula_function(dist, y, kind, x_min, x_max, n, **kwds):
             linewidth=0,
             antialiased=False,
             alpha=0.5,
-            **kwds,
+            **kwargs,
         )
         ax = fig.add_subplot(133, projection="3d")
         ax.plot_surface(
@@ -288,14 +341,14 @@ def plot_copula_function(dist, y, kind, x_min, x_max, n, **kwds):
             linewidth=0,
             antialiased=False,
             alpha=0.5,
-            **kwds,
+            **kwargs,
         )
         return fig
     elif kind == "contour":
         fig, axs = plt.subplots(1, 3, figsize=plt.figaspect(0.3))
-        axs[0].contourf(xx, yy, p_y.reshape(n, n), **kwds)
-        axs[1].contourf(xx, yy, p_z1.reshape(n, n), **kwds)
-        axs[2].contourf(xx, yy, c.reshape(n, n), **kwds)
+        axs[0].contourf(xx, yy, p_y.reshape(n, n), **kwargs)
+        axs[1].contourf(xx, yy, p_z1.reshape(n, n), **kwargs)
+        axs[2].contourf(xx, yy, c.reshape(n, n), **kwargs)
         return fig
     else:
-        raise ValueError(f"{kind=} undefined")
+        raise ValueError(f"Unsupported plot kind: {kind}")

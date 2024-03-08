@@ -31,29 +31,29 @@ class DensityRegressionModel(tf.keras.Model):
     :method call: Compute the distribution for given input arguments.
     """
 
-    def __init__(self, dims, distribution, **kwds):
+    def __init__(self, dims, distribution, **kwargs):
         """Initialize a DensityRegressionModel.
 
         :param int dims: The dimension of the model.
         :param str distribution: The type of distribution to use.
-        :param **kwds: Additional keyword arguments.
+        :param **kwargs: Additional keyword arguments.
         """
         super().__init__()
         (
             self.distribuition_fn,
             self.parameter_fn,
             self.trainable_parameters,
-        ) = getattr(distributions, "get_" + distribution)(dims=dims, **kwds)
+        ) = getattr(distributions, "get_" + distribution)(dims=dims, **kwargs)
 
-    def call(self, inputs, **kwds):
+    def call(self, inputs, **kwargs):
         """Compute the distribution for the given input arguments.
 
         :param *args: Variable-length argument list.
-        :param **kwds: Additional keyword arguments.
+        :param **kwargs: Additional keyword arguments.
         :return: The computed distribution.
         :rtype: Distribution
         """
-        parameters = self.parameter_fn(inputs, **kwds)
+        parameters = self.parameter_fn(inputs, **kwargs)
         return self.distribuition_fn(parameters)
 
 
@@ -69,11 +69,11 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
         self,
         dims,
         distribution,
-        distribution_kwds,
-        parameter_kwds,
+        distribution_kwargs,
+        parameter_kwargs,
         base_distribution,
-        base_distribution_kwds,
-        base_parameter_kwds,
+        base_distribution_kwargs,
+        base_parameter_kwargs,
         base_checkpoint_path,
         freeze_base_model,
         base_checkpoint_path_prefix="./",
@@ -82,12 +82,12 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
 
         :param int dims: The dimension of the model.
         :param str distribution: The type of distribution to use.
-        :param dict distribution_kwds: Keyword arguments for the distribution.
-        :param dict parameter_kwds: Keyword arguments for the parameters.
+        :param dict distribution_kwargs: Keyword arguments for the distribution.
+        :param dict parameter_kwargs: Keyword arguments for the parameters.
         :param str base_distribution: The type of base distribution.
-        :param dict base_distribution_kwds: Keyword arguments for the
+        :param dict base_distribution_kwargs: Keyword arguments for the
                                            base distribution.
-        :param dict base_parameter_kwds: Keyword arguments for the base
+        :param dict base_parameter_kwargs: Keyword arguments for the base
                                         parameters.
         :param str base_checkpoint_path: The path to the base model's
                                         checkpoint.
@@ -96,18 +96,18 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
         super().__init__(
             dims,
             distribution=distribution,
-            distribution_kwds={
+            distribution_kwargs={
                 "get_base_distribution": self.get_base_distribution,
-                **distribution_kwds,
+                **distribution_kwargs,
             },
-            parameter_kwds=parameter_kwds,
+            parameter_kwargs=parameter_kwargs,
         )
 
         self.base_model = DensityRegressionModel(
             dims=dims,
             distribution=base_distribution,
-            distribution_kwds=base_distribution_kwds,
-            parameter_kwds=base_parameter_kwds,
+            distribution_kwargs=base_distribution_kwargs,
+            parameter_kwargs=base_parameter_kwargs,
         )
         if base_checkpoint_path:
             self.base_model.load_weights(
@@ -116,11 +116,11 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
         if freeze_base_model:
             self.base_model.trainable = False
 
-    def get_base_distribution(self, *args, **kwds):
+    def get_base_distribution(self, *args, **kwargs):
         """Get the base distribution.
 
         :param *args: Variable-length argument list. (ignored)
-        :param **kwds: Additional keyword arguments. (ignored)
+        :param **kwargs: Additional keyword arguments. (ignored)
         :return: The base distribution.
         :rtype: Distribution
         """

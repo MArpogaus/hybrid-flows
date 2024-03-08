@@ -71,7 +71,7 @@ skip-magic-trailing-comma = false
 fixable = ["ALL"]
 ignore = []
 # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
-select = ["I", "E", "F"]
+select = ["I", "E", "F", "D"]
 unfixable = []
 
 [tool.setuptools_scm]
