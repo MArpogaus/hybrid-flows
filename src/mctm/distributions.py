@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-03-08 13:57:56 (Marcel Arpogaus)
+# changed : 2024-03-11 16:47:16 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -654,6 +654,59 @@ def get_coupling_flow(
     )
 
 
+def _get_masked_autoregressive_flow_parametrization_fn(
+    dims: int,
+    distribution_kwargs: Dict,
+    parameter_kwargs: Dict,
+    get_bijector_fn: Callable = _get_bijector_fn,
+    get_parameter_fn: Callable = get_autoregressive_parameter_network_fn,
+) -> Tuple[
+    Callable[tf.Variable, tfd.Distribution],
+    Callable[tf.Variable, tf.Variable],
+    Tuple[int, ...],
+]:
+    """Get a Masked Autoregressive Flow distribution as a callable.
+
+    Parameters
+    ----------
+    dims
+        The dimension of the distribution.
+    distribution_kwargs
+        Keyword arguments for the distribution.
+    parameter_kwargs
+        Keyword arguments for the parameters.
+    get_bijector_fn
+        A function to get the bijector.
+    get_parameter_fn
+        A function to get the parameter.
+
+    Returns
+    -------
+        A function to parametrize the distribution, a callable for
+        parameter networks, and a list of trainable parameters.
+
+    """
+
+    def get_parameter_fn_for_layer(_, parameters_shape):
+        parameter_shape = [dims] + parameters_shape
+        return get_parameter_fn(parameter_shape, **parameter_kwargs)
+
+    def get_bijectors_for_layer(_, network, flow_parametrization_fn):
+        bijector_fn = get_bijector_fn(
+            network=network,
+            flow_parametrization_fn=flow_parametrization_fn,
+        )
+
+        return [tfb.MaskedAutoregressiveFlow(bijector_fn=bijector_fn)]
+
+    return _get_stacked_flow_parametrization_fn(
+        dims=dims,
+        get_parameter_fn_for_layer=get_parameter_fn_for_layer,
+        get_bijectors_for_layer=get_bijectors_for_layer,
+        **distribution_kwargs,
+    )
+
+
 def get_masked_autoregressive_flow(
     dims: int,
     distribution_kwargs: Dict,
@@ -687,33 +740,28 @@ def get_masked_autoregressive_flow(
 
     """
     distribution_kwargs = distribution_kwargs.copy()
-    num_layers = distribution_kwargs.pop("num_layers", 1)
-    get_base_dsitribution = distribution_kwargs.pop(
+    get_base_distribution = distribution_kwargs.pop(
         "get_base_distribution", _get_base_distribution
     )
     base_distribution_kwargs = distribution_kwargs.pop("base_distribution_kwargs", {})
 
-    def get_parameter_fn_for_layer(_, parameters_shape):
-        parameter_shape = [dims] + parameters_shape
-        return get_parameter_fn(parameter_shape, **parameter_kwargs)
-
-    def get_bijectors_for_layer(_, network, flow_parametrization_fn):
-        bijector_fn = get_bijector_fn(
-            network=network,
-            flow_parametrization_fn=flow_parametrization_fn,
-        )
-
-        return [tfb.MaskedAutoregressiveFlow(bijector_fn=bijector_fn)]
-
-    return _get_stacked_flow(
+    (
+        flow_parametrization_fn,
+        parameter_fn,
+        trainable_variables,
+    ) = _get_masked_autoregressive_flow_parametrization_fn(
         dims=dims,
-        num_layers=num_layers,
-        get_parameter_fn_for_layer=get_parameter_fn_for_layer,
-        get_bijectors_for_layer=get_bijectors_for_layer,
-        get_base_distribution=get_base_dsitribution,
-        base_distribution_kwargs=base_distribution_kwargs,
-        **distribution_kwargs,
+        distribution_kwargs=distribution_kwargs,
+        parameter_kwargs=parameter_kwargs,
     )
+    distribution_fn = _get_transformed_distribution_fn(
+        dims,
+        flow_parametrization_fn,
+        get_base_distribution=get_base_distribution,
+        **base_distribution_kwargs,
+    )
+
+    return distribution_fn, parameter_fn, trainable_variables
 
 
 def get_masked_autoregressive_flow_first_dim_masked(
@@ -746,37 +794,43 @@ def get_masked_autoregressive_flow_first_dim_masked(
         and a list of trainable parameters.
 
     """
+    distribution_kwargs = distribution_kwargs.copy()
+    get_base_distribution = distribution_kwargs.pop(
+        "get_base_distribution", _get_base_distribution
+    )
+    base_distribution_kwargs = distribution_kwargs.pop("base_distribution_kwargs", {})
 
-    def get_bijector_fn(parameter_network, flow_parametrization_fn):
-        bijector_fn = _get_bijector_fn(
-            network=parameter_network,
-            flow_parametrization_fn=flow_parametrization_fn,
-        )
-        maf_bijector = tfb.MaskedAutoregressiveFlow(bijector_fn=bijector_fn)
-
-        def bijector_fn(x0, *arg, **kwargs):
-            with tf.name_scope("bernstein_bjector"):
-                return tfb.Inline(
-                    forward_fn=partial(maf_bijector.forward, conditional_input=x0),
-                    inverse_fn=partial(maf_bijector.inverse, conditional_input=x0),
-                    inverse_log_det_jacobian_fn=partial(
-                        maf_bijector.inverse_log_det_jacobian, conditional_input=x0
-                    ),
-                    forward_min_event_ndims=1,
-                    # is_increasing=True,
-                    name="maf_cond",
-                )
-
-        return bijector_fn
-
-    return get_coupling_flow(
-        dims=dims,
+    (
+        flow_parametrization_fn,
+        parameter_fn,
+        trainable_variables,
+    ) = _get_masked_autoregressive_flow_parametrization_fn(
+        dims=dims - 1,
         distribution_kwargs=distribution_kwargs,
-        parameter_kwargs=parameter_kwargs,
-        num_masked=1,
-        get_bijector_fn=get_bijector_fn,
+        parameter_kwargs={"input_shape": [1], **parameter_kwargs},
         get_parameter_fn=get_parameter_fn,
     )
+
+    def masked_flow_parametrization_fn(parameter_networks):
+        def bijector_fn(x0, *arg, **kwds):
+            conditioned_parameter_networks = list(
+                map(lambda net: partial(net, conditional_input=x0), parameter_networks)
+            )
+            stacked_maf_bijector = flow_parametrization_fn(
+                conditioned_parameter_networks
+            )
+            return stacked_maf_bijector
+
+        return tfb.RealNVP(num_masked=1, bijector_fn=bijector_fn)
+
+    distribution_fn = _get_transformed_distribution_fn(
+        dims,
+        masked_flow_parametrization_fn,
+        get_base_distribution=get_base_distribution,
+        **base_distribution_kwargs,
+    )
+
+    return distribution_fn, parameter_fn, trainable_variables
 
 
 # actual functions that are composed of base functions
