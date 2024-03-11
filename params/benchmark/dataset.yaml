@@ -1,0 +1,15 @@
+bsds300:
+  scale: 0.537
+  shift: 0.914
+gas:
+  scale: 0.007
+  shift: 5.191
+hepmass:
+  scale: 0.054
+  shift: 8.063
+miniboone:
+  scale: 0.018
+  shift: 23.507
+power:
+  scale: 0.05
+  shift: 5.456

@@ -1,0 +1,10 @@
+dataset_kwargs:
+  moons:
+    n_samples: 16384
+    noise: 0.05
+    scale: [0.05, 0.95]
+  circles:
+    n_samples: 16384
+    noise: 0.05
+    factor: 0.5
+    scale: [0.05, 0.95]

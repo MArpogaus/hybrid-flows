@@ -45,7 +45,8 @@ def fit_distribution(
     weight_decay: float = None,
     loss=lambda y, dist: -dist.log_prob(y),
     callbacks=[],
-    **kwargs,
+    compile_kwargs={},
+    **fit_kwargs,
 ):
     """Train model.
 
@@ -80,7 +81,7 @@ def fit_distribution(
         )
     else:
         optimizer = K.optimizers.Adam(learning_rate=learning_rate)
-    model.compile(optimizer=optimizer, loss=loss, jit_compile=True)
+    model.compile(optimizer=optimizer, loss=loss, **compile_kwargs)
 
     callbacks += [
         K.callbacks.ModelCheckpoint(
@@ -116,5 +117,5 @@ def fit_distribution(
         shuffle=True,
         callbacks=callbacks,
         verbose=verbose,
-        **kwargs,
+        **fit_kwargs,
     )

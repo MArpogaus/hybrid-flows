@@ -1,169 +1,49 @@
 stages:
-  unconditional:
+  train-sim:
     matrix:
-      distribution: ${unconditional_distributions}
-      dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name unconditional-${item.dataset} unconditional@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_${item.distribution}_${item.dataset} --test-mode=${testmode}
+      dataset: ${sim_datasets}
+      model: ${sim_models}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name ${item.model}-${item.dataset.type}-${item.dataset.name} train-sim@${key} ${item.dataset.type} ${item.dataset.name} results/${item.model}_${item.dataset.type}_${item.dataset.name} --test-mode=${testmode}
     params:
-    - log-level
     - seed
     - textwidth
-    - datasets.${item.dataset}*
-    - unconditional_distributions.${item.distribution}.${item.dataset}*
+    - params/${item.dataset.type}/dataset.yaml:
+      - dataset_kwargs.${item.dataset.name}*
+    - params/${item.dataset.type}/${item.dataset.name}/${item.model}.yaml:
     deps:
     - scripts/train.py
     - pyproject.toml
     - src/mctm
     metrics:
-    - results/unconditional_${item.distribution}_${item.dataset}/metrics.yaml
+    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/metrics.yaml
     outs:
-    - results/unconditional_${item.distribution}_${item.dataset}/mcp
-    - results/unconditional_${item.distribution}_${item.dataset}/train.log
-    - results/unconditional_${item.distribution}_${item.dataset}/dataset.pdf
-    - results/unconditional_${item.distribution}_${item.dataset}/samples.pdf
+    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/mcp
+    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/train.log
+    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/dataset.pdf
+    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/samples.pdf
 
-  unconditional_benchmark:
+  train-benchmark:
     matrix:
-      distribution: ${unconditional_benchmark_distributions}
       dataset: ${benchmark_datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name unconditional-benchmark-${item.dataset} unconditional_benchmark@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_benchmark_${item.distribution}_${item.dataset} --test-mode=${testmode}
-    params:
-    - log-level
-    - seed
-    - benchmark_datasets.${item.dataset}*
-    - unconditional_benchmark_distributions.${item.distribution}.${item.dataset}*
-    deps:
-    - datasets/${item.dataset}_train.npy
-    - datasets/${item.dataset}_validate.npy
-    - scripts/train.py
-    - pyproject.toml
-    - src/mctm
-    metrics:
-    - results/unconditional_benchmark_${item.distribution}_${item.dataset}/metrics.yaml
-    outs:
-    - results/unconditional_benchmark_${item.distribution}_${item.dataset}/mcp
-    - results/unconditional_benchmark_${item.distribution}_${item.dataset}/train.log
-
-  conditional:
-    matrix:
-      distribution: ${conditional_distributions}
-      dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name conditional-${item.dataset} conditional@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/conditional_${item.distribution}_${item.dataset} --test-mode=${testmode}
+      model: ${benchmark_models}
+    cmd: echo python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name ${item.model}-${item.dataset.type}-${item.dataset.name} train@${key} results/${item.model}_${item.dataset.type}_${item.dataset.name} --test-mode=${testmode}
     params:
     - log-level
     - seed
     - textwidth
-    - datasets.${item.dataset}*
-    - conditional_distributions.${item.distribution}*
+    - params/${item.dataset.type}/dataset.yaml:
+      - ${item.dataset.name}*
+    - params/${item.dataset.type}/${item.model}.yaml:
     deps:
     - scripts/train.py
     - pyproject.toml
     - src/mctm
+    - data/${item.dataset.type}/${item.dataset.name}_train.npy
+    - data/${item.dataset.type}/${item.dataset.name}_validate.npy
     metrics:
-    - results/conditional_${item.distribution}_${item.dataset}/metrics.yaml
+    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/metrics.yaml
     outs:
-    - results/conditional_${item.distribution}_${item.dataset}/mcp
-    - results/conditional_${item.distribution}_${item.dataset}/train.log
-    - results/conditional_${item.distribution}_${item.dataset}/dataset.pdf
-    - results/conditional_${item.distribution}_${item.dataset}/samples.pdf
-
-  unconditional_hybrid:
-    matrix:
-      distribution: ${unconditional_hybrid_distributions}
-      dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name unconditional-hybrid-${item.dataset} unconditional_hybrid@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_hybrid_${item.distribution}_${item.dataset}/  --test-mode=${testmode}
-    params:
-    - log-level
-    - seed
-    - textwidth
-    - datasets.${item.dataset}*
-    - unconditional_hybrid_distributions.${item.distribution}.${item.dataset}*
-    deps:
-    - scripts/train.py
-    - pyproject.toml
-    - src/mctm
-    metrics:
-    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/metrics.yaml
-    outs:
-    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/train.log
-    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/mcp
-    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/dataset.pdf
-    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/data.pdf
-    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/z1.pdf
-    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/z2.pdf
-    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/samples.pdf
-    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/copula_contour.pdf
-    - results/unconditional_hybrid_${item.distribution}_${item.dataset}/copula_surface.pdf
-
-  unconditional_hybrid_pre_trained:
-    matrix:
-      distribution: ${unconditional_hybrid_pre_trained_distributions}
-      dataset: ${datasets}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name unconditional-hybrid-pre-trained-${item.dataset} unconditional_hybrid_pre_trained@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/  --test-mode=${testmode}
-    params:
-    - log-level
-    - seed
-    - textwidth
-    - datasets.${item.dataset}*
-    - unconditional_hybrid_pre_trained_distributions.${item.distribution}.${item.dataset}*
-    deps:
-    - scripts/train.py
-    - pyproject.toml
-    - src/mctm
-    - results/unconditional_elementwise_flow_${item.dataset}/mcp
-    metrics:
-    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/metrics.yaml
-    outs:
-    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/train.log
-    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/mcp
-    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/dataset.pdf
-    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/data.pdf
-    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/z1.pdf
-    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/z2.pdf
-    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/samples.pdf
-    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/copula_contour.pdf
-    - results/unconditional_hybrid_pre_trained_${item.distribution}_${item.dataset}/copula_surface.pdf
-
-  unconditional_benchmark_hybrid_pre_trained:
-    matrix:
-      distribution: ${unconditional_benchmark_hybrid_pre_trained_distributions}
-      dataset: ${benchmark_datasets}
-    cmd: python scripts/train_benchmark.py --log-level ${log-level} --log-file train.log --experiment-name unconditional-benchmark-${item.dataset} unconditional_benchmark_hybrid_pre_trained@${item.distribution}-${item.dataset} ${item.distribution} ${item.dataset} results/unconditional_benchmark_${item.distribution}_${item.dataset} --test-mode=${testmode}
-    params:
-    - log-level
-    - seed
-    - benchmark_datasets.${item.dataset}*
-    - unconditional_benchmark_hybrid_pre_trained_distributions.${item.distribution}.${item.dataset}*
-    deps:
-    - datasets/${item.dataset}
-    - scripts/train.py
-    - pyproject.toml
-    - src/mctm
-    - results/unconditional_benchmark_elementwise_flow_${item.dataset}/mcp
-    metrics:
-    - results/unconditional_benchmark_${item.distribution}_${item.dataset}/metrics.yaml
-    outs:
-    - results/unconditional_benchmark_${item.distribution}_${item.dataset}/mcp
-    - results/unconditional_benchmark_${item.distribution}_${item.dataset}/train.log
-
-  malnutrition:
-    foreach: ${malnutrition_distributions}
-    do:
-      cmd: python scripts/train_malnutrition.py --log-level ${log-level} --log-file train.log --experiment-name conditional-malnutrition malnutrition@${key} ${key} malnutrition results/conditional_${key}_malnutrition --test-mode=${testmode}
-      params:
-      - log-level
-      - seed
-      - textwidth
-      - malnutrition_kwargs
-      - malnutrition_distributions.${key}*
-      deps:
-      - scripts/train_malnutrition.py
-      - pyproject.toml
-      - src/mctm
-      metrics:
-      - results/conditional_${key}_malnutrition/metrics.yaml
-      outs:
-      - results/conditional_${key}_malnutrition/mcp
-      - results/conditional_${key}_malnutrition/train.log
-      - results/conditional_${key}_malnutrition/dataset.pdf
-      - results/conditional_${key}_malnutrition/samples.pdf
+    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/mcp
+    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/train.log
+    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/dataset.pdf
+    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/samples.pdf

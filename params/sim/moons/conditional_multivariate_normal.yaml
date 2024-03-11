@@ -1,0 +1,25 @@
+compile_kwargs:
+  jit_compile: false
+fit_kwargs:
+  batch_size: 256
+  early_stopping: 4
+  epochs: 10000
+  learning_rate: 0.01
+  lr_patience: 25
+  lr_reduction_factor: 0.5
+  monitor: val_loss
+  reduce_lr_on_plateau: true
+  validation_split: 0.1
+  verbose: true
+model_kwargs:
+  distribution: multivariate_normal
+  distribution_kwargs: {}
+  parameter_kwargs:
+    activation: relu
+    batch_norm: true
+    conditional: true
+    dropout: 0
+    hidden_units:
+    - 16
+    - 16
+    input_shape: 1

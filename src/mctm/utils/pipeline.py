@@ -112,6 +112,7 @@ def pipeline(
     model_kwargs: dict,
     preprocess_dataset: doPreprocessDataset,
     fit_kwargs: dict,
+    compile_kwargs: dict,
     plot_data: doPlotData,
     after_fit_hook: doAfterFit,
     **extra_params_to_log,
@@ -183,12 +184,13 @@ def pipeline(
             preprocessed = preprocess_dataset(data, model)
         else:
             preprocessed = {"x": data[0], "y": data[1]}
+        fit_kwargs.update(preprocessed)
 
         hist = fit_distribution(
             model=model,
             seed=seed,
             results_path=results_path,
-            **preprocessed,
+            compile_kwargs=compile_kwargs,
             **fit_kwargs,
         )
 

@@ -1,0 +1,31 @@
+compile_kwargs:
+  jit_compile: true
+fit_kwargs:
+  batch_size: 256
+  early_stopping: 4
+  epochs: 10000
+  learning_rate: 0.01
+  lr_patience: 25
+  lr_reduction_factor: 0.5
+  monitor: val_loss
+  reduce_lr_on_plateau: true
+  validation_split: 0.1
+  verbose: true
+model_kwargs:
+  distribution: masked_autoregressive_flow
+  distribution_kwargs:
+    allow_flexible_bounds: true
+    bijector_name: bernstein_poly
+    bounds: smooth
+    high: 1
+    low: 0
+    num_layers: 4
+    order: 10
+    scale: false
+    shift: false
+  parameter_kwargs:
+    activation: relu
+    hidden_units:
+    - 16
+    - 16
+    - 16

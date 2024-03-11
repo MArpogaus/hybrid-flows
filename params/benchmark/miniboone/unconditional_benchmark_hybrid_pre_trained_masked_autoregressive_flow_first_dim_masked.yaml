@@ -1,0 +1,61 @@
+compile_kwargs:
+  jit_compile: true
+fit_kwargs:
+  batch_size: 128
+  early_stopping: 100
+  epochs: 200
+  learning_rate:
+    scheduler_kwargs:
+      decay_steps: 200
+      end_learning_rate: 0.0001
+      initial_learning_rate: 0.0005
+      max_learning_rate: 0.01
+      stationary: 20
+      warmup: 5
+      warmup_power: 1
+    scheduler_name: polynomial_warmup_and_cosine_decay
+  lr_patience:
+  monitor: val_loss
+  reduce_lr_on_plateau: false
+  verbose: true
+model_kwargs:
+  base_checkpoint_path: unconditional_benchmark_elementwise_flow_miniboone/mcp/weights
+  base_distribution: elementwise_flow
+  base_distribution_kwargs:
+    allow_flexible_bounds: true
+    bijector_name: bernstein_poly
+    bounds: linear
+    high: 1
+    low: 0
+    num_layers: 3
+    order: 100
+  base_parameter_kwargs:
+    conditional: false
+    dtype: float32
+  distribution: masked_autoregressive_flow_first_dim_masked
+  distribution_kwargs:
+    allow_flexible_bounds: true
+    bijector_name: bernstein_poly
+    bounds: linear
+    high: 1
+    low: 0
+    num_layers: 3
+    order: 80
+  freeze_base_model: true
+  parameter_kwargs:
+    made_kwargs:
+      activation: relu
+      hidden_units:
+      - 512
+      - 512
+      - 512
+    x0_kwargs:
+      activation: relu
+      batch_norm: false
+      bias_initializer: zeros
+      dropout: 0
+      hidden_units:
+      - 64
+      - 64
+      - 64
+      kernel_initializer: glorot_uniform

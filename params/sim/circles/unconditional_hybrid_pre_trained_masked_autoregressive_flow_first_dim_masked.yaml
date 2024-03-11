@@ -1,0 +1,52 @@
+compile_kwargs:
+  jit_compile: true
+fit_kwargs:
+  batch_size: 256
+  early_stopping: 4
+  epochs: 10000
+  learning_rate: 0.01
+  lr_patience: 25
+  lr_reduction_factor: 0.5
+  monitor: val_loss
+  reduce_lr_on_plateau: true
+  validation_split: 0.1
+  verbose: true
+model_kwargs:
+  base_checkpoint_path: false
+  base_distribution: elementwise_flow
+  base_distribution_kwargs:
+    allow_flexible_bounds: true
+    bijector_name: bernstein_poly
+    bounds: smooth
+    high: 3
+    low: -3
+    order: 80
+    scale: false
+    shift: false
+  base_parameter_kwargs:
+    conditional: false
+    dtype: float32
+  distribution: masked_autoregressive_flow_first_dim_masked
+  distribution_kwargs:
+    allow_flexible_bounds: true
+    bijector_name: bernstein_poly
+    bounds: smooth
+    high: 1
+    low: 0
+    order: 100
+    scale: false
+    shift: false
+  freeze_base_model: false
+  parameter_kwargs:
+    made_kwargs:
+      activation: relu
+      hidden_units: []
+    x0_kwargs:
+      activation: relu
+      batch_norm: false
+      bias_initializer: zeros
+      dropout: 0
+      hidden_units:
+      - 16
+      - 16
+      kernel_initializer: glorot_uniform

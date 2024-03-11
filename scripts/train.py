@@ -82,30 +82,26 @@ def get_learning_rate(fit_kwargs):
 
 
 def run(
+    dataset_name,
+    dataset_type,
     experiment_name,
-    results_path,
     log_file,
     log_level,
-    dataset,
-    stage_name,
-    distribution,
-    params,
+    results_path,
     test_mode,
+    params,
 ):
     """Experiment exec.
 
     params should be as defined in params.yaml
     """
-    stage = stage_name.split("@")[0]
-    model_kwargs = params[stage + "_distributions"][distribution][dataset]
-    fit_kwargs = model_kwargs.pop("fit_kwargs")
+    model_kwargs = params["model_kwargs"]
+    fit_kwargs = params["fit_kwargs"]
+    compile_kwargs = params["compile_kwargs"]
+    dataset_kwargs = params["dataset_kwargs"][dataset_name]
 
     learning_rate, extra_params_to_log = get_learning_rate(fit_kwargs)
     fit_kwargs["learning_rate"] = learning_rate
-
-    model_kwargs.update(
-        distribution=distribution,
-    )
 
     if "base_distribution" in model_kwargs.keys():
         get_model = HybridDenistyRegressionModel
@@ -120,11 +116,11 @@ def run(
     else:
         get_model = DensityRegressionModel
 
-    if "benchmark" in stage_name:
+    if dataset_type == "benchmark":
         get_dataset_fn = get_benchmark_dataset
-        dataset_kwargs = {"dataset_name": dataset, "test_mode": test_mode}
+        get_dataset_kwargs = {"dataset_name": dataset_name, "test_mode": test_mode}
         model_kwargs["distribution_kwargs"].update(
-            **params["benchmark_datasets"][dataset],
+            **dataset_kwargs,
         )
 
         def preprocess_dataset(data, model):
@@ -141,10 +137,10 @@ def run(
         after_fit_hook = False
     else:
         get_dataset_fn = get_train_dataset
-        dataset_kwargs = {
-            "dataset_name": dataset,
+        get_dataset_kwargs = {
+            **dataset_kwargs,
+            "dataset_name": dataset_name,
             "test_mode": test_mode,
-            **params["datasets"][dataset],
         }
 
         def preprocess_dataset(data, model):
@@ -163,7 +159,7 @@ def run(
         )
 
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
-    run_name = "_".join((stage, distribution))
+    run_name = "_".join((model_kwargs["distribution"], dataset_name))
 
     # test mode config
     if test_mode:
@@ -188,11 +184,12 @@ def run(
         log_file=log_file,
         seed=params["seed"],
         get_dataset_fn=get_dataset_fn,
-        dataset_kwargs=dataset_kwargs,
+        dataset_kwargs=get_dataset_kwargs,
         get_model_fn=get_model,
         model_kwargs=model_kwargs,
         preprocess_dataset=preprocess_dataset,
         fit_kwargs=fit_kwargs,
+        compile_kwargs=compile_kwargs,
         plot_data=plot_data,
         after_fit_hook=after_fit_hook,
         **extra_params_to_log,
@@ -216,15 +213,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "stage_name",
         type=str,
-        help="name of dvstage",
+        help="name of dvc stage",
     )
     parser.add_argument(
-        "distribution",
+        "dataset_type",
         type=str,
-        help="name of distribution",
+        help="type of dataset",
     )
     parser.add_argument(
-        "dataset",
+        "dataset_name",
         type=str,
         help="name of dataset",
     )
@@ -239,13 +236,12 @@ if __name__ == "__main__":
     params = prepare_pipeline(args)
 
     run(
-        args.experiment_name,
-        args.results_path,
-        args.log_file,
-        args.log_level,
-        args.dataset,
-        args.stage_name,
-        args.distribution,
-        params,
-        args.test_mode,
+        dataset_name=args.dataset_name,
+        dataset_type=args.dataset_type,
+        experiment_name=args.experiment_name,
+        log_file=args.log_file,
+        log_level=args.log_level,
+        results_path=args.results_path,
+        test_mode=args.test_mode,
+        params=params,
     )
