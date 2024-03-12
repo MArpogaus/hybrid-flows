@@ -136,6 +136,10 @@ def _get_base_distribution(
         default_kwargs = dict(loc=0.0, scale=1.0)
         default_kwargs.update(**kwargs)
         dist = tfd.Normal(**default_kwargs)
+    elif distribution_type == "truncated_normal":
+        default_kwargs = dict(loc=0.0, scale=1.0, low=-4, high=4)
+        default_kwargs.update(**kwargs)
+        dist = tfd.TruncatedNormal(**default_kwargs)
     elif distribution_type == "lognormal":
         default_kwargs = dict(loc=0.0, scale=1.0)
         default_kwargs.update(**kwargs)
