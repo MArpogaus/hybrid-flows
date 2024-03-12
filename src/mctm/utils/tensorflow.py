@@ -14,7 +14,6 @@
 # IMPORT MODULES ###############################################################
 import os
 
-import numpy as np
 import tensorflow as tf
 from tensorflow import keras as K
 
@@ -25,8 +24,14 @@ def set_seed(seed):
 
     :param int seed: The random seed value to set.
     """
-    np.random.seed(seed)
-    tf.random.set_seed(seed)
+    # This sets the Python seed, the NumPy seed, and the TensorFlow seed.
+    tf.keras.utils.set_random_seed(seed)
+    # When op determinism is enabled, TensorFlow ops will be deterministic.
+    # This means that if an op is run multiple times with the same inputs on the
+    # same hardware, it will have the exact same outputs each time.
+    # NOTE: that determinism in general comes at the expense of lower performance
+    #       and so your model may run slower when op determinism is enabled.
+    tf.config.experimental.enable_op_determinism()
 
 
 # Construct and fit model.
@@ -35,13 +40,13 @@ def fit_distribution(
     model: tf.keras.Model,
     seed: int,
     learning_rate: float,
-    lr_patience: int,
     results_path: str,
     monitor: str,
     verbose: bool,
     reduce_lr_on_plateau: bool,
     early_stopping: bool,
-    lr_reduction_factor: float = 0.1,
+    lr_patience: int = None,
+    lr_reduction_factor: float = None,
     weight_decay: float = None,
     loss=lambda y, dist: -dist.log_prob(y),
     callbacks=[],
@@ -74,8 +79,6 @@ def fit_distribution(
     """
     set_seed(seed)
     if weight_decay:
-        # NOTE: This is only working with recent versions of TF,
-        #       which are atm not (yet) compatible with BNF.
         optimizer = K.optimizers.AdamW(
             learning_rate=learning_rate, weight_decay=weight_decay
         )
