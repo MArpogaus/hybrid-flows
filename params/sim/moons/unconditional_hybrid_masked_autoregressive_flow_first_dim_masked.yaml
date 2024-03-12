@@ -4,7 +4,19 @@ fit_kwargs:
   batch_size: 256
   early_stopping: 4
   epochs: 10000
-  learning_rate: 0.01
+  learning_rate:
+    batch_size: 256
+    early_stopping: false
+    epochs: 10
+    learning_rate:
+      scheduler_kwargs:
+        decay_steps: 100
+        initial_learning_rate: 0.01
+      scheduler_name: cosine_decay
+    monitor: val_loss
+    reduce_lr_on_plateau: false
+    validation_split: 0.1
+    verbose: true
   lr_patience: 25
   lr_reduction_factor: 0.5
   monitor: val_loss
@@ -33,10 +45,10 @@ model_kwargs:
     bounds: smooth
     high: 1
     low: 0
+    num_layers: 2
     order: 25
     scale: false
     shift: false
-    num_layers: 2
   freeze_base_model: false
   parameter_kwargs:
     made_kwargs:

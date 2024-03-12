@@ -3,7 +3,7 @@ stages:
     matrix:
       dataset: ${sim_datasets}
       model: ${sim_models}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name ${item.dataset.type}-${item.dataset.name} --run-name ${item.model}_${item.dataset.name} train-sim@${key} ${item.dataset.type} ${item.dataset.name} results/${item.model}_${item.dataset.type}_${item.dataset.name} --test-mode=${testmode}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name ${item.model}-${item.dataset.type}-${item.dataset.name} train-sim@${key} ${item.dataset.type} ${item.dataset.name} results/${item.model}_${item.dataset.type}_${item.dataset.name} --test-mode=${testmode}
     params:
     - seed
     - textwidth
@@ -26,7 +26,7 @@ stages:
     matrix:
       dataset: ${benchmark_datasets}
       model: ${benchmark_models}
-    cmd: python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name ${item.dataset.type}-${item.dataset.name} --run-name ${item.model}_${item.dataset.name} train-benchmark@${key} ${item.dataset.type} ${item.dataset.name} results/${item.model}_${item.dataset.type}_${item.dataset.name} --test-mode=${testmode}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name ${item.model}-${item.dataset.type}-${item.dataset.name} train-benchmark@${key} ${item.dataset.type} ${item.dataset.name} results/${item.model}_${item.dataset.type}_${item.dataset.name} --test-mode=${testmode}
     params:
     - log-level
     - seed
