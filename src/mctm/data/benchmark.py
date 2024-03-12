@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 
-def get_dataset(dataset_name, dataset_path="datasets", test_mode=False):
+def get_dataset(dataset_name, dataset_path="datasets/benchmark", test_mode=False):
     """Provide access to the specified dataset.
 
     :param str dataset_name: Name of the dataset (e.g., "POWER", "GAS", etc.).

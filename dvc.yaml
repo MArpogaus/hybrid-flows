@@ -26,24 +26,22 @@ stages:
     matrix:
       dataset: ${benchmark_datasets}
       model: ${benchmark_models}
-    cmd: echo python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name ${item.model}-${item.dataset.type}-${item.dataset.name} train@${key} results/${item.model}_${item.dataset.type}_${item.dataset.name} --test-mode=${testmode}
+    cmd: python scripts/train.py --log-level ${log-level} --log-file train.log --experiment-name ${item.model}-${item.dataset.type}-${item.dataset.name} train-benchmark@${key} ${item.dataset.type} ${item.dataset.name} results/${item.model}_${item.dataset.type}_${item.dataset.name} --test-mode=${testmode}
     params:
     - log-level
     - seed
     - textwidth
     - params/${item.dataset.type}/dataset.yaml:
-      - ${item.dataset.name}*
-    - params/${item.dataset.type}/${item.model}.yaml:
+      - dataset_kwargs.${item.dataset.name}*
+    - params/${item.dataset.type}/${item.dataset.name}/${item.model}.yaml:
     deps:
     - scripts/train.py
     - pyproject.toml
     - src/mctm
-    - data/${item.dataset.type}/${item.dataset.name}_train.npy
-    - data/${item.dataset.type}/${item.dataset.name}_validate.npy
+    - datasets/${item.dataset.type}/${item.dataset.name}_train.npy
+    - datasets/${item.dataset.type}/${item.dataset.name}_validate.npy
     metrics:
     - results/${item.model}_${item.dataset.type}_${item.dataset.name}/metrics.yaml
     outs:
     - results/${item.model}_${item.dataset.type}_${item.dataset.name}/mcp
     - results/${item.model}_${item.dataset.type}_${item.dataset.name}/train.log
-    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/dataset.pdf
-    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/samples.pdf
