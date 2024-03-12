@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-03-11 16:47:16 (Marcel Arpogaus)
+# changed : 2024-03-12 16:44:03 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -435,16 +435,24 @@ def _get_stacked_flow_parametrization_fn(
     # following calls of __get_bijector_fn__
     scale = flow_kwargs.pop("scale", False)
     shift = flow_kwargs.pop("shift", False)
+    scale_to_domain = flow_kwargs.pop("scale_to_domain", False)
 
-    flow_kwargs.update(scale=False, shift=False)
-
-    flow_parametrization_fn, parameters_shape = _get_flow_parametrization_fn(
-        **flow_kwargs
-    )
-
+    flow_parametrization_fns = []
     parameter_networks = []
     trainable_variables = []
     for layer in range(num_layers):
+        if scale_to_domain and layer > 0:
+            low = flow_kwargs["low"]
+            high = flow_kwargs["high"]
+            flow_kwargs.update(scale=1 / (high - low), shift=-low)
+        else:
+            flow_kwargs.update(scale=False, shift=False)
+
+        flow_parametrization_fn, parameters_shape = _get_flow_parametrization_fn(
+            **flow_kwargs
+        )
+        flow_parametrization_fns.append(flow_parametrization_fn)
+
         network, variables = get_parameter_fn_for_layer(layer, parameters_shape)
         parameter_networks.append(network)
         trainable_variables.append(variables)
@@ -468,17 +476,22 @@ def _get_stacked_flow_parametrization_fn(
             bijectors.append(tfb.Invert(f1_scale))
 
         # Stack bijectors
-        for layer, network in enumerate(parameter_networks):
+        for layer, (parameter_network, flow_parametrization_fn) in enumerate(
+            zip(parameter_networks, flow_parametrization_fns)
+        ):
             bijectors.extend(
-                get_bijectors_for_layer(layer, network, flow_parametrization_fn)
+                get_bijectors_for_layer(
+                    layer, parameter_network, flow_parametrization_fn
+                )
             )
 
-        return tfb.Chain(bijectors)
+        chain = tfb.Chain(bijectors)
+        return chain
 
     return (
         stacked_flow_parametrization_fn,
         parameter_fn,
-        chain.from_iterable(trainable_variables),
+        list(chain.from_iterable(trainable_variables)),
     )
 
 
@@ -614,7 +627,7 @@ def get_coupling_flow(
     """
     distribution_kwargs = distribution_kwargs.copy()
     num_layers = distribution_kwargs.pop("num_layers", 1)
-    get_base_dsitribution = distribution_kwargs.pop(
+    get_base_distribution = distribution_kwargs.pop(
         "get_base_distribution", _get_base_distribution
     )
     base_distribution_kwargs = distribution_kwargs.pop("base_distribution_kwargs", {})
@@ -652,7 +665,7 @@ def get_coupling_flow(
         num_layers=num_layers,
         get_parameter_fn_for_layer=get_parameter_fn_for_layer,
         get_bijectors_for_layer=get_bijectors_for_layer,
-        get_base_distribution=get_base_dsitribution,
+        get_base_distribution=get_base_distribution,
         base_distribution_kwargs=base_distribution_kwargs,
         **distribution_kwargs,
     )
@@ -816,7 +829,7 @@ def get_masked_autoregressive_flow_first_dim_masked(
     )
 
     def masked_flow_parametrization_fn(parameter_networks):
-        def bijector_fn(x0, *arg, **kwds):
+        def bijector_fn(x0, *arg, **kwargs):
             conditioned_parameter_networks = list(
                 map(lambda net: partial(net, conditional_input=x0), parameter_networks)
             )
