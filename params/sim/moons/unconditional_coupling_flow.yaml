@@ -16,13 +16,15 @@ fit_kwargs:
 model_kwargs:
   distribution: coupling_flow
   distribution_kwargs:
-    allow_flexible_bounds: true
+    allow_flexible_bounds: false
+    base_distribution_kwargs:
+      distribution_type: truncated_normal
     bijector_name: bernstein_poly
     bounds: smooth
-    high: 3
-    low: -3
+    high: 4
+    low: -4
     num_layers: 1
-    order: 50
+    order: 100
     scale: false
     shift: false
   parameter_kwargs:
