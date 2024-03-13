@@ -15,12 +15,12 @@ model_kwargs:
   base_checkpoint_path: unconditional_elementwise_flow_moons/mcp/weights
   base_distribution: elementwise_flow
   base_distribution_kwargs:
-    allow_flexible_bounds: true
+    allow_flexible_bounds: false
     bijector_name: bernstein_poly
     bounds: smooth
-    high: 3
-    low: -3
-    order: 50
+    high: 4
+    low: -4
+    order: 100
     scale: false
     shift: false
   base_parameter_kwargs:
@@ -28,13 +28,13 @@ model_kwargs:
     dtype: float32
   distribution: masked_autoregressive_flow_first_dim_masked
   distribution_kwargs:
-    allow_flexible_bounds: true
+    allow_flexible_bounds: false
     bijector_name: bernstein_poly
     bounds: identity
     high: 1
     low: 0
-    num_layers: 3
-    order: 25
+    num_layers: 4
+    order: 64
     scale: false
     shift: false
   freeze_base_model: true
