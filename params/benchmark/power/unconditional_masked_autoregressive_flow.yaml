@@ -21,16 +21,16 @@ fit_kwargs:
 model_kwargs:
   distribution: masked_autoregressive_flow
   distribution_kwargs:
-    allow_flexible_bounds: true
+    allow_flexible_bounds: false
     bijector_name: bernstein_poly
     bounds: linear
-    high: 1
-    low: 0
-    num_layers: 3
-    order: 30
+    high: 4
+    low: -4
+    scale_to_domain: true
+    num_layers: 4
+    order: 32
   parameter_kwargs:
     activation: relu
     hidden_units:
-    - 16
-    - 32
+    - 64
     - 64

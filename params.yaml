@@ -41,8 +41,9 @@ benchmark_models:
 # - unconditional_multivariate_flow
 # - unconditional_multivariate_normal
 - unconditional_elementwise_flow
-- unconditional_hybrid_masked_autoregressive_flow_first_dim_masked
+# - unconditional_hybrid_masked_autoregressive_flow_first_dim_masked
 - unconditional_masked_autoregressive_flow
+- unconditional_masked_autoregressive_spline_flow
 
 malnutrition_kwargs:
   data_path: datasets/malnutrition/india.raw
