@@ -17,8 +17,6 @@ model_kwargs:
   distribution: multivariate_flow
   distribution_kwargs:
     allow_flexible_bounds: false
-    base_distribution_kwargs:
-      distribution_type: truncated_normal
     bijector_name: bernstein_poly
     bounds: smooth
     high: 4
