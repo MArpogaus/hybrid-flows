@@ -85,6 +85,7 @@ def run(
     dataset_name,
     dataset_type,
     experiment_name,
+    run_name,
     log_file,
     log_level,
     results_path,
@@ -105,7 +106,7 @@ def run(
 
     if "base_distribution" in model_kwargs.keys():
         get_model = HybridDenistyRegressionModel
-        if not model_kwargs["base_checkpoint_path"]:
+        if not model_kwargs.get("base_checkpoint_path", False):
             fit_kwargs.update(
                 loss=lambda y, dist: -dist.log_prob(y) - dist.distribution.log_prob(y)
             )
@@ -159,7 +160,6 @@ def run(
         )
 
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
-    run_name = "_".join((model_kwargs["distribution"], dataset_name))
 
     # test mode config
     if test_mode:
@@ -210,6 +210,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--experiment-name", type=str, help="MLFlow experiment name", required=True
     )
+    parser.add_argument("--run-name", type=str, help="MLFlow run name", required=True)
     parser.add_argument(
         "stage_name",
         type=str,
@@ -239,6 +240,7 @@ if __name__ == "__main__":
         dataset_name=args.dataset_name,
         dataset_type=args.dataset_type,
         experiment_name=args.experiment_name,
+        run_name=args.run_name,
         log_file=args.log_file,
         log_level=args.log_level,
         results_path=args.results_path,
