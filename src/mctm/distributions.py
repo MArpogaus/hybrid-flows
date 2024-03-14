@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-03-12 16:44:03 (Marcel Arpogaus)
+# changed : 2024-03-14 16:55:26 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -33,10 +33,10 @@ from tensorflow_probability.python.internal import prefer_static
 
 from .activations import get_spline_param_constrain_fn, get_thetas_constrain_fn
 from .parameters import (
-    get_autoregressive_parameter_network_fn,
-    get_autoregressive_parameter_network_with_additive_conditioner_fn,
+    get_autoregressive_network_fn,
+    get_autoregressive_network_with_additive_conditioner_fn,
+    get_fully_connected_network_fn,
     get_parameter_vector_or_simple_network_fn,
-    get_simple_fully_connected_parameter_network_fn,
 )
 
 
@@ -596,7 +596,7 @@ def get_coupling_flow(
     parameter_kwargs: Dict,
     num_masked: int = None,
     get_bijector_fn: Callable = _get_bijector_fn,
-    get_parameter_fn: Callable = get_simple_fully_connected_parameter_network_fn,
+    get_parameter_fn: Callable = get_fully_connected_network_fn,
 ) -> Tuple[
     Callable[tf.Variable, tfd.Distribution],
     Callable[tf.Variable, tf.Variable],
@@ -675,8 +675,8 @@ def _get_masked_autoregressive_flow_parametrization_fn(
     dims: int,
     distribution_kwargs: Dict,
     parameter_kwargs: Dict,
-    get_bijector_fn: Callable = _get_bijector_fn,
-    get_parameter_fn: Callable = get_autoregressive_parameter_network_fn,
+    get_bijector_fn: Callable,
+    get_parameter_fn: Callable,
 ) -> Tuple[
     Callable[tf.Variable, tfd.Distribution],
     Callable[tf.Variable, tf.Variable],
@@ -729,7 +729,7 @@ def get_masked_autoregressive_flow(
     distribution_kwargs: Dict,
     parameter_kwargs: Dict,
     get_bijector_fn: Callable = _get_bijector_fn,
-    get_parameter_fn: Callable = get_autoregressive_parameter_network_fn,
+    get_parameter_fn: Callable = get_autoregressive_network_fn,
 ) -> Tuple[
     Callable[tf.Variable, tfd.Distribution],
     Callable[tf.Variable, tf.Variable],
@@ -770,6 +770,8 @@ def get_masked_autoregressive_flow(
         dims=dims,
         distribution_kwargs=distribution_kwargs,
         parameter_kwargs=parameter_kwargs,
+        get_bijector_fn=get_bijector_fn,
+        get_parameter_fn=get_parameter_fn,
     )
     distribution_fn = _get_transformed_distribution_fn(
         dims,
@@ -785,7 +787,8 @@ def get_masked_autoregressive_flow_first_dim_masked(
     dims: int,
     distribution_kwargs: Dict,
     parameter_kwargs: Dict,
-    get_parameter_fn: Callable = get_autoregressive_parameter_network_with_additive_conditioner_fn,  # noqa: E501
+    get_bijector_fn: Callable = _get_bijector_fn,
+    get_parameter_fn: Callable = get_autoregressive_network_with_additive_conditioner_fn,  # noqa: E501
 ) -> Tuple[
     Callable[tf.Variable, tfd.Distribution],
     Callable[tf.Variable, tf.Variable],
@@ -801,6 +804,8 @@ def get_masked_autoregressive_flow_first_dim_masked(
         Keyword arguments for the distribution.
     parameter_kwargs
         Keyword arguments for the parameters.
+    get_bijector_fn
+        A function to get the bijector.
     get_parameter_fn
         A function to get the parameters.
 
@@ -825,6 +830,7 @@ def get_masked_autoregressive_flow_first_dim_masked(
         dims=dims - 1,
         distribution_kwargs=distribution_kwargs,
         parameter_kwargs={"input_shape": [1], **parameter_kwargs},
+        get_bijector_fn=get_bijector_fn,
         get_parameter_fn=get_parameter_fn,
     )
 

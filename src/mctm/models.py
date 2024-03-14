@@ -15,7 +15,7 @@ import os
 import tensorflow as tf
 from tensorflow_probability import distributions as tfd
 
-from mctm import distributions
+from mctm import distributions, parameters
 
 
 # MODEL DEFINITIONS #########################################################
@@ -31,13 +31,15 @@ class DensityRegressionModel(tf.keras.Model):
     :method call: Compute the distribution for given input arguments.
     """
 
-    def __init__(self, dims, distribution, **kwargs):
+    def __init__(self, dims, distribution, parameter_fn=None, **kwargs):
         """Initialize a DensityRegressionModel.
 
         :param int dims: The dimension of the model.
         :param str distribution: The type of distribution to use.
         :param **kwargs: Additional keyword arguments.
         """
+        if parameter_fn is not None:
+            kwargs["get_parameter_fn"] = getattr(parameters, f"get_{parameter_fn}_fn")
         super().__init__()
         (
             self.distribuition_fn,

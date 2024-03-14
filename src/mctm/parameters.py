@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-08-24 16:15:23 (Marcel Arpogaus)
-# changed : 2024-03-08 13:51:03 (Marcel Arpogaus)
+# changed : 2024-03-14 16:39:48 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -27,96 +27,12 @@ import tensorflow as tf
 from tensorflow import keras as K
 from tensorflow_probability import bijectors as tfb
 
-
-def _get_simple_fully_connected_network(
-    input_shape: Tuple[int, ...],
-    hidden_units: List[int],
-    activation: str,
-    batch_norm: bool,
-    output_shape: Tuple[int, ...],
-    dropout: float,
-    conditional: bool = False,
-    conditional_event_shape: Tuple[int, ...] = None,
-    dtype: tf.dtypes.DType = tf.float32,
-    **kwargs,
-) -> K.Model:
-    """Create a simple fully connected neural network.
-
-    Parameters
-    ----------
-    input_shape
-        The shape of the input data.
-    hidden_units
-        Number of units in each hidden layer.
-    activation
-        Activation function for the hidden units.
-    batch_norm
-        If True, apply batch normalization.
-    output_shape
-        Shape of the output layer.
-    dropout
-        Dropout rate, between 0 and 1.
-    conditional
-        If True, network is conditional, by default False.
-    conditional_event_shape
-        Shape of additional conditional input, by default None.
-    dtype
-        The dtype of the operation, by default tf.float32
-    **kwargs
-        Additional keyword arguments passed to Dense layers.
-
-    Returns
-    -------
-        A Keras model representing the fully connected network.
-
-    """
-    x = K.Input(shape=input_shape, name="input", dtype=dtype)
-    inputs = [x]
-
-    if conditional:
-        assert (
-            conditional_event_shape is not None
-        ), "Conditional event shape must be provided if network is conditional."
-        c = K.Input(
-            shape=conditional_event_shape, name="conditional_input", dtype=dtype
-        )
-        inputs.append(c)
-
-    if batch_norm:
-        x = K.layers.BatchNormalization(name="batch_norm", dtype=dtype)(x)
-        if conditional:
-            c = K.layers.BatchNormalization(name="conditional_batch_norm", dtype=dtype)(
-                c
-            )
-
-    for i, h in enumerate(hidden_units):
-        x = K.layers.Dense(
-            h, activation=None, name=f"hidden_layer_{i}", dtype=dtype, **kwargs
-        )(x)
-        if dropout > 0:
-            x = K.layers.Dropout(dropout, dtype=dtype)(x)
-        if conditional:
-            c_out = K.layers.Dense(
-                h,
-                activation=None,
-                name=f"conditional_hidden_layer_{i}",
-                dtype=dtype,
-                **kwargs,
-            )(c)
-            if dropout > 0:
-                c_out = K.layers.Dropout(dropout, dtype=dtype)(c_out)
-            x = K.layers.Add(name=f"add_c_out_{i}", dtype=dtype)([x, c_out])
-        x = K.layers.Activation(activation, dtype=dtype)(x)
-
-    pv = K.layers.Dense(
-        tf.reduce_prod(output_shape),
-        activation="linear",
-        name="parameter_vector",
-        dtype=dtype,
-        **kwargs,
-    )(x)
-    pv_reshaped = K.layers.Reshape(output_shape, dtype=dtype)(pv)
-    return K.Model(inputs=inputs, outputs=pv_reshaped)
+from .nn import (
+    _get_autoregressive_res_net,
+    _get_conditional_net,
+    _get_fully_connected_net,
+    _get_res_net,
+)
 
 
 def get_parameter_vector_fn(
@@ -143,8 +59,12 @@ def get_parameter_vector_fn(
     return lambda *_, **__: parameter_vector, parameter_vector
 
 
-def get_simple_fully_connected_parameter_network_fn(
-    parameter_shape: Tuple[int, ...], input_shape: Tuple[int, ...], **kwargs
+def get_fully_connected_network_fn(
+    parameter_shape: Tuple[int, ...],
+    input_shape: Tuple[int, ...],
+    conditional: bool = False,
+    conditional_event_shape: Tuple[int, ...] = (),
+    **kwargs,
 ) -> Tuple[
     Callable[tf.Variable, Callable[tf.Variable, tf.Variable]], List[tf.Variable]
 ]:
@@ -156,7 +76,11 @@ def get_simple_fully_connected_parameter_network_fn(
         Shape of the parameter to output by the network.
     input_shape
         Shape of the input data.
-    **kwargs
+    conditional
+        If True, network is conditional, by default False.
+    conditional_event_shape
+        Shape of additional conditional input, by default ().
+    kwargs
         Additional keyword arguments for network configuration.
 
     Returns
@@ -165,12 +89,24 @@ def get_simple_fully_connected_parameter_network_fn(
         trainable variables.
 
     """
-    parameter_network = _get_simple_fully_connected_network(
+    parameter_network = _get_fully_connected_net(
         input_shape=input_shape, output_shape=parameter_shape, **kwargs
     )
     parameter_network.build(input_shape)
 
-    if kwargs.get("conditional", False):
+    if conditional:
+        assert (
+            conditional_event_shape is not None
+        ), "Conditional event shape must be provided if network is conditional."
+
+        parameter_network = _get_conditional_net(
+            input_shape=input_shape,
+            conditional_event_shape=conditional_event_shape,
+            output_shape=parameter_shape,
+            parameter_net=parameter_network,
+            conditioning_net_build_fn=_get_fully_connected_net,
+            **kwargs,
+        )
 
         def parameter_network_fn(conditional_input, **kwargs):
             return lambda x: parameter_network([x, conditional_input], **kwargs)
@@ -196,7 +132,7 @@ def get_parameter_vector_or_simple_network_fn(
         Shape of the parameter.
     conditional
         If True, creates a conditional network; otherwise, creates a parameter vector.
-    **kwargs
+    kwargs
         Additional keyword arguments.
 
     Returns
@@ -207,7 +143,7 @@ def get_parameter_vector_or_simple_network_fn(
     """
     if conditional:
         input_shape = kwargs.pop("input_shape")
-        parameter_network = _get_simple_fully_connected_network(
+        parameter_network = _get_fully_connected_net(
             output_shape=parameter_shape, input_shape=input_shape, **kwargs
         )
         parameter_network.build(input_shape=input_shape)
@@ -216,7 +152,7 @@ def get_parameter_vector_or_simple_network_fn(
         return get_parameter_vector_fn(parameter_shape=parameter_shape, **kwargs)
 
 
-def get_autoregressive_parameter_network_fn(
+def get_autoregressive_network_fn(
     parameter_shape: Tuple[int, ...], **kwargs
 ) -> Tuple[
     Callable[tf.Variable, Callable[tf.Variable, tf.Variable]], List[tf.Variable]
@@ -227,7 +163,7 @@ def get_autoregressive_parameter_network_fn(
     ----------
     parameter_shape
         Shape of the parameters.
-    **kwargs
+    kwargs
         Additional keyword arguments.
 
     Returns
@@ -251,7 +187,7 @@ def get_autoregressive_parameter_network_fn(
     return parameter_network_fn, parameter_network.trainable_variables
 
 
-def get_autoregressive_parameter_network_with_additive_conditioner_fn(
+def get_autoregressive_network_with_additive_conditioner_fn(
     parameter_shape: Tuple[int, ...],
     input_shape: Tuple[int, ...],
     made_kwargs: Dict[str, Any],
@@ -285,7 +221,7 @@ def get_autoregressive_parameter_network_with_additive_conditioner_fn(
     (
         masked_autoregressive_parameter_network_fn,
         masked_autoregressive_trainable_variables,
-    ) = get_autoregressive_parameter_network_fn(
+    ) = get_autoregressive_network_fn(
         parameter_shape,
         **made_kwargs,
     )
@@ -293,7 +229,7 @@ def get_autoregressive_parameter_network_with_additive_conditioner_fn(
     (
         x0_parameter_network_fn,
         x0_trainable_variables,
-    ) = get_simple_fully_connected_parameter_network_fn(
+    ) = get_fully_connected_network_fn(
         parameter_shape=parameter_shape, input_shape=input_shape, **x0_kwargs
     )
 
@@ -316,3 +252,74 @@ def get_autoregressive_parameter_network_with_additive_conditioner_fn(
         masked_autoregressive_trainable_variables + x0_trainable_variables
     )
     return parameter_fn, trainable_parameters
+
+
+def get_autoregressive_res_net_fn(
+    parameter_shape: Tuple[int, ...],
+    conditional: bool = False,
+    conditional_event_shape: Tuple[int, ...] = (),
+    name: str = "autoregressive_res_net",
+    dtype: tf.dtypes.DType = tf.float32,
+    **kwargs,
+) -> Tuple[Callable[..., K.Model], List[tf.Variable]]:
+    """Generate an autoregressive ResNet model.
+
+    Parameters
+    ----------
+    parameter_shape
+        Shape of the parameter vector.
+    res_blocks
+        Number of residual blocks, by default 0.
+    activation
+        Activation function for the hidden units, by default "relu".
+    conditional
+        If True, network is conditional, by default False.
+    conditional_event_shape
+        Shape of additional conditional input, by default ().
+    name
+        Name of the Keras model.
+    dtype
+        The dtype of the operation, by default tf.float32.
+    kwargs
+        Additional keyword arguments passed to Dense layers.
+
+
+    Returns
+    -------
+        The parameter network model as a callable and a list of its trainable variables.
+
+    """
+    dims = parameter_shape[0]
+    output_shape = [1] + list(parameter_shape[1:])
+
+    parameter_network = _get_autoregressive_res_net(
+        input_shape=[dims],
+        output_shape=output_shape,
+        dtype=dtype,
+        name=name,
+        **kwargs,
+    )
+
+    if conditional:
+        assert (
+            conditional_event_shape is not None
+        ), "Conditional event shape must be provided if network is conditional."
+
+        parameter_network = _get_conditional_net(
+            input_shape=[dims],
+            conditional_event_shape=conditional_event_shape,
+            output_shape=output_shape,
+            parameter_net=parameter_network,
+            conditioning_net_build_fn=_get_res_net,
+            name=name,
+            **kwargs,
+        )
+
+        def parameter_network_fn(conditional_input, **kwargs):
+            return lambda x: parameter_network([x, conditional_input], **kwargs)
+    else:
+
+        def parameter_network_fn(conditional_input, **kwargs):
+            return lambda x: parameter_network(x, **kwargs)
+
+    return parameter_network_fn, parameter_network.trainable_variables
