@@ -366,3 +366,5 @@ $RECYCLE.BIN/
 mlruns
 mlartifacts
 results
+optuna
+ltximg
