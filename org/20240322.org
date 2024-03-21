@@ -1,0 +1,54 @@
+#+TITLE: Zwischenstand
+#+DATE: <2024-03-22 Fri>
+#+STARTUP: latexpreview
+
+* Übersicht Modelle
+| Models                       | sim | benchmark | malnutrition |
+|------------------------------+-----+-----------+--------------|
+| multivariate Normal          | I   |           |              |
+| MCTM                         | I   |           |              |
+| BNF (elementwise)            | I   | I         |              |
+| NSF (elementwise)            |     |           |              |
+| Gaussian Copula              |     |           |              |
+| Vine copula                  |     |           |              |
+| realNVP                      |     |           |              |
+| coupling NSF                 |     |           |              |
+| coupling BNF                 | I   |           |              |
+| MAF                          |     |           |              |
+| IAF                          |     |           |              |
+| MAF BNF                      | I   | I         |              |
+| MAF NSF                      |     |           |              |
+| Hybrid MAF BNF               | I   | I         |              |
+| Hybrid MAF NSF               |     |           |              |
+| Hybrid (pre-trained) MAF BNF |     |           |              |
+| Hybrid (pre-trained) MAF NSF |     |           |              |
+
+- I :: Implemented
+- S :: Satisfactory results
+- O :: HP optimized
+
+* Aktueller Stand
+
+- Probleme mit =tfp= konnten gelöst werden -> Fokus weiterhin auf bestehende =tf= Implementierung.
+- =PyTorch= Implementierung (=zuko=) für autoregressiven (MAF) Bernstein Flow steht. Bisher kein hybrides Modell.
+- Große Teile des Codes wurden Überarbeitet und erweitert.
+- Performance Probleme / Unterschiede verstanden.
+
+* Flexibility is not enough
+https://github.com/probabilists/zuko/issues/36#issuecomment-1995122776
+
+#+begin_quote
+A single auto-regressive transformation should be enough if the uni-variate transformation is an universal (monotonic) function approximator.
+However, the hyper network (MADE/MaskedMLP) conditioning the transformation must also be a universal function approximator.
+In practice, the capacity of the hyper network is finite and the function it should approximate might be complex depending on the data, the uni-variate function (and its parametrization) and the auto-regressive order.
+The latter, in particular, can have a huge impact: some orders can lead to very simple functions while others can lead to almost unlearnable functions.
+Stacking several multi-variate transformations with different (sometimes randomized) orders help to alleviate this issue.
+
+For example if $p(x_1,x_2,\ldots,x_n)=p(x_1)\prod p(x_i|x1)$ (star-shaped dependency graph), the order $1 \to n$ leads to a simple function, while the order $n \to 1$ does not. This is somewhat related to finding the Bayesian network (a directed acyclic graph) with the least number of edges that explains the data. In fact, the "simplest" Bayesian network is sometimes confused with the causal graph of the data.
+#+end_quote
+
+
+* Aktuelle Probleme
+* Zusammenarbeit mit Philipp Baumann
+* Zusammenarbeit mit Anton
+* Nächste Schritte
