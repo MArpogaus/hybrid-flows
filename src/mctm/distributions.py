@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-03-14 16:55:26 (Marcel Arpogaus)
+# changed : 2024-03-20 15:48:59 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -33,9 +33,9 @@ from tensorflow_probability.python.internal import prefer_static
 
 from .activations import get_spline_param_constrain_fn, get_thetas_constrain_fn
 from .parameters import (
-    get_autoregressive_network_fn,
-    get_autoregressive_network_with_additive_conditioner_fn,
     get_fully_connected_network_fn,
+    get_masked_autoregressive_network_fn,
+    get_masked_autoregressive_network_with_additive_conditioner_fn,
     get_parameter_vector_or_simple_network_fn,
 )
 
@@ -729,7 +729,7 @@ def get_masked_autoregressive_flow(
     distribution_kwargs: Dict,
     parameter_kwargs: Dict,
     get_bijector_fn: Callable = _get_bijector_fn,
-    get_parameter_fn: Callable = get_autoregressive_network_fn,
+    get_parameter_fn: Callable = get_masked_autoregressive_network_fn,
 ) -> Tuple[
     Callable[tf.Variable, tfd.Distribution],
     Callable[tf.Variable, tf.Variable],
@@ -788,7 +788,7 @@ def get_masked_autoregressive_flow_first_dim_masked(
     distribution_kwargs: Dict,
     parameter_kwargs: Dict,
     get_bijector_fn: Callable = _get_bijector_fn,
-    get_parameter_fn: Callable = get_autoregressive_network_with_additive_conditioner_fn,  # noqa: E501
+    get_parameter_fn: Callable = get_masked_autoregressive_network_with_additive_conditioner_fn,  # noqa: E501
 ) -> Tuple[
     Callable[tf.Variable, tfd.Distribution],
     Callable[tf.Variable, tf.Variable],

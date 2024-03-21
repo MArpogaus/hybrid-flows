@@ -1,8 +1,10 @@
 """Contains helper functions to build neural networks."""
+from functools import reduce
 from typing import Callable, List, Tuple
 
 import tensorflow as tf
 from tensorflow import keras as K
+from tensorflow_probability import bijectors as tfb
 
 
 # class definitions ############################################################
@@ -47,7 +49,132 @@ class ConstantLayer(K.layers.Layer):
 
 
 # function definitions #########################################################
-def _get_fully_connected_net(
+def _build_autoregressive_net(
+    input_shape: Tuple[int],
+    output_shape: Tuple[int, ...],
+    submodel_build_fn: Callable[..., K.Model],
+    dtype: tf.dtypes.DType = tf.float32,
+    name: str = "ar_net",
+    **kwargs,
+) -> K.Model:
+    """Build an autoregressive model.
+
+    Parameters
+    ----------
+    input_shape
+        The shape of the input data.
+    output_shape
+        Shape of the output layer.
+    submodel_build_fn
+        Function to build the sub models for each autoregressive component.
+    dtype
+        The dtype of the model, by default `tf.float32`.
+    name
+        Name of the Keras model.
+    kwargs
+        Additional keyword arguments passed to `submodel_build_fn`.
+
+
+    Returns
+    -------
+        The autoregressive parameter network model.
+
+    """
+    inputs = K.Input(shape=input_shape, name="ar_input", dtype=dtype)
+
+    fc = [ConstantLayer(output_shape)(inputs)]
+    for i in range(1, input_shape[0]):
+        x = inputs[..., :i]
+        fc_out = submodel_build_fn(
+            input_shape=[i],
+            output_shape=output_shape,
+            name=f"ar_sub_net_{i}",
+            dtype=dtype,
+            **kwargs,
+        )(x)
+
+        fc.append(fc_out)
+
+    out = K.layers.Concatenate(axis=-2)(fc)
+
+    return K.models.Model(inputs=inputs, outputs=out, name=name)
+
+
+def _build_res_net(
+    input_shape: Tuple[int, ...],
+    output_shape: Tuple[int, ...],
+    submodel_build_fn: Callable[..., K.Model],
+    res_blocks: int,
+    res_block_units: int,
+    activation: str = "relu",
+    dtype: tf.dtypes.DType = tf.float32,
+    name: str = "fc_res_net",
+    **kwargs,
+) -> K.Model:
+    """Build a ResNet model.
+
+    Parameters
+    ----------
+    input_shape
+        The shape of the input data.
+    output_shape
+        Shape of the output layer.
+    res_blocks
+        Number of residual blocks, by default 0.
+    res_block_units
+        Hidden units of residual blocks in and output layers.
+    submodel_build_fn
+        Function to build the resudual blocks.
+    activation
+        Activation function for the hidden units, by default `"relu"`.
+    dtype
+        The dtype of the operation, by default `tf.float32`.
+    name
+        Name of the Keras model.
+    kwargs
+        Additional keyword arguments passed to `_get_fully_connected_net`.
+
+
+    Returns
+    -------
+        The parameter network model.
+
+    """
+    inputs = K.Input(shape=input_shape, name="res_net_input", dtype=dtype)
+
+    x = inputs
+    if res_blocks:
+        input_shape = [res_block_units, 1]
+        x = K.layers.Dense(
+            tf.reduce_prod(res_block_units),
+            activation=activation,
+            name="hidden_layer_res_in",
+            dtype=dtype,
+        )(x)
+        for r in range(res_blocks):
+            fc_out = submodel_build_fn(
+                input_shape=input_shape,
+                output_shape=input_shape,
+                activation=activation,
+                name=f"res{r}",
+                dtype=dtype,
+                **kwargs,
+            )(x)
+            res_out = K.layers.Add(name=f"add_res{r}")([fc_out, x])
+            x = K.layers.Activation(activation, name=f"{activation}_res{r}")(res_out)
+    out = submodel_build_fn(
+        input_shape=input_shape,
+        output_shape=output_shape,
+        activation=activation,
+        name="fc_out",
+        dtype=dtype,
+        **kwargs,
+    )(x)
+
+    return K.models.Model(inputs=inputs, outputs=out, name=name)
+
+
+def build_fully_connected_net(
     input_shape: Tuple[int, ...],
     hidden_units: List[int],
     activation: str,
@@ -143,17 +270,12 @@ def _get_fully_connected_net(
     return K.Model(inputs=inputs, outputs=pv_reshaped, name=name)
 
 
-def _get_res_net(
-    input_shape: Tuple[int, ...],
+def build_masked_autoregressive_net(
+    input_shape: Tuple[int],
     output_shape: Tuple[int, ...],
-    res_blocks: int,
-    res_block_units: int,
-    activation: str = "relu",
-    dtype: tf.dtypes.DType = tf.float32,
-    name: str = "fc_res_net",
     **kwargs,
 ) -> K.Model:
-    """Generate an autoregressive ResNet model.
+    """Build an masked autoregressive model.
 
     Parameters
     ----------
@@ -161,18 +283,76 @@ def _get_res_net(
         The shape of the input data.
     output_shape
         Shape of the output layer.
-    res_blocks
-        Number of residual blocks, by default 0.
-    res_block_units
-        Hidden units of residual blocks in and output layers.
-    activation
-        Activation function for the hidden units, by default `"relu"`.
-    dtype
-        The dtype of the operation, by default `tf.float32`.
+    kwargs
+        Additional keyword arguments passed to `tfb.AutoregressiveNetwork`.
+
+
+    Returns
+    -------
+        The maksed autoregressive parameter network model.
+
+    """
+
+    def reduce_prod(iterable):
+        return reduce(lambda x, r: x * r, tuple(iterable))
+
+    event_shape = reduce_prod(input_shape)
+    params = reduce_prod(output_shape) // event_shape
+    # TODO: custom implementation of MADE to build ResMADE
+    return tfb.AutoregressiveNetwork(event_shape=event_shape, params=params, **kwargs)
+
+
+def build_fully_connected_autoregressive_net(
+    input_shape: Tuple[int],
+    output_shape: Tuple[int, ...],
+    name: str = "ar_res_net",
+    **kwargs,
+) -> K.Model:
+    """Build an autoregressive fully connected model.
+
+    Parameters
+    ----------
+    input_shape
+        The shape of the input data.
+    output_shape
+        Shape of the output layer.
     name
         Name of the Keras model.
     kwargs
-        Additional keyword arguments passed to `_get_fully_connected_net`.
+        Additional keyword arguments passed to Dense `_get_res_net`.
+
+    Returns
+    -------
+        The parameter network model as a callable and a list of its trainable variables.
+
+    """
+    return _build_autoregressive_net(
+        input_shape=input_shape,
+        output_shape=output_shape,
+        submodel_build_fn=build_fully_connected_net,
+        name=name,
+        **kwargs,
+    )
+
+
+def build_fully_connected_res_net(
+    input_shape: Tuple[int, ...],
+    output_shape: Tuple[int, ...],
+    name: str = "fc_res_net",
+    **kwargs,
+) -> K.Model:
+    """Build a ResNet model.
+
+    Parameters
+    ----------
+    input_shape
+        The shape of the input data.
+    output_shape
+        Shape of the output layer.
+    name
+        Name of the Keras model.
+    kwargs
+        Additional keyword arguments passed to `_build_res_net`.
 
 
     Returns
@@ -180,98 +360,22 @@ def _get_res_net(
         The parameter network model.
 
     """
-    inputs = K.Input(shape=input_shape, name="res_net_input", dtype=dtype)
-
-    x = inputs
-    if res_blocks:
-        input_shape = [res_block_units]
-        x = K.layers.Dense(
-            tf.reduce_prod(res_block_units),
-            activation=activation,
-            name="hidden_layer_res_in",
-            dtype=dtype,
-        )(x)
-        for r in range(res_blocks):
-            fc_out = _get_fully_connected_net(
-                input_shape=input_shape,
-                output_shape=input_shape,
-                activation=activation,
-                name=f"fc_res{r}",
-                dtype=dtype,
-                **kwargs,
-            )(x)
-            res_out = K.layers.Add(name=f"add_res{r}")([fc_out, x])
-            x = K.layers.Activation(activation, name=f"{activation}_res{r}")(res_out)
-    out = _get_fully_connected_net(
+    return _build_res_net(
         input_shape=input_shape,
         output_shape=output_shape,
-        activation=activation,
-        name="fc_out",
-        dtype=dtype,
+        submodel_build_fn=build_fully_connected_net,
+        name=name,
         **kwargs,
-    )(x)
-
-    return K.models.Model(inputs=inputs, outputs=out, name=name)
+    )
 
 
-def _get_autoregressive_net(
-    input_shape: Tuple[int],
-    output_shape: Tuple[int, ...],
-    submodel_build_fn: Callable[..., K.Model],
-    dtype: tf.dtypes.DType = tf.float32,
-    name: str = "ar_net",
-    **kwargs,
-) -> K.Model:
-    """Generate an autoregressive model.
-
-    Parameters
-    ----------
-    input_shape
-        The shape of the input data.
-    output_shape
-        Shape of the output layer.
-    submodel_build_fn
-        Function to build the sub models for each autoregressive component.
-    dtype
-        The dtype of the model, by default `tf.float32`.
-    name
-        Name of the Keras model.
-    kwargs
-        Additional keyword arguments passed to `submodel_build_fn`.
-
-
-    Returns
-    -------
-        The autoregressive parameter network model.
-
-    """
-    inputs = K.Input(shape=input_shape, name="ar_input", dtype=dtype)
-
-    fc = [ConstantLayer(output_shape)(inputs)]
-    for i in range(1, input_shape[0]):
-        x = inputs[..., :i]
-        fc_res_net = submodel_build_fn(
-            input_shape=[i],
-            output_shape=output_shape,
-            name=f"ar_sub_net_{i}",
-            dtype=dtype,
-            **kwargs,
-        )(x)
-
-        fc.append(fc_res_net)
-
-    out = K.layers.Concatenate(axis=-2)(fc)
-
-    return K.models.Model(inputs=inputs, outputs=out, name=name)
-
-
-def _get_autoregressive_res_net(
+def build_fully_connected_autoregressive_res_net(
     input_shape: Tuple[int],
     output_shape: Tuple[int, ...],
     name: str = "ar_res_net",
     **kwargs,
 ) -> K.Model:
-    """Generate an autoregressive fully connected model.
+    """Build an autoregressive ResNet model.
 
     Parameters
     ----------
@@ -289,52 +393,21 @@ def _get_autoregressive_res_net(
         The parameter network model as a callable and a list of its trainable variables.
 
     """
-    return _get_autoregressive_net(
+    return _build_res_net(
         input_shape=input_shape,
         output_shape=output_shape,
-        submodel_build_fn=_get_fully_connected_net,
+        submodel_build_fn=build_fully_connected_autoregressive_net,
+        name=name,
         **kwargs,
     )
 
 
-def _get_autoregressive_res_net(
-    input_shape: Tuple[int],
-    output_shape: Tuple[int, ...],
-    name: str = "ar_res_net",
-    **kwargs,
-) -> K.Model:
-    """Generate an autoregressive ResNet model.
-
-    Parameters
-    ----------
-    input_shape
-        The shape of the input data.
-    output_shape
-        Shape of the output layer.
-    name
-        Name of the Keras model.
-    kwargs
-        Additional keyword arguments passed to Dense `_get_res_net`.
-
-    Returns
-    -------
-        The parameter network model as a callable and a list of its trainable variables.
-
-    """
-    return _get_autoregressive_net(
-        input_shape=input_shape,
-        output_shape=output_shape,
-        submodel_build_fn=_get_res_net,
-        **kwargs,
-    )
-
-
-def _get_conditional_net(
+def build_conditional_net(
     input_shape: Tuple[int],
     conditional_event_shape: Tuple[int],
     output_shape: Tuple[int, ...],
     parameter_net: K.Model,
-    conditioning_net_build_fn: Callable[..., K.Model] = _get_fully_connected_net,
+    conditioning_net_build_fn: Callable[..., K.Model] = build_fully_connected_net,
     dtype: tf.dtypes.DType = tf.float32,
     name: str = "conditional_net",
     **kwargs,
