@@ -31,11 +31,11 @@ model_kwargs:
     high: 4
     low: -4
     scale_to_domain: true
-    num_layers: 6
+    num_layers: 8
     order: 32
   # parameter_fn: autoregressive_res_net
   parameter_kwargs:
     activation: sigmoid
     hidden_units:
-    - 16
-    - 16
+    - 64
+    - 64
