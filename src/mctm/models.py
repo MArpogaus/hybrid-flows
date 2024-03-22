@@ -82,6 +82,7 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
         base_checkpoint_path,
         freeze_base_model,
         base_checkpoint_path_prefix="./",
+        **kwargs,
     ):
         """Initialize a HybridDensityRegressionModel.
 
@@ -106,6 +107,7 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
                 **distribution_kwargs,
             },
             parameter_kwargs=parameter_kwargs,
+            **kwargs,
         )
 
         self.base_model = DensityRegressionModel(
