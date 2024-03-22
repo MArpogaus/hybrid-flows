@@ -45,7 +45,7 @@ class ConstantLayer(K.layers.Layer):
             Output tensor of constant values scaled by inputs.
 
         """
-        return self.theta_0[None, ...] * tf.ones_like(inputs)[:, :1, None]
+        return self.theta_0[None, ...] * tf.ones_like(inputs)[..., :1, None]
 
 
 # function definitions #########################################################
@@ -82,12 +82,15 @@ def _build_autoregressive_net(
     """
     inputs = K.Input(shape=input_shape, name="ar_input", dtype=dtype)
 
-    fc = [ConstantLayer(output_shape)(inputs)]
+    assert (
+        input_shape[0] == output_shape[0]
+    ), "First dim of input and output shapes must be equal"
+    fc = [ConstantLayer(output_shape[1:])(inputs)]
     for i in range(1, input_shape[0]):
         x = inputs[..., :i]
         fc_out = submodel_build_fn(
             input_shape=[i],
-            output_shape=output_shape,
+            output_shape=[1] + (output_shape[1:] if len(output_shape) > 1 else [1]),
             name=f"ar_sub_net_{i}",
             dtype=dtype,
             **kwargs,
@@ -96,6 +99,7 @@ def _build_autoregressive_net(
         fc.append(fc_out)
 
     out = K.layers.Concatenate(axis=-2)(fc)
+    out = K.layers.Reshape(output_shape)(out)
 
     return K.models.Model(inputs=inputs, outputs=out, name=name)
 
@@ -144,13 +148,14 @@ def _build_res_net(
 
     x = inputs
     if res_blocks:
-        input_shape = [res_block_units, 1]
+        input_shape = [res_block_units]
         x = K.layers.Dense(
-            tf.reduce_prod(res_block_units),
+            res_block_units,
             activation=activation,
             name="hidden_layer_res_in",
             dtype=dtype,
         )(x)
+        x = K.layers.Reshape(input_shape)(x)
         for r in range(res_blocks):
             fc_out = submodel_build_fn(
                 input_shape=input_shape,
@@ -270,9 +275,70 @@ def build_fully_connected_net(
     return K.Model(inputs=inputs, outputs=pv_reshaped, name=name)
 
 
+def build_conditional_net(
+    input_shape: Tuple[int],
+    conditional_event_shape: Tuple[int],
+    output_shape: Tuple[int, ...],
+    parameter_net: K.Model,
+    conditioning_net_build_fn: Callable[..., K.Model] = build_fully_connected_net,
+    dtype: tf.dtypes.DType = tf.float32,
+    name: str = "conditional_net",
+    **kwargs,
+) -> K.Model:
+    """Combine a given model with an additional conditional input.
+
+    Parameters
+    ----------
+    input_shape
+        The shape of the input data.
+    conditional_event_shape
+        Shape of additional conditional input.
+    output_shape
+        Shape of the output layer.
+    parameter_net
+        Keras Model to add add conditional input to.
+    conditioning_net_build_fn:
+        Function to build the conditioning model for each autoregressive component.
+    dtype
+        The dtype of the operation, by default tf.float32.
+    name
+        Name of the Keras model.
+    kwargs
+        Additional keyword arguments passed to Dense layers.
+
+    Returns
+    -------
+        The conditional Model.
+
+    """
+    inputs = []
+    normal_input = K.Input(shape=input_shape, name="input", dtype=dtype)
+    conditional_input = K.Input(
+        shape=conditional_event_shape, name="conditional_input", dtype=dtype
+    )
+    inputs = [normal_input, conditional_input]
+
+    out = parameter_net(normal_input)
+
+    conditional_fc_out = conditioning_net_build_fn(
+        input_shape=conditional_event_shape,
+        output_shape=output_shape,
+        name="conditioning_net",
+        **kwargs,
+    )(conditional_input)
+
+    out = K.layers.Add(name="add_conditional_out")([out, conditional_fc_out])
+
+    return K.models.Model(inputs=inputs, outputs=out, name=name)
+
+
 def build_masked_autoregressive_net(
     input_shape: Tuple[int],
     output_shape: Tuple[int, ...],
+    conditional: bool = False,
+    conditional_event_shape: Tuple[int] = None,
+    dtype: tf.dtypes.DType = tf.float32,
+    name: str = "made",
     **kwargs,
 ) -> K.Model:
     """Build an masked autoregressive model.
@@ -283,6 +349,14 @@ def build_masked_autoregressive_net(
         The shape of the input data.
     output_shape
         Shape of the output layer.
+    conditional
+        If True, network is conditional, by default False.
+    conditional_event_shape
+        Shape of additional conditional input.
+    dtype
+        The dtype of the operation, by default tf.float32.
+    name
+        Name of the Keras model.
     kwargs
         Additional keyword arguments passed to `tfb.AutoregressiveNetwork`.
 
@@ -294,12 +368,32 @@ def build_masked_autoregressive_net(
     """
 
     def reduce_prod(iterable):
-        return reduce(lambda x, r: x * r, tuple(iterable))
+        return reduce(lambda x, r: x * r, tuple(iterable), 1)
 
-    event_shape = reduce_prod(input_shape)
-    params = reduce_prod(output_shape) // event_shape
-    # TODO: custom implementation of MADE to build ResMADE
-    return tfb.AutoregressiveNetwork(event_shape=event_shape, params=params, **kwargs)
+    assert (
+        input_shape[0] == output_shape[0]
+    ), "First dim of input and output shapes must be equal"
+
+    params = reduce_prod(output_shape[1:])
+
+    normal_input = K.Input(shape=input_shape, name="input", dtype=dtype)
+    inputs = [normal_input]
+    made_layer = tfb.AutoregressiveNetwork(
+        event_shape=input_shape, params=params, name="made_layer", **kwargs
+    )
+
+    if conditional:
+        conditional_input = K.Input(
+            shape=conditional_event_shape, name="conditional_input", dtype=dtype
+        )
+        inputs.append(conditional_input)
+        made_out = made_layer(normal_input, conditional_input=conditional_input)
+    else:
+        made_out = made_layer(normal_input)
+
+    out = K.layers.Reshape(output_shape, name="reshape_pv")(made_out)
+
+    return K.Model(inputs=inputs, outputs=out, name=name)
 
 
 def build_fully_connected_autoregressive_net(
@@ -367,94 +461,3 @@ def build_fully_connected_res_net(
         name=name,
         **kwargs,
     )
-
-
-def build_fully_connected_autoregressive_res_net(
-    input_shape: Tuple[int],
-    output_shape: Tuple[int, ...],
-    name: str = "ar_res_net",
-    **kwargs,
-) -> K.Model:
-    """Build an autoregressive ResNet model.
-
-    Parameters
-    ----------
-    input_shape
-        The shape of the input data.
-    output_shape
-        Shape of the output layer.
-    name
-        Name of the Keras model.
-    kwargs
-        Additional keyword arguments passed to Dense `_get_res_net`.
-
-    Returns
-    -------
-        The parameter network model as a callable and a list of its trainable variables.
-
-    """
-    return _build_res_net(
-        input_shape=input_shape,
-        output_shape=output_shape,
-        submodel_build_fn=build_fully_connected_autoregressive_net,
-        name=name,
-        **kwargs,
-    )
-
-
-def build_conditional_net(
-    input_shape: Tuple[int],
-    conditional_event_shape: Tuple[int],
-    output_shape: Tuple[int, ...],
-    parameter_net: K.Model,
-    conditioning_net_build_fn: Callable[..., K.Model] = build_fully_connected_net,
-    dtype: tf.dtypes.DType = tf.float32,
-    name: str = "conditional_net",
-    **kwargs,
-) -> K.Model:
-    """Combine a given model with an additional conditional input.
-
-    Parameters
-    ----------
-    input_shape
-        The shape of the input data.
-    conditional_event_shape
-        Shape of additional conditional input.
-    output_shape
-        Shape of the output layer.
-    parameter_net
-        Keras Model to add add conditional input to.
-    conditioning_net_build_fn:
-        Function to build the conditioning model for each autoregressive component.
-    dtype
-        The dtype of the operation, by default tf.float32.
-    name
-        Name of the Keras model.
-    kwargs
-        Additional keyword arguments passed to Dense layers.
-
-    Returns
-    -------
-        The conditional Model.
-
-    """
-    inputs = []
-    normal_input = K.Input(shape=input_shape, name="input", dtype=dtype)
-    conditional_input = K.Input(
-        shape=conditional_event_shape, name="conditional_input", dtype=dtype
-    )
-    inputs.append(conditional_input)
-    inputs = [normal_input, conditional_input]
-
-    out = parameter_net(normal_input)
-
-    conditional_fc_out = conditioning_net_build_fn(
-        input_shape=conditional_event_shape,
-        output_shape=output_shape,
-        name="conditioning_net",
-        **kwargs,
-    )(conditional_input)
-
-    out = K.layers.Add(name="add_conditional_out")([out, conditional_fc_out])
-
-    return K.models.Model(inputs=inputs, outputs=out, name=name)
