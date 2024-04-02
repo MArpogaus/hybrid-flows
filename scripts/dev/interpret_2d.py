@@ -4,10 +4,11 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from matplotlib import pyplot as plt
+from mctm.data.sklearn_datasets import get_dataset
 from mctm.models import DensityRegressionModel
 from mctm.parameters import get_parameter_vector_fn
 from mctm.utils.tensorflow import fit_distribution, set_seed
-from mctm.utils.visualisation import plot_2d_data, plot_samples
+from mctm.utils.visualisation import plot_2d_data
 from tensorflow_probability.python.internal import (
     dtype_util,
     prefer_static,
@@ -16,41 +17,15 @@ from tensorflow_probability.python.internal import (
 
 
 # %% functions
-def gen_data(t, scale):
-    t1 = t
-    y1 = 1.0 * t1
-    y1 += np.random.normal(0, 0.05 * np.abs(t1))
-
-    t2 = t
-    y2 = -0.2 * t2
-    y2 += np.random.normal(0, 0.2 * np.abs(t2))
-
-    t = np.concatenate([t1, t2])
-    y = np.concatenate([y1, y2])
-
-    if scale:
-        y_min = y.min()
-        y_max = y.max()
-        y -= y_min
-        y /= y_max - y_min
-    return t[..., np.newaxis], y[..., np.newaxis]
-
-
-def gen_test_data(n_samples, observations, **kwargs):
-    t = np.linspace(0, 1, n_samples, dtype=np.float32)
-    t = np.repeat([t], observations)
-
-    return gen_data(t, **kwargs)
-
-
-def gen_train_data(n_samples, **kwargs):
-    t = np.random.uniform(0, 1, n_samples).astype(np.float32)
-
-    return gen_data(t, **kwargs)
-
-
 def nll_loss(y, dist):
     return -dist.log_prob(y)
+
+
+def preprocess_dataset(data, model):
+    return {
+        "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype),
+        "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
+    }
 
 
 def thetas_constrain_fn(diff):
@@ -170,7 +145,7 @@ distribution_kwargs = {
 }
 parameter_kwargs = {
     "dtype": "float",
-    "polynomial_order": 5,
+    "polynomial_order": 1,
     "conditional_event_shape": 1,
     # "conditional": True,
     # "hidden_units": [16, 16],
@@ -204,21 +179,15 @@ model_kwargs = dict(
 )
 
 get_model = DensityRegressionModel
-
-preprocess_dataset = lambda data, model: {
-    "x": tf.convert_to_tensor(data[0], dtype=model.dtype),
-    "y": tf.convert_to_tensor(data[1], dtype=model.dtype),
-}
 results_path = "./results/" + distribution
 
 
 # %% Load data
 set_seed(seed)
-dims = 1
-data = gen_train_data(**dataset_kwargs)
+data, dims = get_dataset("moons", n_samples=2**14, noise=0.05, scale=(0.01, 0.99))
+(Y, X) = data
 
-plt.scatter(*data)
-
+plot_2d_data(Y, X)
 
 # %% Init Model
 model = DensityRegressionModel(
@@ -232,7 +201,7 @@ model = DensityRegressionModel(
 tcf = thetas_constrain_fn
 
 t = np.linspace(0.0, 1.0, 200, dtype="float32")
-pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()
+pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()[:, 0]
 pv = tcf(pv_u)
 
 fig, axs = plt.subplots(2, sharex=True)
@@ -259,13 +228,14 @@ pd.DataFrame(hist.history).plot()
 # %% Samples
 x, y = preprocessed.values()
 dist = model(x)
-
+# plot_samples(dist, y)
 samples = dist.sample(seed=1).numpy()
 
 fig = plt.figure()
-plt.scatter(x, samples.flatten(), alpha=0.05)
-plt.scatter(*data, alpha=0.04)
-
+plt.scatter(*samples.T, alpha=0.05)
+plt.scatter(*Y.T, alpha=0.04)
+plt.xlim(0, 1)
+plt.ylim(0, 1)
 # %%
 
 # tcf = get_thetas_constrain_fn(
@@ -282,18 +252,15 @@ tcf = thetas_constrain_fn
 t = np.linspace(0.0, 1.0, 200, dtype="float32")
 pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()
 pv = tcf(pv_u)
-fig, axs = plt.subplots(2, sharex=True)
-axs[0].plot(t, pv_u)
-axs[0].set_title("unconstrained")
-axs[1].plot(t, pv)
-axs[1].set_title("constrained")
+
+fig, axs = plt.subplots(2, 2, sharex=True)
+axs[0][1].plot(t, pv_u[:, 0])
+axs[0][0].plot(t, pv_u[:, 1])
+# axs[0].set_title("unconstrained")
+axs[1][0].plot(t, pv[:, 0])
+axs[1][1].plot(t, pv[:, 1])
+# axs[1].set_title("constrained")
 fig.tight_layout()
 
 
 # %% Plot dist
-test_t, test_y = gen_test_data(5, 200, scale=True)
-test_x = np.unique(test_t)
-
-
-plot_dists(model(test_x[..., None]), test_x, test_t, test_y)
-model.parameter_fn(test_x[..., None])

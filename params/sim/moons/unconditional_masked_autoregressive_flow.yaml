@@ -7,7 +7,7 @@ fit_kwargs:
   epochs: 200
   learning_rate:
     scheduler_kwargs:
-      initial_learning_rate: 0.01
+      initial_learning_rate: 0.005
       decay_steps: 200
       # alpha: 0.01
     scheduler_name: cosine_decay
@@ -19,12 +19,13 @@ model_kwargs:
   distribution_kwargs:
     allow_flexible_bounds: false
     bijector_name: bernstein_poly
-    bounds: smooth
+    bounds: linear
     high: 4
     low: -4
     # scale_to_domain: true
     num_layers: 1
-    order: 100
+    order: 32
+    min_slope: 0.0001
     scale: false
     shift: false
     base_distribution_kwargs:
