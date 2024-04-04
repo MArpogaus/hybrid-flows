@@ -8,7 +8,7 @@ from mctm.data.sklearn_datasets import get_dataset
 from mctm.models import DensityRegressionModel
 from mctm.parameters import get_parameter_vector_fn
 from mctm.utils.tensorflow import fit_distribution, set_seed
-from mctm.utils.visualisation import plot_2d_data
+from mctm.utils.visualisation import plot_2d_data, plot_samples
 from tensorflow_probability.python.internal import (
     dtype_util,
     prefer_static,
@@ -82,7 +82,7 @@ def get_polynomial_parameter_lambda(
     ] + parameter_shape
     _, parameter_vector = get_parameter_vector_fn(
         parameter_shape=parameter_shape,
-        dtype=dtype,  # initializer=tf.ones
+        dtype=dtype,  #  initializer=tf.ones
     )
 
     def get_parameter_lambda(conditional_input=None, **kwargs):
@@ -90,13 +90,12 @@ def get_polynomial_parameter_lambda(
             [conditional_input**i for i in range(0, polynomial_order + 1)], -1
         )
         yy = xx[..., None, None] * parameter_vector
-        return tf.reduce_sum(yy, axis=[1, 2])
+        return tf.reduce_sum(yy, axis=[-4, -3])
 
     return get_parameter_lambda, parameter_vector
 
 
 def plot_dists(dist, test_x, test_t, test_y):
-    # breakpoint()
     yy = np.linspace(-1, 1.5, 1000, dtype=np.float32)[..., None, None]
     ps = dist.prob(yy)
 
@@ -106,7 +105,6 @@ def plot_dists(dist, test_x, test_t, test_y):
     fig.suptitle("Learned Distributions", fontsize=16)
 
     for i, x in enumerate(test_x):
-        # breakpoint()
         ax[i].set_title(f"x={x}")
         sampl = test_y[(test_t.flatten() == x)].flatten()
         ax[i].scatter(sampl, [0] * len(sampl), marker="|")
@@ -137,10 +135,10 @@ dataset_kwargs = {"n_samples": 2**14, "scale": True}
 # }
 distribution_kwargs = {
     "bijector_name": "bernstein_poly",
-    "order": 25,
+    "order": 50,
     "shift": False,
     "scale": False,
-    "parameter_constrain_fn": thetas_constrain_fn,
+    "parameter_constrain_fn": thetas_constrain_fn2,
     # "base_distribution_kwargs": {"distribution_type": "uniform", "low": 0, "high": 1},
 }
 parameter_kwargs = {
@@ -168,7 +166,7 @@ fit_kwargs = {
     "callbacks": [tf.keras.callbacks.LearningRateScheduler(scheduler)],
     "lr_patience": 50,
     "reduce_lr_on_plateau": False,
-    "early_stopping": False,
+    "early_stopping": 2,
     "verbose": True,
     "monitor": "val_loss",
 }
@@ -198,7 +196,7 @@ model = DensityRegressionModel(
 
 
 # %% inital values
-tcf = thetas_constrain_fn
+tcf = distribution_kwargs["parameter_constrain_fn"]
 
 t = np.linspace(0.0, 1.0, 200, dtype="float32")
 pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()[:, 0]
@@ -237,16 +235,7 @@ plt.scatter(*Y.T, alpha=0.04)
 plt.xlim(0, 1)
 plt.ylim(0, 1)
 # %%
-
-# tcf = get_thetas_constrain_fn(
-#     low=distribution_kwargs["low"],
-#     high=distribution_kwargs["high"],
-#     smooth_bounds=distribution_kwargs["smooth_bounds"],
-#     allow_flexible_bounds=distribution_kwargs["allow_flexible_bounds"],
-#     eps=distribution_kwargs["eps"],
-#     fn=distribution_kwargs["fn"],
-# )
-tcf = thetas_constrain_fn
+plot_samples(dist, y)
 
 # %%
 t = np.linspace(0.0, 1.0, 200, dtype="float32")
@@ -262,5 +251,41 @@ axs[1][1].plot(t, pv[:, 1])
 # axs[1].set_title("constrained")
 fig.tight_layout()
 
-
 # %% Plot dist
+dist0 = model(0.0)
+p0 = dist0.prob(t[..., None])
+dist1 = model(1.0)
+p1 = dist1.prob(t[..., None])
+
+fig, ax = plt.subplots(2, sharex=True)
+
+ax[0].scatter(
+    y[:, 0],
+    np.zeros_like(y[:, 0]),
+    marker="|",
+    alpha=0.01,
+    color="gray",
+)
+ax[1].scatter(
+    y[:, 1],
+    np.zeros_like(y[:, 1]),
+    marker="|",
+    alpha=0.01,
+    color="gray",
+)
+
+ax[0].plot(t, p0[:, 0], label="$P(y_1|x=0)$")
+ax[0].plot(t, p1[:, 0], label="$P(y_1|x=1)$")
+ax[1].plot(t, p0[:, 1], label="$P(y_2|x=0)$")
+ax[1].plot(t, p1[:, 1], label="$P(y_2|x=1)$")
+
+ax[0].plot(t, (p0[:, 0] + p1[:, 0]) / 2, label="$P(y_1)$")
+ax[1].plot(t, (p0[:, 1] + p1[:, 1]) / 2, label="$P(y_2)$")
+
+ax[0].legend(ncols=3)
+ax[1].legend(ncols=3)
+
+ax[0].set_xlabel("y1")
+ax[1].set_xlabel("y2")
+
+fig.tight_layout()
