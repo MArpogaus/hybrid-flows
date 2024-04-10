@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import tensorflow as tf
 from matplotlib import pyplot as plt
 from mctm.data.sklearn_datasets import get_dataset
@@ -163,7 +164,7 @@ fit_kwargs = {
     "validation_split": 0.25,
     "batch_size": 128,
     "learning_rate": initial_learning_rate,
-    "callbacks": [tf.keras.callbacks.LearningRateScheduler(scheduler)],
+    # "callbacks": [tf.keras.callbacks.LearningRateScheduler(scheduler)],
     "lr_patience": 50,
     "reduce_lr_on_plateau": False,
     "early_stopping": 2,
@@ -193,7 +194,7 @@ model = DensityRegressionModel(
     get_parameter_fn=get_polynomial_parameter_lambda,
     **model_kwargs,
 )
-
+preprocessed = preprocess_dataset(data, model)
 
 # %% inital values
 tcf = distribution_kwargs["parameter_constrain_fn"]
@@ -210,7 +211,6 @@ axs[1].set_title("constrained")
 fig.tight_layout()
 
 # %% fit model
-preprocessed = preprocess_dataset(data, model)
 hist = fit_distribution(
     model=model,
     seed=seed,
@@ -289,3 +289,96 @@ ax[0].set_xlabel("y1")
 ax[1].set_xlabel("y2")
 
 fig.tight_layout()
+
+# %% Plot Flow
+bj0 = dist0.bijector
+
+yy = y[np.squeeze(x == 0)]
+z = dist0.bijector.inverse(yy)
+
+fig, ax = plt.subplots(2, sharex=True)
+
+ax[0].scatter(
+    yy[:, 0],
+    z[:, 0],
+)
+ax[1].scatter(
+    yy[:, 1],
+    z[:, 1],
+)
+
+# %%
+results = {}
+for seed in range(10):
+    set_seed(10)
+    model = DensityRegressionModel(
+        dims=dims,
+        get_parameter_fn=get_polynomial_parameter_lambda,
+        **model_kwargs,
+    )
+    hist = fit_distribution(
+        model=model,
+        seed=seed,
+        results_path=results_path,
+        loss=nll_loss,
+        **preprocessed,
+        **fit_kwargs,
+    )
+    results[seed] = {"model": model, "hist": hist}
+
+# %%
+for k, v in results.items():
+    min_val_loss = min(v["hist"].history["val_loss"])
+    print(f"{k}: {min_val_loss=}")
+
+
+# %%
+def get_transformed_df(model, seed):
+    x, y = preprocessed.values()
+    num = 5000
+    X = x[:num]
+    Y = y[:num]
+    dist = model(X)
+
+    z = dist.bijector.inverse(Y)
+
+    df = pd.DataFrame(
+        columns=["$y1$", "$y2$", "$z1$", "$z2$", "$x$"],
+        data=np.concatenate([Y, z, X], -1),
+    ).assign(seed=seed)
+    return df
+
+
+dfs = pd.concat(
+    list(map(lambda kv: get_transformed_df(kv[1]["model"], kv[0]), results.items()))
+)
+
+# %%
+sns.lineplot(
+    data=dfs, x="$y1$", y="$z1$", hue="$x$", errorbar=lambda x: (x.min(), x.max())
+)
+
+# %%
+g = sns.JointGrid(data=dfs, x="$y1$", y="$z1$", hue="$x$")
+g.plot_joint(sns.lineplot, errorbar=lambda x: (x.min(), x.max()))
+g.plot_marginals(sns.kdeplot)
+g.plot_marginals(lambda hue, *args, **kwargs: sns.kdeplot(*args, **kwargs))
+# g.plot_marginals(sns.rugplot, color="gray", alpha=0.5, height=-.15)
+
+# %%
+dist = model(x)
+
+z = dist.bijector.inverse(y)
+
+df = pd.DataFrame(
+    columns=["$y1$", "$y2$", "$z1$", "$z2$", "$x$"], data=np.concatenate([y, z, x], -1)
+)
+
+g = sns.JointGrid(data=df, x="$z1$", y="$y1$", hue="$x$")
+g.plot(sns.lineplot, sns.kdeplot)
+
+# %%
+
+# %%
+
+g = sns.jointplot(x=z[:, 0], y=yy[:, 0])
