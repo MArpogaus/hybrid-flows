@@ -1,15 +1,11 @@
 # %% import
-
 import numpy as np
 import pandas as pd
-import seaborn as sns
 import tensorflow as tf
 from matplotlib import pyplot as plt
-from mctm.data.sklearn_datasets import get_dataset
 from mctm.models import DensityRegressionModel
 from mctm.parameters import get_parameter_vector_fn
 from mctm.utils.tensorflow import fit_distribution, set_seed
-from mctm.utils.visualisation import plot_2d_data, plot_samples
 from tensorflow_probability.python.internal import (
     dtype_util,
     prefer_static,
@@ -18,15 +14,33 @@ from tensorflow_probability.python.internal import (
 
 
 # %% functions
+def gen_data(t):
+    x = t + 0.3
+    y = 0.3 * x
+    y1 = y + np.random.normal(0.3, 0.05 * np.ones_like(t)) * 0.5 * x
+    y2 = y + np.random.normal(-0.3, 0.1 * np.ones_like(t)) * 0.5 * x
+
+    t = np.concatenate([t, t])
+    y = np.concatenate([y1, y2])
+
+    return t[..., np.newaxis], y[..., np.newaxis]
+
+
+def gen_test_data(n_samples, observations, **kwargs):
+    t = np.linspace(0, 1, n_samples, dtype=np.float32)
+    t = np.repeat(t, observations)
+
+    return gen_data(t, **kwargs)
+
+
+def gen_train_data(n_samples, **kwargs):
+    t = np.random.uniform(0, 1, n_samples).astype(np.float32)
+
+    return gen_data(t, **kwargs)
+
+
 def nll_loss(y, dist):
     return -dist.log_prob(y)
-
-
-def preprocess_dataset(data, model):
-    return {
-        "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype),
-        "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
-    }
 
 
 def thetas_constrain_fn(diff):
@@ -74,7 +88,7 @@ def thetas_constrain_fn2(diff):
     return thetas_constrained
 
 
-def get_polynomial_parameter_lambda(
+def get_polynomial_parameter_fn(
     parameter_shape, polynomial_order, conditional_event_shape, dtype
 ):
     parameter_shape = [
@@ -86,17 +100,44 @@ def get_polynomial_parameter_lambda(
         dtype=dtype,  #  initializer=tf.ones
     )
 
-    def get_parameter_lambda(conditional_input=None, **kwargs):
+    def parameter_fn(conditional_input=None, **kwargs):
         xx = tf.stack(
             [conditional_input**i for i in range(0, polynomial_order + 1)], -1
         )
         yy = xx[..., None, None] * parameter_vector
+        # \vartheta_i = a_i*x^3+b_i*x^2...
         return tf.reduce_sum(yy, axis=[-4, -3])
 
-    return get_parameter_lambda, parameter_vector
+    return parameter_fn, parameter_vector
+
+
+def get_additive_parameter_fn(parameter_shape, conditional_event_shape, dtype):
+    dims = parameter_shape[0]
+    order = parameter_shape[1] - 2
+    _, theta_parameter_vector = get_parameter_vector_fn(
+        parameter_shape=[dims, order],
+        dtype=dtype,  #  initializer=tf.ones
+    )
+    (
+        scale_and_shift_parameter_fn,
+        scale_and_shift_parameters,
+    ) = get_polynomial_parameter_fn([dims, 2], 1, conditional_event_shape, dtype)
+
+    def parameter_fn(conditional_input, **kwargs):
+        return tf.concat(
+            [
+                scale_and_shift_parameter_fn(conditional_input, **kwargs),
+                tf.ones_like(conditional_input)[..., None]
+                * theta_parameter_vector[None, ...],
+            ],
+            -1,
+        )
+
+    return parameter_fn, [theta_parameter_vector, scale_and_shift_parameters]
 
 
 def plot_dists(dist, test_x, test_t, test_y):
+    # breakpoint()
     yy = np.linspace(-1, 1.5, 1000, dtype=np.float32)[..., None, None]
     ps = dist.prob(yy)
 
@@ -106,6 +147,7 @@ def plot_dists(dist, test_x, test_t, test_y):
     fig.suptitle("Learned Distributions", fontsize=16)
 
     for i, x in enumerate(test_x):
+        # breakpoint()
         ax[i].set_title(f"x={x}")
         sampl = test_y[(test_t.flatten() == x)].flatten()
         ax[i].scatter(sampl, [0] * len(sampl), marker="|")
@@ -120,7 +162,7 @@ def plot_dists(dist, test_x, test_t, test_y):
 epochs = 100
 seed = 1
 distribution = "elementwise_flow"
-dataset_kwargs = {"n_samples": 2**14, "scale": True}
+dataset_kwargs = {"n_samples": 2**14}
 # distribution_kwargs = {
 #     "bijector_name": "bernstein_poly",
 #     "order": 20,
@@ -136,15 +178,15 @@ dataset_kwargs = {"n_samples": 2**14, "scale": True}
 # }
 distribution_kwargs = {
     "bijector_name": "bernstein_poly",
-    "order": 50,
-    "shift": False,
-    "scale": False,
+    "order": 25,
+    "shift": True,
+    "scale": True,
     "parameter_constrain_fn": thetas_constrain_fn2,
     # "base_distribution_kwargs": {"distribution_type": "uniform", "low": 0, "high": 1},
 }
 parameter_kwargs = {
     "dtype": "float",
-    "polynomial_order": 1,
+    # "polynomial_order": 1,
     "conditional_event_shape": 1,
     # "conditional": True,
     # "hidden_units": [16, 16],
@@ -164,10 +206,10 @@ fit_kwargs = {
     "validation_split": 0.25,
     "batch_size": 128,
     "learning_rate": initial_learning_rate,
-    # "callbacks": [tf.keras.callbacks.LearningRateScheduler(scheduler)],
+    "callbacks": [tf.keras.callbacks.LearningRateScheduler(scheduler)],
     "lr_patience": 50,
     "reduce_lr_on_plateau": False,
-    "early_stopping": 2,
+    "early_stopping": False,
     "verbose": True,
     "monitor": "val_loss",
 }
@@ -178,39 +220,59 @@ model_kwargs = dict(
 )
 
 get_model = DensityRegressionModel
+
+preprocess_dataset = lambda data, model: {
+    "x": tf.convert_to_tensor(data[0], dtype=model.dtype),
+    "y": tf.convert_to_tensor(data[1], dtype=model.dtype),
+}
 results_path = "./results/" + distribution
 
 
 # %% Load data
 set_seed(seed)
-data, dims = get_dataset("moons", n_samples=2**14, noise=0.05, scale=(0.01, 0.99))
-(Y, X) = data
+dims = 1
+data = gen_train_data(**dataset_kwargs)
+test_t, test_y = gen_test_data(5, 200)
+test_x = np.unique(test_t)
 
-plot_2d_data(Y, X)
+fig = plt.figure()
+plt.scatter(*data, alpha=0.05, label="train")
+plt.scatter(test_t.flatten(), test_y.flatten(), alpha=0.05, label="test")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("Simulated Data")
+plt.legend()
+fig.savefig("./org/gfx/1d_sim_data.png")
 
 # %% Init Model
 model = DensityRegressionModel(
     dims=dims,
-    get_parameter_fn=get_polynomial_parameter_lambda,
+    # get_parameter_fn=get_polynomial_parameter_fn,
+    get_parameter_fn=get_additive_parameter_fn,
     **model_kwargs,
 )
-preprocessed = preprocess_dataset(data, model)
+
 
 # %% inital values
 tcf = distribution_kwargs["parameter_constrain_fn"]
 
 t = np.linspace(0.0, 1.0, 200, dtype="float32")
-pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()[:, 0]
-pv = tcf(pv_u)
+pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()
+pv_poly = tcf(pv_u[..., 2:])
 
-fig, axs = plt.subplots(2, sharex=True)
+fig, axs = plt.subplots(3, sharex=True)
 axs[0].plot(t, pv_u)
 axs[0].set_title("unconstrained")
-axs[1].plot(t, pv)
-axs[1].set_title("constrained")
+axs[1].plot(t, pv_poly)
+axs[1].set_title("constrained pv poly")
+axs[2].plot(t, tf.math.abs(pv_u[..., 0]), label="scale")
+axs[2].plot(t, pv_u[..., 1], label="shift")
+axs[2].set_title("constrained scale and shift")
+axs[2].legend()
 fig.tight_layout()
 
 # %% fit model
+preprocessed = preprocess_dataset(data, model)
 hist = fit_distribution(
     model=model,
     seed=seed,
@@ -225,149 +287,49 @@ pd.DataFrame(hist.history).plot()
 
 # %% Samples
 x, y = preprocessed.values()
+set_seed(1)
+idx = np.random.permutation(len(x))[:3000]
+x, y = x.numpy()[idx], y.numpy()[idx]
 dist = model(x)
-# plot_samples(dist, y)
+
 samples = dist.sample(seed=1).numpy()
 
 fig = plt.figure()
-plt.scatter(*samples.T, alpha=0.05)
-plt.scatter(*Y.T, alpha=0.04)
-plt.xlim(0, 1)
-plt.ylim(0, 1)
-# %%
-plot_samples(dist, y)
+plt.scatter(x, y, alpha=0.05, label="data")
+plt.scatter(x, samples.flatten(), alpha=0.1, label="model")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("sampled data")
+plt.legend()
+fig.savefig("./org/gfx/1d_bimodal_affine_samples.png")
 
 # %%
 t = np.linspace(0.0, 1.0, 200, dtype="float32")
 pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()
-pv = tcf(pv_u)
+pv_poly = tcf(pv_u[..., 2:])
 
-fig, axs = plt.subplots(2, 2, sharex=True)
-axs[0][1].plot(t, pv_u[:, 0])
-axs[0][0].plot(t, pv_u[:, 1])
-# axs[0].set_title("unconstrained")
-axs[1][0].scatter(t, pv[:, 0])
-axs[1][1].scatter(t, pv[:, 1])
-# axs[1].set_title("constrained")
+fig, axs = plt.subplots(3, sharex=True)
+axs[0].plot(t, pv_u)
+axs[0].set_title("unconstrained")
+axs[1].plot(t, pv_poly)
+axs[1].set_title("constrained pv poly")
+axs[2].plot(t, tf.math.abs(pv_u[..., 0]), label="scale")
+axs[2].plot(t, pv_u[..., 1], label="shift")
+axs[2].set_title("constrained scale and shift")
+axs[2].legend()
 fig.tight_layout()
+fig.savefig("./org/gfx/1d_bimodal_affine_parameters.png")
 
 # %% Plot dist
-dist0 = model(0.0)
-p0 = dist0.prob(t[..., None])
-dist1 = model(1.0)
-p1 = dist1.prob(t[..., None])
 
-fig, ax = plt.subplots(2, sharex=True)
 
-ax[0].scatter(
-    y[:, 0],
-    np.zeros_like(y[:, 0]),
-    marker="|",
-    alpha=0.01,
-    color="gray",
-)
-ax[1].scatter(
-    y[:, 1],
-    np.zeros_like(y[:, 1]),
-    marker="|",
-    alpha=0.01,
-    color="gray",
-)
+fig = plot_dists(model(test_x[..., None]), test_x, test_t, test_y)
+fig.savefig("./org/gfx/1d_bimodal_affine_dist.png")
+# model.parameter_fn(test_x[..., None])
 
-ax[0].plot(t, p0[:, 0], label="$P(y_1|x=0)$")
-ax[0].plot(t, p1[:, 0], label="$P(y_1|x=1)$")
-ax[1].plot(t, p0[:, 1], label="$P(y_2|x=0)$")
-ax[1].plot(t, p1[:, 1], label="$P(y_2|x=1)$")
+# %% plot flow
+from bernstein_flow.util.visualization import plot_flow
 
-ax[0].plot(t, (p0[:, 0] + p1[:, 0]) / 2, label="$P(y_1)$")
-ax[1].plot(t, (p0[:, 1] + p1[:, 1]) / 2, label="$P(y_2)$")
-
-ax[0].legend(ncols=3)
-ax[1].legend(ncols=3)
-
-ax[0].set_xlabel("y1")
-ax[1].set_xlabel("y2")
-
-fig.tight_layout()
-
+fig = plot_flow(model(0.5), bijector_name="bernstein_poly")
+fig.savefig("./org/gfx/1d_affine_flow.png")
 # %%
-dist = model(x)
-
-z = dist.bijector.inverse(y)
-
-df = pd.DataFrame(
-    columns=["$y1$", "$y2$", "$z1$", "$z2$", "$x$"], data=np.concatenate([y, z, x], -1)
-)
-
-g = sns.JointGrid(data=df, x="$z1$", y="$y1$", hue="$x$")
-g.plot(sns.lineplot, sns.kdeplot)
-
-# %% PIT
-pit = dist.cdf(y)
-
-sns.jointplot(pit)
-
-# %%
-results = {}
-for seed in range(10):
-    set_seed(10)
-    model = DensityRegressionModel(
-        dims=dims,
-        get_parameter_fn=get_polynomial_parameter_lambda,
-        **model_kwargs,
-    )
-    hist = fit_distribution(
-        model=model,
-        seed=seed,
-        results_path=results_path,
-        loss=nll_loss,
-        **preprocessed,
-        **fit_kwargs,
-    )
-    results[seed] = {"model": model, "hist": hist}
-
-# %%
-for k, v in results.items():
-    min_val_loss = min(v["hist"].history["val_loss"])
-    print(f"{k}: {min_val_loss=}")
-
-
-# %%
-def get_transformed_df(model, seed):
-    x, y = preprocessed.values()
-    num = 5000
-    X = x[:num]
-    Y = y[:num]
-    dist = model(X)
-
-    z = dist.bijector.inverse(Y)
-
-    df = pd.DataFrame(
-        columns=["$y1$", "$y2$", "$z1$", "$z2$", "$x$"],
-        data=np.concatenate([Y, z, X], -1),
-    ).assign(seed=seed)
-    return df
-
-
-dfs = pd.concat(
-    list(map(lambda kv: get_transformed_df(kv[1]["model"], kv[0]), results.items()))
-)
-
-# %%
-sns.lineplot(
-    data=dfs, x="$y1$", y="$z1$", hue="$x$", errorbar=lambda x: (x.min(), x.max())
-)
-
-# %%
-g = sns.JointGrid(data=dfs, x="$y1$", y="$z1$", hue="$x$")
-g.plot_joint(sns.lineplot, errorbar=lambda x: (x.min(), x.max()))
-g.plot_marginals(sns.kdeplot)
-g.plot_marginals(lambda hue, *args, **kwargs: sns.kdeplot(*args, **kwargs))
-# g.plot_marginals(sns.rugplot, color="gray", alpha=0.5, height=-.15)
-
-
-# %%
-
-# %%
-
-g = sns.jointplot(x=z[:, 0], y=yy[:, 0])

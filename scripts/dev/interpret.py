@@ -1,5 +1,4 @@
 # %% import
-
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -7,7 +6,6 @@ from matplotlib import pyplot as plt
 from mctm.models import DensityRegressionModel
 from mctm.parameters import get_parameter_vector_fn
 from mctm.utils.tensorflow import fit_distribution, set_seed
-from mctm.utils.visualisation import plot_2d_data, plot_samples
 from tensorflow_probability.python.internal import (
     dtype_util,
     prefer_static,
@@ -16,29 +14,24 @@ from tensorflow_probability.python.internal import (
 
 
 # %% functions
-def gen_data(t, scale):
-    t1 = t
+def gen_data(t, shift=0.0):
+    t1 = t + shift
     y1 = 1.0 * t1
     y1 += np.random.normal(0, 0.05 * np.abs(t1))
 
-    t2 = t
+    t2 = t + shift
     y2 = -0.2 * t2
     y2 += np.random.normal(0, 0.2 * np.abs(t2))
 
-    t = np.concatenate([t1, t2])
+    t = np.concatenate([t, t])
     y = np.concatenate([y1, y2])
 
-    if scale:
-        y_min = y.min()
-        y_max = y.max()
-        y -= y_min
-        y /= y_max - y_min
     return t[..., np.newaxis], y[..., np.newaxis]
 
 
 def gen_test_data(n_samples, observations, **kwargs):
     t = np.linspace(0, 1, n_samples, dtype=np.float32)
-    t = np.repeat([t], observations)
+    t = np.repeat(t, observations)
 
     return gen_data(t, **kwargs)
 
@@ -98,7 +91,7 @@ def thetas_constrain_fn2(diff):
     return thetas_constrained
 
 
-def get_polynomial_parameter_lambda(
+def get_polynomial_parameter_fn(
     parameter_shape, polynomial_order, conditional_event_shape, dtype
 ):
     parameter_shape = [
@@ -107,17 +100,43 @@ def get_polynomial_parameter_lambda(
     ] + parameter_shape
     _, parameter_vector = get_parameter_vector_fn(
         parameter_shape=parameter_shape,
-        dtype=dtype,  # initializer=tf.ones
+        dtype=dtype,  #  initializer=tf.ones
     )
 
-    def get_parameter_lambda(conditional_input=None, **kwargs):
+    def parameter_fn(conditional_input=None, **kwargs):
         xx = tf.stack(
             [conditional_input**i for i in range(0, polynomial_order + 1)], -1
         )
         yy = xx[..., None, None] * parameter_vector
-        return tf.reduce_sum(yy, axis=[1, 2])
+        # \vartheta_i = a_i*x^3+b_i*x^2...
+        return tf.reduce_sum(yy, axis=[-4, -3])
 
-    return get_parameter_lambda, parameter_vector
+    return parameter_fn, parameter_vector
+
+
+def get_additive_parameter_fn(parameter_shape, conditional_event_shape, dtype):
+    dims = parameter_shape[0]
+    order = parameter_shape[1] - 2
+    _, theta_parameter_vector = get_parameter_vector_fn(
+        parameter_shape=[dims, order],
+        dtype=dtype,  #  initializer=tf.ones
+    )
+    (
+        scale_and_shift_parameter_fn,
+        scale_and_shift_parameters,
+    ) = get_polynomial_parameter_fn([dims, 2], 3, conditional_event_shape, dtype)
+
+    def parameter_fn(conditional_input, **kwargs):
+        return tf.concat(
+            [
+                scale_and_shift_parameter_fn(conditional_input, **kwargs),
+                tf.ones_like(conditional_input)[..., None]
+                * theta_parameter_vector[None, ...],
+            ],
+            -1,
+        )
+
+    return parameter_fn, [theta_parameter_vector, scale_and_shift_parameters]
 
 
 def plot_dists(dist, test_x, test_t, test_y):
@@ -146,7 +165,7 @@ def plot_dists(dist, test_x, test_t, test_y):
 epochs = 100
 seed = 1
 distribution = "elementwise_flow"
-dataset_kwargs = {"n_samples": 2**14, "scale": True}
+dataset_kwargs = {"n_samples": 2**14}
 # distribution_kwargs = {
 #     "bijector_name": "bernstein_poly",
 #     "order": 20,
@@ -163,14 +182,14 @@ dataset_kwargs = {"n_samples": 2**14, "scale": True}
 distribution_kwargs = {
     "bijector_name": "bernstein_poly",
     "order": 25,
-    "shift": False,
-    "scale": False,
-    "parameter_constrain_fn": thetas_constrain_fn,
+    "shift": True,
+    "scale": True,
+    "parameter_constrain_fn": thetas_constrain_fn2,
     # "base_distribution_kwargs": {"distribution_type": "uniform", "low": 0, "high": 1},
 }
 parameter_kwargs = {
     "dtype": "float",
-    "polynomial_order": 5,
+    "polynomial_order": 3,
     "conditional_event_shape": 1,
     # "conditional": True,
     # "hidden_units": [16, 16],
@@ -215,31 +234,39 @@ results_path = "./results/" + distribution
 # %% Load data
 set_seed(seed)
 dims = 1
-data = gen_train_data(**dataset_kwargs)
+data = gen_train_data(**dataset_kwargs, shift=0.2)
+test_t, test_y = gen_test_data(5, 200, shift=0.2)
+test_x = np.unique(test_t)
 
-plt.scatter(*data)
+plt.scatter(*data, alpha=0.05)
+plt.scatter(test_t.flatten(), test_y.flatten(), alpha=0.05)
 
 
 # %% Init Model
 model = DensityRegressionModel(
     dims=dims,
-    get_parameter_fn=get_polynomial_parameter_lambda,
+    get_parameter_fn=get_polynomial_parameter_fn,
+    # get_parameter_fn=get_additive_parameter_fn,
     **model_kwargs,
 )
 
 
 # %% inital values
-tcf = thetas_constrain_fn
+tcf = distribution_kwargs["parameter_constrain_fn"]
 
 t = np.linspace(0.0, 1.0, 200, dtype="float32")
 pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()
-pv = tcf(pv_u)
+pv_poly = tcf(pv_u[..., 2:])
 
-fig, axs = plt.subplots(2, sharex=True)
+fig, axs = plt.subplots(3, sharex=True)
 axs[0].plot(t, pv_u)
 axs[0].set_title("unconstrained")
-axs[1].plot(t, pv)
-axs[1].set_title("constrained")
+axs[1].plot(t, pv_poly)
+axs[1].set_title("constrained pv poly")
+axs[2].plot(t, tf.math.abs(pv_u[..., 0]), label="scale")
+axs[2].plot(t, pv_u[..., 1], label="shift")
+axs[2].set_title("constrained scale and shift")
+axs[2].legend()
 fig.tight_layout()
 
 # %% fit model
@@ -264,36 +291,21 @@ samples = dist.sample(seed=1).numpy()
 
 fig = plt.figure()
 plt.scatter(x, samples.flatten(), alpha=0.05)
-plt.scatter(*data, alpha=0.04)
-
-# %%
-
-# tcf = get_thetas_constrain_fn(
-#     low=distribution_kwargs["low"],
-#     high=distribution_kwargs["high"],
-#     smooth_bounds=distribution_kwargs["smooth_bounds"],
-#     allow_flexible_bounds=distribution_kwargs["allow_flexible_bounds"],
-#     eps=distribution_kwargs["eps"],
-#     fn=distribution_kwargs["fn"],
-# )
-tcf = thetas_constrain_fn
+plt.scatter(*data, alpha=0.05)
 
 # %%
 t = np.linspace(0.0, 1.0, 200, dtype="float32")
 pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()
-pv = tcf(pv_u)
+pv_poly = tcf(pv_u)
 fig, axs = plt.subplots(2, sharex=True)
 axs[0].plot(t, pv_u)
 axs[0].set_title("unconstrained")
-axs[1].plot(t, pv)
+axs[1].plot(t, pv_poly)
 axs[1].set_title("constrained")
 fig.tight_layout()
 
-
 # %% Plot dist
-test_t, test_y = gen_test_data(5, 200, scale=True)
-test_x = np.unique(test_t)
 
 
 plot_dists(model(test_x[..., None]), test_x, test_t, test_y)
-model.parameter_fn(test_x[..., None])
+# model.parameter_fn(test_x[..., None])
