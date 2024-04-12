@@ -1,0 +1,101 @@
+#+TITLE: Interpretierbarkeit auf den Marginals
+#+OPTIONS: tex:t
+#+STARTUP: latexpreview
+
+* Model Specification
+
+** Sklars Theorem
+
+Let $F(y_1, y_2, ..., y_d)$ be a joint cumulative distribution function (CDF) with marginal CDFs $F_1(y_1), F_2(y_2), ..., F_d(y_d)$. Then, according to Sklar's Theorem, there exists a copula function $C(u_1, u_2, ..., u_d)$ such that:
+
+\[F(y_1, y_2, ..., y_d) = C(F_1(y_1), F_2(y_2), ..., F_d(y_d))\]
+
+where $u_i = F_i(y_i)$ are the uniform marginal CDFs, hence the copula function $C$ itself is a distribution on $[0,1]^d$:
+
+$C(u_1,\ldots,u_d):[0,1]^d\mapsto[0,1]$
+
+The density of the multivariate distribution $P$ is given by:
+
+\[f(y_1, y_2, ..., y_d) = c(F_1(y_1), F_2(y_2), ..., F_d(y_d))f_1(y_1)\cdots f_d(y_d)\]
+
+** Conditional Transformation Models
+
+Use flexible, strictly monotone and differentiable transformation functions $h(y|\theta(x))$ with and covariate dependent parameters $\theta(x)$ to map the conditional distribution to a reference distribution, here $\mathcal{N}_{0,1}$:
+
+$F(Y\leq y|x)=\mathcal{N}_{0,1}(h(y|\theta(x))) \leftrightarrow f(y|x)=\mathcal{N}_{0,1}(h(y|\theta(x)))\left|\det{(\nabla{h(y|\theta(x))})}\right|$
+
+** Modeling the Marginals
+
+We use an element-wise transformation model
+
+\begin{equation*}
+T_1(\mathbf{y}) = \left(h(y_1|\theta_1(\mathbf{x})),\ldots,h(y_d|\theta_d(\mathbf{x}))\right) = \left(z_{1,1}, \dots,z_{1,d}\right)\sim\mathcal{N}_{0,1}
+\end{equation*}
+
+to model conditional marginal distributions
+
+\begin{equation*}
+F_1(y_1|\mathbf{x}),\ldots,F_d_{}(y_d|\mathbf{x}) = \mathcal{N}_{0,1}\left(h(y_1|\theta_1(\mathbf{x})),\ldots,h(y_d|\theta_d(\mathbf{x}))\right)=\mathcal{N}_{0,1}(z_{1,1},\dots,z_{1,d})=u_1,\ldots,u_d\sim\mathcal{U}(0,1)
+\end{equation*}
+
+*Notation in Ordnung?*
+
+** Modeling the Dependency Structure
+
+Triangular map to model joint distribution:
+
+\begin{equation*}
+z_1,\ldots,z_d=\left(y_1, h(y_{2}|\phi_2(y_{1},\mathbf{x})), \ldots, h(y_d|\phi_d(\mathbf{y}_{m,<d},\mathbf{x}))\right)
+\end{equation*}
+
+We apply an autoregressive flow to model the joint density $F$.
+
+\begin{equation*}
+F(y_1,\dots,y_d|\mathbf{x}) = \mathcal{N}\left(y_1, h(y_{2}|\phi_2(y_{1},\mathbf{x})), \ldots, h(y_{D}|\phi_D(\mathbf{y}_{m,<D},\mathbf{x}))\right)
+\end{equation*}
+
+** Modeling the Dependency structure (MAF as Copula function)
+
+Autoregressive Flow (Triangular map) to learn the copula function $C$:
+
+$F_y=C(u_1,\ldots,u_d)=MAF^{-1}(u_1,\dots,u_d) u_i\sim\mathcal{U}_{0,1}$
+
+- Zum Sampeln werden Randverteilungen $F_i$ nicht benötigt!
+- Wofür überhaupt nötig?
+
+\begin{equation*}
+T_2(\mathbf{y})=\left(h(u_1, \phi(\mathbf{x})), h(u_{2}|\phi_2(u_{1},\mathbf{x})), \ldots, h(u_d|\phi_d(\mathbf{u}_{m<d},\mathbf{x}))\right)=\text{MAF}(\mathbf{u}|\mathbf{x})\sim\mathcal{N}_{0,1}
+\end{equation*}
+
+\begin{equation*}
+F(y_1,\dots,y_d|\mathbf{x}) = \mathcal{N}\left(h(u_1|\phi_1(\mathbf{x})), h(u_{2}|\phi_2(u_{1},\mathbf{x})), \ldots, h(u_{D}|\phi_D(\mathbf{y}_{m,<D},\mathbf{x}))\right)
+\end{equation*}
+
+* Structural Assumptions
+
+- The conditioning parameter functions $\theta_i(\mathbf{x})$ can incooperate domain knowlage to model covariate effects in a interpretable fasion.
+- Additional affine transformations can be used to alter location and scale of the learned distribution.
+
+* Example 1: Bimodal distribution, linear scale and shift
+
+*** Data
+
+[[file:gfx/1d_sim_data.png]]
+
+*** Model
+
+[[file:gfx/1d_affine_flow.png]]
+
+$T(y)=f_1 \circ f_2 \circ f_3=Be(a(x) \cdot y + b(x))$
+
+*** Parameters
+
+[[file:gfx/1d_bimodal_affine_parameters.png]]
+
+*** Samples
+
+[[file:gfx/1d_bimodal_affine_samples.png]]
+
+*** Distribution
+
+[[file:gfx/1d_bimodal_affine_dist.png]]
