@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-03-20 15:48:59 (Marcel Arpogaus)
+# changed : 2024-04-11 15:40:08 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -21,7 +21,7 @@ the final model in many cases.
 """
 from functools import partial
 from itertools import chain
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, List, Tuple
 
 import numpy as np
 import tensorflow as tf
@@ -58,7 +58,7 @@ def _get_multivariate_normal_fn(
         of the parameter vector.
 
     """
-    pv_shape = [dims + np.sum(np.arange(dims + 1))]
+    parameters_shape = [dims + np.sum(np.arange(dims + 1))]
 
     def dist(parameters):
         loc = parameters[..., :dims]
@@ -66,7 +66,7 @@ def _get_multivariate_normal_fn(
         mv_normal = tfd.MultivariateNormalTriL(loc=loc, scale_tril=scale_tril)
         return mv_normal
 
-    return dist, pv_shape
+    return dist, parameters_shape
 
 
 def _get_trainable_distribution(
@@ -157,7 +157,7 @@ def _get_base_distribution(
 
 def _get_parametrized_bijector_fn(
     bijector_name: str, parameter_constrain_fn=None, **kwargs
-) -> Tuple[Callable[tf.Variable, tfb.Bijector], Tuple[int, ...]]:
+) -> Tuple[Callable[tf.Variable, tfb.Bijector], int]:
     """Get a function to parametrize a Bijector function and its parameter shape.
 
     Parameters
@@ -175,7 +175,7 @@ def _get_parametrized_bijector_fn(
 
     """
     if bijector_name == "bernstein_poly":
-        parameters_shape = [kwargs.pop("order")]
+        num_parameters = kwargs.pop("order")
         if parameter_constrain_fn is None:
             parameter_constrain_fn = get_thetas_constrain_fn(**kwargs)
 
@@ -186,7 +186,7 @@ def _get_parametrized_bijector_fn(
             return bijector
 
     elif bijector_name == "quadratic_spline":
-        parameters_shape = [kwargs["nbins"] * 3 - 1]
+        num_parameters = kwargs["nbins"] * 3 - 1
         range_min = kwargs.pop("range_min")
         if parameter_constrain_fn is None:
             parameter_constrain_fn = get_spline_param_constrain_fn(**kwargs)
@@ -202,7 +202,7 @@ def _get_parametrized_bijector_fn(
     else:
         raise ValueError(f"Unknown bijector type: {bijector_name}")
 
-    return bijector_fn, parameters_shape
+    return bijector_fn, num_parameters
 
 
 def _get_flow_parametrization_fn(
@@ -211,7 +211,7 @@ def _get_flow_parametrization_fn(
     bijector_name: str,
     get_parametrized_bijector_fn=_get_parametrized_bijector_fn,
     **kwargs,
-) -> Tuple[Callable[tf.Variable, tfb.Bijector], Tuple[int, ...]]:
+) -> Tuple[Callable[tf.Variable, tfb.Bijector], List[int]]:
     """Get function to parametrize a normalizing flow.
 
     Parameters
@@ -234,29 +234,50 @@ def _get_flow_parametrization_fn(
     """
     (
         bijector_fn,
-        parameter_shape,
+        num_parameters,
     ) = get_parametrized_bijector_fn(bijector_name, **kwargs)
 
+    learnable_scale = scale and isinstance(scale, bool)
+    if learnable_scale:
+        num_parameters += 1
+
+    learnable_shift = shift and isinstance(shift, bool)
+    if learnable_shift:
+        num_parameters += 1
+
+    print(num_parameters)
+
+    def get_parameters(unconstrained_parameters):
+        nonlocal scale, shift
+        if learnable_scale:
+            scale = tf.abs(unconstrained_parameters[..., 0]) + 0.01
+            unconstrained_parameters = unconstrained_parameters[..., 1:]
+
+        if learnable_shift:
+            shift = unconstrained_parameters[..., 0]
+            unconstrained_parameters = unconstrained_parameters[..., 1:]
+        return scale, shift, unconstrained_parameters
+
     def flow_parametrization_fn(unconstrained_parameters):
+        scale, shift, unconstrained_parameters = get_parameters(
+            unconstrained_parameters
+        )
+
         bijectors = []
 
         # ŷ = a1(x)*(y + b1(x)) = f2(f1(y,x),x)
         # f1 = y + b1(x)
-        if shift:
+        if shift is not False:
             shift_bj = tfb.Shift(
-                tf.convert_to_tensor(
-                    shift, dtype=unconstrained_parameters.dtype, name="shift"
-                ),
+                shift,
                 name="shift",
             )
             bijectors.append(shift_bj)
 
         # f2 = a1(x) * y
-        if scale:
+        if scale is not False:
             scale_bj = tfb.Scale(
-                tf.convert_to_tensor(
-                    scale, dtype=unconstrained_parameters.dtype, name="scale"
-                ),
+                scale,
                 name="scale",
             )
             bijectors.append(scale_bj)
@@ -275,7 +296,7 @@ def _get_flow_parametrization_fn(
 
         return tfb.Invert(flow)
 
-    return flow_parametrization_fn, parameter_shape
+    return flow_parametrization_fn, num_parameters
 
 
 def _get_transformed_distribution_fn(
@@ -340,8 +361,8 @@ def _get_elementwise_flow(
         parameter shape.
 
     """
-    flow_parametrization_fn, parameters_shape = _get_flow_parametrization_fn(**kwargs)
-    pv_shape = [dims] + parameters_shape
+    flow_parametrization_fn, num_parameters = _get_flow_parametrization_fn(**kwargs)
+    pv_shape = [dims, num_parameters]
 
     distribution_fn = _get_transformed_distribution_fn(
         dims,
@@ -372,18 +393,19 @@ def _get_multivariate_flow_fn(
         shape of the parameter vector.
 
     """
-    flow_parametrization_fn, parameters_shape = _get_flow_parametrization_fn(**kwargs)
-    num_params = np.sum(parameters_shape)
-    pv_shape = [num_params * dims + np.sum(np.arange(dims + 1))]
+    flow_parametrization_fn, num_parameters = _get_flow_parametrization_fn(**kwargs)
+    pv_shape = [num_parameters * dims + np.sum(np.arange(dims + 1))]
 
     def distribution_fn(parameters):
         bs = prefer_static.shape(parameters)[:-1]
-        shape = tf.concat((bs, [dims, num_params]), 0)
+        shape = tf.concat((bs, [dims, num_parameters]), 0)
 
         unconstrained_parameters = tf.reshape(
-            parameters[..., : num_params * dims], shape
+            parameters[..., : num_parameters * dims], shape
         )
-        scale_tril = tfp.bijectors.FillScaleTriL()(parameters[..., num_params * dims :])
+        scale_tril = tfp.bijectors.FillScaleTriL()(
+            parameters[..., num_parameters * dims :]
+        )
 
         mv_normal = tfd.MultivariateNormalTriL(loc=0, scale_tril=scale_tril)
 
@@ -448,12 +470,12 @@ def _get_stacked_flow_parametrization_fn(
         else:
             flow_kwargs.update(scale=False, shift=False)
 
-        flow_parametrization_fn, parameters_shape = _get_flow_parametrization_fn(
+        flow_parametrization_fn, num_parameters = _get_flow_parametrization_fn(
             **flow_kwargs
         )
         flow_parametrization_fns.append(flow_parametrization_fn)
 
-        network, variables = get_parameter_fn_for_layer(layer, parameters_shape)
+        network, variables = get_parameter_fn_for_layer(layer, num_parameters)
         parameter_networks.append(network)
         trainable_variables.append(variables)
 
@@ -632,9 +654,9 @@ def get_coupling_flow(
     )
     base_distribution_kwargs = distribution_kwargs.pop("base_distribution_kwargs", {})
 
-    def get_parameter_fn_for_layer(layer, parameters_shape):
+    def get_parameter_fn_for_layer(layer, num_parameters):
         nm = num_masked if num_masked else _get_num_masked(dims, layer)
-        parameter_shape = [dims - nm] + parameters_shape
+        parameter_shape = [dims - nm, num_parameters]
         return get_parameter_fn(
             input_shape=nm,
             parameter_shape=parameter_shape,
@@ -704,8 +726,8 @@ def _get_masked_autoregressive_flow_parametrization_fn(
 
     """
 
-    def get_parameter_fn_for_layer(_, parameters_shape):
-        parameter_shape = [dims] + parameters_shape
+    def get_parameter_fn_for_layer(_, num_parameters):
+        parameter_shape = [dims, num_parameters]
         return get_parameter_fn(parameter_shape, **parameter_kwargs)
 
     def get_bijectors_for_layer(_, network, flow_parametrization_fn):
