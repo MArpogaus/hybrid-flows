@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-08-24 16:15:23 (Marcel Arpogaus)
-# changed : 2024-03-22 15:41:16 (Marcel Arpogaus)
+# changed : 2024-04-12 18:35:31 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -36,7 +36,9 @@ from .nn import (
 
 
 def get_parameter_vector_fn(
-    parameter_shape: Tuple[int, ...], dtype: tf.dtypes.DType = tf.float32
+    parameter_shape: Tuple[int, ...],
+    initializer: Callable[[Tuple[int, ...], ...], tf.Tensor] = tf.random.normal,
+    dtype: tf.dtypes.DType = tf.float32,
 ) -> Tuple[Callable[..., tf.Variable], tf.Variable]:
     """Create a TensorFlow parameter vector with a given shape and dtype.
 
@@ -44,6 +46,8 @@ def get_parameter_vector_fn(
     ----------
     parameter_shape
         The shape of the parameter vector.
+    initializer
+        Function returning initial parameters.
     dtype
         The data type of the parameter vector, by default tf.float32.
 
@@ -54,7 +58,7 @@ def get_parameter_vector_fn(
 
     """
     parameter_vector = tf.Variable(
-        tf.random.normal(parameter_shape, dtype=dtype), trainable=True
+        initializer(parameter_shape, dtype=dtype), trainable=True
     )
     return lambda *_, **__: parameter_vector, parameter_vector
 
@@ -142,7 +146,7 @@ def get_parameter_vector_or_simple_network_fn(
 
     """
     if conditional:
-        input_shape = kwargs.pop("input_shape")
+        input_shape = kwargs.pop("conditional_event_shape")
         parameter_network = build_fully_connected_net(
             output_shape=parameter_shape, input_shape=input_shape, **kwargs
         )
