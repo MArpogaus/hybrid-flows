@@ -186,7 +186,8 @@ set_seed(seed)
 data, dims = get_dataset("moons", n_samples=2**14, noise=0.05, scale=(0.01, 0.99))
 (Y, X) = data
 
-plot_2d_data(Y, X)
+fig = plot_2d_data(Y, X)
+fig.savefig("./org/gfx/moons.png")
 
 # %% Init Model
 model = DensityRegressionModel(
@@ -234,6 +235,7 @@ plt.scatter(*samples.T, alpha=0.05)
 plt.scatter(*Y.T, alpha=0.04)
 plt.xlim(0, 1)
 plt.ylim(0, 1)
+
 # %%
 plot_samples(dist, y)
 
@@ -242,14 +244,20 @@ t = np.linspace(0.0, 1.0, 200, dtype="float32")
 pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()
 pv = tcf(pv_u)
 
-fig, axs = plt.subplots(2, 2, sharex=True)
-axs[0][1].plot(t, pv_u[:, 0])
-axs[0][0].plot(t, pv_u[:, 1])
-# axs[0].set_title("unconstrained")
-axs[1][0].scatter(t, pv[:, 0])
-axs[1][1].scatter(t, pv[:, 1])
-# axs[1].set_title("constrained")
+fig, axs = plt.subplots(2, 2, sharex=True, sharey=True)
+axs[0][0].plot(t, pv_u[:, 0])
+axs[0][1].plot(t, pv_u[:, 1])
+axs[1][0].plot(t, pv[:, 0])
+axs[1][1].plot(t, pv[:, 1])
+axs[0][0].set_ylabel("unconstrained")
+axs[0][0].set_title(r"$\theta_0$")
+axs[0][1].set_title(r"$\theta_1$")
+axs[1][0].set_ylabel("constrained")
+axs[1][0].set_xlabel("x")
+axs[1][1].set_xlabel("x")
+axs[1][0].set_xticks([0, 1])
 fig.tight_layout()
+fig.savefig("org/gfx/moons_interpret_params.png")
 
 # %% Plot dist
 dist0 = model(0.0)
@@ -289,6 +297,7 @@ ax[0].set_xlabel("y1")
 ax[1].set_xlabel("y2")
 
 fig.tight_layout()
+fig.savefig("org/gfx/moons_interpret_dist.png")
 
 # %%
 dist = model(x)
@@ -301,6 +310,7 @@ df = pd.DataFrame(
 
 g = sns.JointGrid(data=df, x="$z1$", y="$y1$", hue="$x$")
 g.plot(sns.lineplot, sns.kdeplot)
+g.figure.savefig("./org/gfx/moons_interpret_bijector.png")
 
 # %% PIT
 pit = dist.cdf(y)
