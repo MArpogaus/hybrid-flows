@@ -1,8 +1,19 @@
+# A rich database available from Demographic and Health Surveys (DHS, https://dhsprogram.com/)
+# provides nationally representative information about the health and nutritional status
+# of populations in many of those countries. Here we use data from India that were
+# collected in 1998.
+#
+# We used three indicators, stunting, wasting and underweight, as the response vector
+# - stunting :: stunted growth, measured as an insufficient height with respect to the childs age
+# - wasting and underweight :: refer to insufficient weight for height and insufficient weight for age
+
 # %% import
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import tensorflow as tf
 from matplotlib import pyplot as plt
+from mctm.data.malnutrion import get_dataset
 from mctm.models import DensityRegressionModel
 from mctm.parameters import get_parameter_vector_fn
 from mctm.utils.tensorflow import fit_distribution, set_seed
@@ -14,41 +25,29 @@ from tensorflow_probability.python.internal import (
 
 
 # %% functions
-def gen_data(t, scale, shift=0.0):
-    t1 = t + shift
-    y1 = 1.0 * t1
-    y1 += np.random.normal(0, 0.05 * np.abs(t1))
-
-    t2 = t + shift
-    y2 = -0.2 * t2
-    y2 += np.random.normal(0, 0.2 * np.abs(t2))
-
-    t = np.concatenate([t, t])
-    y = np.concatenate([y1, y2])
-
-    if scale:
-        y_min = y.min()
-        y_max = y.max()
-        y -= y_min
-        y /= y_max - y_min
-    return t[..., np.newaxis], y[..., np.newaxis]
-
-
-def gen_test_data(n_samples, observations, **kwargs):
-    t = np.linspace(0, 1, n_samples, dtype=np.float32)
-    t = np.repeat([t], observations)
-
-    return gen_data(t, **kwargs)
-
-
-def gen_train_data(n_samples, **kwargs):
-    t = np.random.uniform(0, 1, n_samples).astype(np.float32)
-
-    return gen_data(t, **kwargs)
-
-
 def nll_loss(y, dist):
     return -dist.log_prob(y)
+
+
+def plot_grid(data, **kwargs):
+    """Plot sns.PairGrid."""
+    sns.set_theme(style="white")
+    g = sns.PairGrid(data, diag_sharey=False, **kwargs)
+    g.map_upper(sns.scatterplot, s=15)
+
+    g.map_lower(sns.kdeplot)
+    g.map_diag(sns.kdeplot, lw=2)
+
+    return g
+
+
+def plot_data(train_data, targets, covariates, frac=0.1, **kwargs):
+    """Plot data."""
+    data = np.concatenate([train_data[0][..., None], train_data[1]], -1)
+    df = pd.DataFrame(data, columns=targets + covariates).sample(frac=frac)
+
+    g = plot_grid(df, **kwargs)
+    return g.figure
 
 
 def thetas_constrain_fn(diff):
@@ -110,7 +109,7 @@ def get_polynomial_parameter_lambda(
 
     def get_parameter_lambda(conditional_input=None, **kwargs):
         xx = tf.stack(
-            [conditional_input**i for i in range(0, polynomial_order + 1)], -1
+            [(conditional_input / 35) ** i for i in range(0, polynomial_order + 1)], -1
         )
         yy = xx[..., None, None] * parameter_vector
         return tf.reduce_sum(yy, axis=[-4, -3])
@@ -144,7 +143,11 @@ def plot_dists(dist, test_x, test_t, test_y):
 epochs = 100
 seed = 1
 distribution = "elementwise_flow"
-dataset_kwargs = {"n_samples": 2**14, "scale": True}
+dataset_kwargs = {
+    "data_path": "datasets/malnutrition/india.raw",
+    "covariates": ["cage"],
+    "targets": ["stunting", "wasting", "underweight"],
+}
 # distribution_kwargs = {
 #     "bijector_name": "bernstein_poly",
 #     "order": 20,
@@ -160,15 +163,15 @@ dataset_kwargs = {"n_samples": 2**14, "scale": True}
 # }
 distribution_kwargs = {
     "bijector_name": "bernstein_poly",
-    "order": 25,
+    "order": 8,
     "shift": False,
     "scale": False,
-    "parameter_constrain_fn": thetas_constrain_fn,
+    "parameter_constrain_fn": thetas_constrain_fn2,
     # "base_distribution_kwargs": {"distribution_type": "uniform", "low": 0, "high": 1},
 }
 parameter_kwargs = {
     "dtype": "float",
-    "polynomial_order": 10,
+    "polynomial_order": 3,
     "conditional_event_shape": 1,
     # "conditional": True,
     # "hidden_units": [16, 16],
@@ -177,11 +180,11 @@ parameter_kwargs = {
     # "dropout": False,
 }
 initial_learning_rate = 0.01
-scheduler = tf.keras.optimizers.schedules.PolynomialDecay(
+scheduler = tf.keras.optimizers.schedules.CosineDecay(
     initial_learning_rate,
     decay_steps=epochs,
-    end_learning_rate=0.00001,
-    power=1,
+    # end_learning_rate=0.00001,
+    # power=1,
 )
 fit_kwargs = {
     "epochs": epochs,
@@ -201,22 +204,71 @@ model_kwargs = dict(
     parameter_kwargs=parameter_kwargs,
 )
 
-get_model = DensityRegressionModel
-
 preprocess_dataset = lambda data, model: {
-    "x": tf.convert_to_tensor(data[0], dtype=model.dtype),
-    "y": tf.convert_to_tensor(data[1], dtype=model.dtype),
+    "x": data[0][0],
+    "y": data[0][1],
+    "validation_data": data[1],
 }
 results_path = "./results/" + distribution
 
 
-# %% Load data
+# %% Load unscaled data
+# raw_data = pd.read_csv(dataset_kwargs["data_path"], sep=r"\s+")
+
+# %% Load unscaled data
 set_seed(seed)
-dims = 1
-data = gen_train_data(**dataset_kwargs, shift=0.1)
+targets = dataset_kwargs["targets"]
+covariates = dataset_kwargs["covariates"]
+(unscaled_train_data, _, _), dims = get_dataset(**dataset_kwargs, scale=False)
+df = pd.DataFrame(
+    np.concatenate([unscaled_train_data[1], unscaled_train_data[0]], -1),
+    columns=targets + covariates,
+)
+plot_grid(df.sample(frac=0.2), vars=targets, hue="cage")
 
-plt.scatter(*data)
+# %% kde maginal plot
 
+fig, axs = plt.subplots(1, len(targets), figsize=(8, 2))
+
+for i, c in enumerate(targets):
+    sns.kdeplot(
+        df.sample(frac=0.5),
+        x=c,
+        hue="cage",  # df.mage // 128,
+        ax=axs[i],
+        common_norm=False,
+        alpha=0.1,
+        fill=True,
+        palette="crest",
+        linewidth=0,
+        legend=False,
+    )
+
+fig.tight_layout()
+# %% ecdf maginal plot
+
+fig, axs = plt.subplots(1, len(targets), figsize=(8, 2), sharey=True)
+
+for i, c in enumerate(targets):
+    sns.ecdfplot(
+        df,
+        x=c,
+        hue="cage",  # df.mage // 128,
+        ax=axs[i],
+        alpha=0.2,
+        legend=False,
+    )
+
+fig.tight_layout()
+# %% scaled data
+set_seed(seed)
+data, dims = get_dataset(
+    **dataset_kwargs,
+    scale=True,
+    column_transformers=[
+        ("passthrough", covariates),
+    ],
+)
 
 # %% Init Model
 model = DensityRegressionModel(
@@ -225,23 +277,26 @@ model = DensityRegressionModel(
     **model_kwargs,
 )
 
-
 # %% inital values
 tcf = distribution_kwargs["parameter_constrain_fn"]
 
-t = np.linspace(0.0, 1.0, 200, dtype="float32")
+t = np.linspace(-1, 1, 20, dtype="float32")
 pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()
 pv = tcf(pv_u)
 
-fig, axs = plt.subplots(2, sharex=True)
-axs[0].plot(t, pv_u)
-axs[0].set_title("unconstrained")
-axs[1].plot(t, pv)
-axs[1].set_title("constrained")
+fig, axs = plt.subplots(2, 3, sharex=True, sharey=True)
+for i, c in enumerate(targets):
+    axs[0][i].plot(t, pv_u[:, i])
+    axs[0][i].set_title(c)
+    axs[1][i].plot(t, pv[:, i])
+    axs[1][i].set_xlabel("x")
+axs[0][0].set_ylabel(r"unconstrained $\theta$")
+axs[1][0].set_ylabel(r"constrained $\theta$")
 fig.tight_layout()
 
 # %% fit model
 preprocessed = preprocess_dataset(data, model)
+X, Y, validation_data = preprocessed.values()
 hist = fit_distribution(
     model=model,
     seed=seed,
@@ -254,32 +309,84 @@ hist = fit_distribution(
 # %% Learning curve
 pd.DataFrame(hist.history).plot()
 
-# %% Samples
-x, y = preprocessed.values()
-dist = model(x)
+# %% params after fit
+tcf = distribution_kwargs["parameter_constrain_fn"]
 
-samples = dist.sample(seed=1).numpy()
-
-fig = plt.figure()
-plt.scatter(x, samples.flatten(), alpha=0.05)
-plt.scatter(*data, alpha=0.04)
-
-# %%
-t = np.linspace(0.0, 1.0, 200, dtype="float32")
+t = np.unique(X)  # np.linspace(-1, 1, 20, dtype="float32")
 pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()
 pv = tcf(pv_u)
-fig, axs = plt.subplots(2, sharex=True)
-axs[0].plot(t, pv_u)
-axs[0].set_title("unconstrained")
-axs[1].plot(t, pv)
-axs[1].set_title("constrained")
+
+fig, axs = plt.subplots(2, 3, sharex=True)
+for i, c in enumerate(targets):
+    axs[0][i].plot(t, pv_u[:, i])
+    axs[0][i].set_title(c)
+    axs[1][i].plot(t, pv[:, i])
+    axs[1][i].set_xlabel("x")
+axs[0][0].set_ylabel(r"unconstrained $\theta$")
+axs[1][0].set_ylabel(r"constrained $\theta$")
+fig.tight_layout()
+
+# %% marginal cdf
+cages = np.arange(0, 35, 8, dtype=np.float32)
+cages = np.unique(X)
+colors = sns.color_palette("rocket_r", as_cmap=True)(
+    np.linspace(0, 1, len(cages))
+).tolist()
+dists = model(cages[..., None])
+
+y = np.linspace(0, 1, 20)[..., None, None]
+
+cdf = dists.cdf(y)
+fig, axs = plt.subplots(2, len(targets), figsize=(8, 4), sharey=True, sharex=True)
+
+for i, c in enumerate(targets):
+    axs[0][i].set_prop_cycle("color", colors)
+    axs[0][i].plot(y.flatten(), cdf[..., i], alpha=0.2)
+    sns.ecdfplot(
+        x=Y[..., i],
+        hue=X.numpy().flatten(),  # df.mage // 128,
+        ax=axs[1][i],
+        alpha=0.2,
+        legend=False,
+        palette="rocket_r",
+    )
+
+
 fig.tight_layout()
 
 
-# %% Plot dist
-test_t, test_y = gen_test_data(5, 200, scale=True)
-test_x = np.unique(test_t)
+# %% Samples
+X, Y, validation_data = preprocessed.values()
+dist = model(X)
+
+samples = dist.sample(seed=1).numpy()
 
 
-plot_dists(model(test_x[..., None]), test_x, test_t, test_y)
-# model.parameter_fn(test_x[..., None])
+# %% sample
+def get_samples_df(seed, model, x, y, targets):
+    set_seed(seed)
+    df_data = pd.DataFrame(y, columns=targets).assign(source="data").assign(mage=x)
+    df_model = (
+        pd.DataFrame(model(x).sample(seed=seed).numpy().squeeze(), columns=targets)
+        .assign(source="model")
+        .assign(mage=x)
+    )
+    df = pd.concat([df_data, df_model])
+
+    return df
+
+
+def plot_samples_grid(model, validation_data, N, targets, hue="source", **kwargs):
+    x, y = validation_data
+    df = get_samples_df(1, model, x, y, targets)
+
+    g = plot_grid(df, vars=targets, hue=hue, **kwargs)
+    g = g.add_legend()
+
+    # g.figure.savefig(os.path.join(results_path, "samples.pdf"))
+
+
+# plot_samples_grid(model, validation_data, 1000, targets, row="source")
+df = get_samples_df(1, model, X, Y, targets)
+# df["mage_combined"] = df.mage // 128
+plot_grid(df.loc[df.source == "model"].sample(frac=0.2), vars=targets, hue="mage")

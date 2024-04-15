@@ -13,11 +13,13 @@ from mctm.utils.tensorflow import set_seed
 def get_dataset(
     data_path,
     targets,
+    scale=True,
     test_size=0.1,
     val_size=0.1,
     covariates=None,
     dtype=tf.float32,
     seed=1,
+    column_transformers=[],
 ):
     """Load and preprocesse a dataset for training, validation, and testing.
 
@@ -53,27 +55,29 @@ def get_dataset(
     )
 
     # Apply data scaling using column transformer
-    ct = make_column_transformer(
-        (MinMaxScaler(), targets),
-        remainder=StandardScaler(),
-        verbose_feature_names_out=False,
-    )
-    ct.set_output(transform="pandas")
+    if scale:
+        column_transformers = [(MinMaxScaler(), targets)] + column_transformers
+        ct = make_column_transformer(
+            *column_transformers,
+            remainder=StandardScaler(),
+            verbose_feature_names_out=False,
+        )
+        ct.set_output(transform="pandas")
 
-    train_data_scaled = ct.fit_transform(train_data)
-    val_data_scaled = ct.transform(val_data)
-    test_data_scaled = ct.transform(test_data)
+        train_data = ct.fit_transform(train_data)
+        val_data = ct.transform(val_data)
+        test_data = ct.transform(test_data)
 
     # Ensure no overlap in indices between sets
-    assert not train_data_scaled.index.isin(test_data_scaled.index).any()
-    assert not train_data_scaled.index.isin(val_data_scaled.index).any()
-    assert not val_data_scaled.index.isin(test_data_scaled.index).any()
+    assert not train_data.index.isin(test_data.index).any()
+    assert not train_data.index.isin(val_data.index).any()
+    assert not val_data.index.isin(test_data.index).any()
 
     # Convert data to TensorFlow tensors
     t = partial(tf.convert_to_tensor, dtype=dtype)
 
-    train_x, train_y = t(train_data_scaled[covariates]), t(train_data_scaled[targets])
-    val_x, val_y = t(val_data_scaled[covariates]), t(val_data_scaled[targets])
-    test_x, test_y = t(test_data_scaled[covariates]), t(test_data_scaled[targets])
+    train_x, train_y = t(train_data[covariates]), t(train_data[targets])
+    val_x, val_y = t(val_data[covariates]), t(val_data[targets])
+    test_x, test_y = t(test_data[covariates]), t(test_data[targets])
 
     return ((train_x, train_y), (val_x, val_y), (test_x, test_y)), len(targets)
