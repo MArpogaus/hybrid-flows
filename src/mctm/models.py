@@ -77,10 +77,10 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
         distribution_kwargs,
         parameter_kwargs,
         base_distribution,
-        base_distribution_kwargs,
-        base_parameter_kwargs,
-        base_checkpoint_path,
         freeze_base_model,
+        base_checkpoint_path=None,
+        base_distribution_kwargs={},
+        base_parameter_kwargs={},
         base_checkpoint_path_prefix="./",
         **kwargs,
     ):
@@ -110,12 +110,15 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
             **kwargs,
         )
 
-        self.base_model = DensityRegressionModel(
-            dims=dims,
-            distribution=base_distribution,
-            distribution_kwargs=base_distribution_kwargs,
-            parameter_kwargs=base_parameter_kwargs,
-        )
+        if isinstance(base_distribution, DensityRegressionModel):
+            self.base_model = base_distribution
+        else:
+            self.base_model = DensityRegressionModel(
+                dims=dims,
+                distribution=base_distribution,
+                distribution_kwargs=base_distribution_kwargs,
+                parameter_kwargs=base_parameter_kwargs,
+            )
         if base_checkpoint_path:
             self.base_model.load_weights(
                 os.path.join(base_checkpoint_path_prefix, base_checkpoint_path)
