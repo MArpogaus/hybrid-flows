@@ -1,6 +1,6 @@
 #+TITLE: Interpretierbarkeit auf den Marginals
 #+OPTIONS: tex:t
-#+STARTUP: latexpreview
+#+STARTUP: latexpreview indent
 
 * Structural Assumptions
 
@@ -8,10 +8,10 @@ Use flexible, strictly monotone and differentiable transformation functions $h(y
 
 $F(Y\leq y|x)=\mathcal{N}_{0,1}(h(y|\theta(x))) \leftrightarrow f(y|x)=\mathcal{N}_{0,1}(h(y|\theta(x)))\left|\det{(\nabla{h(y|\theta(x))})}\right|$
 
-- The conditioning parameter functions $\theta_i(\mathbf{x})$ can incooperate domain knowlage to model covariate effects in a interpretable fashion.
+- The conditioning parameter functions $\theta_i(\mathbf{x})$ can incooperate domain knowlage to model covariate effects.
 - Additional affine transformations can be used to alter location and scale of the learned distribution: $T(y)=f_1 \circ f_2 \circ f_3=Be(a(x) \cdot y + b(x))$
 
-** Klein2019: Marginal conditional transformation function
+** Klein et al. 2019: Marginal conditional transformation function
 
 $\tilde{h}_j(y_j|\mathbf{x})=\mathbf{c}_j(y_j|\mathbf{x})^T\vartheta_j$
 
@@ -44,7 +44,7 @@ $T(y)=f_1 \circ f_2 \circ f_3=Be(a(x) \cdot y + b(x))$
 *** Distribution
 
 [[file:gfx/1d_bimodal_affine_dist.png]]
-* Example 2: Linear effect in Bernstein coefficients
+* Example 2: Linear effect on Bernstein coefficients
 
 ** Data
 
