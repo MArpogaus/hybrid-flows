@@ -26,8 +26,9 @@ requires-python = '>=3.7.0'
 [project.optional-dependencies]
 develop = [
   'mctm[train]',
-  'pre-commit',
   'commitizen',
+  'ipython',
+  'pre-commit',
   'python-lsp-ruff',
   'python-lsp-server[all]',
   'ruff'
