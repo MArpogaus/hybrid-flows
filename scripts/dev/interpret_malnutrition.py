@@ -224,7 +224,8 @@ df = pd.DataFrame(
     np.concatenate([unscaled_train_data[1], unscaled_train_data[0]], -1),
     columns=targets + covariates,
 )
-plot_grid(df.sample(frac=0.2), vars=targets, hue="cage")
+fig = plot_grid(df.sample(frac=0.2), vars=targets, hue="cage")
+fig.savefig("./org/gfx/malnutrition_data.png")
 
 # %% kde maginal plot
 
@@ -246,8 +247,10 @@ for i, c in enumerate(targets):
 
 fig.tight_layout()
 # %% ecdf maginal plot
-
-fig, axs = plt.subplots(1, len(targets), figsize=(8, 2), sharey=True)
+fig, axs = plt.subplots(
+    1, len(targets), figsize=(8, 2), sharey=True, sharex=True, layout="constrained"
+)
+palette = "rocket_r"
 
 for i, c in enumerate(targets):
     sns.ecdfplot(
@@ -255,11 +258,23 @@ for i, c in enumerate(targets):
         x=c,
         hue="cage",  # df.mage // 128,
         ax=axs[i],
-        alpha=0.2,
+        alpha=0.5,
         legend=False,
+        palette=palette,
     )
 
-fig.tight_layout()
+axs[0].set_ylabel(r"$ECDF(y|\text{age})$")
+
+fig.colorbar(
+    plt.cm.ScalarMappable(
+        cmap=palette, norm=plt.Normalize(df.cage.min(), df.cage.max())
+    ),
+    ax=axs,
+    label="age",
+)
+# fig.tight_layout()
+fig.savefig("./org/gfx/malnutrition_ecdf.png")
+
 # %% scaled data
 set_seed(seed)
 data, dims = get_dataset(
@@ -321,12 +336,15 @@ for i, c in enumerate(targets):
     axs[0][i].plot(t, pv_u[:, i])
     axs[0][i].set_title(c)
     axs[1][i].plot(t, pv[:, i])
-    axs[1][i].set_xlabel("x")
+    axs[1][i].set_xlabel("cage")
 axs[0][0].set_ylabel(r"unconstrained $\theta$")
 axs[1][0].set_ylabel(r"constrained $\theta$")
+axs[1][0].set_xticks((t.min(), t.max()))
 fig.tight_layout()
+fig.savefig("./org/gfx/malnutrition_params.png")
 
 # %% marginal cdf
+palette = "rocket_r"
 cages = np.arange(0, 35, 8, dtype=np.float32)
 cages = np.unique(X)
 colors = sns.color_palette("rocket_r", as_cmap=True)(
@@ -337,23 +355,36 @@ dists = model(cages[..., None])
 y = np.linspace(0, 1, 20)[..., None, None]
 
 cdf = dists.cdf(y)
-fig, axs = plt.subplots(2, len(targets), figsize=(8, 4), sharey=True, sharex=True)
+fig, axs = plt.subplots(
+    2, len(targets), figsize=(8, 4), sharey=True, sharex=True, layout="constrained"
+)
 
 for i, c in enumerate(targets):
-    axs[0][i].set_prop_cycle("color", colors)
-    axs[0][i].plot(y.flatten(), cdf[..., i], alpha=0.2)
     sns.ecdfplot(
         x=Y[..., i],
         hue=X.numpy().flatten(),  # df.mage // 128,
-        ax=axs[1][i],
-        alpha=0.2,
+        ax=axs[0, i],
+        alpha=0.5,
         legend=False,
-        palette="rocket_r",
+        palette=palette,
     )
+    axs[1, i].set_prop_cycle("color", colors)
+    axs[1, i].plot(y.flatten(), cdf[..., i], alpha=0.5)
+    axs[1, i].set_xlabel(c)
 
+axs[0, 0].set_ylabel(r"$ECDF(y|\text{age})$")
+axs[1, 0].set_ylabel(r"$F(y|\text{age})$")
 
-fig.tight_layout()
+fig.colorbar(
+    plt.cm.ScalarMappable(
+        cmap=palette, norm=plt.Normalize(df.cage.min(), df.cage.max())
+    ),
+    ax=axs[:, -1],
+    label="age",
+    shrink=0.5,
+)
 
+fig.savefig("./org/gfx/malnutrition_cdf.png")
 
 # %% Samples
 X, Y, validation_data = preprocessed.values()
