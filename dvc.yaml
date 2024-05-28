@@ -17,7 +17,7 @@ stages:
     metrics:
     - results/${item.model}_${item.dataset.type}_${item.dataset.name}/metrics.yaml
     outs:
-    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/mcp
+    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/model_checkpoint.weights.h5
     - results/${item.model}_${item.dataset.type}_${item.dataset.name}/train.log
     - results/${item.model}_${item.dataset.type}_${item.dataset.name}/dataset.pdf
     - results/${item.model}_${item.dataset.type}_${item.dataset.name}/samples.pdf
@@ -43,5 +43,5 @@ stages:
     metrics:
     - results/${item.model}_${item.dataset.type}_${item.dataset.name}/metrics.yaml
     outs:
-    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/mcp
+    - results/${item.model}_${item.dataset.type}_${item.dataset.name}/model_checkpoint.weights.h5
     - results/${item.model}_${item.dataset.type}_${item.dataset.name}/train.log
