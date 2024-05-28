@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <marcel dot arpogaus at gmail dot com>
 #
 # created : 2022-03-10 15:39:04 (Marcel Arpogaus)
-# changed : 2024-03-22 15:56:27 (Marcel Arpogaus)
+# changed : 2024-03-26 18:28:45 (Marcel Arpogaus)
 # DESCRIPTION #################################################################
 # ...
 # LICENSE #####################################################################
@@ -110,7 +110,7 @@ def get_thetas_constrain_fn(
             )
         else:
             c = tf.concat(
-                (low_theta, diff_positive + min_slope),
+                (low_theta, diff_positive),
                 axis=-1,
             )
 
