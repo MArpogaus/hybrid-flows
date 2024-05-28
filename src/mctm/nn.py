@@ -3,7 +3,7 @@ from functools import reduce
 from typing import Callable, List, Tuple
 
 import tensorflow as tf
-from tensorflow import keras as K
+import tf_keras as K
 from tensorflow_probability import bijectors as tfb
 
 

@@ -12,14 +12,14 @@ which are built on distribution from the 'distributions' module.
 """
 import os
 
-import tensorflow as tf
+import tf_keras as K
 from tensorflow_probability import distributions as tfd
 
 from mctm import distributions, parameters
 
 
 # MODEL DEFINITIONS #########################################################
-class DensityRegressionModel(tf.keras.Model):
+class DensityRegressionModel(K.Model):
     """A class representing a Density Regression Model.
 
     :ivar callable distribution_lambda: A callable representing the

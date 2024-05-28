@@ -15,7 +15,7 @@
 import os
 
 import tensorflow as tf
-from tensorflow import keras as K
+import tf_keras as K
 
 
 # PUBLIC FUNCTIONS #############################################################
@@ -88,7 +88,7 @@ def fit_distribution(
 
     callbacks += [
         K.callbacks.ModelCheckpoint(
-            os.path.join(results_path, "mcp/weights"),
+            os.path.join(results_path, "model_checkpoint.weights.h5"),
             monitor=monitor,
             mode="auto",
             verbose=verbose,

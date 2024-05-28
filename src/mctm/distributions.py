@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-04-11 15:40:08 (Marcel Arpogaus)
+# changed : 2024-05-28 18:05:51 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -19,6 +19,7 @@ probability distributions. They get used in the 'models' module.
 The module defines a list of private base functions that get used to compose
 the final model in many cases.
 """
+
 from functools import partial
 from itertools import chain
 from typing import Callable, Dict, List, Tuple
@@ -144,6 +145,10 @@ def _get_base_distribution(
         default_kwargs = dict(loc=0.0, scale=1.0)
         default_kwargs.update(**kwargs)
         dist = tfd.LogNormal(**default_kwargs)
+    elif distribution_type == "logistic":
+        default_kwargs = dict(loc=0.0, scale=1.0)
+        default_kwargs.update(**kwargs)
+        dist = tfd.Logistic(**default_kwargs)
     elif distribution_type == "uniform":
         dist = tfd.Uniform(**kwargs)
     elif distribution_type == "kumaraswamy":
@@ -244,8 +249,6 @@ def _get_flow_parametrization_fn(
     learnable_shift = shift and isinstance(shift, bool)
     if learnable_shift:
         num_parameters += 1
-
-    print(num_parameters)
 
     def get_parameters(unconstrained_parameters):
         nonlocal scale, shift
@@ -463,12 +466,15 @@ def _get_stacked_flow_parametrization_fn(
     parameter_networks = []
     trainable_variables = []
     for layer in range(num_layers):
-        if scale_to_domain and layer > 0:
-            low = flow_kwargs["low"]
-            high = flow_kwargs["high"]
-            flow_kwargs.update(scale=1 / (high - low), shift=-low)
+        if layer > 0:
+            if scale_to_domain:
+                low = flow_kwargs["low"]
+                high = flow_kwargs["high"]
+                flow_kwargs.update(scale=1 / (high - low), shift=-low)
+            else:
+                flow_kwargs.update(scale=False, shift=False)
         else:
-            flow_kwargs.update(scale=False, shift=False)
+            flow_kwargs.update(scale=scale, shift=shift)
 
         flow_parametrization_fn, num_parameters = _get_flow_parametrization_fn(
             **flow_kwargs
@@ -486,16 +492,6 @@ def _get_stacked_flow_parametrization_fn(
 
     def stacked_flow_parametrization_fn(parameter_networks):
         bijectors = []
-        # tfp uses the invers T⁻¹ to calculate the log_prob
-        # so we use the invers here to use scale parameters inferred from the data
-        if shift:
-            shift_t = tf.convert_to_tensor(shift, name="shift")[None, ...]
-            f1_shift = tfb.Shift(shift_t, name="f1_shift")
-            bijectors.append(tfb.Invert(f1_shift))
-        if scale:
-            scale_t = tf.convert_to_tensor(scale, name="scale")[None, ...]
-            f1_scale = tfb.Scale(scale_t, name="f1_scale")
-            bijectors.append(tfb.Invert(f1_scale))
 
         # Stack bijectors
         for layer, (parameter_network, flow_parametrization_fn) in enumerate(

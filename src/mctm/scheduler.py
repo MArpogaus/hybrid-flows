@@ -1,9 +1,10 @@
+"""Defines custom learn rate schedulers."""
+
 import tensorflow as tf
+import tf_keras as K
 
 
-class PolynomialWarmupAndCosineDecay(
-    tf.keras.optimizers.schedules.LearningRateSchedule
-):
+class PolynomialWarmupAndCosineDecay(K.optimizers.schedules.LearningRateSchedule):
     """A tensorflow class implementing a custom learning rate scheduler.
 
     This scheduler starts with a polynomial warmup to the maximum learning rate,
@@ -26,9 +27,9 @@ class PolynomialWarmupAndCosineDecay(
         The total number of training steps.
     warmup_power : float
         The exponent for polynomial warmup.
-    warmup_scheduler : tf.keras.optimizers.schedules.PolynomialDecay
+    warmup_scheduler : K.optimizers.schedules.PolynomialDecay
         A scheduler for the warmup period.
-    cooldown_scheduler : tf.keras.optimizers.schedules.CosineDecay
+    cooldown_scheduler : K.optimizers.schedules.CosineDecay
         A scheduler for the cooldown period.
 
     """
@@ -43,17 +44,37 @@ class PolynomialWarmupAndCosineDecay(
         decay_steps: int,
         warmup_power: float,
     ) -> None:
+        """Initialize the custom learning rate scheduler.
+
+        Parameters
+        ----------
+        initial_learning_rate : float
+            The initial learning rate at the start of the warmup.
+        max_learning_rate : float
+            The maximum learning rate after the warmup.
+        end_learning_rate : float
+            The end learning rate after the cosine decay.
+        warmup : int
+            The number of steps for the warmup.
+        stationary : int
+            The number of steps to hold the maximum learning rate.
+        decay_steps : int
+            The total number of training steps.
+        warmup_power : float
+            The exponent for polynomial warmup.
+
+        """
         self.initial_learning_rate = initial_learning_rate
         self.warmup = warmup
         self.stationary = stationary
         self.max_learning_rate = max_learning_rate
-        self.warmup_scheduler = tf.keras.optimizers.schedules.PolynomialDecay(
+        self.warmup_scheduler = K.optimizers.schedules.PolynomialDecay(
             initial_learning_rate=initial_learning_rate,
             end_learning_rate=max_learning_rate,
             decay_steps=warmup,
             power=warmup_power,
         )
-        self.cooldown_scheduler = tf.keras.optimizers.schedules.CosineDecay(
+        self.cooldown_scheduler = K.optimizers.schedules.CosineDecay(
             initial_learning_rate=max_learning_rate,
             alpha=end_learning_rate / max_learning_rate,
             decay_steps=decay_steps - warmup - stationary,
@@ -76,12 +97,6 @@ class PolynomialWarmupAndCosineDecay(
             The learning rate for the current training step.
 
         """
-        # if step <= self.warmup:
-        #     return self.warmup_scheduler(step)
-        # elif (step > self.warmup) & (step <= self.warmup + self.stationary):
-        #     return self.max_learning_rate
-        # else:
-        #     return self.cooldown_scheduler(step - self.warmup - self.stationary)
         with tf.name_scope(self.__class__.__name__):
             step = tf.convert_to_tensor(step)
             warmup = tf.convert_to_tensor(self.warmup, dtype=step.dtype)
@@ -104,5 +119,4 @@ class PolynomialWarmupAndCosineDecay(
                 default=cooldown_fn,
                 exclusive=True,
             )
-
             return lr
