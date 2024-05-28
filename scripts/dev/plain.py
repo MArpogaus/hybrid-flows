@@ -944,7 +944,7 @@ plt.plot(s(np.arange(1000)))
 
 
 # %%
-class MyLRSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
+class MyLRSchedule(K.optimizers.schedules.LearningRateSchedule):
     def __init__(self, **kwds):
         self.s = get_lr_scheduler(**kwds)
 
@@ -980,7 +980,7 @@ nll, real_nvp_mctm2 = fit_real_nvp_mctm(
     epochs=2000,
     seed=1,
     learning_rate=0.01,
-    # learning_rate = tf.keras.optimizers.schedules.ExponentialDecay(
+    # learning_rate = K.optimizers.schedules.ExponentialDecay(
     # initial_learning_rate=.1, decay_steps=2000, decay_rate=.01),
     # learning_rate=MyLRSchedule(warmup=200, steps=2000, max_lr=0.01, min_lr=0.001, decay_rate=0.5),#0.001,
     coupling_layers=1,
@@ -1065,7 +1065,7 @@ nll, real_nvp_mctm_simple = fit_real_nvp_mctm_simple(
     epochs=2000,
     seed=1,
     learning_rate=0.01,
-    # learning_rate = tf.keras.optimizers.schedules.ExponentialDecay(
+    # learning_rate = K.optimizers.schedules.ExponentialDecay(
     # initial_learning_rate=.1, decay_steps=2000, decay_rate=.01),
     # learning_rate=MyLRSchedule(warmup=200, steps=2000, max_lr=0.01, min_lr=0.001, decay_rate=0.5),#0.001,
     hidden_units=[64, 64],

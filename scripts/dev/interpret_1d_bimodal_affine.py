@@ -195,7 +195,7 @@ parameter_kwargs = {
     # "dropout": False,
 }
 initial_learning_rate = 0.01
-scheduler = tf.keras.optimizers.schedules.PolynomialDecay(
+scheduler = K.optimizers.schedules.PolynomialDecay(
     initial_learning_rate,
     decay_steps=epochs,
     end_learning_rate=0.00001,
@@ -206,7 +206,7 @@ fit_kwargs = {
     "validation_split": 0.25,
     "batch_size": 128,
     "learning_rate": initial_learning_rate,
-    "callbacks": [tf.keras.callbacks.LearningRateScheduler(scheduler)],
+    "callbacks": [K.callbacks.LearningRateScheduler(scheduler)],
     "lr_patience": 50,
     "reduce_lr_on_plateau": False,
     "early_stopping": False,

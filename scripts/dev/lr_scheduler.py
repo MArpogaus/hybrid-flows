@@ -11,7 +11,7 @@ common_kwds = dict(initial_learning_rate=1.0)
 
 # %% functions
 def get_scheduler_by_name(scheduler_name, decay_steps, **scheduler_kwds):
-    scheduler_class = getattr(tf.keras.optimizers.schedules, scheduler_name)
+    scheduler_class = getattr(K.optimizers.schedules, scheduler_name)
     if "decay_steps" in inspect.signature(scheduler_class).parameters:
         scheduler_kwds.update(decay_steps=decay_steps)
     return scheduler_class(**scheduler_kwds)
@@ -70,9 +70,7 @@ fig.show()
 
 
 # %% MySchdule
-class PolynomialWarmupAndCosineDecay(
-    tf.keras.optimizers.schedules.LearningRateSchedule
-):
+class PolynomialWarmupAndCosineDecay(K.optimizers.schedules.LearningRateSchedule):
     """A tensorflow class implementing a custom learning rate scheduler.
 
     This scheduler starts with a polynomial warmup to the maximum learning rate,
@@ -95,9 +93,9 @@ class PolynomialWarmupAndCosineDecay(
         The total number of training steps.
     warmup_power : float
         The exponent for polynomial warmup.
-    warmup_scheduler : tf.keras.optimizers.schedules.PolynomialDecay
+    warmup_scheduler : K.optimizers.schedules.PolynomialDecay
         A scheduler for the warmup period.
-    cooldown_scheduler : tf.keras.optimizers.schedules.CosineDecay
+    cooldown_scheduler : K.optimizers.schedules.CosineDecay
         A scheduler for the cooldown period.
 
     """
@@ -116,13 +114,13 @@ class PolynomialWarmupAndCosineDecay(
         self.warmup = warmup
         self.stationary = stationary
         self.max_learning_rate = max_learning_rate
-        self.warmup_scheduler = tf.keras.optimizers.schedules.PolynomialDecay(
+        self.warmup_scheduler = K.optimizers.schedules.PolynomialDecay(
             initial_learning_rate=initial_learning_rate,
             end_learning_rate=max_learning_rate,
             decay_steps=warmup,
             power=warmup_power,
         )
-        self.cooldown_scheduler = tf.keras.optimizers.schedules.CosineDecay(
+        self.cooldown_scheduler = K.optimizers.schedules.CosineDecay(
             initial_learning_rate=max_learning_rate,
             alpha=end_learning_rate / max_learning_rate,
             decay_steps=decay_steps - warmup - stationary,

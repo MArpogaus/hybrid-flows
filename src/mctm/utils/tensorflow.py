@@ -1,4 +1,5 @@
 """Tensorflow utils."""
+
 # -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
 # AUTHOR INFORMATION ###########################################################
 # file    : tensorflow.py
@@ -15,7 +16,7 @@
 import os
 
 import tensorflow as tf
-import tf_keras as K
+import tensorflow.keras as K
 
 
 # PUBLIC FUNCTIONS #############################################################
@@ -25,7 +26,7 @@ def set_seed(seed):
     :param int seed: The random seed value to set.
     """
     # This sets the Python seed, the NumPy seed, and the TensorFlow seed.
-    tf.keras.utils.set_random_seed(seed)
+    K.utils.set_random_seed(seed)
     # When op determinism is enabled, TensorFlow ops will be deterministic.
     # This means that if an op is run multiple times with the same inputs on the
     # same hardware, it will have the exact same outputs each time.
@@ -37,7 +38,7 @@ def set_seed(seed):
 # Construct and fit model.
 # TODO: implement a custom training loop
 def fit_distribution(
-    model: tf.keras.Model,
+    model: K.Model,
     seed: int,
     learning_rate: float,
     results_path: str,

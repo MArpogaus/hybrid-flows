@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-08-24 16:15:23 (Marcel Arpogaus)
-# changed : 2024-05-28 13:02:54 (Marcel Arpogaus)
+# changed : 2024-05-28 21:38:33 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -24,7 +24,7 @@ vectors, and autoregressive parameter networks.
 from typing import Any, Callable, Dict, List, Tuple, Union
 
 import tensorflow as tf
-import tf_keras as K
+import tensorflow.keras as K
 
 from .nn import (
     build_conditional_net,

@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import tensorflow as tf
+import tensorflow.keras as K
 import tensorflow_probability as tfp
-import tf_keras as K
 from matplotlib import pyplot as plt
 from mctm.data.sklearn_datasets import get_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel

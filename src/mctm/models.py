@@ -10,9 +10,10 @@ It includes classes for DensityRegressionModel and HybridDensityRegressionModel,
 which are built on distribution from the 'distributions' module.
 
 """
+
 import os
 
-import tf_keras as K
+import tensorflow.keras as K
 from tensorflow_probability import distributions as tfd
 
 from mctm import distributions, parameters

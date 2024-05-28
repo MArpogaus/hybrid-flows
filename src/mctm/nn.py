@@ -1,9 +1,10 @@
 """Contains helper functions to build neural networks."""
+
 from functools import reduce
 from typing import Callable, List, Tuple
 
 import tensorflow as tf
-import tf_keras as K
+import tensorflow.keras as K
 from tensorflow_probability import bijectors as tfb
 
 

@@ -5,7 +5,7 @@ import argparse
 import os
 
 import tensorflow as tf
-import tf_keras as K
+import tensorflow.keras as K
 from mctm.data.benchmark import get_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
 from mctm.utils import str2bool

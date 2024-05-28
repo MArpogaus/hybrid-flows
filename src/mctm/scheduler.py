@@ -1,7 +1,7 @@
 """Defines custom learn rate schedulers."""
 
 import tensorflow as tf
-import tf_keras as K
+import tensorflow.keras as K
 
 
 class PolynomialWarmupAndCosineDecay(K.optimizers.schedules.LearningRateSchedule):

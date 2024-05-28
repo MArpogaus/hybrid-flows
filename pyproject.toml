@@ -13,8 +13,8 @@ classifiers = [
 dependencies = [
   'bernstein_flow @ git+https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector.git@3006ed8',
   'tensorflow-datasets==4.9.*',
-  'tensorflow==2.16.*',
-  'tensorflow_probability[tf]==0.24.*',
+  'tensorflow==2.15.*',
+  'tensorflow_probability==0.23.*',
   'seaborn==0.13.*'
 ]
 dynamic = ['version']
