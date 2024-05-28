@@ -29,8 +29,8 @@ model_kwargs:
     shift: false
   parameter_kwargs:
     activation: relu
-    batch_norm: false,
-    conditional: True,
+    batch_norm: false
+    conditional: true
     conditional_event_shape: 1
     dropout: 0
     hidden_units:
