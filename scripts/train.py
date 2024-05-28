@@ -1,4 +1,5 @@
 """Train."""
+
 # IMPORT PACKAGES #############################################################
 import argparse
 import logging
@@ -9,6 +10,7 @@ from shutil import which
 import mctm.scheduler
 import numpy as np
 import tensorflow as tf
+import tf_keras as K
 from mctm.data.benchmark import get_dataset as get_benchmark_dataset
 from mctm.data.sklearn_datasets import get_dataset as get_train_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
@@ -61,7 +63,7 @@ def get_after_fit_hook(results_path, is_hybrid, **kwargs):
 def get_learning_rate(fit_kwargs):
     """Lr schedule.
 
-    decay: name of a scheduler in `tf.keras.optimizers.schedules` (i.e. CosineDecay)
+    decay: name of a scheduler in `K.optimizers.schedules` (i.e. CosineDecay)
     kwargs: kewyowrds that get passed into decay function.
     """
     if isinstance(fit_kwargs["learning_rate"], dict):
@@ -72,10 +74,10 @@ def get_learning_rate(fit_kwargs):
         scheduler = getattr(
             mctm.scheduler,
             schduler_class_name,
-            getattr(tf.keras.optimizers.schedules, schduler_class_name, None),
+            getattr(K.optimizers.schedules, schduler_class_name, None),
         )(**scheduler_kwargs)
 
-        fit_kwargs["callbacks"] = [tf.keras.callbacks.LearningRateScheduler(scheduler)]
+        fit_kwargs["callbacks"] = [K.callbacks.LearningRateScheduler(scheduler)]
         return scheduler_kwargs["initial_learning_rate"], fit_kwargs["learning_rate"]
     else:
         return fit_kwargs["learning_rate"], {}

@@ -1,9 +1,11 @@
 """Train benchmark."""
+
 # IMPORT PACKAGES #############################################################
 import argparse
 import os
 
 import tensorflow as tf
+import tf_keras as K
 from mctm.data.benchmark import get_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
 from mctm.utils import str2bool
@@ -13,7 +15,7 @@ from tensorflow_probability import distributions as tfd
 
 def get_lr_schedule(**kwds):
     """Lr schedule."""
-    lr_decayed_fn = tf.keras.optimizers.schedules.CosineDecay(**kwds)
+    lr_decayed_fn = K.optimizers.schedules.CosineDecay(**kwds)
     return lr_decayed_fn
 
 
@@ -32,7 +34,6 @@ def run(
 
     params should be as defined in params.yaml
     """
-
     # define dataset, model and fit parameters
     stage = stage_name.split("@")[0]
     dataset_kwds = params["benchmark_datasets"][dataset]
