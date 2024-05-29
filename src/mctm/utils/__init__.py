@@ -60,3 +60,45 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError("Boolean value expected.")
+
+
+def filter_recursive(filter_func, collection):
+    """Recursively filters out all non-iterable values in a collection.
+
+    Parameters
+    ----------
+    filter_func : callable
+        The filter function to apply to each non-iterable value.
+    collection : iterable
+        An iterable on which the filter function should be applied.
+
+    Returns
+    -------
+    iterable
+        A new collection only containing values for which `filter_func` evaluates
+        to `True`.
+
+    Examples
+    --------
+    >>> def greater_than_one(x):
+    ...     return x > 1
+    >>> d = {'a': 1, 'b': {'c': 2, 'd': {'e': 3}, 'f': 1}}
+    >>> filter_recursive(greater_than_one, d)
+    {'b': {'c': 2, 'd': {'e': 3}}}
+
+
+    """
+    if isinstance(collection, dict):
+        return {
+            k: v_filtered
+            for k, v in collection.copy().items()
+            if (v_filtered := filter_recursive(filter_func, v))
+        }
+    elif isinstance(collection, list):
+        return [
+            v_filterd
+            for v in collection.copy()
+            if (v_filterd := filter_recursive(filter_func, v))
+        ]
+    else:
+        return collection if filter_func(collection) else None

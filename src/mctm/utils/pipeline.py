@@ -1,4 +1,5 @@
 """Pipeline."""
+
 # IMPORT MODULES ###############################################################
 import logging
 import os
@@ -12,6 +13,7 @@ import numpy as np
 import yaml
 from matplotlib.pyplot import Figure
 
+from mctm.utils import filter_recursive
 from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
 from mctm.utils.tensorflow import fit_distribution, set_seed
 
@@ -157,7 +159,10 @@ def pipeline(
     :rtype: Tuple
 
     """
-    call_args = dict(filter(lambda x: not callable(x[1]), deepcopy(vars()).items()))
+    call_args = filter_recursive(
+        lambda x: not callable(x) and not isinstance(x, type),
+        deepcopy(vars()),
+    )
     # Drop Callback functions from MLFlow logging
     call_args["fit_kwargs"].pop("callbacks", None)
 
@@ -172,7 +177,7 @@ def pipeline(
     with start_run_with_exception_logging(run_name=run_name):
         # Auto log all MLflow entities
 
-        mlflow.autolog()
+        mlflow.autolog(log_models=False)
         mlflow.log_dict(call_args, "params.yaml")
         log_cfg(call_args)
 
