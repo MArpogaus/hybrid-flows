@@ -9,6 +9,8 @@ from shutil import which
 
 import mctm.scheduler
 import numpy as np
+import pandas as pd
+import seaborn as sns
 import tensorflow as tf
 import tensorflow.keras as K
 from mctm.data.benchmark import get_dataset as get_benchmark_dataset
@@ -26,6 +28,62 @@ from mctm.utils.visualisation import (
 )
 
 __LOGGER__ = logging.getLogger(__name__)
+
+
+def plot_trafos(joint_dist, x, y):
+    marginal_dist = joint_dist.distribution.distribution
+    z2 = joint_dist.bijector.inverse(y)
+    z1 = marginal_dist.bijector.inverse(z2)
+    pit = marginal_dist.cdf(y)
+
+    df = pd.DataFrame(
+        columns=[
+            "$y1$",
+            "$y2$",
+            "$z_{2,1}$",
+            "$z_{2,2}$",
+            "$z_{1,1}$",
+            "$z_{1,2}$",
+            "$F_1(y_1)$",
+            "$F_2(y_2)$",
+            "$x$",
+        ],
+        data=np.concatenate([y, z2, z1, pit, x], -1),
+    )
+    g = sns.JointGrid(data=df, x="$y1$", y="$y2$", height=2)
+    g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
+    g.plot_marginals(sns.kdeplot)
+    data_figure = g.figure
+
+    # normalized data
+    g = sns.JointGrid(data=df, x="$z_{1,1}$", y="$z_{1,2}$", height=2)
+    g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
+    g.plot_marginals(sns.kdeplot)
+    normalized_data_figure = g.figure
+
+    # PIT
+    g = sns.jointplot(df, x="$F_1(y_1)$", y="$F_2(y_2)$", height=2, s=4, alpha=0.5)
+    pit_figure = g.figure
+
+    # decorrelated data
+    g = sns.JointGrid(data=df, x="$z_{2,1}$", y="$z_{2,2}$", height=2)
+    g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
+    g.plot_marginals(sns.kdeplot)
+    decorelated_data_figure = g.figure
+
+    # normalized data
+    g = sns.JointGrid(data=df, x="$z_{1,1}$", y="$z_{1,2}$", height=2)
+    g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
+    g.plot_marginals(sns.kdeplot)
+    latent_dist_figure = g.figure
+
+    return (
+        data_figure,
+        normalized_data_figure,
+        pit_figure,
+        decorelated_data_figure,
+        latent_dist_figure,
+    )
 
 
 def get_after_fit_hook(results_path, is_hybrid, **kwargs):
@@ -57,6 +115,30 @@ def get_after_fit_hook(results_path, is_hybrid, **kwargs):
             c_fig = plot_copula_function(model(x), y, "surface", -0.1, 1.1, 200)
             c_fig.savefig(os.path.join(results_path, "copula_surface.pdf"))
 
+            # plot trafos
+            (
+                data_figure,
+                normalized_data_figure,
+                pit_figure,
+                decorelated_data_figure,
+                latent_dist_figure,
+            ) = plot_trafos(model(x), x, y)
+
+            # save the above figures as pdf
+            data_figure.savefig(os.path.join(results_path, "data_transformation.pdf"))
+            normalized_data_figure.savefig(
+                os.path.join(results_path, "normalized_data_transformation.pdf")
+            )
+            pit_figure.savefig(
+                os.path.join(results_path, "pit_data_transformation.pdf")
+            )
+            decorelated_data_figure.savefig(
+                os.path.join(results_path, "decorelated_data_transformation.pdf")
+            )
+            latent_dist_figure.savefig(
+                os.path.join(results_path, "latent_distribution.pdf")
+            )
+
     return plot_after_fit
 
 
@@ -81,6 +163,15 @@ def get_learning_rate(fit_kwargs):
         return scheduler_kwargs["initial_learning_rate"], fit_kwargs["learning_rate"]
     else:
         return fit_kwargs["learning_rate"], {}
+
+
+class MeanNegativeLogLiekelihood(K.metrics.Mean):
+    def __init__(self, name="mean_negative_log_likelihood", **kwargs):
+        super().__init__(name=name, **kwargs)
+
+    def update_state(self, y_true, dist, sample_weight):
+        log_probs = -dist.log_prob(y_true)
+        super().update_state(log_probs, sample_weight)
 
 
 def run(
@@ -110,7 +201,10 @@ def run(
         get_model = HybridDenistyRegressionModel
         if not model_kwargs.get("base_checkpoint_path", False):
             fit_kwargs.update(
-                loss=lambda y, dist: -dist.log_prob(y) - dist.distribution.log_prob(y)
+                loss=lambda y, dist: -dist.log_prob(y) - dist.distribution.log_prob(y),
+            )
+            compile_kwargs.update(
+                metrics=[MeanNegativeLogLiekelihood(name="nll")],
             )
         else:
             model_kwargs.update(
