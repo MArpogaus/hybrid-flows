@@ -1,4 +1,5 @@
 """Mlflow utils."""
+
 # -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
 # AUTHOR INFORMATION ##########################################################
 # file    : mlflow.py
@@ -48,8 +49,10 @@ def start_run_with_exception_logging(**kwds):
     :rtype: contextlib.ExitStack
 
     Example:
+    -------
         with start_run_with_exception_logging(run_name="My_Run"):
             # Your code here
+
     """
     # if there is already a parent run, start it first
     run_id = os.environ.get("MLFLOW_RUN_ID", False)

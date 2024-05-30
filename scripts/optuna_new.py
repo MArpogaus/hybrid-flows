@@ -1,3 +1,5 @@
+"""Script to run a Optuna study for hyperparameter optimization."""
+
 # %% imports
 import argparse
 import importlib
@@ -12,7 +14,6 @@ import yaml
 from mctm.utils import str2bool
 from mctm.utils.pipeline import (
     prepare_pipeline,
-    set_seed,
     start_run_with_exception_logging,
 )
 
@@ -31,31 +32,44 @@ __EVALUATION_METRIC__ = "val_loss"
 
 # %% function definitions
 def suggest_new_params(
-    trial,
-    inital_params,
-    parameter_space_definition,
-    stage_name,
-    distribution,
-    dataset,
-    use_pruning,
-):
+    trial: optuna.trial.Trial,
+    initial_params: dict,
+    parameter_space_definition: list,
+    use_pruning: bool,
+) -> dict:
+    """Suggest new hyperparameters for Optuna trial.
+
+    Parameters
+    ----------
+    trial : optuna.trial.Trial
+        The trial to suggest new hyperparameters.
+    initial_params : dict
+        The initial set of parameters.
+    parameter_space_definition : list
+        The definition of the parameter space.
+    use_pruning : bool
+        Whether to use pruning.
+
+    Returns
+    -------
+    dict
+        The suggested parameters.
+
+    """
     __LOGGER__.debug(f"{trial}: {use_pruning=}")
-    params = deepcopy(inital_params)
-    stage = stage_name.split("@")[0]
-    model_kwargs = params[stage + "_distributions"][distribution][dataset]
+    params: dict = deepcopy(initial_params)
 
     for d in parameter_space_definition:
-        p = model_kwargs
-        keys = d["name"].split(".")
+        p: dict = params
+        keys: list = d["name"].split(".")
         for k in keys[:-1]:
             if k not in p.keys():
                 p[k] = {}
             p = p[k]
 
-        key = keys[-1]
-        if key.isdigit():
-            key = int(key)
+        key = int(keys[-1]) if keys[-1].isdigit() else keys[-1]
         __LOGGER__.debug(f"trial keyword ({trial.number}): {d['name']}, {d['type']}")
+
         if d["type"] == "choose_from_list":
             options = d["list"]
             v = options[trial.suggest_int(d["name"], low=0, high=len(options) - 1)]
@@ -63,9 +77,8 @@ def suggest_new_params(
             v = getattr(trial, f'suggest_{d["type"]}')(d["name"], **d["kwargs"])
         p[key] = v
 
-    # Add KerasPruningCallback checks for pruning condition every epoch
     if use_pruning:
-        model_kwargs["fit_kwargs"]["callbacks"] = [
+        params["fit_kwargs"]["callbacks"] = [
             TFKerasPruningCallback(trial, __EVALUATION_METRIC__)
         ]
 
@@ -73,46 +86,77 @@ def suggest_new_params(
 
 
 def get_objective(
-    model_train_script_name,
-    experiment_name,
-    results_path,
-    log_file,
-    log_level,
-    dataset,
-    stage,
-    distribution,
-    initial_params,
-    parameter_space_definition,
-    test_mode,
-    use_pruning,
-):
+    model_train_script_name: str,
+    dataset_name: str,
+    dataset_type: str,
+    experiment_name: str,
+    run_name: str,
+    results_path: str,
+    log_file: str,
+    log_level: str,
+    initial_params: dict,
+    parameter_space_definition: list,
+    test_mode: bool,
+    use_pruning: bool,
+) -> callable:
+    """Get the objective function for Optuna study.
+
+    Parameters
+    ----------
+    model_train_script_name : str
+        The name of the training script.
+    dataset_name : str
+        The name of the dataset.
+    dataset_type : str
+        The type of the dataset.
+    experiment_name : str
+        The name of the MLflow experiment.
+    run_name : str
+        The name of the run.
+    results_path : str
+        The path to store results.
+    log_file : str
+        The path for the log file.
+    log_level : str
+        The logging severity level.
+    initial_params : dict
+        The initial set of parameters.
+    parameter_space_definition : list
+        The definition of the parameter space.
+    test_mode : bool
+        Whether to run in test mode.
+    use_pruning : bool
+        Whether to use pruning.
+
+    Returns
+    -------
+    callable
+        The objective function.
+
+    """
     run = importlib.import_module(model_train_script_name).run
 
-    def objective(trial):
+    def objective(trial: optuna.trial.Trial) -> float:
         params = suggest_new_params(
             trial,
             initial_params,
             parameter_space_definition,
-            stage,
-            distribution,
-            dataset,
             use_pruning,
         )
 
-        # prepare results directory
         trial_results_path = os.path.join(results_path, str(trial.number))
         os.makedirs(trial_results_path, exist_ok=True)
 
         history, _, _ = run(
+            dataset_name=dataset_name,
+            dataset_type=dataset_type,
             experiment_name=experiment_name,
-            results_path=trial_results_path,
+            run_name=run_name,
             log_file=log_file,
             log_level=log_level,
-            dataset=dataset,
-            stage_name=stage,
-            distribution=distribution,
-            params=params,
+            results_path=trial_results_path,
             test_mode=test_mode,
+            params=params,
         )
 
         min_idx = np.argmin(history.history[__EVALUATION_METRIC__])
@@ -123,9 +167,18 @@ def get_objective(
     return objective
 
 
-def best_value_callback(study, frozen_trial):
-    """Logging callback that will report when a new trial iteration improves upon
-    existing best trial values.
+def best_value_callback(
+    study: optuna.study.Study, frozen_trial: optuna.trial.FrozenTrial
+) -> None:
+    """Report when a new trial improves upon existing best trial values.
+
+    Parameters
+    ----------
+    study : optuna.study.Study
+        The study to report the trial to.
+    frozen_trial : optuna.trial.FrozenTrial
+        The trial that has finished.
+
     """
     winner = study.user_attrs.get(__BEST_VALUE_ATTRIBUTE_KEY__, np.inf)
     complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
@@ -162,7 +215,17 @@ def best_value_callback(study, frozen_trial):
             mlflow.log_figure(fig, f"{plot_fn_name}.html")
 
 
-def reprot_pruned_trials(study, _):
+def reprot_pruned_trials(study: optuna.study.Study, _) -> None:
+    """Report the number of pruned and complete trials.
+
+    Parameters
+    ----------
+    study : optuna.study.Study
+        The study to report the trial to.
+    _ : Any
+        Unused argument.
+
+    """
     pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
     complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
     __LOGGER__.info("Study statistics: ")
@@ -175,29 +238,69 @@ def reprot_pruned_trials(study, _):
 
 
 def run_study(
-    model_train_script_name,
-    experiment_name,
-    results_path,
-    log_file,
-    log_level,
-    dataset,
-    stage_name,
-    distribution,
-    initial_params,
-    parameter_space_definition,
-    test_mode,
-    n_trials,
-    n_jobs,
-    study_name,
-    load_study_from_storage,
-    seed,
-    use_pruning,
-):
+    model_train_script_name: str,
+    experiment_name: str,
+    results_path: str,
+    log_file: str,
+    log_level: str,
+    dataset_name: str,
+    dataset_type: str,
+    initial_params: dict,
+    parameter_space_definition: list,
+    test_mode: bool,
+    n_trials: int,
+    n_jobs: int,
+    study_name: str,
+    load_study_from_storage: str,
+    seed: int,
+    use_pruning: bool,
+) -> dict:
+    """Run the Optuna study for hyperparameter optimization.
+
+    Parameters
+    ----------
+    model_train_script_name : str
+        The name of the training script.
+    experiment_name : str
+        The name of the MLflow experiment.
+    results_path : str
+        The path to store results.
+    log_file : str
+        The path for the log file.
+    log_level : str
+        The logging severity level.
+    dataset_name : str
+        The name of the dataset.
+    dataset_type : str
+        The type of the dataset.
+    initial_params : dict
+        The initial set of parameters.
+    parameter_space_definition : list
+        The definition of the parameter space.
+    test_mode : bool
+        Whether to run in test mode.
+    n_trials : int
+        The number of trials to run.
+    n_jobs : int
+        The number of threads to run.
+    study_name : str
+        The name of the study.
+    load_study_from_storage : str
+        The storage to load the study from.
+    seed : int
+        The seed for the sampler's random number generator.
+    use_pruning : bool
+        Whether to use pruning.
+
+    Returns
+    -------
+    dict
+        The best parameters found by the study.
+
+    """
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
 
-    stage = stage_name.split("@")[0]
     run_name = "_".join(("optuna", study_name))
-    print(run_name)
     if test_mode:
         __LOGGER__.info("Running in test-mode")
         run_name += "_test"
@@ -206,8 +309,6 @@ def run_study(
     mlflow.set_experiment(experiment_name)
     __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
 
-    # Seed?
-    set_seed(seed)
     study_kwargs = dict(study_name=study_name, sampler=TPESampler(seed=seed))
 
     if use_pruning:
@@ -219,12 +320,11 @@ def run_study(
         )
 
     if load_study_from_storage:
-        __LOGGER__.warn(
+        __LOGGER__.warning(
             f"loading study from storage {load_study_from_storage}."
             " This can confuse parameter definitions."
         )
         study = optuna.load_study(storage=load_study_from_storage, **study_kwargs)
-        # If a study has been started before, a parent may already exists run
         run_id = study.user_attrs.get(__RUN_ID_ATTRIBUTE_KEY__, None)
     else:
         study = optuna.create_study(directions=["minimize"], **study_kwargs)
@@ -232,23 +332,28 @@ def run_study(
 
     with start_run_with_exception_logging(run_name=run_name, run_id=run_id) as run:
         if load_study_from_storage and run_id is None:
-            # Store the run id to log subsequent runs to the same parent
             study.set_user_attr(__RUN_ID_ATTRIBUTE_KEY__, run.info.run_id)
         mlflow.log_dict(
             parameter_space_definition,
             "parameter_space_definition.yaml",
         )
-
+        sub_run_name = "_".join(
+            (
+                run_name,
+                initial_params["model_kwargs"]["distribution"],
+                dataset_name,
+            )
+        )
         objective = get_objective(
             model_train_script_name=model_train_script_name,
             experiment_name=experiment_name,
+            run_name=sub_run_name,
             results_path=results_path,
             log_file=log_file,
             log_level=log_level,
-            dataset=dataset,
-            stage=stage,
-            distribution=distribution,
-            initial_params=deepcopy(inital_params),
+            dataset_name=dataset_name,
+            dataset_type=dataset_type,
+            initial_params=deepcopy(initial_params),
             parameter_space_definition=deepcopy(parameter_space_definition),
             test_mode=test_mode,
             use_pruning=use_pruning,
@@ -288,7 +393,7 @@ if __name__ == "__main__":
         "--log-level",
         type=str,
         default="INFO",
-        help="logging severaty level",
+        help="logging severity level",
     )
     parser.add_argument(
         "--test-mode",
@@ -316,7 +421,7 @@ if __name__ == "__main__":
         "--load-study-from-storage",
         default=False,
         type=str,
-        help="Load and continue existing study fro provided storage",
+        help="Load and continue existing study from provided storage",
     )
     parser.add_argument(
         "--use-pruning",
@@ -331,21 +436,21 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
-        "--stage-name",
-        type=str,
-        help="name of dvc stage",
+        "--parameter_file_path",
+        type=argparse.FileType("r"),
+        help="path to parameter file",
         required=True,
     )
     parser.add_argument(
-        "--distribution",
-        type=str,
-        help="name of distribution",
-        required=True,
-    )
-    parser.add_argument(
-        "--dataset",
+        "--dataset_name",
         type=str,
         help="name of dataset",
+        required=True,
+    )
+    parser.add_argument(
+        "--dataset_type",
+        type=str,
+        help="type of dataset",
         required=True,
     )
     parser.add_argument(
@@ -357,7 +462,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--parameter_space_definition_file",
         type=argparse.FileType("r"),
-        help="destination for model checkpoints and logs.",
+        help="Parameter space definition file.",
         required=True,
     )
     parser.add_argument(
@@ -368,17 +473,25 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # load initial params
-    inital_params = prepare_pipeline(args)
+    initial_params = prepare_pipeline(
+        results_path=args.results_path,
+        log_file=args.log_file,
+        log_level=args.log_level,
+        stage_name_or_params_file_path=args.parameter_file_path,
+    )
+
+    with open(os.path.join("params", args.dataset_type, "dataset.yaml")) as f:
+        dataset_kwargs = yaml.safe_load(f)["dataset_kwargs"]
+    initial_params["dataset_kwargs"] = dataset_kwargs
+    initial_params["textwidth"] = "thesis"
+    initial_params["seed"] = args.seed
+
     with args.parameter_space_definition_file as f:
         parameter_space_definition = yaml.safe_load(f)
 
-    if "benchmark" in args.stage_name:
-        model_train_script_name = "train"
-    elif "malnutrition" in args.stage_name:
-        model_train_script_name = "train_malnutrition"
-    else:
-        model_train_script_name = "train"
+    model_train_script_name = (
+        "train_malnutrition" if args.dataset_type == "malnutrition" else "train"
+    )
 
     res = run_study(
         model_train_script_name=model_train_script_name,
@@ -386,10 +499,9 @@ if __name__ == "__main__":
         results_path=args.results_path,
         log_file=args.log_file,
         log_level=args.log_level,
-        dataset=args.dataset,
-        stage_name=args.stage_name,
-        distribution=args.distribution,
-        initial_params=inital_params,
+        dataset_name=args.dataset_name,
+        dataset_type=args.dataset_type,
+        initial_params=initial_params,
         parameter_space_definition=parameter_space_definition,
         test_mode=args.test_mode,
         n_trials=args.n_trials,

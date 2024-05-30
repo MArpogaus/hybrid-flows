@@ -1,6 +1,5 @@
-"""Train."""
+"""Train multivariate density estimation models on different datasets."""
 
-# IMPORT PACKAGES #############################################################
 import argparse
 import logging
 import os
@@ -30,7 +29,24 @@ from mctm.utils.visualisation import (
 __LOGGER__ = logging.getLogger(__name__)
 
 
-def plot_trafos(joint_dist, x, y):
+def plot_trafos(joint_dist, x: np.ndarray, y: np.ndarray):
+    """Plot transformations of the joint distribution.
+
+    Parameters
+    ----------
+    joint_dist : tfp.distributions.JointDistribution
+        Joint distribution to be plotted.
+    x : np.ndarray
+        Input data.
+    y : np.ndarray
+        True values.
+
+    Returns
+    -------
+    tuple
+        A tuple of figures.
+
+    """
     marginal_dist = joint_dist.distribution.distribution
     z2 = joint_dist.bijector.inverse(y)
     z1 = marginal_dist.bijector.inverse(z2)
@@ -55,23 +71,19 @@ def plot_trafos(joint_dist, x, y):
     g.plot_marginals(sns.kdeplot)
     data_figure = g.figure
 
-    # normalized data
     g = sns.JointGrid(data=df, x="$z_{1,1}$", y="$z_{1,2}$", height=2)
     g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
     g.plot_marginals(sns.kdeplot)
     normalized_data_figure = g.figure
 
-    # PIT
     g = sns.jointplot(df, x="$F_1(y_1)$", y="$F_2(y_2)$", height=2, s=4, alpha=0.5)
     pit_figure = g.figure
 
-    # decorrelated data
     g = sns.JointGrid(data=df, x="$z_{2,1}$", y="$z_{2,2}$", height=2)
     g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
     g.plot_marginals(sns.kdeplot)
     decorelated_data_figure = g.figure
 
-    # normalized data
     g = sns.JointGrid(data=df, x="$z_{1,1}$", y="$z_{1,2}$", height=2)
     g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
     g.plot_marginals(sns.kdeplot)
@@ -86,15 +98,28 @@ def plot_trafos(joint_dist, x, y):
     )
 
 
-def get_after_fit_hook(results_path, is_hybrid, **kwargs):
-    """Provide after fit plot."""
+def get_after_fit_hook(results_path: str, is_hybrid: bool, **kwargs):
+    """Provide after fit plot.
 
-    def plot_after_fit(model, x, y):
-        # Generating random indices
+    Parameters
+    ----------
+    results_path : str
+        Path to save the result images.
+    is_hybrid : bool
+        Flag to indicate if hybrid model is used.
+    **kwargs
+        Additional arguments.
+
+    Returns
+    -------
+    callable
+        Hook function to be called after fitting the model.
+
+    """
+
+    def plot_after_fit(model, x: tf.Tensor, y: tf.Tensor):
         if len(x) > 2000:
             indices = np.random.choice(len(x), size=2000, replace=False)
-
-            # Selecting elements based on the indices
             x = x.numpy()[indices]
             y = y.numpy()[indices]
 
@@ -106,16 +131,12 @@ def get_after_fit_hook(results_path, is_hybrid, **kwargs):
             fig2.savefig(os.path.join(results_path, "z1.pdf"))
             fig3.savefig(os.path.join(results_path, "z2.pdf"))
 
-            # Plot Copula
-            # Contour Plot
             c_fig = plot_copula_function(model(x), y, "contour", -0.1, 1.1, 200)
             c_fig.savefig(os.path.join(results_path, "copula_contour.pdf"))
 
-            # Surface Plot
             c_fig = plot_copula_function(model(x), y, "surface", -0.1, 1.1, 200)
             c_fig.savefig(os.path.join(results_path, "copula_surface.pdf"))
 
-            # plot trafos
             (
                 data_figure,
                 normalized_data_figure,
@@ -124,7 +145,6 @@ def get_after_fit_hook(results_path, is_hybrid, **kwargs):
                 latent_dist_figure,
             ) = plot_trafos(model(x), x, y)
 
-            # save the above figures as pdf
             data_figure.savefig(os.path.join(results_path, "data_transformation.pdf"))
             normalized_data_figure.savefig(
                 os.path.join(results_path, "normalized_data_transformation.pdf")
@@ -142,11 +162,19 @@ def get_after_fit_hook(results_path, is_hybrid, **kwargs):
     return plot_after_fit
 
 
-def get_learning_rate(fit_kwargs):
-    """Lr schedule.
+def get_learning_rate(fit_kwargs: dict):
+    """Get learning rate scheduler.
 
-    decay: name of a scheduler in `K.optimizers.schedules` (i.e. CosineDecay)
-    kwargs: kewyowrds that get passed into decay function.
+    Parameters
+    ----------
+    fit_kwargs : dict
+        Dictionary containing fit parameters.
+
+    Returns
+    -------
+    tuple
+        Initial learning rate and learning rate scheduler.
+
     """
     if isinstance(fit_kwargs["learning_rate"], dict):
         scheduler_name = fit_kwargs["learning_rate"]["scheduler_name"]
@@ -165,29 +193,82 @@ def get_learning_rate(fit_kwargs):
         return fit_kwargs["learning_rate"], {}
 
 
-class MeanNegativeLogLiekelihood(K.metrics.Mean):
-    def __init__(self, name="mean_negative_log_likelihood", **kwargs):
+class MeanNegativeLogLikelihood(K.metrics.Mean):
+    """Custom metric for mean negative log likelihood."""
+
+    def __init__(
+        self, name: str = "mean_negative_log_likelihood", **kwargs: dict
+    ) -> None:
+        """Initialize Keras metric for negative logarithmic likelihood.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the metric instance, by default "mean_negative_log_likelihood".
+        **kwargs : dict
+            Additional keyword arguments for the base class.
+
+        """
         super().__init__(name=name, **kwargs)
 
-    def update_state(self, y_true, dist, sample_weight):
+    def update_state(
+        self, y_true: tf.Tensor, dist: object, sample_weight: tf.Tensor = None
+    ) -> None:
+        """Update the metric state with the true labels and the distribution.
+
+        Parameters
+        ----------
+        y_true : tf.Tensor
+            The ground truth values.
+        dist : object
+            The distribution object that provides the log probability method.
+        sample_weight : tf.Tensor, optional
+            Optional weighting of each example, by default None.
+
+        """
         log_probs = -dist.log_prob(y_true)
         super().update_state(log_probs, sample_weight)
 
 
 def run(
-    dataset_name,
-    dataset_type,
-    experiment_name,
-    run_name,
-    log_file,
-    log_level,
-    results_path,
-    test_mode,
-    params,
+    dataset_name: str,
+    dataset_type: str,
+    experiment_name: str,
+    run_name: str,
+    log_file: str,
+    log_level: str,
+    results_path: str,
+    test_mode: bool,
+    params: dict,
 ):
-    """Experiment exec.
+    """Execute experiment.
 
-    params should be as defined in params.yaml
+    Parameters
+    ----------
+    dataset_name : str
+        Name of the dataset.
+    dataset_type : str
+        Type of the dataset.
+    experiment_name : str
+        Name of the MLFlow experiment.
+    run_name : str
+        Name of the MLFlow run.
+    log_file : str
+        Path for log file.
+    log_level : str
+        Logging severity level.
+    results_path : str
+        Destination for model checkpoints and logs.
+    test_mode : bool
+        Flag to activate test-mode.
+    params : dict
+        Dictionary containing experiment parameters.
+
+    Returns
+    -------
+    tuple
+        Experiment results: history, model, and preprocessed data.
+
     """
     model_kwargs = params["model_kwargs"]
     fit_kwargs = params["fit_kwargs"]
@@ -204,7 +285,7 @@ def run(
                 loss=lambda y, dist: -dist.log_prob(y) - dist.distribution.log_prob(y),
             )
             compile_kwargs.update(
-                metrics=[MeanNegativeLogLiekelihood(name="nll")],
+                metrics=[MeanNegativeLogLikelihood(name="nll")],
             )
         else:
             model_kwargs.update(
@@ -257,22 +338,18 @@ def run(
 
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
 
-    # test mode config
     if test_mode:
         __LOGGER__.info("Running in test-mode")
         run_name += "_test"
         fit_kwargs.update(epochs=2)
 
-    # configure mpl to use latex
     if which("latex"):
         __LOGGER__.info("Using latex backend for plotting")
         setup_latex(fontsize=10)
 
-    # don't show progress bar if running from CI
     if os.environ.get("CI", False):
         fit_kwargs.update(verbose=2)
 
-    # actually execute training
     history, model, preprocessed = pipeline(
         experiment_name=experiment_name,
         run_name=run_name,
@@ -328,9 +405,14 @@ if __name__ == "__main__":
         help="destination for model checkpoints and logs.",
     )
     args = parser.parse_args()
+    __LOGGER__.info("CLI arguments: %s", vars(args))
 
-    # load params
-    params = prepare_pipeline(args)
+    params = prepare_pipeline(
+        results_path=args.results_path,
+        log_file=args.log_file,
+        log_level=args.log_level,
+        stage_name_params_file_path=args.stage_name,
+    )
 
     run(
         dataset_name=args.dataset_name,

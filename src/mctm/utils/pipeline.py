@@ -1,6 +1,7 @@
 """Pipeline."""
 
 # IMPORT MODULES ###############################################################
+import io
 import logging
 import os
 import sys
@@ -62,42 +63,51 @@ class doAfterFit(Protocol):
 
 
 # PUBLIC FUNCTIONS #############################################################
-def prepare_pipeline(args):
+def prepare_pipeline(results_path, log_file, log_level, stage_name_or_params_file_path):
     """Prepare the pipeline by configuring logging and loading parameters.
 
     It creates the output path and builds the parameters from the arguments.
 
-    Expects:
-     - args.results_path
-     - args.log_file
-     - args.log_level
-     - args.stage_name
+    Parameters
+    ----------
+    results_path : str
+        Path to store the results.
+    log_file : str
+        Path to the log file.
+    log_level : str
+        Logging level.
+    stage_name_or_params_file_path : Union[str, io.Base]
+        Path to the parameters file or a file-like object.
 
-    :param args: Command-line arguments and parameters.
-    :return: A dictionary containing loaded parameters.
-    :rtype: dict
+    Returns
+    -------
+    dict
+        A dictionary containing loaded parameters.
+
     """
     # prepare results directory
-    os.makedirs(args.results_path, exist_ok=True)
+    os.makedirs(results_path, exist_ok=True)
 
     # configure logging
     handlers = [logging.StreamHandler(sys.stdout)]
-    if args.log_file:
-        log_file = os.path.join(args.results_path, args.log_file)
-        handlers += [
-            logging.FileHandler(log_file),
-        ]
+    if log_file:
+        log_file = os.path.join(results_path, log_file)
+        handlers.append(logging.FileHandler(log_file))
+
     logging.basicConfig(
-        level=args.log_level.upper(),
+        level=log_level.upper(),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
         handlers=handlers,
     )
 
-    __LOGGER__.info("CLI arguments: %s", vars(args))
-
     # load params
-    params = dvc.api.params_show(stages=args.stage_name)
-    __LOGGER__.info("DVC params: %s", params)
+    if isinstance(stage_name_or_params_file_path, io.IOBase):
+        with stage_name_or_params_file_path as param_file:
+            params = yaml.safe_load(param_file)
+    else:
+        params = dvc.api.params_show(stages=stage_name_or_params_file_path)
+
+    __LOGGER__.info("params: %s", params)
 
     return params
 
