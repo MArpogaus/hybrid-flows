@@ -110,7 +110,7 @@ def _build_res_net(
     output_shape: Tuple[int, ...],
     submodel_build_fn: Callable[..., K.Model],
     res_blocks: int,
-    res_block_units: int,
+    res_block_projection: int,
     activation: str = "relu",
     dtype: tf.dtypes.DType = tf.float32,
     name: str = "fc_res_net",
@@ -126,7 +126,7 @@ def _build_res_net(
         Shape of the output layer.
     res_blocks
         Number of residual blocks, by default 0.
-    res_block_units
+    res_block_projection
         Hidden units of residual blocks in and output layers.
     submodel_build_fn
         Function to build the resudual blocks.
@@ -149,9 +149,9 @@ def _build_res_net(
 
     x = inputs
     if res_blocks:
-        input_shape = [res_block_units]
+        input_shape = [res_block_projection]
         x = K.layers.Dense(
-            res_block_units,
+            res_block_projection,
             activation=activation,
             name="hidden_layer_res_in",
             dtype=dtype,
@@ -264,6 +264,8 @@ def build_fully_connected_net(
                 )(c_out)
             x = K.layers.Add(name=f"add_c_out_{i}", dtype=dtype)([x, c_out])
         x = K.layers.Activation(activation, name=f"{activation}_{i}", dtype=dtype)(x)
+        if batch_norm:
+            x = K.layers.BatchNormalization(name=f"batch_norm_{i}", dtype=dtype)(x)
 
     pv = K.layers.Dense(
         tf.reduce_prod(output_shape),

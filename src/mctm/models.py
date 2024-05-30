@@ -39,11 +39,9 @@ class DensityRegressionModel(K.Model):
         :param str distribution: The type of distribution to use.
         :param **kwargs: Additional keyword arguments.
         """
-        get_parameter_fn = kwargs.get("get_parameter_fn", False)
-        if isinstance(get_parameter_fn, str):
-            kwargs["get_parameter_fn"] = getattr(
-                parameters, f"get_{get_parameter_fn}_fn"
-            )
+        parameter_fn = kwargs.pop("parameter_fn", False)
+        if isinstance(parameter_fn, str):
+            kwargs["get_parameter_fn"] = getattr(parameters, f"get_{parameter_fn}_fn")
         super().__init__()
         (
             self.distribuition_fn,

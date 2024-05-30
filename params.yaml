@@ -38,13 +38,14 @@ sim_models:
 
 benchmark_models:
 # - unconditional_coupling_flow_bernstein_poly
+- unconditional_coupling_flow_quadratic_spline
 # - unconditional_hybrid_coupling_flow_bernstein_poly
 # - unconditional_multivariate_flow_bernstein_poly
 # - unconditional_multivariate_normal
 - unconditional_elementwise_flow_bernstein_poly
 # - unconditional_hybrid_masked_autoregressive_flow_bernstein_poly_first_dim_masked
 - unconditional_masked_autoregressive_flow_bernstein_poly
-- unconditional_masked_autoregressive_spline_flow_bernstein_poly
+# - unconditional_masked_autoregressive_flow_bernstein_poly
 
 malnutrition_kwargs:
   data_path: datasets/malnutrition/india.raw
