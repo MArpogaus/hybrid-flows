@@ -62,7 +62,7 @@ def plot_trafos(joint_dist, x: np.ndarray, y: np.ndarray):
             "$z_{1,1}$",
             "$z_{1,2}$",
             "$z_{1}$",
-            "$z_{1}$",
+            "$z_{2}$",
             "$F_1(y_1)$",
             "$F_2(y_2)$",
             "$x$",
@@ -87,7 +87,7 @@ def plot_trafos(joint_dist, x: np.ndarray, y: np.ndarray):
     g.plot_marginals(sns.kdeplot)
     decorelated_data_figure = g.figure
 
-    g = sns.JointGrid(data=df, x="$z_{1}$", y="$z_{1}$", height=2)
+    g = sns.JointGrid(data=df, x="$z_{1}$", y="$z_{2}$", height=2)
     g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
     g.plot_marginals(sns.kdeplot)
     latent_dist_figure = g.figure
