@@ -17,7 +17,7 @@ model_kwargs:
   base_checkpoint_path: false
   base_distribution: elementwise_flow
   base_distribution_kwargs:
-    allow_flexible_bounds: false
+    allow_flexible_bounds: true
     # base_distribution_kwargs:
     #   distribution_type: truncated_normal
     bijector_name: bernstein_poly
