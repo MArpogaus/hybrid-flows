@@ -49,7 +49,8 @@ def plot_trafos(joint_dist, x: np.ndarray, y: np.ndarray):
     """
     marginal_dist = joint_dist.distribution.distribution
     z2 = joint_dist.bijector.inverse(y)
-    z1 = marginal_dist.bijector.inverse(z2)
+    z1 = marginal_dist.bijector.inverse(y)
+    z = marginal_dist.bijector.inverse(z2)
     pit = marginal_dist.cdf(y)
 
     df = pd.DataFrame(
@@ -60,11 +61,13 @@ def plot_trafos(joint_dist, x: np.ndarray, y: np.ndarray):
             "$z_{2,2}$",
             "$z_{1,1}$",
             "$z_{1,2}$",
+            "$z_{1}$",
+            "$z_{1}$",
             "$F_1(y_1)$",
             "$F_2(y_2)$",
             "$x$",
         ],
-        data=np.concatenate([y, z2, z1, pit, x], -1),
+        data=np.concatenate([y, z2, z1, z, pit, x], -1),
     )
     g = sns.JointGrid(data=df, x="$y1$", y="$y2$", height=2)
     g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
@@ -84,7 +87,7 @@ def plot_trafos(joint_dist, x: np.ndarray, y: np.ndarray):
     g.plot_marginals(sns.kdeplot)
     decorelated_data_figure = g.figure
 
-    g = sns.JointGrid(data=df, x="$z_{1,1}$", y="$z_{1,2}$", height=2)
+    g = sns.JointGrid(data=df, x="$z_{1}$", y="$z_{1}$", height=2)
     g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
     g.plot_marginals(sns.kdeplot)
     latent_dist_figure = g.figure
@@ -145,15 +148,13 @@ def get_after_fit_hook(results_path: str, is_hybrid: bool, **kwargs):
                 latent_dist_figure,
             ) = plot_trafos(model(x), x, y)
 
-            data_figure.savefig(os.path.join(results_path, "data_transformation.pdf"))
+            data_figure.savefig(os.path.join(results_path, "data_scatter.pdf"))
             normalized_data_figure.savefig(
-                os.path.join(results_path, "normalized_data_transformation.pdf")
+                os.path.join(results_path, "normalized_data.pdf")
             )
-            pit_figure.savefig(
-                os.path.join(results_path, "pit_data_transformation.pdf")
-            )
+            pit_figure.savefig(os.path.join(results_path, "pit.pdf"))
             decorelated_data_figure.savefig(
-                os.path.join(results_path, "decorelated_data_transformation.pdf")
+                os.path.join(results_path, "decorelated_data.pdf")
             )
             latent_dist_figure.savefig(
                 os.path.join(results_path, "latent_distribution.pdf")
@@ -411,7 +412,7 @@ if __name__ == "__main__":
         results_path=args.results_path,
         log_file=args.log_file,
         log_level=args.log_level,
-        stage_name_params_file_path=args.stage_name,
+        stage_name_or_params_file_path=args.stage_name,
     )
 
     run(
