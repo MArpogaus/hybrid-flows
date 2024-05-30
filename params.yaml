@@ -22,28 +22,29 @@ benchmark_datasets:
   name: power
 
 sim_models:
-- conditional_coupling_flow
-- conditional_elementwise_flow
-- conditional_masked_autoregressive_flow
-- conditional_multivariate_flow
+- conditional_coupling_flow_bernstein_poly
+- conditional_elementwise_flow_bernstein_poly
+- conditional_masked_autoregressive_flow_bernstein_poly
+- conditional_multivariate_flow_bernstein_poly
 - conditional_multivariate_normal
-- unconditional_coupling_flow
-- unconditional_elementwise_flow
-- unconditional_hybrid_coupling_flow
-- unconditional_hybrid_masked_autoregressive_flow_first_dim_masked
-- unconditional_masked_autoregressive_flow
-- unconditional_multivariate_flow
+- unconditional_coupling_flow_bernstein_poly
+- unconditional_coupling_flow_quadratic_spline
+- unconditional_elementwise_flow_bernstein_poly
+- unconditional_hybrid_coupling_flow_bernstein_poly
+- unconditional_hybrid_masked_autoregressive_flow_bernstein_poly_first_dim_masked
+- unconditional_masked_autoregressive_flow_bernstein_poly
+- unconditional_multivariate_flow_bernstein_poly
 - unconditional_multivariate_normal
 
 benchmark_models:
-# - unconditional_coupling_flow
-# - unconditional_hybrid_coupling_flow
-# - unconditional_multivariate_flow
+# - unconditional_coupling_flow_bernstein_poly
+# - unconditional_hybrid_coupling_flow_bernstein_poly
+# - unconditional_multivariate_flow_bernstein_poly
 # - unconditional_multivariate_normal
-- unconditional_elementwise_flow
-# - unconditional_hybrid_masked_autoregressive_flow_first_dim_masked
-- unconditional_masked_autoregressive_flow
-- unconditional_masked_autoregressive_spline_flow
+- unconditional_elementwise_flow_bernstein_poly
+# - unconditional_hybrid_masked_autoregressive_flow_bernstein_poly_first_dim_masked
+- unconditional_masked_autoregressive_flow_bernstein_poly
+- unconditional_masked_autoregressive_spline_flow_bernstein_poly
 
 malnutrition_kwargs:
   data_path: datasets/malnutrition/india.raw
