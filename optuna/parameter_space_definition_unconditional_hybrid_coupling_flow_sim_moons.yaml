@@ -1,52 +1,52 @@
 - kwargs:
     high: 1024
     low: 16
-  name: fit_kwds.batch_size
+  name: fit_kwargs.batch_size
   type: int
 - kwargs:
     high: 0.1
     low: 0.001
-  name: fit_kwds.learning_rate.scheduler_kwargs.initial_learning_rate
+  name: fit_kwargs.learning_rate.scheduler_kwargs.initial_learning_rate
   type: float
 - kwargs:
     high: 0.9
     low: 0.1
-  name: fit_kwds.lr_reduction_factor
+  name: fit_kwargs.lr_reduction_factor
   type: float
 # - kwargs:
 #     high: 100
 #     low: 5
-#   name: fit_kwds.lr_patience
+#   name: fit_kwargs.lr_patience
 #   type: int
 # - kwargs:
 #     high: 4
 #     low: 0
-#   name: fit_kwds.early_stopping
+#   name: fit_kwargs.early_stopping
 #   type: int
 - kwargs:
     high: 100
     low: 10
-  name: base_distribution_kwds.order
+  name: model_kwargs.base_distribution_kwargs.order
   type: int
 - kwargs:
     choices:
     - relu
     - sigmoid
     - tanh
-  name: parameter_kwds.activation
+  name: model_kwargs.parameter_kwargs.activation
   type: categorical
 - kwargs:
     choices: &hidden_units [4, 8, 16, 32, 128, 256, 512, 1024]
-  name: parameter_kwds.hidden_units.0
+  name: model_kwargs.parameter_kwargs.hidden_units.0
   type: categorical
 - kwargs:
     choices: *hidden_units
-  name: parameter_kwds.hidden_units.1
+  name: model_kwargs.parameter_kwargs.hidden_units.1
   type: categorical
 - kwargs:
     high: 0.2
     low: 0.01
-  name: parameter_kwds.dropout
+  name: model_kwargs.parameter_kwargs.dropout
   type: float
 - list:
   - bijector_name: quadratic_spline
@@ -67,15 +67,15 @@
     order: 32
     low: 0
     high: 1
-    smooth_bounds: false
+    bounds: smooth
     allow_flexible_bounds: false
     num_layers: 1
   - bijector_name: bernstein_poly
     order: 8
     low: 0
     high: 1
-    smooth_bounds: false
+    bounds: smooth
     allow_flexible_bounds: false
     num_layers: 3
-  name: distribution_kwds
+  name: model_kwargs.distribution_kwargs
   type: choose_from_list
