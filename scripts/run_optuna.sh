@@ -9,26 +9,34 @@ usage() {
 	echo "NOTE: There needs to be a file in optuna directory for the respective arguments."
 	echo "    -h               Display this help message"
 	echo "    -t               Test mode"
-	echo "    -d               Log level debug (info otherwise)"
+	echo "    -p               Use pruning"
+	echo "    -d               Prefix for study name with current date"
+	echo "    -v               Log level debug (info otherwise)"
 	echo "    DATASET_TYPE     Type of the dataset"
 	echo "    DATASET_NAME     Dataset name"
-	echo "    MODEL     Distribution type"
+	echo "    MODEL            Model name"
 	echo "    TRAILS           Number trials per jobs"
 	echo "    JOBS             Number of jobs"
 	exit 1
 }
 
 # Parse command line arguments
-while getopts "htd" option; do
+while getopts "htvdp" option; do
 	case "$option" in
 	h)
 		usage
 		;;
 	t)
-		TEST_MODE="--test-mode True"
+		EXTRA_ARGS+="--test-mode=true "
+		;;
+	v)
+		EXTRA_ARGS+="--log-level debug "
+		;;
+	p)
+		EXTRA_ARGS+="--use-pruning=true "
 		;;
 	d)
-		LOG_LEVEL="--log-level debug"
+		STUDY_NAME=$(date -I)_
 		;;
 	*)
 		echo "Error: Invalid option -$OPTARG"
@@ -49,14 +57,14 @@ DATASET_NAME=$2
 MODEL=$3
 TRIALS=$4
 JOBS=$5
-TEST_MODE="${TEST_MODE:-}"
-LOG_LEVEL="${LOG_LEVEL:-}"
 
 PARAMETER_FILE_PATH=params/${DATASET_TYPE}/${DATASET_NAME}/${MODEL}.yaml
-STUDY_NAME=${MODEL}_${DATASET_TYPE}_${DATASET_NAME}
+STUDY_BASE_NAME=${MODEL}_${DATASET_TYPE}_${DATASET_NAME}
+STUDY_NAME+=${STUDY_BASE_NAME}
+EXPERIMENT_NAME=${STUDY_NAME}_optuna
 DB_NAME=optuna/optuna_study_${STUDY_NAME}.db
 RESULTS_PATH=results/optuna/${STUDY_NAME}
-PARAMETER_SPACE_DEFINITION_FILE=optuna/parameter_space_definition_${STUDY_NAME}.yaml
+PARAMETER_SPACE_DEFINITION_FILE=optuna/parameter_space_definition_${STUDY_BASE_NAME}.yaml
 
 # Create study
 if [ ! -e $DB_NAME ]; then
@@ -65,8 +73,8 @@ fi
 
 run_optuna_script() {
 	python scripts/optuna_new.py \
-		--experiment-name optuna \
-                --parameter_file_path ${PARAMETER_FILE_PATH} \
+		--experiment-name ${EXPERIMENT_NAME} \
+		--parameter_file_path ${PARAMETER_FILE_PATH} \
 		--dataset_type ${DATASET_TYPE} \
 		--dataset_name ${DATASET_NAME} \
 		--results_path ${RESULTS_PATH} \
@@ -74,10 +82,8 @@ run_optuna_script() {
 		--study-name ${STUDY_NAME} \
 		--load-study=sqlite:///${DB_NAME} \
 		--n-trials=${TRIALS} \
-		--use-pruning=true \
 		--seed=$1 \
-		${TEST_MODE} \
-		${LOG_LEVEL}
+		${EXTRA_ARGS:-}
 }
 
 for ((seed = 1; seed <= $JOBS; seed++)); do
@@ -86,4 +92,3 @@ for ((seed = 1; seed <= $JOBS; seed++)); do
 done
 
 wait # Wait for all the background jobs to finish
-optuna/parameter_space_definition_unconditional_hybrid_coupling_flow_sim_moons.yaml

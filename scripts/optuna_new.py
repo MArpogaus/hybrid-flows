@@ -393,46 +393,49 @@ if __name__ == "__main__":
         "--log-file",
         type=str,
         help="path for log file",
+        default=None,
     )
     parser.add_argument(
         "--log-level",
         type=str,
-        default="INFO",
         help="logging severity level",
+        default="INFO",
     )
     parser.add_argument(
         "--test-mode",
-        default=False,
         type=str2bool,
         help="activate test-mode",
+        default=False,
+    )
+    parser.add_argument(
+        "--load-study-from-storage",
+        type=str,
+        help="Load and continue existing study from provided storage",
+        default=False,
+    )
+    parser.add_argument(
+        "--use-pruning",
+        default=False,
+        type=str2bool,
+        help="Prune the trials using Asynchronous Successive Halving Algorithm",
+    )
+    parser.add_argument(
+        "--n-jobs",
+        type=int,
+        help="number of threads to run.",
+        default=1,
     )
     parser.add_argument(
         "--n-trials",
         type=int,
         help="number of trials to run.",
-    )
-    parser.add_argument(
-        "--n-jobs",
-        type=int,
-        default=1,
-        help="number of threads to run.",
+        required=True,
     )
     parser.add_argument(
         "--study-name",
         type=str,
         help="name of the study.",
-    )
-    parser.add_argument(
-        "--load-study-from-storage",
-        default=False,
-        type=str,
-        help="Load and continue existing study from provided storage",
-    )
-    parser.add_argument(
-        "--use-pruning",
-        default=False,
-        type=str,
-        help="Prune the trials using Asynchronous Successive Halving Algorithm",
+        required=True,
     )
     parser.add_argument(
         "--experiment-name",
