@@ -64,6 +64,9 @@ def suggest_new_params(
         keys: list = d["name"].split(".")
         for k in keys[:-1]:
             if k not in p.keys():
+                __LOGGER__.warning(
+                    "key '%s' not defined in initial parameters. Typo?", {d["name"]}
+                )
                 p[k] = {}
             p = p[k]
 
@@ -81,6 +84,8 @@ def suggest_new_params(
         params["fit_kwargs"]["callbacks"] = [
             TFKerasPruningCallback(trial, __EVALUATION_METRIC__)
         ]
+
+    __LOGGER__.info("suggesting new params: %s", params)
 
     return params
 
