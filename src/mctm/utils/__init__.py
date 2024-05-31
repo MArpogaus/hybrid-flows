@@ -92,13 +92,13 @@ def filter_recursive(filter_func, collection):
         return {
             k: v_filtered
             for k, v in collection.copy().items()
-            if (v_filtered := filter_recursive(filter_func, v))
+            if (v_filtered := filter_recursive(filter_func, v)) is not None
         }
     elif isinstance(collection, list):
         return [
             v_filterd
             for v in collection.copy()
-            if (v_filterd := filter_recursive(filter_func, v))
+            if (v_filterd := filter_recursive(filter_func, v)) is not None
         ]
     else:
         return collection if filter_func(collection) else None
