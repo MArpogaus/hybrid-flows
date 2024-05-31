@@ -245,12 +245,16 @@ def build_fully_connected_net(
             )
 
     for i, h in enumerate(hidden_units):
+        if dropout > 0:
+            x = K.layers.Dropout(dropout, name=f"dropout_{i}", dtype=dtype)(x)
         x = K.layers.Dense(
             h, activation=None, name=f"hidden_layer_{i}", dtype=dtype, **kwargs
         )(x)
-        if dropout > 0:
-            x = K.layers.Dropout(dropout, name=f"dropout_{i}", dtype=dtype)(x)
         if conditional:
+            if dropout > 0:
+                c = K.layers.Dropout(
+                    dropout, name=f"conditional_dropout_{i}", dtype=dtype
+                )(c)
             c_out = K.layers.Dense(
                 h,
                 activation=None,
@@ -258,10 +262,6 @@ def build_fully_connected_net(
                 dtype=dtype,
                 **kwargs,
             )(c)
-            if dropout > 0:
-                c_out = K.layers.Dropout(
-                    dropout, name=f"conditional_dropout_{i}", dtype=dtype
-                )(c_out)
             x = K.layers.Add(name=f"add_c_out_{i}", dtype=dtype)([x, c_out])
         x = K.layers.Activation(activation, name=f"{activation}_{i}", dtype=dtype)(x)
         if batch_norm:
