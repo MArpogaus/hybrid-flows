@@ -298,9 +298,6 @@ def run(
     if dataset_type == "benchmark":
         get_dataset_fn = get_benchmark_dataset
         get_dataset_kwargs = {"dataset_name": dataset_name, "test_mode": test_mode}
-        model_kwargs["distribution_kwargs"].update(
-            **dataset_kwargs,
-        )
 
         def preprocess_dataset(data, model):
             return {
