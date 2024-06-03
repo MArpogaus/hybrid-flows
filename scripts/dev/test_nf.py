@@ -56,6 +56,10 @@ model = DensityRegressionModel(
 dist = model(None)  # tf.ones((1, 2)))
 # tfd.Independent(dist, 2)
 dist
+
+# %%
+model.trainable_parameters
+
 # %%
 dist.bijector  # .bijector.bijectors
 

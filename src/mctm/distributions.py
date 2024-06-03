@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-06-01 15:20:32 (Marcel Arpogaus)
+# changed : 2024-06-03 19:06:45 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -336,6 +336,12 @@ def _get_transformed_distribution_fn(
     """
 
     def distribution_fn(parameters):
+        if isinstance(parameters, tuple) and len(parameters) == 2:
+            parameters, base_parameters = parameters
+            kwargs.update(base_parameters)
+            __LOGGER__.debug("got parameters for base distribution.")
+
+        __LOGGER__.debug("base distribution kwargs : %s", str(kwargs))
         base_distribution = get_base_distribution(dims, **kwargs)
         bijector = flow_parametrization_fn(parameters)
         return tfd.TransformedDistribution(
@@ -918,32 +924,63 @@ def get_normalizing_flow(
     """
     parameter_fns = {}
     trainable_parameters = {}
-    for transformation in transformations:
-        bijector_name = transformation["bijector_name"]
 
-        __LOGGER__.debug("processing definition of transformation %s", bijector_name)
-        if "parameters" in transformation.keys():
-            const_parameters = transformation.pop("parameters")
-            __LOGGER__.debug("got constant parameters %s", str(const_parameters))
-            param_fn = lambda *_, **__: const_parameters  # noqa: E731
-        else:
-            parameters_shape = transformation.pop(
-                "parameters_shape", []
-            )  # TODO: guess form kwds
-            __LOGGER__.debug("initializing parametrization function")
-            param_fn, trainable_parameters[bijector_name] = getattr(
-                parameters, f"get_{transformation.pop('parameter_fn')}_fn"
-            )(
-                parameter_shape=[dims] + parameters_shape,
-                **transformation.pop("parameter_fn_kwargs", {}),
+    def get_parameter_fn(dims, key_prefix="", ignore_undefined=False, **kwargs):
+        const_parameters_key = key_prefix + "parameters"
+        parameter_fn_name_key = key_prefix + "parameter_fn"
+        parameters_shape_key = key_prefix + "parameters_shape"
+        parameter_fn_kwargs_key = key_prefix + "parameter_fn_kwargs"
+        parameter_constraints_key = key_prefix + "parameter_constraints"
+        # kwargs
+        const_parameters = kwargs.get(const_parameters_key, None)
+        parameter_fn_name = kwargs.get(parameter_fn_name_key, None)
+        if const_parameters is not None and parameter_fn_name is not None:
+            raise ValueError(
+                f"The augments '{const_parameters_key}' and '{parameter_fn_name_key}' are "
+                "mutually exclusive. Only provide either one of them"
             )
-        parameter_fns[bijector_name] = param_fn
-        parameter_constraints = transformation.pop(
-            "parameter_constraints", False
+        elif const_parameters is None and parameter_fn_name is None:
+            if ignore_undefined:
+                __LOGGER__.debug("Ignoring undefined parameter function")
+                return None, []
+            else:
+                raise ValueError(
+                    f"Either '{const_parameters_key}' or '{parameter_fn_name_key}' have to be provided."
+                )
+
+        # get parameter fn
+        if const_parameters:
+            __LOGGER__.debug("got constant parameters %s", str(const_parameters))
+            parameter_fn = lambda *_, **__: const_parameters  # noqa: E731
+        else:
+            if callable(parameter_fn_name):
+                __LOGGER__.debug("using provided callable as parameter function")
+                get_parameter_fn = parameter_fn_name
+            else:
+                __LOGGER__.debug("parameter function: %s", parameter_fn_name)
+                get_parameter_fn = getattr(parameters, f"get_{parameter_fn_name}_fn")
+
+            __LOGGER__.debug("initializing parametrization function")
+            parameters_shape = kwargs.get(
+                parameters_shape_key, []
+            )  # TODO: guess form kwds
+            parameter_fn_kwargs = kwargs.get(parameter_fn_kwargs_key, {})
+
+            parameter_fn, trainable_parameters = get_parameter_fn(
+                parameter_shape=[dims] + parameters_shape,
+                **parameter_fn_kwargs,
+            )
+
+        # get parameter constraint fn
+        parameter_constraints = kwargs.get(
+            parameter_constraints_key, False
         )  # TODO: guess from name
         if parameter_constraints:
             if callable(parameter_constraints):
                 constrain_fn = parameter_constraints
+                __LOGGER__.debug(
+                    "using provided callable as parameter constraint function"
+                )
             else:
                 if isinstance(parameter_constraints, dict):
                     parameter_constrains_fn_name = parameter_constraints.pop("name")
@@ -951,27 +988,62 @@ def get_normalizing_flow(
                 else:
                     parameter_constrains_fn_name = parameter_constraints
                     parameter_constrains_fn_kwargs = {}
-                __LOGGER__.debug(
-                    "parameter constraint %s", parameter_constrains_fn_name
-                )
+                    __LOGGER__.debug(
+                        "add parameter constraint function %s",
+                        parameter_constrains_fn_name,
+                    )
                 parameter_constrains_fn_name = parameter_constrains_fn_name.replace(
                     "tfb.", "tensorflow_probability.python.bijectors.", 1
                 ).replace("tf.", "tensorflow.", 1)
                 module_name, obj_name = parameter_constrains_fn_name.rsplit(".", 1)
                 module = importlib.import_module(module_name)
                 constrain_fn = getattr(module, obj_name)
-                if len(parameter_constraints) > 0 or isinstance(constrain_fn, type):
+                if len(parameter_constrains_fn_kwargs) > 0 or isinstance(
+                    constrain_fn, type
+                ):
                     constrain_fn = constrain_fn(**parameter_constrains_fn_kwargs)
 
             constrained_parameter_fn = lambda *args, **kwargs: constrain_fn(  # noqa: E731
-                param_fn(*args, **kwargs)
+                parameter_fn(*args, **kwargs)
             )
-            parameter_fns[bijector_name] = constrained_parameter_fn
+            return constrained_parameter_fn, trainable_parameters
+        else:
+            return parameter_fn, trainable_parameters
+
+    for transformation in transformations:
+        bijector_name = transformation["bijector_name"]
+        __LOGGER__.debug("processing definition of transformation %s", bijector_name)
+        parameter_fns[bijector_name], trainable_parameters[bijector_name] = (
+            get_parameter_fn(
+                dims=dims,
+                parameters=transformation.pop("parameters", None),
+                parameter_fn=transformation.pop("parameter_fn", None),
+                parameters_shape=transformation.pop("parameters_shape", None),
+                parameter_fn_kwargs=transformation.pop("parameter_fn_kwargs", None),
+                parameter_constraints=transformation.pop("parameter_constraints", None),
+            )
+        )
 
     __LOGGER__.debug("parameter function %s", str(parameter_fns))
 
+    base_distribution_parameter_fn, base_distribution_trainable_parameters = (
+        get_parameter_fn(
+            dims=dims,
+            key_prefix="base_distribution",
+            ignore_undefined=True,
+            **base_distribution_kwargs,
+        )
+    )
+
+    trainable_parameters["base_dsitribution"] = base_distribution_trainable_parameters
+
     def parameter_fn(*args, **kwargs):
-        return [fn(*args, **kwargs) for fn in parameter_fns.values()]
+        params = [fn(*args, **kwargs) for fn in parameter_fns.values()]
+        if base_distribution_parameter_fn:
+            base_params = base_distribution_parameter_fn(*args, **kwargs)
+            return params, base_params
+        else:
+            return params
 
     def flow_parametrization_fn(all_parameters):
         bijectors = []
