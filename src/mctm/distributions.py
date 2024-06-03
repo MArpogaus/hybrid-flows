@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-05-28 18:05:51 (Marcel Arpogaus)
+# changed : 2024-06-01 15:20:32 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -20,6 +20,8 @@ The module defines a list of private base functions that get used to compose
 the final model in many cases.
 """
 
+import importlib
+import logging
 from functools import partial
 from itertools import chain
 from typing import Callable, Dict, List, Tuple
@@ -32,6 +34,8 @@ from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 from tensorflow_probability.python.internal import prefer_static
 
+from mctm import parameters
+
 from .activations import get_spline_param_constrain_fn, get_thetas_constrain_fn
 from .parameters import (
     get_fully_connected_network_fn,
@@ -39,6 +43,9 @@ from .parameters import (
     get_masked_autoregressive_network_with_additive_conditioner_fn,
     get_parameter_vector_or_simple_network_fn,
 )
+
+# MODULE GLOBAL OBJECTS ########################################################
+__LOGGER__ = logging.getLogger(__name__)
 
 
 # FUNCTIONS ####################################################################
@@ -872,6 +879,132 @@ def get_masked_autoregressive_flow_first_dim_masked(
     )
 
     return distribution_fn, parameter_fn, trainable_variables
+
+
+def _get_parametrized_bijector(bijector_name, parameters, **kwds):
+    if bijector_name == "bernstein_poly":
+        bijector_cls = BernsteinBijector
+    else:
+        bijector_class_name = "".join(map(str.title, bijector_name.split("_")))
+        bijector_cls = getattr(tfb, bijector_class_name)
+    return bijector_cls(parameters, **kwds)
+
+
+def get_normalizing_flow(
+    dims: int,
+    transformations: List,
+    inverse_flow: bool = True,
+    get_base_distribution=_get_base_distribution,
+    base_distribution_kwargs: Dict = {},
+) -> Tuple[Callable[tf.Variable, tfd.Distribution], Tuple[int, ...]]:
+    """Get a function to parametrize a elementwise transformed distribution.
+
+    Parameters
+    ----------
+    dims
+        The dimension of the distribution.
+    get_base_distribution
+        The base distribution lambda.
+    base_distribution_kwargs
+        Keyword arguments for the base distribution.
+    kwargs
+        Additional keyword arguments.
+
+    Returns
+    -------
+        The parametrization function of the transformed distribution and its
+        parameter shape.
+
+    """
+    parameter_fns = {}
+    trainable_parameters = {}
+    for transformation in transformations:
+        bijector_name = transformation["bijector_name"]
+
+        __LOGGER__.debug("processing definition of transformation %s", bijector_name)
+        if "parameters" in transformation.keys():
+            const_parameters = transformation.pop("parameters")
+            __LOGGER__.debug("got constant parameters %s", str(const_parameters))
+            param_fn = lambda *_, **__: const_parameters  # noqa: E731
+        else:
+            parameters_shape = transformation.pop(
+                "parameters_shape", []
+            )  # TODO: guess form kwds
+            __LOGGER__.debug("initializing parametrization function")
+            param_fn, trainable_parameters[bijector_name] = getattr(
+                parameters, f"get_{transformation.pop('parameter_fn')}_fn"
+            )(
+                parameter_shape=[dims] + parameters_shape,
+                **transformation.pop("parameter_fn_kwargs", {}),
+            )
+        parameter_fns[bijector_name] = param_fn
+        parameter_constraints = transformation.pop(
+            "parameter_constraints", False
+        )  # TODO: guess from name
+        if parameter_constraints:
+            if callable(parameter_constraints):
+                constrain_fn = parameter_constraints
+            else:
+                if isinstance(parameter_constraints, dict):
+                    parameter_constrains_fn_name = parameter_constraints.pop("name")
+                    parameter_constrains_fn_kwargs = parameter_constraints
+                else:
+                    parameter_constrains_fn_name = parameter_constraints
+                    parameter_constrains_fn_kwargs = {}
+                __LOGGER__.debug(
+                    "parameter constraint %s", parameter_constrains_fn_name
+                )
+                parameter_constrains_fn_name = parameter_constrains_fn_name.replace(
+                    "tfb.", "tensorflow_probability.python.bijectors.", 1
+                ).replace("tf.", "tensorflow.", 1)
+                module_name, obj_name = parameter_constrains_fn_name.rsplit(".", 1)
+                module = importlib.import_module(module_name)
+                constrain_fn = getattr(module, obj_name)
+                if len(parameter_constraints) > 0 or isinstance(constrain_fn, type):
+                    constrain_fn = constrain_fn(**parameter_constrains_fn_kwargs)
+
+            constrained_parameter_fn = lambda *args, **kwargs: constrain_fn(  # noqa: E731
+                param_fn(*args, **kwargs)
+            )
+            parameter_fns[bijector_name] = constrained_parameter_fn
+
+    __LOGGER__.debug("parameter function %s", str(parameter_fns))
+
+    def parameter_fn(*args, **kwargs):
+        return [fn(*args, **kwargs) for fn in parameter_fns.values()]
+
+    def flow_parametrization_fn(all_parameters):
+        bijectors = []
+        for bi_kwds, pj_params in zip(transformations, all_parameters):
+            bijectors.append(
+                _get_parametrized_bijector(parameters=pj_params, **bi_kwds)
+            )
+
+        if inverse_flow:
+            # the Chain bijector uses reversed list in the forward call.
+            # We change the direction by first reversing the list to get f₃ ∘ f₂ ∘ f₁
+            # and then invert it to get T = f₃⁻¹ ∘ f₂⁻¹ ∘ f₁⁻¹ and T⁻¹ = f₁ ∘ f₂ ∘ f₂
+            bijectors = list(reversed(bijectors))
+
+        if len(bijectors) == 1:
+            flow = bijectors[0]
+        else:
+            flow = tfb.Chain(bijectors)
+
+        if inverse_flow:
+            flow = tfb.Invert(flow)
+
+        return flow
+
+    distribution_fn = _get_transformed_distribution_fn(
+        dims,
+        flow_parametrization_fn,
+        get_base_distribution=get_base_distribution,
+        is_joint=False,
+        **base_distribution_kwargs,
+    )
+
+    return distribution_fn, parameter_fn, trainable_parameters
 
 
 # actual functions that are composed of base functions
