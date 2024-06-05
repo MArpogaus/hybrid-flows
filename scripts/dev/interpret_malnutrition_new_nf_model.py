@@ -12,17 +12,27 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import tensorflow as tf
+from tensorflow import keras as K
 from matplotlib import pyplot as plt
 from mctm.data.malnutrion import get_dataset
 from mctm.models import DensityRegressionModel
 from mctm.parameters import get_parameter_vector_fn
 from mctm.utils.tensorflow import fit_distribution, set_seed
-from tensorflow import keras as K
 from tensorflow_probability.python.internal import (
     dtype_util,
     prefer_static,
     tensor_util,
 )
+import logging
+
+import numpy as np
+import tensorflow as tf
+from mctm.models import DensityRegressionModel
+from tensorflow_probability import bijectors as tfb
+from mctm.utils.visualisation import setup_latex, get_figsize
+
+# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 # %% functions
@@ -140,47 +150,44 @@ def plot_dists(dist, test_x, test_t, test_y):
     return fig
 
 
+from bernstein_flow.math.bernstein import gen_bernstein_polynomial_with_linear_extrapolation
+
+
+def get_bernstein_polynomial_parameter_lambda(
+        parameter_shape, polynomial_order, conditional_event_shape, high, low,dtype
+):
+    parameter_shape = (
+        [conditional_event_shape]
+        + parameter_shape
+        + [
+            polynomial_order + 1,
+        ]
+    )
+    _, parameter_vector = get_parameter_vector_fn(
+        parameter_shape=parameter_shape,
+        dtype=dtype,  #  initializer=tf.ones
+    )
+
+    def get_parameter_lambda(conditional_input=None, **kwargs):
+        b_poly = gen_bernstein_polynomial_with_linear_extrapolation(parameter_vector)[0]
+        y = b_poly((conditional_input[..., None] - low) / (high - low))
+        return tf.reduce_sum(y, axis=-1)
+
+    return get_parameter_lambda, parameter_vector
+
+
+# %% Setup Latex for plotting
+setup_latex()
+
 # %% Params
 epochs = 100
 seed = 1
-distribution = "elementwise_flow"
 dataset_kwargs = {
     "data_path": "datasets/malnutrition/india.raw",
     "covariates": ["cage"],
     "targets": ["stunting", "wasting", "underweight"],
 }
-# distribution_kwargs = {
-#     "bijector_name": "bernstein_poly",
-#     "order": 20,
-#     "low": -4,
-#     "high": 4,
-#     "eps": 0.001,
-#     "smooth_bounds": False,
-#     "allow_flexible_bounds": False,
-#     "shift": False,
-#     "scale": False,
-#     "fn": tf.abs,
-#     # "base_distribution_kwargs": {"distribution_type": "uniform", "low": 0, "high": 1},
-# }
-distribution_kwargs = {
-    "bijector_name": "bernstein_poly",
-    "order": 8,
-    "shift": False,
-    "scale": False,
-    "parameter_constrain_fn": thetas_constrain_fn2,
-    # "base_distribution_kwargs": {"distribution_type": "uniform", "low": 0, "high": 1},
-}
-parameter_kwargs = {
-    "dtype": "float",
-    "polynomial_order": 3,
-    "conditional_event_shape": 1,
-    # "conditional": True,
-    # "hidden_units": [16, 16],
-    # "activation": "relu",
-    # "batch_norm": False,
-    # "dropout": False,
-}
-initial_learning_rate = 0.01
+initial_learning_rate = 0.005
 scheduler = K.optimizers.schedules.CosineDecay(
     initial_learning_rate,
     decay_steps=epochs,
@@ -199,18 +206,13 @@ fit_kwargs = {
     "verbose": True,
     "monitor": "val_loss",
 }
-model_kwargs = dict(
-    distribution=distribution,
-    distribution_kwargs=distribution_kwargs,
-    parameter_kwargs=parameter_kwargs,
-)
 
 preprocess_dataset = lambda data, model: {
     "x": data[0][0],
     "y": data[0][1],
     "validation_data": data[1],
 }
-results_path = "./results/" + distribution
+results_path = "./results/malnutrition_new_nf_model"
 
 
 # %% Load unscaled data
@@ -221,60 +223,68 @@ raw_data.columns
 set_seed(seed)
 targets = dataset_kwargs["targets"]
 covariates = dataset_kwargs["covariates"]
+
+# %%
 (unscaled_train_data, _, _), dims = get_dataset(**dataset_kwargs, scale=False)
-df = pd.DataFrame(
+unscaled_train_data_df = pd.DataFrame(
     np.concatenate([unscaled_train_data[1], unscaled_train_data[0]], -1),
     columns=targets + covariates,
 )
-fig = plot_grid(df.sample(frac=0.2), vars=targets, hue="cage")
+fig = plot_grid(unscaled_train_data_df.sample(frac=0.2), vars=targets, hue="cage")
 fig.savefig("./org/gfx/malnutrition_data.png")
 
-# %% kde maginal plot
-
-fig, axs = plt.subplots(1, len(targets), figsize=(8, 2))
-
-for i, c in enumerate(targets):
-    sns.kdeplot(
-        df.sample(frac=0.5),
-        x=c,
-        hue="cage",  # df.mage // 128,
-        ax=axs[i],
-        common_norm=False,
-        alpha=0.1,
-        fill=True,
-        palette="crest",
-        linewidth=0,
-        legend=False,
-    )
-
-fig.tight_layout()
-# %% ecdf maginal plot
+# %% ecdf and cdf maginal plot
 fig, axs = plt.subplots(
-    1, len(targets), figsize=(8, 2), sharey=True, sharex=True, layout="constrained"
+    2,
+    len(targets),
+    figsize=get_figsize("thesis"),
+    sharey="row",
+    sharex=True,
+    layout="constrained",
 )
 palette = "rocket_r"
-
+ages = [1, 3, 6, 9, 12, 24]
+unscaled_train_data_df_selection = unscaled_train_data_df[
+    unscaled_train_data_df.cage.isin(ages)
+]
 for i, c in enumerate(targets):
-    sns.ecdfplot(
-        df,
+    g = sns.ecdfplot(
+        unscaled_train_data_df_selection,
         x=c,
-        hue="cage",  # df.mage // 128,
-        ax=axs[i],
-        alpha=0.5,
+        hue="cage",
+        ax=axs[0][i],
+        legend=i == 2,
+        palette=palette,
+    )
+    sns.kdeplot(
+        unscaled_train_data_df_selection,
+        x=c,
+        hue="cage",
+        ax=axs[1][i],
+        common_norm=False,
+        # fill=True,
+        # palette="crest",
+        # linewidth=0,
+        # legend="outside",
         legend=False,
         palette=palette,
     )
+    if i == 2:
+        sns.move_legend(g, "right", frameon=False)
 
-axs[0].set_ylabel(r"$ECDF(y|\text{age})$")
+axs[0][0].set_ylabel(r"$\text{ECDF}(y|\text{age})$")
 
-fig.colorbar(
-    plt.cm.ScalarMappable(
-        cmap=palette, norm=plt.Normalize(df.cage.min(), df.cage.max())
-    ),
-    ax=axs,
-    label="age",
-)
-# fig.tight_layout()
+# fig.colorbar(
+#     plt.cm.ScalarMappable(
+#         cmap=palette,
+#         norm=plt.Normalize(
+#             unscaled_train_data_df.cage.min(), unscaled_train_data_df.cage.max()
+#         ),
+#     ),
+#     ax=axs,
+#     label="age",
+# )
+fig.tight_layout(pad=0)
 fig.savefig("./org/gfx/malnutrition_ecdf.png")
 
 # %% scaled data
@@ -288,28 +298,83 @@ data, dims = get_dataset(
 )
 
 # %% Init Model
+dims = 3
 model = DensityRegressionModel(
-    dims=dims,
-    get_parameter_fn=get_polynomial_parameter_lambda,
-    **model_kwargs,
+    dims=3,
+    distribution="normalizing_flow",
+    transformations=[
+        {
+            "bijector_name": "bernstein_poly",
+            "parameters_shape": [8],
+            "parameter_fn": "parameter_vector",
+            "parameter_fn_kwargs": {"dtype": "float32"},
+            "parameter_constraints": {
+                "name": "mctm.activations.get_thetas_constrain_fn",
+                "low": -3,
+            },
+            "extrapolation": True,
+        },
+        {
+            "bijector_name": "shift",
+            "parameters_shape": [1],
+            # "parameter_fn": get_polynomial_parameter_lambda,  # "parameter_vector",
+            # "parameter_fn_kwargs": {
+            #     "dtype": "float",
+            #     "polynomial_order": 2,
+            #     "conditional_event_shape": 1,
+            # },
+            "parameter_fn": get_bernstein_polynomial_parameter_lambda,  # "parameter_vector",
+            "parameter_fn_kwargs": {
+                "dtype": "float",
+                "polynomial_order": 3,
+                "conditional_event_shape": 1,
+                "low": 0,
+                "high": unscaled_train_data_df.cage.max()
+            },
+            # "parameter_fn": "parameter_vector_or_simple_network",
+            # "parameter_fn_kwargs": {
+            #     "conditional": True,
+            #     "conditional_event_shape": (1),
+            #     "hidden_units": [16, 16],
+            #     "activation": "relu",
+            #     "batch_norm": False,
+            #     "dropout": False,
+            # },
+            "parameter_constraints": tf.squeeze,
+        },
+        # {
+        #     "bijector_name": "Scale_Matvec_Linear_Operator",
+        #     "parameters_shape": [np.sum(np.arange(dims + 1))],
+        #     "parameter_fn": "parameter_vector",
+        #     "parameter_fn_kwargs": {"dtype": "float32"},
+        #     # "parameter_fn": "parameter_vector_or_simple_network",
+        #     # "parameter_fn_kwargs": {
+        #     #     # "input_shape": 3,
+        #     #     # "hidden_units": [2] * 4,
+        #     #     # "activation": "relu",
+        #     #     # "batch_norm": False,
+        #     #     # "dropout": False,
+        #     #     "conditional": False,
+        #     #     # "conditional_event_shape": (2),
+        #     # },
+        #     "parameter_constraints": lambda x: tf.linalg.LinearOperatorLowerTriangular(
+        #         tfb.FillScaleTriL(diag_shift=1e-5)(x)
+        #     ),
+        # },
+    ],
+    base_distribution_parameter_fn
 )
 
-# %% inital values
-tcf = distribution_kwargs["parameter_constrain_fn"]
+# %%
+dist = model(tf.ones((1, 1)))
+# tfd.Independent(dist, 2)
+dist
 
-t = np.linspace(-1, 1, 20, dtype="float32")
-pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()
-pv = tcf(pv_u)
+# %%
+model.trainable_parameters
 
-fig, axs = plt.subplots(2, 3, sharex=True, sharey=True)
-for i, c in enumerate(targets):
-    axs[0][i].plot(t, pv_u[:, i])
-    axs[0][i].set_title(c)
-    axs[1][i].plot(t, pv[:, i])
-    axs[1][i].set_xlabel("x")
-axs[0][0].set_ylabel(r"unconstrained $\theta$")
-axs[1][0].set_ylabel(r"constrained $\theta$")
-fig.tight_layout()
+# %%
+dist.bijector  # .bijector.bijectors
 
 # %% fit model
 preprocessed = preprocess_dataset(data, model)
@@ -327,65 +392,61 @@ hist = fit_distribution(
 pd.DataFrame(hist.history).plot()
 
 # %% params after fit
-tcf = distribution_kwargs["parameter_constrain_fn"]
-
-t = np.unique(X)  # np.linspace(-1, 1, 20, dtype="float32")
-pv_u = model.parameter_fn(t[..., None]).numpy().squeeze()
-pv = tcf(pv_u)
-
-fig, axs = plt.subplots(2, 3, sharex=True)
-for i, c in enumerate(targets):
-    axs[0][i].plot(t, pv_u[:, i])
-    axs[0][i].set_title(c)
-    axs[1][i].plot(t, pv[:, i])
-    axs[1][i].set_xlabel("cage")
-axs[0][0].set_ylabel(r"unconstrained $\theta$")
-axs[1][0].set_ylabel(r"constrained $\theta$")
-axs[1][0].set_xticks((t.min(), t.max()))
-fig.tight_layout()
+t = np.linspace(0, max(X), 200, dtype="float32")
+pv = model.parameter_fn(t[..., None])[1].numpy().squeeze()
+pv
+fig, axs = plt.subplots(1, 3, sharex=True, sharey=True)
+for (i, c), label in zip(enumerate(targets), targets):
+    axs[i].plot(t, pv[:, i])
+    axs[i].set_xlabel("cage")
+    axs[i].set_title(label)
+axs[0].set_xticks((t.min(), t.max()))
+fig.tight_layout(w_pad=-0.1)
 fig.savefig("./org/gfx/malnutrition_params.png")
 
-# %% marginal cdf
+# %% marginal cdf and pdf
+palette = "icefire"
 palette = "rocket_r"
-cages = np.arange(0, 35, 8, dtype=np.float32)
-cages = np.unique(X)
-colors = sns.color_palette("rocket_r", as_cmap=True)(
-    np.linspace(0, 1, len(cages))
-).tolist()
-dists = model(cages[..., None])
+palette = "mako_r"
+ages = [1, 3, 6, 9, 12, 24, 35]
+#ages = unscaled_train_data_df.cage.unique()
+colors = sns.color_palette(palette, as_cmap=True)(np.linspace(0, 1, len(ages))).tolist()
+dists = model(tf.convert_to_tensor(ages, dtype=model.dtype)[..., None])
 
-y = np.linspace(0, 1, 20)[..., None, None]
+y = np.linspace(0, 1, 100)[..., None, None]
 
 cdf = dists.cdf(y)
+pdf = dists.prob(y)
 fig, axs = plt.subplots(
-    2, len(targets), figsize=(8, 4), sharey=True, sharex=True, layout="constrained"
+    2,
+    len(targets),
+    figsize=get_figsize("thesis"),
+    sharey="row",
+    sharex=True,
 )
 
 for i, c in enumerate(targets):
-    sns.ecdfplot(
-        x=Y[..., i],
-        hue=X.numpy().flatten(),  # df.mage // 128,
-        ax=axs[0, i],
-        alpha=0.5,
-        legend=False,
-        palette=palette,
-    )
+    axs[0, i].set_prop_cycle("color", colors)
+    axs[0, i].plot(y.flatten(), cdf[..., i])
     axs[1, i].set_prop_cycle("color", colors)
-    axs[1, i].plot(y.flatten(), cdf[..., i], alpha=0.5)
-    axs[1, i].set_xlabel(c)
+    axs[1, i].plot(y.flatten(), pdf[..., i])
+    axs[1, i].set_xlabel(f"y={c}")
 
-axs[0, 0].set_ylabel(r"$ECDF(y|\text{age})$")
-axs[1, 0].set_ylabel(r"$F(y|\text{age})$")
+axs[0, 0].set_ylabel(r"$F(y|\text{age})$")
+axs[1, 0].set_ylabel(r"$f(y|\text{age})$")
 
-fig.colorbar(
-    plt.cm.ScalarMappable(
-        cmap=palette, norm=plt.Normalize(df.cage.min(), df.cage.max())
-    ),
-    ax=axs[:, -1],
-    label="age",
-    shrink=0.5,
-)
-
+# fig.colorbar(
+#     plt.cm.ScalarMappable(
+#         cmap=palette,
+#         norm=plt.Normalize(
+#             unscaled_train_data_df.cage.min(), unscaled_train_data_df.cage.max()
+#         ),
+#     ),
+#     ax=axs[:, -1],
+#     label="age",
+#     shrink=0.5,
+# )
+fig.tight_layout(w_pad=0)
 fig.savefig("./org/gfx/malnutrition_cdf.png")
 
 # %% Samples
@@ -420,6 +481,12 @@ def plot_samples_grid(model, validation_data, N, targets, hue="source", **kwargs
 
 
 # plot_samples_grid(model, validation_data, 1000, targets, row="source")
-df = get_samples_df(1, model, X, Y, targets)
+unscaled_train_data_df = get_samples_df(1, model, X, Y, targets)
 # df["mage_combined"] = df.mage // 128
-plot_grid(df.loc[df.source == "model"].sample(frac=0.2), vars=targets, hue="mage")
+plot_grid(
+    unscaled_train_data_df.loc[unscaled_train_data_df.source == "model"].sample(
+        frac=0.2
+    ),
+    vars=targets,
+    hue="mage",
+)
