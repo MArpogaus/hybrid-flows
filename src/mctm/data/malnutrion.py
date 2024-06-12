@@ -1,4 +1,5 @@
 """Provide access to malnutrition dataset."""
+
 from functools import partial
 
 import pandas as pd

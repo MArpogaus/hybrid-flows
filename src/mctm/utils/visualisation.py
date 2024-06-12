@@ -1,4 +1,5 @@
 """Visualization utils."""
+
 # -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
 # AUTHOR INFORMATION ###########################################################
 # file    : visualisation.py

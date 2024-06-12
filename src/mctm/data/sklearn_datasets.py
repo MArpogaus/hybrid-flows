@@ -1,4 +1,5 @@
 """Provides access to sklearn datasets."""
+
 # -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
 # AUTHOR INFORMATION ###########################################################
 # file    : sklearn_datasets.py
