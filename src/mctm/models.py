@@ -32,10 +32,9 @@ class DensityRegressionModel(K.Model):
     :method call: Compute the distribution for given input arguments.
     """
 
-    def __init__(self, dims, distribution, **kwargs):
+    def __init__(self, distribution, **kwargs):
         """Initialize a DensityRegressionModel.
 
-        :param int dims: The dimension of the model.
         :param str distribution: The type of distribution to use.
         :param **kwargs: Additional keyword arguments.
         """
@@ -47,7 +46,7 @@ class DensityRegressionModel(K.Model):
             self.distribuition_fn,
             self.parameter_fn,
             self.trainable_parameters,
-        ) = getattr(distributions, "get_" + distribution)(dims=dims, **kwargs)
+        ) = getattr(distributions, "get_" + distribution)(**kwargs)
 
     def call(self, inputs, **kwargs):
         """Compute the distribution for the given input arguments.
@@ -71,7 +70,6 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
 
     def __init__(
         self,
-        dims,
         distribution,
         distribution_kwargs,
         parameter_kwargs,
@@ -85,7 +83,6 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
     ):
         """Initialize a HybridDensityRegressionModel.
 
-        :param int dims: The dimension of the model.
         :param str distribution: The type of distribution to use.
         :param dict distribution_kwargs: Keyword arguments for the distribution.
         :param dict parameter_kwargs: Keyword arguments for the parameters.
@@ -99,7 +96,6 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
         :param bool freeze_base_model: Whether to freeze the base model.
         """
         super().__init__(
-            dims,
             distribution=distribution,
             distribution_kwargs={
                 "get_base_distribution": self.get_base_distribution,
@@ -113,7 +109,6 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
             self.base_model = base_distribution
         else:
             self.base_model = DensityRegressionModel(
-                dims=dims,
                 distribution=base_distribution,
                 distribution_kwargs=base_distribution_kwargs,
                 parameter_kwargs=base_parameter_kwargs,

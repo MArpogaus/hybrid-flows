@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-06-05 19:02:24 (Marcel Arpogaus)
+# changed : 2024-06-12 18:27:02 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -20,7 +20,6 @@ The module defines a list of private base functions that get used to compose
 the final model in many cases.
 """
 
-import importlib
 import logging
 from functools import partial
 from itertools import chain
@@ -34,7 +33,7 @@ from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 from tensorflow_probability.python.internal import prefer_static
 
-from mctm import parameters
+from mctm import parameters as parameters_lib
 
 from .activations import get_spline_param_constrain_fn, get_thetas_constrain_fn
 from .parameters import (
@@ -43,6 +42,7 @@ from .parameters import (
     get_masked_autoregressive_network_with_additive_conditioner_fn,
     get_parameter_vector_or_simple_network_fn,
 )
+from .utils import getattr_from_module
 
 # MODULE GLOBAL OBJECTS ########################################################
 __LOGGER__ = logging.getLogger(__name__)
@@ -119,7 +119,7 @@ def _get_trainable_distribution(
 
 
 def _get_base_distribution(
-    dims: int, distribution_type: str = "normal", is_joint: bool = True, **kwargs
+    dims: int = 0, distribution_name: str = "normal", **kwargs
 ) -> tfd.Distribution:
     """Get the default base distribution.
 
@@ -130,8 +130,6 @@ def _get_base_distribution(
     distribution_type
         The type of distribution (e.g., "normal", "lognormal", "uniform",
                                   "kumaraswamy").
-    is_joint
-        If set to True, return the Joint Distribution.
     kwargs
         Keyword arguments for the distribution.
 
@@ -140,29 +138,25 @@ def _get_base_distribution(
         The default base distribution.
 
     """
-    if distribution_type == "normal":
+    if distribution_name == "normal":
         default_kwargs = dict(loc=0.0, scale=1.0)
         default_kwargs.update(**kwargs)
         dist = tfd.Normal(**default_kwargs)
-    elif distribution_type == "truncated_normal":
+    elif distribution_name == "truncated_normal":
         default_kwargs = dict(loc=0.0, scale=1.0, low=-4, high=4)
         default_kwargs.update(**kwargs)
         dist = tfd.TruncatedNormal(**default_kwargs)
-    elif distribution_type == "lognormal":
+    elif distribution_name == "lognormal":
         default_kwargs = dict(loc=0.0, scale=1.0)
         default_kwargs.update(**kwargs)
         dist = tfd.LogNormal(**default_kwargs)
-    elif distribution_type == "logistic":
+    elif distribution_name == "logistic":
         default_kwargs = dict(loc=0.0, scale=1.0)
         default_kwargs.update(**kwargs)
-        dist = tfd.Logistic(**default_kwargs)
-    elif distribution_type == "uniform":
-        dist = tfd.Uniform(**kwargs)
-    elif distribution_type == "kumaraswamy":
-        dist = tfd.Kumaraswamy(**kwargs)
     else:
-        raise ValueError(f"Unsupported distribution type {distribution_type}.")
-    if is_joint:
+        dist = getattr_from_module(distribution_name)(**kwargs)
+
+    if dims:
         dist = tfd.Sample(dist, sample_shape=[dims])
     return dist
 
@@ -310,7 +304,6 @@ def _get_flow_parametrization_fn(
 
 
 def _get_transformed_distribution_fn(
-    dims: int,
     flow_parametrization_fn: Callable,
     get_base_distribution=_get_base_distribution,
     **kwargs,
@@ -319,8 +312,6 @@ def _get_transformed_distribution_fn(
 
     Parameters
     ----------
-    dims
-        The dimensions of the distribution.
     flow_parametrization_fn
         The flow parametrization function.
     get_base_distribution
@@ -342,7 +333,7 @@ def _get_transformed_distribution_fn(
             __LOGGER__.debug("got parameters for base distribution.")
 
         __LOGGER__.debug("base distribution kwargs : %s", str(kwargs))
-        base_distribution = get_base_distribution(dims, **kwargs)
+        base_distribution = get_base_distribution(**kwargs)
         bijector = flow_parametrization_fn(parameters)
         return tfd.TransformedDistribution(
             distribution=base_distribution,
@@ -381,10 +372,9 @@ def _get_elementwise_flow(
     pv_shape = [dims, num_parameters]
 
     distribution_fn = _get_transformed_distribution_fn(
-        dims,
         flow_parametrization_fn,
         get_base_distribution=get_base_distribution,
-        is_joint=False,
+        dims=0,
         **base_distribution_kwargs,
     )
 
@@ -896,80 +886,54 @@ def _get_parametrized_bijector(bijector_name, parameters, **kwds):
     return bijector_cls(parameters, **kwds)
 
 
-def _get_parameter_fn(dims, key_prefix="", ignore_undefined=False, **kwargs):
-    const_parameters_key = key_prefix + "parameters"
-    parameter_fn_name_key = key_prefix + "parameter_fn"
-    parameters_shape_key = key_prefix + "parameters_shape"
-    parameter_fn_kwargs_key = key_prefix + "parameter_fn_kwargs"
-    parameter_constraints_key = key_prefix + "parameter_constraints"
-    # kwargs
-    const_parameters = kwargs.get(const_parameters_key, None)
-    parameter_fn_name = kwargs.get(parameter_fn_name_key, None)
-    if const_parameters is not None and parameter_fn_name is not None:
+def _get_parameter_fn(
+    parameters=None,
+    parameters_fn=None,
+    parameters_fn_kwargs={},
+    parameters_shape=[],
+    parameters_constraint_fn=None,
+    parameters_constraint_fn_kwargs={},
+):
+    if parameters is not None and parameters_fn is not None:
         raise ValueError(
-            f"The augments '{const_parameters_key}' and '{parameter_fn_name_key}' are "
+            "The augments 'parameters' and 'parameter_fn' are "
             "mutually exclusive. Only provide either one of them"
         )
-    elif const_parameters is None and parameter_fn_name is None:
-        if ignore_undefined:
-            __LOGGER__.debug("Ignoring undefined parameter function")
-            return None, []
-        else:
-            raise ValueError(
-                f"Either '{const_parameters_key}' or '{parameter_fn_name_key}' "
-                "have to be provided."
-            )
-
-    # get parameter fn
-    if const_parameters:
-        __LOGGER__.debug("got constant parameters %s", str(const_parameters))
-        parameter_fn = lambda *_, **__: const_parameters  # noqa: E731
-    else:
-        if callable(parameter_fn_name):
-            __LOGGER__.debug("using provided callable as parameter function")
-            get_parameter_fn = parameter_fn_name
-        else:
-            __LOGGER__.debug("parameter function: %s", parameter_fn_name)
-            get_parameter_fn = getattr(parameters, f"get_{parameter_fn_name}_fn")
-
-        __LOGGER__.debug("initializing parametrization function")
-        parameters_shape = kwargs.get(parameters_shape_key, [])  # TODO: guess form kwds
-        parameter_fn_kwargs = kwargs.get(parameter_fn_kwargs_key, {})
-
-        parameter_fn, trainable_parameters = get_parameter_fn(
-            parameter_shape=[dims] + parameters_shape,
-            **parameter_fn_kwargs,
+    elif parameters is None and parameters_fn is None:
+        raise ValueError(
+            "Either 'parameters' or 'parameter_fn' " "have to be provided."
         )
 
-    # get parameter constraint fn
-    parameter_constraints = kwargs.get(
-        parameter_constraints_key, False
-    )  # TODO: guess from name
-    if parameter_constraints:
-        if callable(parameter_constraints):
-            constrain_fn = parameter_constraints
+    # get parameter fn
+    if parameters:
+        __LOGGER__.debug("got constant parameters %s", str(parameters))
+        parameter_fn = lambda *_, **__: parameters  # noqa: E731
+    else:
+        if callable(parameters_fn):
+            __LOGGER__.debug("using provided callable as parameter function")
+            get_parameter_fn = parameters_fn
+        else:
+            __LOGGER__.debug("parameter function: %s", parameters_fn)
+            get_parameter_fn = getattr(parameters_lib, f"get_{parameters_fn}_fn")
+
+        __LOGGER__.debug("initializing parametrization function")
+        parameter_fn, trainable_parameters = get_parameter_fn(
+            parameter_shape=parameters_shape,
+            **parameters_fn_kwargs,
+        )
+
+    if parameters_constraint_fn:
+        if callable(parameters_constraint_fn):
+            constrain_fn = parameters_constraint_fn
             __LOGGER__.debug("using provided callable as parameter constraint function")
         else:
-            if isinstance(parameter_constraints, dict):
-                parameter_constrains_fn_name = parameter_constraints.pop("name")
-                parameter_constrains_fn_kwargs = parameter_constraints
-            else:
-                parameter_constrains_fn_name = parameter_constraints
-                parameter_constrains_fn_kwargs = {}
-                __LOGGER__.debug(
-                    "add parameter constraint function %s",
-                    parameter_constrains_fn_name,
-                )
-            parameter_constrains_fn_name = parameter_constrains_fn_name.replace(
-                "tfb.", "tensorflow_probability.python.bijectors.", 1
-            ).replace("tf.", "tensorflow.", 1)
-            module_name, obj_name = parameter_constrains_fn_name.rsplit(".", 1)
-            module = importlib.import_module(module_name)
-            constrain_fn = getattr(module, obj_name)
-            if len(parameter_constrains_fn_kwargs) > 0 or isinstance(
-                constrain_fn, type
-            ):
-                constrain_fn = constrain_fn(**parameter_constrains_fn_kwargs)
+            __LOGGER__.debug(
+                "add parameter constraint function %s",
+                parameters_constraint_fn,
+            )
+            constrain_fn = getattr_from_module(parameters_constraint_fn)
+        if len(parameters_constraint_fn_kwargs) > 0 or isinstance(constrain_fn, type):
+            constrain_fn = constrain_fn(**parameters_constraint_fn_kwargs)
 
         constrained_parameter_fn = lambda *args, **kwargs: constrain_fn(  # noqa: E731
             parameter_fn(*args, **kwargs)
@@ -980,7 +944,6 @@ def _get_parameter_fn(dims, key_prefix="", ignore_undefined=False, **kwargs):
 
 
 def get_normalizing_flow(
-    dims: int,
     transformations: List,
     inverse_flow: bool = True,
     get_base_distribution=_get_base_distribution,
@@ -990,8 +953,6 @@ def get_normalizing_flow(
 
     Parameters
     ----------
-    dims
-        The dimension of the distribution.
     transformations
         List of bijective transformation.
     inverse_flow
@@ -1007,6 +968,13 @@ def get_normalizing_flow(
         parameter shape.
 
     """
+    parameters_key = "parameters"
+    parameters_shape_key = "parameters_shape"
+    parameters_fn_key = "parameters_fn"
+    parameters_fn_kwargs_key = "parameters_fn_kwargs"
+    parameters_constraint_fn_key = "parameters_constraint_fn"
+    parameters_constraint_fn_kwargs_key = "parameters_constraint_fn_kwargs"
+
     parameter_fns = {}
     trainable_parameters = {}
 
@@ -1015,27 +983,46 @@ def get_normalizing_flow(
         __LOGGER__.debug("processing definition of transformation %s", bijector_name)
         parameter_fns[bijector_name], trainable_parameters[bijector_name] = (
             _get_parameter_fn(
-                dims=dims,
-                parameters=transformation.pop("parameters", None),
-                parameter_fn=transformation.pop("parameter_fn", None),
-                parameters_shape=transformation.pop("parameters_shape", None),
-                parameter_fn_kwargs=transformation.pop("parameter_fn_kwargs", None),
-                parameter_constraints=transformation.pop("parameter_constraints", None),
+                parameters=transformation.pop(parameters_key, None),
+                parameters_fn=transformation.pop(parameters_fn_key, None),
+                parameters_shape=transformation.pop(parameters_shape_key, []),
+                parameters_fn_kwargs=transformation.pop(parameters_fn_kwargs_key, {}),
+                parameters_constraint_fn=transformation.pop(
+                    parameters_constraint_fn_key, None
+                ),
+                parameters_constraint_fn_kwargs=transformation.pop(
+                    parameters_constraint_fn_kwargs_key, {}
+                ),
             )
         )
 
     __LOGGER__.debug("parameter function %s", str(parameter_fns))
 
-    base_distribution_parameter_fn, base_distribution_trainable_parameters = (
-        _get_parameter_fn(
-            dims=dims,
-            key_prefix="base_distribution",
-            ignore_undefined=True,
-            **base_distribution_kwargs,
+    if (
+        parameters_key in base_distribution_kwargs.keys()
+        or parameters_fn_key in base_distribution_kwargs.keys()
+    ):
+        base_distribution_parameter_fn, base_distribution_trainable_parameters = (
+            _get_parameter_fn(
+                parameters=base_distribution_kwargs.pop(parameters_key, None),
+                parameters_fn=base_distribution_kwargs.pop(parameters_fn_key, None),
+                parameters_shape=base_distribution_kwargs.pop(parameters_shape_key, []),
+                parameters_fn_kwargs=base_distribution_kwargs.pop(
+                    parameters_fn_kwargs_key, {}
+                ),
+                parameters_constraint_fn=base_distribution_kwargs.pop(
+                    parameters_constraint_fn_key, None
+                ),
+                parameters_constraint_fn_kwargs=transformation.pop(
+                    parameters_constraint_fn_kwargs_key, {}
+                ),
+            )
         )
-    )
-
-    trainable_parameters["base_dsitribution"] = base_distribution_trainable_parameters
+        trainable_parameters["base_distribution"] = (
+            base_distribution_trainable_parameters
+        )
+    else:
+        base_distribution_parameter_fn = None
 
     def parameter_fn(*args, **kwargs):
         params = [fn(*args, **kwargs) for fn in parameter_fns.values()]
@@ -1069,10 +1056,8 @@ def get_normalizing_flow(
         return flow
 
     distribution_fn = _get_transformed_distribution_fn(
-        dims,
         flow_parametrization_fn,
         get_base_distribution=get_base_distribution,
-        is_joint=False,
         **base_distribution_kwargs,
     )
 

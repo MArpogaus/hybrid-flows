@@ -13,6 +13,7 @@
 ################################################################################
 
 import argparse
+import importlib
 
 
 # FUNCTION DEFINITIONS #########################################################
@@ -102,3 +103,15 @@ def filter_recursive(filter_func, collection):
         ]
     else:
         return collection if filter_func(collection) else None
+
+
+def getattr_from_module(module_attr):
+    module_attr = (
+        module_attr.replace("tfb.", "tensorflow_probability.python.bijectors.", 1)
+        .replace("tfd.", "tensorflow_probability.python.distributions.", 1)
+        .replace("tfp.", "tensorflow_probability.python.", 1)
+        .replace("tf.", "tensorflow.", 1)
+    )
+    module_name, attr = module_attr.rsplit(".", 1)
+    module = importlib.import_module(module_name)
+    return getattr(module, attr)
