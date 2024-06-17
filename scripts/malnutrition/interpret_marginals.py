@@ -161,7 +161,7 @@ fit_kwargs = {
     "verbose": True,
     "monitor": "val_loss",
 }
-preprocess_dataset = lambda data, model: {
+preprocess_dataset = lambda data, _: {
     "x": data[0][0],
     "y": data[0][1],
     "validation_data": data[1],
@@ -177,46 +177,64 @@ data, dims = get_dataset(
         ("passthrough", covariates),
     ],
 )
-data
 
-# %% init Model
-model = DensityRegressionModel(
+# %% plot data
+(unscaled_train_data, _, _), dims = get_dataset(**dataset_kwargs, scale=False)
+unscaled_train_data_df = pd.DataFrame(
+    np.concatenate([unscaled_train_data[1], unscaled_train_data[0]], -1),
+    columns=targets + covariates,
+)
+fig = plot_grid(unscaled_train_data_df.sample(frac=0.2), vars=targets, hue="cage")
+fig.savefig(results_path + "/malnutrition_data.png")
+
+# %% prepare data
+preprocessed = preprocess_dataset(data, None)
+X, Y, validation_data = preprocessed.values()
+
+# %% marginal model
+# TODO: Stimmt die Modellspezifikation in Klein et al. 2022?
+marginal_transformations = [
+    {
+        "bijector_name": "bernstein_poly",
+        "parameters_shape": [dims, 6],
+        "parameters_fn": "parameter_vector",
+        "parameters_fn_kwargs": {"dtype": "float32"},
+        "parameters_constraint_fn": "mctm.activations.get_thetas_constrain_fn",
+        "parameters_constraint_fn_kwargs": {
+            "low": -3,
+            "high": 4,
+            "bounds": "smooth",
+            "allow_flexible_bounds": True,
+        },
+        "extrapolation": True,
+    },
+    {
+        "bijector_name": "shift",
+        "parameters_shape": [dims],
+        "parameters_fn": get_bernstein_polynomial_parameter_lambda,  # "parameter_vector",
+        "parameters_fn_kwargs": {
+            "dtype": "float",
+            "polynomial_order": 3,
+            "conditional_event_shape": 1,
+            "low": 0,
+            "high": 35,
+        },
+        # "parameter_fn": "parameter_vector_or_simple_network",
+        # "parameter_fn_kwargs": {
+        #     "conditional": True,
+        #     "conditional_event_shape": (1),
+        #     "hidden_units": [16, 16],
+        #     "activation": "relu",
+        #     "batch_norm": False,
+        #     "dropout": False,
+        # },
+        # "parameters_constraint_fn": tf.squeeze,
+    },
+]
+
+marginal_model = DensityRegressionModel(
     distribution="normalizing_flow",
-    transformations=[
-        {
-            "bijector_name": "bernstein_poly",
-            "parameters_shape": [dims, 8],
-            "parameters_fn": "parameter_vector",
-            "parameters_fn_kwargs": {"dtype": "float32"},
-            "parameters_constraint_fn": "mctm.activations.get_thetas_constrain_fn",
-            "parameters_constraint_fn_kwargs": {
-                "low": -3,
-            },
-            "extrapolation": True,
-        },
-        {
-            "bijector_name": "shift",
-            "parameters_shape": [dims],
-            "parameters_fn": get_bernstein_polynomial_parameter_lambda,  # "parameter_vector",
-            "parameters_fn_kwargs": {
-                "dtype": "float",
-                "polynomial_order": 3,
-                "conditional_event_shape": 1,
-                "low": 0,
-                "high": 35,
-            },
-            # "parameter_fn": "parameter_vector_or_simple_network",
-            # "parameter_fn_kwargs": {
-            #     "conditional": True,
-            #     "conditional_event_shape": (1),
-            #     "hidden_units": [16, 16],
-            #     "activation": "relu",
-            #     "batch_norm": False,
-            #     "dropout": False,
-            # },
-            # "parameters_constraint_fn": tf.squeeze,
-        },
-    ],
+    transformations=marginal_transformations,
     base_distribution_kwargs={"dims": 0},
     # base_distribution_kwargs={
     #     "distribution_name": "tfd.MultivariateNormalTriL",
@@ -243,31 +261,27 @@ model = DensityRegressionModel(
     # },
 )
 
-# %% prepare data
-preprocessed = preprocess_dataset(data, model)
-X, Y, validation_data = preprocessed.values()
-
 # %% distribution
-dist = model(tf.ones((1, 1)))
+marginal_dist = marginal_model(tf.ones((1, 1)))
 # tfd.Independent(dist, 2)
-dist
+marginal_dist
 
 # %% log like
-dist.log_prob(tf.ones((1, 3)))
+marginal_dist.log_prob(tf.ones((1, 3)))
 
 # %% trainable parameters
-model.trainable_parameters
+marginal_model.trainable_parameters
 
 # %% bijector
-dist.bijector  # .bijector.bijectors
+marginal_dist.bijector  # .bijector.bijectors
 
 # %% parameter function
-params = model.parameter_fn(tf.ones((2, 1)))
+params = marginal_model.parameter_fn(tf.ones((2, 1)))
 params
 
 # %% fit model
 hist = fit_distribution(
-    model=model,
+    model=marginal_model,
     seed=seed,
     results_path=results_path,
     loss=nll_loss,
@@ -280,7 +294,7 @@ pd.DataFrame(hist.history).plot()
 
 # %% params after fit
 t = np.linspace(0, max(X), 200, dtype="float32")
-pv = model.parameter_fn(t[..., None])[1].numpy().squeeze()
+pv = marginal_model.parameter_fn(t[..., None])[1].numpy().squeeze()
 pv
 fig, axs = plt.subplots(1, len(targets), sharex=True, sharey=True)
 for (i, c), label in zip(enumerate(targets), targets):
@@ -294,11 +308,13 @@ fig.savefig("./org/gfx/malnutrition_params.png")
 # %% marginal cdf and pdf
 palette = "icefire"
 palette = "rocket_r"
-# palette = "mako_r"
-ages = [1, 3, 6, 9, 12, 24, 35]
+palette = "mako_r"
+ages = [1, 3, 6, 9, 12, 24]
 # ages = unscaled_train_data_df.cage.unique()
 colors = sns.color_palette(palette, as_cmap=True)(np.linspace(0, 1, len(ages))).tolist()
-dists = model(tf.convert_to_tensor(ages, dtype=model.dtype)[..., None])
+dists = marginal_model(
+    tf.convert_to_tensor(ages, dtype=marginal_model.dtype)[..., None]
+)
 
 y = np.linspace(0, 1, 100)[..., None, None]
 
@@ -314,10 +330,19 @@ fig, axs = plt.subplots(
 
 for i, c in enumerate(targets):
     axs[0, i].set_prop_cycle("color", colors)
-    axs[0, i].plot(y.flatten(), cdf[..., i])
+    axs[0, i].plot(y.flatten(), cdf[..., i], label=ages)
     axs[1, i].set_prop_cycle("color", colors)
-    axs[1, i].plot(y.flatten(), pdf[..., i])
+    axs[1, i].plot(y.flatten(), pdf[..., i], label=ages)
     axs[1, i].set_xlabel(f"y={c}")
+    if i == 0:
+        axs[0, i].legend(
+            ages,
+            title="Age",
+            # bbox_to_anchor=(1.05, 1),
+            loc="right",
+            fontsize=8,
+            frameon=False,
+        )
 
 axs[0, 0].set_ylabel(r"$F(y|\text{age})$")
 axs[1, 0].set_ylabel(r"$f(y|\text{age})$")
@@ -325,21 +350,15 @@ axs[1, 0].set_ylabel(r"$f(y|\text{age})$")
 fig.tight_layout(w_pad=0)
 fig.savefig("./org/gfx/malnutrition_cdf.png")
 
-# %% Samples
-X, Y, validation_data = preprocessed.values()
-dist = model(X)
-
-samples = dist.sample(seed=1).numpy()
-
 
 # %% sample
 def get_samples_df(seed, model, x, y, targets):
     set_seed(seed)
-    df_data = pd.DataFrame(y, columns=targets).assign(source="data").assign(mage=x)
+    df_data = pd.DataFrame(y, columns=targets).assign(source="data").assign(cage=x)
     df_model = (
         pd.DataFrame(model(x).sample(seed=seed).numpy().squeeze(), columns=targets)
         .assign(source="model")
-        .assign(mage=x)
+        .assign(cage=x)
     )
     df = pd.concat([df_data, df_model])
 
@@ -357,12 +376,126 @@ def plot_samples_grid(model, validation_data, N, targets, hue="source", **kwargs
 
 
 # plot_samples_grid(model, validation_data, 1000, targets, row="source")
-unscaled_train_data_df = get_samples_df(1, model, X, Y, targets)
+samples_df = get_samples_df(1, marginal_model, X, Y, targets)
 # df["mage_combined"] = df.mage // 128
 plot_grid(
-    unscaled_train_data_df.loc[unscaled_train_data_df.source == "model"].sample(
-        frac=0.2
-    ),
+    samples_df.loc[samples_df.source == "model"].groupby("cage").sample(frac=0.2),
     vars=targets,
-    hue="mage",
+    hue="cage",
 )
+
+
+# %% QQ Plot
+def ecdf(samples, x):
+    ss = np.sort(samples)  # [..., None]
+    cdf = np.searchsorted(ss, x, side="right") / float(ss.size)
+    return cdf
+
+
+def gen_pit_hist(ax, samples, measurements, **kwds):
+    ecdf_samples = ecdf(samples, measurements.squeeze())
+
+    pit_hist(ax, ecdf_samples, **kwds)
+
+
+def pit_hist(ax, ecdf_samples, bins=20, title=None, **kwds):
+    ax.hist(ecdf_samples.T, bins=bins, **kwds)
+
+    ax.set_title(title if title else "Probability Integral Transform (PIT) Histograms")
+    ax.set_xlabel("PIT=$F(y)$")
+    ax.set_ylabel("Freqency")
+
+
+def gen_reliablity_diagram(ax, samples, measurements, **kwds):
+    # ss = np.sort(measurements.squeeze())
+    ecdf_samples = ecdf(samples, measurements.squeeze())
+    ecdf_measurements = ecdf(measurements, measurements.squeeze())
+
+    reliablity_diagram(ax, ecdf_measurements, ecdf_samples, **kwds)
+
+
+def reliablity_diagram(ax, ecdf_samples, ecdf_measurements, title=None, **kwds):
+    ax.plot([0, 1], [0, 1], "k:")
+
+    ax.plot(ecdf_measurements, ecdf_samples, **kwds)
+
+    ax.set_title(title if title else "Reliability Diagram")
+    ax.set_xlabel("Estimated Quantile")
+    ax.set_ylabel("Observed Quantile")
+
+    return ax
+
+
+def validation_plot(samples, measurements, feature_name, covariates, **kwds):
+    samples = np.sort(samples.squeeze())
+    measurements = np.sort(measurements.squeeze())
+
+    y = np.linspace(measurements.min(), measurements.max(), 1000)
+    ecdf_samples_lin = ecdf(samples, y)
+    ecdf_measurements_lin = ecdf(measurements, y)
+    ecdf_samples_measurements = ecdf(samples, measurements)
+    ecdf_measurements_measurements = ecdf(measurements, measurements)
+
+    fig, ax = plt.subplots(1, 3, **kwds)
+
+    ax[0].plot(y, ecdf_samples_lin.squeeze(), label="data")
+    ax[0].plot(y, ecdf_measurements_lin.squeeze(), label="model")
+    ax[0].set_title("Empirical CDF")
+    ax[0].set_xlabel(feature_name)
+    ax[0].set_ylabel(f"$F(y|{','.join(covariates)})$")
+    ax[0].set_xscale("log")
+    ax[0].legend(
+        loc="upper left",
+        fontsize=8,
+        frameon=False,
+    )
+
+    reliablity_diagram(
+        ax[1], ecdf_samples_measurements, ecdf_measurements_measurements
+    )  # , s=2, alpha=0.1)
+    pit_hist(ax[2], ecdf_samples_measurements)
+
+    fig.tight_layout()
+
+    return fig
+
+
+# %% validation plots
+samples_df = get_samples_df(1, marginal_model, X, Y, targets)
+cage = 3
+column = targets[0]
+measurements = samples_df[(samples_df.source == "data") & (samples_df.cage == cage)][
+    column
+]
+samples = samples_df[(samples_df.source == "model") & (samples_df.cage == cage)][column]
+print(len(samples))
+fig = validation_plot(samples, measurements, feature_name=column, covariates=["cage"])
+
+# %% reliabiliti diagram
+samples_df = get_samples_df(1, marginal_model, X, Y, targets)
+measurements = samples_df[(samples_df.source == "data")]
+samples = samples_df[(samples_df.source == "model")]
+
+column = targets[0]
+
+cdf_model_df = pd.DataFrame(data=marginal_model(X).cdf(Y), columns=targets).assign(
+    cage=X
+)
+ecdf_measurements = (
+    pd.DataFrame(data=Y, columns=targets)
+    .assign(cage=X)
+    .groupby("cage")
+    .apply(lambda x: x.apply(lambda x: ecdf(x, x), raw=True), include_groups=False)
+    .reset_index()
+    .sort_values("level_1")
+    .drop(columns="level_1")
+)
+
+ecdf_df = pd.DataFrame(
+    np.stack(
+        [cdf_model_df[column].values, ecdf_measurements[column], X.numpy().flatten()], 1
+    ),
+    columns=["model", "data", "cage"],
+)
+
+sns.lineplot(ecdf_df, x="model", y="data", hue="cage", estimator=None)
