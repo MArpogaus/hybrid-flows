@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-08-24 16:15:23 (Marcel Arpogaus)
-# changed : 2024-05-28 21:38:33 (Marcel Arpogaus)
+# changed : 2024-06-18 13:53:51 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -25,6 +25,7 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 
 import tensorflow as tf
 import tensorflow.keras as K
+from bernstein_flow.bijectors import BernsteinBijector
 
 from .nn import (
     build_conditional_net,
@@ -44,16 +45,17 @@ def get_parameter_vector_fn(
 
     Parameters
     ----------
-    parameter_shape
+    parameter_shape : tuple of int
         The shape of the parameter vector.
-    initializer
-        Function returning initial parameters.
-    dtype
+    initializer : callable, optional
+        Function returning initial parameters, by default tf.random.normal.
+    dtype : tf.dtypes.DType, optional
         The data type of the parameter vector, by default tf.float32.
 
     Returns
     -------
-         A tuple with a callable that returns the parameter vector and the parameter
+    tuple
+        A tuple with a callable that returns the parameter vector and the parameter
         vector itself.
 
     """
@@ -69,26 +71,25 @@ def get_fully_connected_network_fn(
     conditional: bool = False,
     conditional_event_shape: Tuple[int, ...] = (),
     **kwargs,
-) -> Tuple[
-    Callable[tf.Variable, Callable[tf.Variable, tf.Variable]], List[tf.Variable]
-]:
+) -> Tuple[Callable[..., tf.Tensor], List[tf.Variable]]:
     """Create a simple fully connected parameter network.
 
     Parameters
     ----------
-    parameter_shape
+    parameter_shape : tuple of int
         Shape of the parameter to output by the network.
-    input_shape
+    input_shape : tuple of int
         Shape of the input data.
-    conditional
+    conditional : bool, optional
         If True, network is conditional, by default False.
-    conditional_event_shape
+    conditional_event_shape : tuple of int, optional
         Shape of additional conditional input, by default ().
-    kwargs
+    kwargs : dict, optional
         Additional keyword arguments for network configuration.
 
     Returns
     -------
+    tuple
         A tuple of a callable that returns the parameter network and a list of its
         trainable variables.
 
@@ -116,7 +117,7 @@ def get_fully_connected_network_fn(
             return lambda x: parameter_network([x, conditional_input], **kwargs)
     else:
 
-        def parameter_network_fn(conditional_input, **kwargs):
+        def parameter_network_fn(*_, **kwargs):
             return lambda x: parameter_network(x, **kwargs)
 
     return parameter_network_fn, parameter_network.trainable_variables
@@ -126,21 +127,22 @@ def get_parameter_vector_or_simple_network_fn(
     parameter_shape: Tuple[int, ...], conditional: bool, **kwargs
 ) -> Union[
     Tuple[K.Model, List[tf.Variable]],
-    Tuple[Callable[tf.Variable, tf.Variable], tf.Variable],
+    Tuple[Callable[..., tf.Variable], tf.Variable],
 ]:
     """Create either a parameter vector or a fully connected parameter network.
 
     Parameters
     ----------
-    parameter_shape
+    parameter_shape : tuple of int
         Shape of the parameter.
-    conditional
+    conditional : bool
         If True, creates a conditional network; otherwise, creates a parameter vector.
-    kwargs
+    kwargs : dict, optional
         Additional keyword arguments.
 
     Returns
     -------
+    tuple
         A tuple consisting of either a Keras model and its trainable variables, or a
         callable parameter vector and the parameter vector itself.
 
@@ -169,24 +171,24 @@ def get_fully_connected_res_net_fn(
 
     Parameters
     ----------
-    parameter_shape
+    parameter_shape : tuple of int
         Shape of the parameter vector.
-    input_shape
+    input_shape : tuple of int
         The shape of the input data.
-    conditional
+    conditional : bool, optional
         If True, network is conditional, by default False.
-    conditional_event_shape
+    conditional_event_shape : tuple of int, optional
         Shape of additional conditional input, by default ().
-    name
-        Name of the Keras model.
-    dtype
+    name : str, optional
+        Name of the Keras model, by default "res_net".
+    dtype : tf.dtypes.DType, optional
         The dtype of the operation, by default tf.float32.
-    kwargs
+    kwargs : dict, optional
         Additional keyword arguments passed to Dense layers.
-
 
     Returns
     -------
+    tuple
         The parameter network model as a callable and a list of its trainable variables.
 
     """
@@ -217,7 +219,7 @@ def get_fully_connected_res_net_fn(
             return lambda x: parameter_network([x, conditional_input], **kwargs)
     else:
 
-        def parameter_network_fn(conditional_input, **kwargs):
+        def parameter_network_fn(*_, **kwargs):
             return lambda x: parameter_network(x, **kwargs)
 
     return parameter_network_fn, parameter_network.trainable_variables
@@ -225,22 +227,21 @@ def get_fully_connected_res_net_fn(
 
 def get_masked_autoregressive_network_fn(
     parameter_shape: Tuple[int, ...], conditional: bool = False, **kwargs
-) -> Tuple[
-    Callable[tf.Variable, Callable[tf.Variable, tf.Variable]], List[tf.Variable]
-]:
+) -> Tuple[Callable[..., Callable[..., tf.Tensor]], List[tf.Variable]]:
     """Create an autoregressive parameter network.
 
     Parameters
     ----------
-    parameter_shape
+    parameter_shape : tuple of int
         Shape of the parameters.
-    conditional
+    conditional : bool, optional
         If True, network is conditional, by default False.
-    kwargs
+    kwargs : dict, optional
         Additional keyword arguments.
 
     Returns
     -------
+    tuple
         A tuple of callable autoregressive parameter network function and its
         trainable variables.
 
@@ -260,7 +261,7 @@ def get_masked_autoregressive_network_fn(
             return lambda x: parameter_network([x, conditional_input], **kwargs)
     else:
 
-        def parameter_network_fn(conditional_input, **kwargs):
+        def parameter_network_fn(*_, **kwargs):
             return lambda x: parameter_network(x, **kwargs)
 
     return parameter_network_fn, parameter_network.trainable_variables
@@ -272,43 +273,35 @@ def get_masked_autoregressive_network_with_additive_conditioner_fn(
     made_kwargs: Dict[str, Any],
     x0_kwargs: Dict[str, Any],
 ) -> Tuple[
-    Callable[
-        tf.Variable,
-        Callable[tf.Variable, Callable[[tf.Variable, tf.Variable], tf.Variable]],
-    ],
+    Callable[..., Callable[..., Callable[[tf.Variable, tf.Variable], tf.Variable]]],
     List[tf.Variable],
 ]:
     """Create an autoregressive parameter network with an additive conditioner.
 
     Parameters
     ----------
-    parameter_shape
+    parameter_shape : tuple of int
         The shape of the parameter.
-    input_shape
+    input_shape : tuple of int
         The shape of the input.
-    made_kwargs
+    made_kwargs : dict
         Keyword arguments for MADE (Masked Autoregressive Flow with
         Autoregressive Conditioner).
-    x0_kwargs
+    x0_kwargs : dict
         Keyword arguments for the additive conditioner network.
 
     Returns
     -------
+    tuple
         A tuple containing a callable parameter network and its trainable variables.
 
     """
     (
         masked_autoregressive_parameter_network_fn,
         masked_autoregressive_trainable_variables,
-    ) = get_masked_autoregressive_network_fn(
-        parameter_shape,
-        **made_kwargs,
-    )
+    ) = get_masked_autoregressive_network_fn(parameter_shape, **made_kwargs)
 
-    (
-        x0_parameter_network_fn,
-        x0_trainable_variables,
-    ) = get_fully_connected_network_fn(
+    x0_parameter_network_fn, x0_trainable_variables = get_fully_connected_network_fn(
         parameter_shape=parameter_shape, input_shape=input_shape, **x0_kwargs
     )
 
@@ -345,26 +338,22 @@ def get_fully_connected_autoregressive_network_fn(
 
     Parameters
     ----------
-    parameter_shape
+    parameter_shape : tuple of int
         Shape of the parameter vector.
-    res_blocks
-        Number of residual blocks, by default 0.
-    activation
-        Activation function for the hidden units, by default "relu".
-    conditional
+    conditional : bool, optional
         If True, network is conditional, by default False.
-    conditional_event_shape
+    conditional_event_shape : tuple of int, optional
         Shape of additional conditional input, by default ().
-    name
-        Name of the Keras model.
-    dtype
+    name : str, optional
+        Name of the Keras model, by default "autoregressive_res_net".
+    dtype : tf.dtypes.DType, optional
         The dtype of the operation, by default tf.float32.
-    kwargs
+    kwargs : dict, optional
         Additional keyword arguments passed to Dense layers.
-
 
     Returns
     -------
+    tuple
         The parameter network model as a callable and a list of its trainable variables.
 
     """
@@ -397,7 +386,58 @@ def get_fully_connected_autoregressive_network_fn(
             return lambda x: parameter_network([x, conditional_input], **kwargs)
     else:
 
-        def parameter_network_fn(conditional_input, **kwargs):
+        def parameter_network_fn(*_, **kwargs):
             return lambda x: parameter_network(x, **kwargs)
 
     return parameter_network_fn, parameter_network.trainable_variables
+
+
+def get_bernstein_polynomial_fn(
+    parameter_shape: Tuple[int, ...],
+    polynomial_order: int,
+    conditional_event_shape: Tuple[int, ...],
+    high: float,
+    low: float,
+    dtype: tf.dtypes.DType,
+    **kwargs,
+) -> Tuple[Callable[tf.Tensor, tf.Tensor], tf.Variable]:
+    """Create a Bernstein polynomial parameter lambda.
+
+    Parameters
+    ----------
+    parameter_shape : tuple of int
+        Shape of the parameter.
+    polynomial_order : int
+        Order of the polynomial.
+    conditional_event_shape : tuple of int
+        Shape of the conditional event.
+    high : float
+        High range value for Bernstein Polynomial.
+    low : float
+        Low range value for Bernstein Polynomial.
+    dtype : tf.dtypes.DType
+        Data type of the parameter.
+    kwargs : dict, optional
+        Additional keyword arguments.
+
+    Returns
+    -------
+    tuple
+        The parameter lambda and the parameter vector.
+
+    """
+    parameter_shape = (
+        [conditional_event_shape] + parameter_shape + [polynomial_order + 1]
+    )
+    _, parameter_vector = get_parameter_vector_fn(
+        parameter_shape=parameter_shape,
+        dtype=dtype,  # initializer=tf.ones
+        **kwargs,
+    )
+
+    def get_parameter_fn(conditional_input=None, **kwargs):
+        b_poly = BernsteinBijector(parameter_vector)
+        y = b_poly((conditional_input[..., None] - low) / (high - low))
+        return tf.reduce_sum(y, 1)
+
+    return get_parameter_fn, parameter_vector
