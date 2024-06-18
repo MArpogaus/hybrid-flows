@@ -244,10 +244,9 @@ X, Y, validation_data = preprocessed.values()
 # TODO: Stimmt die Modellspezifikation in Klein et al. 2022?
 marginal_transformations = [
     {
-        "bijector_name": "bernstein_poly",
-        "parameters_shape": [dims, 6],
+        "bijector_name": "BernsteinBijector",
         "parameters_fn": "parameter_vector",
-        "parameters_fn_kwargs": {"dtype": "float32"},
+        "parameters_fn_kwargs": {"parameter_shape": [dims, 6], "dtype": "float32"},
         "parameters_constraint_fn": "mctm.activations.get_thetas_constrain_fn",
         "parameters_constraint_fn_kwargs": {
             "low": -3,
@@ -258,10 +257,10 @@ marginal_transformations = [
         "extrapolation": True,
     },
     {
-        "bijector_name": "shift",
-        "parameters_shape": [dims],
+        "bijector_name": "Shift",
         "parameters_fn": "bernstein_polynomial",  # "parameter_vector",
         "parameters_fn_kwargs": {
+            "parameter_shape": [dims],
             "dtype": "float",
             "polynomial_order": 3,
             "conditional_event_shape": 1,
@@ -302,9 +301,9 @@ mctm_model = DensityRegressionModel(
     # base_distribution_kwargs={"dims": 0},
     base_distribution_kwargs={
         "distribution_name": "tfd.MultivariateNormalTriL",
-        "parameters_shape": [dims + np.sum(np.arange(dims + 1))],
         "parameters_fn": "bernstein_polynomial",  # "parameter_vector",
         "parameters_fn_kwargs": {
+            "parameter_shape": [dims + np.sum(np.arange(dims + 1))],
             "dtype": "float",
             "polynomial_order": 3,
             "conditional_event_shape": 1,
