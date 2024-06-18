@@ -18,6 +18,7 @@ def get_dataset(
     test_size=0.1,
     val_size=0.1,
     covariates=None,
+    stratify=False,
     dtype=tf.float32,
     seed=1,
     column_transformers=[],
@@ -49,10 +50,16 @@ def get_dataset(
     # Split the dataset into train, validation, and test sets
     set_seed(seed)
     train_val_data, test_data = train_test_split(
-        data, test_size=test_size, shuffle=True
+        data,
+        test_size=test_size,
+        shuffle=True,
+        stratify=data[covariates] if stratify else None,
     )
     train_data, val_data = train_test_split(
-        train_val_data, test_size=val_size, shuffle=True
+        train_val_data,
+        test_size=val_size,
+        shuffle=True,
+        stratify=train_val_data[covariates] if stratify else None,
     )
 
     # Apply data scaling using column transformer
