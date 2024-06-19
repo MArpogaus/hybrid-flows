@@ -862,7 +862,7 @@ def get_masked_autoregressive_flow_first_dim_masked(
         Keyword arguments for the parameters.
     get_bijector_fn
         A function to get the bijector.
-    get_parameter_fn
+    get_parameter_fn : Callable
         A function to get the parameters.
 
     Returns
@@ -914,22 +914,25 @@ def get_masked_autoregressive_flow_first_dim_masked(
 
 
 def _get_parametrized_bijector(
-    bijector_name: str,
+    bijector: Union[tfb.Bijector, type, str],
     parameters: tf.Tensor,
-    parameters_constraint_fn: Callable,
-    **kwds,
+    parameters_constraint_fn: Callable = None,
+    invert: bool = False,
+    bijector_kwargs: Dict[str, Any] = {},
 ) -> tfp.bijectors.Bijector:
     """Get a parametrized bijector instance.
 
     Parameters
     ----------
-    bijector_name
-        Name of the bijector class.
+    bijector
+        Bijectro class, instance or name as string.
     parameters
         Parameters to pass to the bijector.
     parameters_constraint_fn
         Function to constrain the parameters.
-    kwds
+    invert
+        If `True` the parametrized bijector gets inverted, default: False
+    bijector_kwargs
         Additional keyword arguments to pass to the bijector.
 
     Returns
@@ -937,28 +940,53 @@ def _get_parametrized_bijector(
         The parametrized bijector instance.
 
     """
-    if bijector_name == "BernsteinBijector":
-        bijector_cls = BernsteinBijector
-    elif "." not in bijector_name:
-        bijector_cls = getattr_from_module("tfb." + bijector_name)
+    # import bijector class
+    if not isinstance(bijector, tfb.Bijector):
+        if isinstance(bijector, type):
+            bijector_cls = bijector
+        elif bijector == "BernsteinBijector":
+            bijector_cls = BernsteinBijector
+        elif "." not in bijector:
+            bijector_cls = getattr_from_module("tfb." + bijector)
+        else:
+            bijector_cls = getattr_from_module(bijector)
+
+        # instantiate bijector
+        if (
+            bijector_cls in (tfb.MaskedAutoregressiveFlow, tfb.RealNVP)
+            and "bijector" in bijector_kwargs
+        ):
+            bijector_kwargs = bijector_kwargs.copy()
+            nested_bijector = bijector_kwargs.pop("bijector")
+            nested_bijector_kwargs = bijector_kwargs.pop("bijector_kwargs", {})
+
+            def bijector_fn(y, *args, **kwargs):
+                pvector = parameters(y, **kwargs)
+                bijector = _get_parametrized_bijector(
+                    bijector=nested_bijector,
+                    parameters=pvector,
+                    parameters_constraint_fn=parameters_constraint_fn,
+                    bijector_kwargs=nested_bijector_kwargs,
+                )
+
+                return bijector
+
+            bijector = bijector_cls(bijector_fn=bijector_fn, **bijector_kwargs)
+        elif parameters_constraint_fn:
+            constrained_parameters = parameters_constraint_fn(parameters)
+            if isinstance(constrained_parameters, list):
+                bijector = bijector_cls(*constrained_parameters, **bijector_kwargs)
+            elif isinstance(constrained_parameters, dict):
+                bijector = bijector_cls(**constrained_parameters, **bijector_kwargs)
+            else:
+                bijector = bijector_cls(constrained_parameters, **bijector_kwargs)
+        else:
+            bijector = bijector_cls(parameters, **bijector_kwargs)
+
+    if invert:
+        return tfb.Invert(bijector)
     else:
-        bijector_cls = getattr_from_module(bijector_name)
-
-    if bijector_cls in (tfb.MaskedAutoregressiveFlow, tfb.RealNVP):
-        bijector = kwds.pop("bijector")
-
-        def bijector_fn(y, *args, **kwargs):
-            pvector = parameters(y, **kwargs)
-            flow = _get_parametrized_bijector(
-                bijector=bijector,
-                parameters_constraint_fn=parameters_constraint_fn(pvector),
-            )
-
-            return flow
-
-        return bijector_cls(bijector_fn=bijector_fn, **kwds)
-    else:
-        return bijector_cls(parameters_constraint_fn(parameters), **kwds)
+        return bijector
 
 
 def _get_parameter_fn(
@@ -1057,23 +1085,31 @@ def _get_parameters_constraint_fn(
 
 
 def get_normalizing_flow(
-    transformations: List[Dict],
+    bijectors: List[Dict],
+    reverse_flow: bool = True,
     inverse_flow: bool = True,
     get_base_distribution: Callable = _get_base_distribution,
     base_distribution_kwargs: Dict = {},
+    default_parameters_constraint_fn: Callable[
+        [tf.Tensor], Union[Dict[str, tf.Tensor], List[tf.Tensor], tf.Tensor]
+    ] = tf.identity,
 ) -> Tuple[Callable, Callable, List]:
     """Get a function to parametrize a elementwise transformed distribution.
 
     Parameters
     ----------
-    transformations
-        List of bijective transformation dictionaries.
+    bijectors
+        List of dictionaries describing bijective transformations.
+    reverse_flow:
+        Reverse chain of bijectors.
     inverse_flow
-        Reverse direction of flow, to transform from the data to the base distribution.
+        Invert flow to transform from the data to the base distribution.
     get_base_distribution
         The base distribution lambda.
     base_distribution_kwargs
         Keyword arguments for the base distribution.
+    default_parameters_constraint_fn
+        Default constraining function to use, if not provided. Default: `tf.identity`
 
     Returns
     -------
@@ -1081,7 +1117,8 @@ def get_normalizing_flow(
         the parameter function and a list of trainable parameters.
 
     """
-    transformation_name_key = "bijector_name"
+    bijector_name_key = "bijector"
+    bijector_kwargs_key = "bijector_kwargs"
     parameters_key = "parameters"
     parameters_fn_key = "parameters_fn"
     parameters_fn_kwargs_key = "parameters_fn_kwargs"
@@ -1092,30 +1129,26 @@ def get_normalizing_flow(
     parameters_constraint_fns = {}
     trainable_parameters = {}
 
-    for transformation in transformations:
-        transformation_name = transformation[transformation_name_key]
-        __LOGGER__.debug(
-            "processing definition of transformation %s", transformation_name
-        )
+    for bijector in bijectors:
+        bijector_name = bijector[bijector_name_key]
+        __LOGGER__.debug("processing definition of bijector %s", bijector_name)
         (
-            parameter_fns[transformation_name],
-            trainable_parameters[transformation_name],
+            parameter_fns[bijector_name],
+            trainable_parameters[bijector_name],
         ) = _get_parameter_fn(
-            parameters=transformation.pop(parameters_key, None),
-            parameters_fn=transformation.pop(parameters_fn_key, None),
-            **transformation.pop(parameters_fn_kwargs_key, {}),
+            parameters=bijector.pop(parameters_key, None),
+            parameters_fn=bijector.pop(parameters_fn_key, None),
+            **bijector.pop(parameters_fn_kwargs_key, {}),
         )
-        if parameters_constraint_fn_key in transformation:
-            parameters_constraint_fns[transformation_name] = (
-                _get_parameters_constraint_fn(
-                    parameters_constraint_fn=transformation.pop(
-                        parameters_constraint_fn_key, None
-                    ),
-                    **transformation.pop(parameters_constraint_fn_kwargs_key, {}),
-                )
+        if parameters_constraint_fn_key in bijector:
+            parameters_constraint_fns[bijector_name] = _get_parameters_constraint_fn(
+                parameters_constraint_fn=bijector.pop(
+                    parameters_constraint_fn_key, None
+                ),
+                **bijector.pop(parameters_constraint_fn_kwargs_key, {}),
             )
         else:
-            parameters_constraint_fns[transformation_name] = tf.identity
+            parameters_constraint_fns[bijector_name] = default_parameters_constraint_fn
 
     __LOGGER__.debug("parameter function %s", str(parameter_fns))
 
@@ -1142,7 +1175,9 @@ def get_normalizing_flow(
                 **base_distribution_kwargs.pop(parameters_constraint_fn_kwargs_key, {}),
             )
         else:
-            base_distribution_parameter_constraint_fns = tf.identity
+            base_distribution_parameter_constraint_fns = (
+                default_parameters_constraint_fn
+            )
     else:
         base_distribution_parameter_fn = None
 
@@ -1157,33 +1192,32 @@ def get_normalizing_flow(
             return params
 
     def flow_parametrization_fn(all_parameters):
-        bijectors = []
-        for transformation_kwargs, transformation_parameters in zip(
-            transformations, all_parameters
-        ):
-            transformation_name = transformation_kwargs[transformation_name_key]
-            bijectors.append(
+        bijectors_list = []
+        for bijector, bijector_parameters in zip(bijectors, all_parameters):
+            bijector_name = bijector[bijector_name_key]
+            bijector_kwargs = bijector.get(bijector_kwargs_key, {})
+            bijectors_list.append(
                 _get_parametrized_bijector(
-                    parameters=transformation_parameters,
-                    parameters_constraint_fn=parameters_constraint_fns[
-                        transformation_name
-                    ],
-                    **transformation_kwargs,
+                    bijector=bijector_name,
+                    parameters=bijector_parameters,
+                    parameters_constraint_fn=parameters_constraint_fns[bijector_name],
+                    bijector_kwargs=bijector_kwargs,
                 )
             )
 
-        if inverse_flow:
-            # the Chain bijector uses reversed list in the forward call.
-            # We change the direction by first reversing the list to get f₃ ∘ f₂ ∘ f₁
-            # and then invert it to get T = f₃⁻¹ ∘ f₂⁻¹ ∘ f₁⁻¹ and T⁻¹ = f₁ ∘ f₂ ∘ f₂
-            bijectors = list(reversed(bijectors))
+        if reverse_flow:
+            # The Chain bijector uses the reversed list in the forward call.
+            # We change the direction here to get T = f₃ ∘ f₂ ∘ f₁.
+            bijectors_list = list(reversed(bijectors_list))
 
-        if len(bijectors) == 1:
-            flow = bijectors[0]
+        if len(bijectors_list) == 1:
+            flow = bijectors_list[0]
         else:
-            flow = tfb.Chain(bijectors)
+            flow = tfb.Chain(bijectors_list)
 
         if inverse_flow:
+            # If we invert the reversed flow we get
+            # T = f₃⁻¹ ∘ f₂⁻¹ ∘ f₁⁻¹ and T⁻¹ = f₁ ∘ f₂ ∘ f₂.
             flow = tfb.Invert(flow)
 
         return flow
