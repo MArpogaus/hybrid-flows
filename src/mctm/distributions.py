@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-06-18 17:28:24 (Marcel Arpogaus)
+# changed : 2024-06-19 17:34:45 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -61,9 +61,10 @@ def _get_multivariate_normal_fn(
 
     Returns
     -------
-    tuple
-        A function to parametrize the Multivariate Normal distribution and the shape
-        of the parameter vector.
+    dist
+        A function to parametrize the Multivariate Normal distribution.
+    parameters_shape
+        The shape of the parameter vector.
 
     """
     parameters_shape = (dims + np.sum(np.arange(dims + 1)),)
@@ -105,8 +106,12 @@ def _get_trainable_distribution(
 
     Returns
     -------
-        A function to parametrize the distribution, a function to obtain the parameters
-        and list of trainable parameters.
+    distribution_fn
+        A function to parametrize the distribution
+    parameter_fn
+        A function to obtain the parameters
+    trainable_parameters
+        List of trainable parameters
 
     """
     distribution_fn, parameters_shape = get_distribution_fn(
@@ -135,6 +140,7 @@ def _get_base_distribution(
 
     Returns
     -------
+    dist
         The default base distribution.
 
     """
@@ -180,7 +186,10 @@ def _get_parametrized_bijector_fn(
 
     Returns
     -------
-        Bijector parametrization function and parameters shape
+    bijector_fn
+        Bijector parametrization function
+    num_parameters
+        Parameters shape
 
     """
     if bijector_name == "bernstein_poly":
@@ -241,7 +250,10 @@ def _get_flow_parametrization_fn(
 
     Returns
     -------
-        The flow parametrization function and its parameter shape.
+    flow_parametrization_fn
+        The flow parametrization function
+    num_parameters
+        Its parameter shape.
 
     """
     (
@@ -325,11 +337,12 @@ def _get_transformed_distribution_fn(
     get_base_distribution
         Function that returns base distribution if provided;
         otherwise, use default base distribution.
-    **kwargs : Dict
+    **kwargs
         Additional keyword parameters.
 
     Returns
     -------
+    distribution_fn
         The transformed distribution function.
 
     """
@@ -340,7 +353,7 @@ def _get_transformed_distribution_fn(
             kwargs.update(base_parameters)
             __LOGGER__.debug("got parameters for base distribution.")
 
-        __LOGGER__.debug("base distribution kwargs : %s", str(kwargs))
+        __LOGGER__.debug("base distribution kwargs: %s", str(kwargs))
         base_distribution = get_base_distribution(**kwargs)
         bijector = flow_parametrization_fn(parameters)
         return tfd.TransformedDistribution(
@@ -372,8 +385,10 @@ def _get_elementwise_flow(
 
     Returns
     -------
-        The parametrization function of the transformed distribution and its
-        parameter shape.
+    distribution_fn
+        The parametrization function of the transformed distribution
+    pv_shape
+        Its parameter shape.
 
     """
     flow_parametrization_fn, num_parameters = _get_flow_parametrization_fn(**kwargs)
@@ -403,8 +418,10 @@ def _get_multivariate_flow_fn(
 
     Returns
     -------
-        A function to parametrize the multivariate normalizing flow distribution and the
-        shape of the parameter vector.
+    distribution_fn
+        A function to parametrize the multivariate normalizing flow distribution
+    pv_shape
+        The shape of the parameter vector.
 
     """
     flow_parametrization_fn, num_parameters = _get_flow_parametrization_fn(**kwargs)
@@ -463,7 +480,12 @@ def _get_stacked_flow_parametrization_fn(
 
     Returns
     -------
-        Parametrization function, parameter function, and trainable variables.
+    stacked_flow_parametrization_fn
+        Parametrization function
+    parameter_fn
+        Parameter function
+    trainable_variables
+        Trainable variables
 
     """
     flow_kwargs = kwargs.copy()
@@ -555,7 +577,12 @@ def _get_stacked_flow(
 
     Returns
     -------
-        Parametrization function, parameter function, and trainable variables.
+    distribution_fn
+        Parametrization function
+    parameter_fn
+        Parameter function
+    trainable_variables
+        Trainable variables
 
     """
     (
@@ -585,6 +612,7 @@ def _get_num_masked(dims: int, layer: int) -> int:
 
     Returns
     -------
+    num_masked
         The number of masked dimensions.
 
     """
@@ -609,7 +637,7 @@ def _get_bijector_fn(
 
     Returns
     -------
-    callable
+    bijector_fn
         A function to parametrize the bijector function.
 
     """
@@ -659,8 +687,12 @@ def get_coupling_flow(
 
     Returns
     -------
-        A function to parametrize the distribution, a callable for
-        parameter networks, and a list of trainable parameters.
+    distribution_fn
+        A function to parametrize the distribution
+    parameter_fn
+        A callable for parameter networks
+    trainable_parameters
+        A list of trainable parameters.
 
     """
     distribution_kwargs = distribution_kwargs.copy()
@@ -744,8 +776,12 @@ def _get_masked_autoregressive_flow_parametrization_fn(
 
     Returns
     -------
-        A function to parametrize the distribution, a callable for
-        parameter networks, and a list of trainable parameters.
+    distribution_fn
+        A function to parametrize the distribution
+    parameter_fn
+        A callable for parameter networks
+    trainable_parameters
+        A list of trainable parameters.
 
     """
 
@@ -804,8 +840,12 @@ def get_masked_autoregressive_flow(
 
     Returns
     -------
-        A function to parametrize the distribution, a callable for
-        parameter networks, and a list of trainable parameters.
+    distribution_fn
+        A function to parametrize the distribution
+    parameter_fn
+        A callable for parameter networks
+    trainable_parameters
+        A list of trainable parameters.
 
     """
     distribution_kwargs = distribution_kwargs.copy()
@@ -862,7 +902,7 @@ def get_masked_autoregressive_flow_first_dim_masked(
         Keyword arguments for the parameters.
     get_bijector_fn
         A function to get the bijector.
-    get_parameter_fn : Callable
+    get_parameter_fn
         A function to get the parameters.
 
     Returns
@@ -1089,7 +1129,7 @@ def get_normalizing_flow(
     reverse_flow: bool = True,
     inverse_flow: bool = True,
     get_base_distribution: Callable = _get_base_distribution,
-    base_distribution_kwargs: Dict = {},
+    base_distribution_kwargs: Dict[str, Any] = {},
     default_parameters_constraint_fn: Callable[
         [tf.Tensor], Union[Dict[str, tf.Tensor], List[tf.Tensor], tf.Tensor]
     ] = tf.identity,
