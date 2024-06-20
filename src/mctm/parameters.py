@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-08-24 16:15:23 (Marcel Arpogaus)
-# changed : 2024-06-18 13:53:51 (Marcel Arpogaus)
+# changed : 2024-06-19 21:18:24 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -313,12 +313,17 @@ def get_masked_autoregressive_network_with_additive_conditioner_fn(
         )
         x0_net = x0_parameter_network_fn(conditional_input, **kwargs)
 
-        def call(x: tf.Variable, conditional_input: tf.Variable) -> tf.Variable:
-            pv1 = made_net(x)
-            pv2 = x0_net(conditional_input)
-            return pv1 + pv2
+        def call_x0(x0: tf.Tensor):
+            pv2 = x0_net(x0)
 
-        return call
+            @tf.function
+            def call_made(x: tf.Tensor) -> tf.Tensor:
+                pv1 = made_net(x)
+                return pv1 + pv2
+
+            return call_made
+
+        return call_x0
 
     trainable_parameters = (
         masked_autoregressive_trainable_variables + x0_trainable_variables
