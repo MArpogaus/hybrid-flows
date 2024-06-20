@@ -23,6 +23,7 @@ from mctm.parameters import get_parameter_vector_fn
 from mctm.utils.tensorflow import fit_distribution, set_seed
 from mctm.utils.visualisation import get_figsize, setup_latex
 from tensorflow import keras as K
+from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 
 # %% set log level
@@ -39,7 +40,7 @@ def plot_grid(data, **kwargs):
     """Plot sns.PairGrid."""
     sns.set_theme(style="white")
     g = sns.PairGrid(data, diag_sharey=False, **kwargs)
-    g.map_upper(sns.scatterplot, s=15)
+    g.map_upper(sns.scatterplot, s=10, alpha=0.5)
 
     g.map_lower(sns.kdeplot)
     g.map_diag(sns.kdeplot, lw=2)
@@ -100,7 +101,7 @@ def get_samples_df(seed, model, x, y, targets):
 def ecdf(samples, x):
     ss = np.sort(samples)  # [..., None]
     cdf = np.searchsorted(ss, x, side="right") / float(ss.size)
-    return cdf
+    return cdf.astype(x.dtype)
 
 
 def gen_pit_hist(ax, samples, measurements, **kwds):
@@ -171,6 +172,72 @@ def validation_plot(samples, measurements, feature_name, covariates, **kwds):
     return fig
 
 
+def create_lambda_matrix(x):
+    num_elements = x.shape[-1]
+    # Berechne die Größe der Matrix basierend auf der Anzahl der Elemente in x
+    n = tf.cast(
+        tf.math.ceil(tf.math.sqrt(2.0 * tf.cast(num_elements, tf.float32))), tf.int32
+    )
+
+    # Erstelle eine Diagonalmatrix mit Einsen
+    diag_ones = tf.linalg.diag(tf.ones((n,), dtype=x.dtype))
+
+    # Bereite das untere Dreieck der Matrix vor
+    tri_lower_indices = tf.where(
+        tf.linalg.band_part(tf.ones((n, n)), -1, 0) - tf.eye(n) > 0
+    )
+    lower_tri_elements = tf.scatter_nd(tri_lower_indices, x, shape=(n, n))
+
+    # Kombiniere die Diagonalmatrix und die unteren Dreieckselemente
+    mat = diag_ones + lower_tri_elements
+    return mat
+
+
+def create_lambda_matrix2(x):
+    bs = x.shape[:-1]
+    num_elements = x.shape[-1]
+
+    # Berechne die Größe der Matrix basierend auf der Anzahl der Elemente in x
+    n = tf.cast(
+        tf.math.ceil(tf.math.sqrt(2.0 * tf.cast(num_elements, tf.float32))), tf.int32
+    )
+
+    # Erstelle eine Diagonalmatrix mit Einsen
+    diag_ones = tf.linalg.diag(tf.ones((n,), dtype=x.dtype))
+
+    # Erstelle einen Masken-Tensor für das untere Dreieck
+    mask = tf.linalg.band_part(tf.ones((n, n)), -1, 0) - tf.eye(n)
+
+    # Extrahiere die Indizes der Nicht-Null-Elemente im unteren Dreieck
+    row_indices, col_indices = tf.where(mask > 0)
+
+    # Erstelle die Indizes für scatter_nd
+    batch_indices = tf.tile(
+        tf.range(tf.shape(x)[0])[:, None], [1, tf.shape(row_indices)[0]]
+    )
+    tri_lower_indices = tf.stack(
+        [
+            tf.reshape(batch_indices, [-1]),
+            tf.tile(row_indices, [tf.shape(x)[0]]),
+            tf.tile(col_indices, [tf.shape(x)[0]]),
+        ],
+        axis=1,
+    )
+
+    # Forme den Eingabe-Tensor x um
+    reshaped_x = tf.reshape(x, [tf.shape(x)[0] * tf.shape(x)[1]])
+
+    # Verwende scatter_nd, um die Elemente in das untere Dreieck einzufügen
+    lower_tri_elements = tf.scatter_nd(
+        tri_lower_indices, reshaped_x, shape=(bs[0], n, n)
+    )
+
+    # Kombiniere die Diagonalmatrix und die unteren Dreieckselemente
+    mat = diag_ones + lower_tri_elements
+
+    return mat
+
+
 # %% Setup Latex for plotting
 setup_latex()
 
@@ -182,6 +249,7 @@ img_ext = "png"
 
 # %% Params
 epochs = 100
+batch_size = 128
 seed = 1
 covariates = ["cage"]
 targets = ["stunting", "wasting", "underweight"]
@@ -202,7 +270,7 @@ scheduler = K.optimizers.schedules.CosineDecay(
 fit_kwargs = {
     "epochs": epochs,
     "validation_split": 0.25,
-    "batch_size": 128,
+    # "batch_size": 128,
     "learning_rate": initial_learning_rate,
     "callbacks": [K.callbacks.LearningRateScheduler(scheduler)],
     "lr_patience": 50,
@@ -211,10 +279,12 @@ fit_kwargs = {
     "verbose": True,
     "monitor": "val_loss",
 }
+mk_ds = lambda data: tf.data.Dataset.from_tensor_slices((data[0], data[1])).batch(
+    batch_size, drop_remainder=True
+)
 preprocess_dataset = lambda data, _: {
-    "x": data[0][0],
-    "y": data[0][1],
-    "validation_data": data[1],
+    "x": mk_ds(data[0]),
+    "validation_data": mk_ds(data[1]),
 }
 
 # %% get dataset
@@ -233,36 +303,41 @@ unscaled_train_data_df = pd.DataFrame(
     np.concatenate([unscaled_train_data[1], unscaled_train_data[0]], -1),
     columns=targets + covariates,
 )
-fig = plot_grid(unscaled_train_data_df.sample(frac=0.2), vars=targets, hue="cage")
+fig = plot_grid(
+    unscaled_train_data_df.groupby(covariates).sample(frac=0.2),
+    vars=targets,
+    hue="cage",
+)
 fig.savefig(figure_path + f"/malnutrition_data.{img_ext}")
 
 # %% prepare data
-preprocessed = preprocess_dataset(data, None)
-X, Y, validation_data = preprocessed.values()
+X, Y = data[0][0], data[0][1]
 
-# %% marginal model
+# %% model
 # TODO: Stimmt die Modellspezifikation in Klein et al. 2022?
-marginal_transformations = [
+marginal_bijectors = [
     {
-        "bijector_name": "BernsteinBijector",
+        "bijector": "BernsteinBijector",
+        "bijector_kwargs": {
+            "extrapolation": True,
+        },
         "parameters_fn": "parameter_vector",
         "parameters_fn_kwargs": {"parameter_shape": [dims, 6], "dtype": "float32"},
         "parameters_constraint_fn": "mctm.activations.get_thetas_constrain_fn",
         "parameters_constraint_fn_kwargs": {
-            "low": -3,
+            "low": -4,
             "high": 4,
             "bounds": "smooth",
             "allow_flexible_bounds": True,
         },
-        "extrapolation": True,
     },
     {
-        "bijector_name": "Shift",
+        "bijector": "Shift",
         "parameters_fn": "bernstein_polynomial",  # "parameter_vector",
         "parameters_fn_kwargs": {
             "parameter_shape": [dims],
             "dtype": "float",
-            "polynomial_order": 3,
+            "polynomial_order": 6,
             "conditional_event_shape": 1,
             "low": 0,
             "high": 35,
@@ -278,41 +353,42 @@ marginal_transformations = [
         # },
         # "parameters_constraint_fn": tf.squeeze,
     },
-    # {
-    #     "bijector_name": "Scale_Matvec_Linear_Operator",
-    #     "parameters_shape": [np.sum(np.arange(dims + 1))],
-    #     "parameters_fn": get_bernstein_polynomial_parameter_lambda,  # "parameter_vector",
+    {
+        "bijector": "ScaleMatvecLinearOperator",
+        "parameters_fn": "bernstein_polynomial",  # "parameter_vector",
+        "parameters_fn_kwargs": {
+            "parameter_shape": [np.sum(np.arange(dims))],
+            "dtype": "float",
+            "polynomial_order": 6,
+            "conditional_event_shape": 1,
+            "low": 0,
+            "high": 35,
+        },
+        "parameters_constraint_fn": lambda x: tf.linalg.LinearOperatorLowerTriangular(
+            tf.vectorized_map(create_lambda_matrix, x)
+        ),
+    },
+]
+
+mctm_model = DensityRegressionModel(
+    distribution="normalizing_flow",
+    bijectors=marginal_bijectors,
+    base_distribution_kwargs={"dims": dims},
+    # base_distribution_kwargs={
+    #     "distribution_name": "tfd.MultivariateNormalTriL",
+    #     "parameters_fn": "bernstein_polynomial",  # "parameter_vector",
     #     "parameters_fn_kwargs": {
+    #         "parameter_shape": [dims + np.sum(np.arange(dims + 1))],
     #         "dtype": "float",
     #         "polynomial_order": 3,
     #         "conditional_event_shape": 1,
     #         "low": 0,
     #         "high": 35,
     #     },
-    #     "parameters_constraint_fn": lambda x: tf.linalg.LinearOperatorLowerTriangular(
-    #         tfb.FillScaleTriL(diag_shift=1e-5)
-    #     ),
+    #     "parameters_constraint_fn": slice_loc_scale,
     # },
-]
-
-mctm_model = DensityRegressionModel(
-    distribution="normalizing_flow",
-    transformations=marginal_transformations,
-    # base_distribution_kwargs={"dims": 0},
-    base_distribution_kwargs={
-        "distribution_name": "tfd.MultivariateNormalTriL",
-        "parameters_fn": "bernstein_polynomial",  # "parameter_vector",
-        "parameters_fn_kwargs": {
-            "parameter_shape": [dims + np.sum(np.arange(dims + 1))],
-            "dtype": "float",
-            "polynomial_order": 3,
-            "conditional_event_shape": 1,
-            "low": 0,
-            "high": 35,
-        },
-        "parameters_constraint_fn": slice_loc_scale,
-    },
 )
+
 
 # %% distribution
 joint_dist = mctm_model(tf.ones((1, 3)))
@@ -338,7 +414,7 @@ hist = fit_distribution(
     seed=seed,
     results_path=results_path,
     loss=nll_loss,
-    **preprocessed,
+    **preprocess_dataset(data, None),
     **fit_kwargs,
 )
 
@@ -347,7 +423,7 @@ pd.DataFrame(hist.history).plot()
 
 # %% params after fit
 t = np.linspace(0, max(X), 200, dtype="float32")
-pv = mctm_model.parameter_fn(t[..., None])[0][1].numpy().squeeze()
+pv = mctm_model.parameter_fn(t[..., None])[1].numpy().squeeze()
 pv
 fig, axs = plt.subplots(1, len(targets), sharex=True, sharey=True)
 for (i, c), label in zip(enumerate(targets), targets):
@@ -360,11 +436,14 @@ fig.savefig(figure_path + f"/malnutrition_params.{img_ext}")
 
 
 # %% rank correlation
-ages = unscaled_train_data_df.cage.unique()
+ages = np.unique(X)
 ages = np.sort(ages)
 joint_dist = mctm_model(tf.convert_to_tensor(ages, dtype=mctm_model.dtype)[..., None])
 
-cov = joint_dist.distribution.covariance().numpy()
+lambdas = joint_dist.bijector.bijector.bijectors[0].parameters["scale"].to_dense()
+
+# cov = joint_dist.distribution.covariance().numpy()
+cov = tf.linalg.inv(lambdas) @ tf.linalg.inv(tf.transpose(lambdas, perm=[0, 2, 1]))
 std = np.sqrt(tf.linalg.diag_part(cov))
 cor = cov / tf.matmul(std[..., None], std[..., None], transpose_b=True)
 
@@ -384,7 +463,7 @@ for ax, (a, b) in zip(
     ax.set_xticks(ages[0:-1:8])
 
 fig.tight_layout()
-fig.savefig(figure_path + f"rank_correlation.{img_ext}")
+fig.savefig(figure_path + f"/rank_correlation.{img_ext}")
 
 # %% marginal cdf and pdf
 palette = "icefire"
@@ -395,8 +474,10 @@ ages = [1, 3, 6, 9, 12, 24]
 colors = sns.color_palette(palette, as_cmap=True)(np.linspace(0, 1, len(ages))).tolist()
 joint_dist = mctm_model(tf.convert_to_tensor(ages, dtype=mctm_model.dtype)[..., None])
 marginal_dist = tfd.TransformedDistribution(
-    distribution=tfd.Normal(0, 1), bijector=joint_dist.bijector
+    distribution=tfd.Normal(0, 1),
+    bijector=tfb.Invert(tfb.Chain(joint_dist.bijector.bijector.bijectors[1:])),
 )
+
 
 y = np.linspace(0, 1, 100)[..., None, None]
 
@@ -453,76 +534,99 @@ measurements = samples_df[(samples_df.source == "data") & (samples_df.cage == ca
     column
 ]
 samples = samples_df[(samples_df.source == "model") & (samples_df.cage == cage)][column]
-print(len(samples))
 fig = validation_plot(samples, measurements, feature_name=column, covariates=["cage"])
 fig.savefig(figure_path + f"/validation_plots_{cage}.{img_ext}")
+
 # %% reliability diagram (samples)
 samples_df = get_samples_df(1, mctm_model, X, Y, targets)
-column = targets[0]
+for column in targets:
 
+    def apply_ecdf(df):
+        model_df = df.loc[df.source == "model", column]
+        data_df = df.loc[df.source == "data", column]
+        model_ecdf = ecdf(model_df.copy(), data_df.copy())
+        data_ecdf = ecdf(data_df.copy(), data_df.copy())
+        df.loc[df.source == "model", column + "_ecdf"] = model_ecdf
+        df.loc[df.source == "data", column + "_ecdf"] = data_ecdf
+        return df
 
-def apply_ecdf(df):
-    model_df = df.loc[df.source == "model", column]
-    data_df = df.loc[df.source == "data", column]
-    model_ecdf = ecdf(model_df.copy(), data_df.copy())
-    data_ecdf = ecdf(data_df.copy(), data_df.copy())
-    df.loc[df.source == "model", column + "_ecdf"] = model_ecdf
-    df.loc[df.source == "data", column + "_ecdf"] = data_ecdf
-    return df
+    samples_ecdf_df = (
+        samples_df[["cage", "source", column]]
+        .groupby("cage")
+        .apply(apply_ecdf, include_groups=False)
+        .reset_index()
+        .sort_values("level_1")
+        .drop(columns="level_1")
+    )
 
+    ecdf_df = pd.DataFrame(
+        np.stack(
+            [
+                samples_ecdf_df.loc[
+                    samples_ecdf_df.source == "model", column + "_ecdf"
+                ].values,
+                samples_ecdf_df.loc[
+                    samples_ecdf_df.source == "data", column + "_ecdf"
+                ].values,
+                X.numpy().flatten(),
+            ],
+            1,
+        ),
+        columns=["model", "data", "cage"],
+    )
 
-samples_ecdf_df = (
-    samples_df[["cage", "source", column]]
-    .groupby("cage")
-    .apply(apply_ecdf, include_groups=False)
-    .reset_index()
-    .sort_values("level_1")
-    .drop(columns="level_1")
-)
-
-ecdf_df = pd.DataFrame(
-    np.stack(
-        [
-            samples_ecdf_df.loc[
-                samples_ecdf_df.source == "model", column + "_ecdf"
-            ].values,
-            samples_ecdf_df.loc[
-                samples_ecdf_df.source == "data", column + "_ecdf"
-            ].values,
-            X.numpy().flatten(),
-        ],
-        1,
-    ),
-    columns=["model", "data", "cage"],
-)
-
-g = sns.lineplot(ecdf_df, x="model", y="data", hue="cage", estimator=None)
-g.figure.savefig(figure_path + f"/reliability_plot_samples.{img_ext}")
+    fig = plt.figure()
+    sns.lineplot(ecdf_df, x="model", y="data", hue="cage", estimator=None)
+    fig.savefig(figure_path + f"/reliability_plot_samples_{column}.{img_ext}")
 
 # %% reliability diagram (CDF)
-column = targets[0]
+samples_df = get_samples_df(1, mctm_model, X, Y, targets)
+for column in targets:
 
-marginal_dist = tfd.TransformedDistribution(
-    distribution=tfd.Normal(0, 1), bijector=mctm_model(X).bijector
-)
+    def apply_ecdf(df):
+        data_df = df.loc[df.source == "data", column]
+        marginal_dist = tfd.TransformedDistribution(
+            distribution=tfd.Normal(0, 1),
+            bijector=tfb.Invert(
+                tfb.Chain(
+                    mctm_model(df.cage.unique()[..., None]).bijector.bijector.bijectors[
+                        1:
+                    ]
+                )
+            ),
+        )
+        model_cdf = marginal_dist.cdf(data_df.copy().values[..., None]).numpy()[
+            :, targets.index(column)
+        ]
+        data_ecdf = ecdf(data_df.copy(), data_df.copy())
+        df.loc[df.source == "model", column + "_ecdf"] = model_cdf
+        df.loc[df.source == "data", column + "_ecdf"] = data_ecdf
+        return df
 
-cdf_model_df = pd.DataFrame(data=marginal_dist.cdf(Y), columns=targets).assign(cage=X)
-ecdf_measurements = (
-    pd.DataFrame(data=Y, columns=targets)
-    .assign(cage=X)[["cage", column]]
-    .groupby("cage")
-    .apply(lambda x: x.apply(lambda x: ecdf(x, x), raw=True), include_groups=False)
-    .reset_index()
-    .sort_values("level_1")
-    .drop(columns="level_1")
-)
+    samples_ecdf_df = (
+        samples_df[["cage", "source", column]]
+        .groupby("cage")
+        .apply(apply_ecdf)
+        .reset_index(0, drop=True)
+        .sort_index()
+    )
 
-ecdf_df = pd.DataFrame(
-    np.stack(
-        [cdf_model_df[column].values, ecdf_measurements[column], X.numpy().flatten()], 1
-    ),
-    columns=["model", "data", "cage"],
-)
+    ecdf_df = pd.DataFrame(
+        np.stack(
+            [
+                samples_ecdf_df.loc[
+                    samples_ecdf_df.source == "model", column + "_ecdf"
+                ].values,
+                samples_ecdf_df.loc[
+                    samples_ecdf_df.source == "data", column + "_ecdf"
+                ].values,
+                X.numpy().flatten(),
+            ],
+            1,
+        ),
+        columns=["model", "data", "cage"],
+    )
 
-g = sns.lineplot(ecdf_df, x="model", y="data", hue="cage", estimator=None)
-g.figure.savefig(figure_path + f"/reliability_plot_cdf.{img_ext}")
+    fig = plt.figure()
+    sns.lineplot(ecdf_df, x="model", y="data", hue="cage", estimator=None)
+    fig.savefig(figure_path + f"/reliability_plot_cdf_{column}.{img_ext}")
