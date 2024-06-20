@@ -45,7 +45,7 @@ def nll_loss(y, dist):
         1,
     )
 
-    return -dist.log_prob(y)  # - marginal_dist.log_prob(y)
+    return -dist.log_prob(y) - marginal_dist.log_prob(y)
 
 
 def plot_grid(data, **kwargs):
@@ -195,6 +195,7 @@ img_ext = "png"
 
 # %% Params
 epochs = 200
+batch_size = 128
 seed = 1
 covariates = ["cage"]
 targets = ["stunting", "wasting", "underweight"]
@@ -215,7 +216,6 @@ scheduler = K.optimizers.schedules.CosineDecay(
 fit_kwargs = {
     "epochs": epochs,
     "validation_split": 0.25,
-    "batch_size": 128,
     "learning_rate": initial_learning_rate,
     "callbacks": [K.callbacks.LearningRateScheduler(scheduler)],
     "lr_patience": 50,
@@ -228,6 +228,13 @@ preprocess_dataset = lambda data, _: {
     "x": data[0][0],
     "y": data[0][1],
     "validation_data": data[1],
+}
+mk_ds = lambda data: tf.data.Dataset.from_tensor_slices((data[0], data[1])).batch(
+    batch_size, drop_remainder=True
+)
+preprocess_dataset = lambda data, _: {
+    "x": mk_ds(data[0]),
+    "validation_data": mk_ds(data[1]),
 }
 
 # %% get dataset
@@ -254,11 +261,11 @@ fig = plot_grid(
 fig.savefig(figure_path + f"/malnutrition_data.{img_ext}")
 
 # %% prepare data
-preprocessed = preprocess_dataset(data, None)
-X, Y, validation_data = preprocessed.values()
+X, Y = data[0][0], data[0][1]
 
 # %% model
 # TODO: Stimmt die Modellspezifikation in Klein et al. 2022?
+nbins = 16
 bijectors = [
     {
         "bijector": "BernsteinBijector",
@@ -266,7 +273,12 @@ bijectors = [
             "extrapolation": True,
         },
         "parameters_fn": "parameter_vector",
-        "parameters_fn_kwargs": {"parameter_shape": [dims, 6], "dtype": "float32"},
+        "parameters_fn_kwargs": {
+            "parameter_shape": [
+                dims,
+            ],
+            "dtype": "float32",
+        },
         "parameters_constraint_fn": "mctm.activations.get_thetas_constrain_fn",
         "parameters_constraint_fn_kwargs": {
             "low": -4,
@@ -281,7 +293,7 @@ bijectors = [
         "parameters_fn_kwargs": {
             "parameter_shape": [dims],
             "dtype": "float",
-            "polynomial_order": 3,
+            "polynomial_order": 6,
             "conditional_event_shape": 1,
             "low": 0,
             "high": 35,
@@ -337,7 +349,7 @@ bijectors = [
             "bijector_kwargs": {
                 "bijector": "RationalQuadraticSpline",
                 "bijector_kwargs": {
-                    "range_min": -4,
+                    "range_min": -5,
                 },
             },
             "num_masked": 1,
@@ -345,10 +357,10 @@ bijectors = [
         "parameters_fn": "masked_autoregressive_network_with_additive_conditioner",
         "parameters_fn_kwargs": {
             "input_shape": (1,),
-            "parameter_shape": [dims - 1, 32 * 3 - 1],
+            "parameter_shape": [dims - 1, nbins * 3 - 1],
             "made_kwargs": {
                 "activation": "relu",
-                "hidden_units": [128, 128],
+                "hidden_units": [16] * 2,
                 # "conditional": True,
                 # "conditional_event_shape": 1,
             },
@@ -361,10 +373,10 @@ bijectors = [
         },
         "parameters_constraint_fn": "mctm.activations.get_spline_param_constrain_fn",
         "parameters_constraint_fn_kwargs": {
-            "interval_width": 8,
+            "interval_width": 10,
             "min_slope": 0.001,
             "min_bin_width": 0.001,
-            "nbins": 32,
+            "nbins": nbins,
         },
     },
 ]
@@ -374,6 +386,7 @@ hybrid_model = DensityRegressionModel(
     bijectors=bijectors,
     base_distribution_kwargs={"dims": dims},
 )
+
 # %% distribution
 joint_dist = hybrid_model(tf.ones((5, 1)))
 # tfd.Independent(dist, 2)
@@ -398,7 +411,8 @@ hist = fit_distribution(
     seed=seed,
     results_path=results_path,
     loss=nll_loss,
-    **preprocessed,
+    # compile_kwargs={"run_eagerly": True},
+    **preprocess_dataset(data, None),
     **fit_kwargs,
 )
 
@@ -493,77 +507,6 @@ samples = samples_df[(samples_df.source == "model") & (samples_df.cage == cage)]
 print(len(samples))
 fig = validation_plot(samples, measurements, feature_name=column, covariates=["cage"])
 fig.savefig(figure_path + f"/validation_plots_{cage}.{img_ext}")
-# %% reliability diagram (samples)
-samples_df = get_samples_df(1, hybrid_model, X, Y, targets)
-column = targets[0]
-
-
-def apply_ecdf(df):
-    model_df = df.loc[df.source == "model", column]
-    data_df = df.loc[df.source == "data", column]
-    model_ecdf = ecdf(model_df.copy(), data_df.copy())
-    data_ecdf = ecdf(data_df.copy(), data_df.copy())
-    df.loc[df.source == "model", column + "_ecdf"] = model_ecdf
-    df.loc[df.source == "data", column + "_ecdf"] = data_ecdf
-    return df
-
-
-samples_ecdf_df = (
-    samples_df[["cage", "source", column]]
-    .groupby("cage")
-    .apply(apply_ecdf, include_groups=False)
-    .reset_index()
-    .sort_values("level_1")
-    .drop(columns="level_1")
-)
-
-ecdf_df = pd.DataFrame(
-    np.stack(
-        [
-            samples_ecdf_df.loc[
-                samples_ecdf_df.source == "model", column + "_ecdf"
-            ].values,
-            samples_ecdf_df.loc[
-                samples_ecdf_df.source == "data", column + "_ecdf"
-            ].values,
-            X.numpy().flatten(),
-        ],
-        1,
-    ),
-    columns=["model", "data", "cage"],
-)
-
-g = sns.lineplot(ecdf_df, x="model", y="data", hue="cage", estimator=None)
-g.figure.savefig(figure_path + f"/reliability_plot_samples.{img_ext}")
-
-# %% reliability diagram (CDF)
-column = targets[0]
-
-marginal_dist = tfd.TransformedDistribution(
-    distribution=tfd.Normal(0, 1),
-    bijector=tfb.Invert(tfb.Chain(hybrid_model(X).bijector.bijector.bijectors[1:])),
-)
-
-cdf_model_df = pd.DataFrame(data=marginal_dist.cdf(Y), columns=targets).assign(cage=X)
-ecdf_measurements = (
-    pd.DataFrame(data=Y, columns=targets)
-    .assign(cage=X)[["cage", column]]
-    .groupby("cage")
-    .apply(lambda x: x.apply(lambda x: ecdf(x, x), raw=True), include_groups=False)
-    .reset_index()
-    .sort_values("level_1")
-    .drop(columns="level_1")
-)
-
-ecdf_df = pd.DataFrame(
-    np.stack(
-        [cdf_model_df[column].values, ecdf_measurements[column], X.numpy().flatten()], 1
-    ),
-    columns=["model", "data", "cage"],
-)
-
-g = sns.lineplot(ecdf_df, x="model", y="data", hue="cage", estimator=None)
-g.figure.savefig(figure_path + f"/reliability_plot_cdf.{img_ext}")
 # %% reliability diagram (samples)
 samples_df = get_samples_df(1, hybrid_model, X, Y, targets)
 for column in targets:
