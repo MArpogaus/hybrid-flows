@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-06-19 17:34:45 (Marcel Arpogaus)
+# changed : 2024-06-25 19:25:04 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -853,6 +853,9 @@ def get_masked_autoregressive_flow(
         "get_base_distribution", _get_base_distribution
     )
     base_distribution_kwargs = distribution_kwargs.pop("base_distribution_kwargs", {})
+    if "dims" not in base_distribution_kwargs:
+        base_distribution_kwargs["dims"] = dims
+    print(base_distribution_kwargs)
 
     (
         flow_parametrization_fn,
