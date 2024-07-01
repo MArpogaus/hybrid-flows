@@ -6,7 +6,6 @@ import seaborn as sns
 import tensorflow as tf
 import tensorflow.keras as K
 from matplotlib import pyplot as plt
-from mctm.data.sklearn_datasets import get_dataset
 from mctm.models import DensityRegressionModel
 from mctm.utils.tensorflow import fit_distribution, set_seed
 from mctm.utils.visualisation import plot_2d_data
@@ -28,12 +27,51 @@ def nll_loss(y, dist):
     return -dist.log_prob(y) - marginal_dist.log_prob(y)
 
 
-# %% data
+# %% sim data
+from mctm.data.sklearn_datasets import get_dataset
+
 set_seed(1)
 data, dims = get_dataset("moons", n_samples=2**16, scale=(0.01, 0.99), noise=0.05)
 plot_2d_data(*data)
+moons_preprocessed = {
+    "x": tf.convert_to_tensor(data[1][..., None], dtype=tf.float32),
+    "y": tf.convert_to_tensor(data[0], dtype=tf.float32),
+}
+x_y_moons = moons_preprocessed.values()
+
+# %% malnutrition data
+from mctm.data.malnutrion import get_dataset
+
+seed = 1
+covariates = ["cage"]
+targets = ["stunting", "wasting", "underweight"]
+
+dataset_kwargs = {
+    "data_path": "datasets/malnutrition/india.raw",
+    "covariates": covariates,
+    "targets": targets,
+    "stratify": True,
+}
+set_seed(seed)
+data, dims = get_dataset(
+    **dataset_kwargs,
+    scale=True,
+    column_transformers=[
+        ("passthrough", covariates),
+    ],
+)
+india_preprocessed = {
+    "x": tf.convert_to_tensor(data[0][0], dtype=tf.float32),
+    "y": tf.convert_to_tensor(data[0][1][:, 1:], dtype=tf.float32),
+    # "validation_data": data[1],
+}
+dims -= 1
+x_y_india = india_preprocessed.values()
+india_dataset = tf.data.Dataset.from_tensor_slices((data[0][0], data[0][1][:, 1:]))
+india_dataset
 
 # %% model
+nbins = 16
 model = DensityRegressionModel(
     distribution="normalizing_flow",
     bijectors=[
@@ -118,10 +156,10 @@ model = DensityRegressionModel(
             },
             "parameters_fn": "fully_connected_network",
             "parameters_fn_kwargs": {
-                "parameter_shape": [1, 32 * 3 - 1],
+                "parameter_shape": [1, nbins * 3 - 1],
                 "activation": "relu",
                 "hidden_units": [16, 16],
-                "input_shape": 1,
+                "input_shape": (1,),
                 "batch_norm": False,
                 "dropout": False,
                 # "conditional": True,
@@ -132,7 +170,7 @@ model = DensityRegressionModel(
                 "interval_width": 8,
                 "min_slope": 0.001,
                 "min_bin_width": 0.001,
-                "nbins": 32,
+                "nbins": nbins,
             },
         },
     ],
@@ -141,14 +179,12 @@ model = DensityRegressionModel(
 
 # %% dist
 dist = model(None)
-dist.bijector.bijector.bijectors
+dist
 
 # %% params
 results_path = "./results/test_nf"
 epochs = 100
 seed = 1
-covariates = ["cage"]
-targets = ["stunting", "wasting", "underweight"]
 initial_learning_rate = 0.005
 scheduler = K.optimizers.schedules.CosineDecay(
     initial_learning_rate,
@@ -158,7 +194,7 @@ scheduler = K.optimizers.schedules.CosineDecay(
 )
 fit_kwargs = {
     "epochs": epochs,
-    "validation_split": 0.25,
+    # "validation_split": 0.25,
     "batch_size": 128,
     "learning_rate": initial_learning_rate,
     "callbacks": [K.callbacks.LearningRateScheduler(scheduler)],
@@ -168,10 +204,87 @@ fit_kwargs = {
     "verbose": True,
     "monitor": "val_loss",
 }
-preprocessed = {
-    "x": tf.convert_to_tensor(data[1][..., None], dtype=tf.float32),
-    "y": tf.convert_to_tensor(data[0], dtype=tf.float32),
-}
+
+
+model.compile(loss=nll_loss, optimizer="adam")  # , run_eagerly=True)
+model.fit(
+    **india_preprocessed,  # .batch(32, drop_remainder=True),
+    validation_split=None,
+)
+model.make_train_function()(
+    iter(
+        tf.data.Dataset.from_tensor_slices(tuple(moons_preprocessed.values())).batch(32)
+    )
+)
+model.train_step(india_dataset)
+
+
+# %% data handler
+from keras.src.engine import data_adapter
+
+data_handler = data_adapter.get_data_handler(
+    **india_preprocessed,
+    model=model,
+)
+train_func = model.make_train_function(force=True)
+
+
+def my_make_train_function(model):
+    def step_function(model, iterator):
+        """Runs a single training step."""
+
+        def run_step(data):
+            outputs = model.train_step(data)
+            # Ensure counter is updated only if `train_step` succeeds.
+            # with tf.control_dependencies(_minimum_control_deps(outputs)):
+            #     model._train_counter.assign_add(1)
+            return outputs
+
+        # if self.jit_compile:
+        #     run_step = tf.function(
+        #         run_step, jit_compile=True, reduce_retracing=True
+        #     )
+        data = next(iterator)
+        outputs = model.distribute_strategy.run(run_step, args=(data,))
+        # outputs = reduce_per_replica(
+        #     outputs,
+        #     self.distribute_strategy,
+        #     reduction=self.distribute_reduction_method,
+        # )
+        return outputs
+
+    @tf.function(jit_compile=True)
+    def train_func(iterator):
+        """Runs a training execution with a single step."""
+        # return step_function(model, iterator)
+        for data in iterator:
+            print(data[0].shape[0])
+            model.train_step(data)
+
+    return train_func
+
+
+train_func = my_make_train_function(model)
+
+# train_func = tf.function(
+#     train_func, reduce_retracing=True
+# )
+
+for epoch, iterator in data_handler.enumerate_epochs():
+    train_func(iterator)
+# %%
+l = list(iterator)
+tf.function(l[-1][1], model(None))
+model.train_step(l[-1])
+
+x, y, sample_weight = data_adapter.unpack_x_y_sample_weight(l[-1])
+# Run forward pass.
+with tf.GradientTape() as tape:
+    y_pred = model(x, training=True)
+    loss = model.compute_loss(x, y, y_pred, sample_weight)
+model._validate_target_and_loss(y, loss)
+# Run backwards pass.
+model.optimizer.minimize(loss, model.trainable_variables, tape=tape)
 
 # %% fit model
 hist = fit_distribution(
@@ -179,7 +292,7 @@ hist = fit_distribution(
     seed=seed,
     results_path=results_path,
     loss=nll_loss,
-    **preprocessed,
+    # **india_preprocessed,
     **fit_kwargs,
 )
 
