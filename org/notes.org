@@ -1,6 +1,8 @@
-#+STARTUP: latexpreview t
-* Univariate Models
-** Unconditional univariate Models
+#+STARTUP: latexpreview indent content
+* Unstructured
+** Idee Implemnetierung
+*** Univariate Models
+**** Unconditional univariate Models
 #+begin_src python
   dist_lambda=get_dist_lambda(**kwds)
   pv_shape = M * dims + np.sum(np.arange(dims + 1))
@@ -8,7 +10,7 @@
   dist = dist_lambda(pv)
   nll = - dist.log_prob(y)
 #+end_src
-** Conditional univariate Models
+**** Conditional univariate Models
 #+begin_src python
   dist_lambda=get_dist_lambda(**kwds)
   pv_shape = M * dims + np.sum(np.arange(dims + 1))
@@ -17,8 +19,8 @@
   dist = dist_lambda(pv_cond)
   nll = - dist.log_prob(y)
 #+end_src
-* Multivariate Models
-** Unconditional multivariate models
+*** Multivariate Models
+**** Unconditional multivariate models
 #+begin_src python
   network = ar_cond_network(params, dims,...)
   bijector_fn = get_bijector_fn(
@@ -31,7 +33,7 @@
   )
   nll = - dist.log_prob(y)
 #+end_src
-** Conditional multivariate models
+**** Conditional multivariate models
 #+begin_src python
   network = ar_cond_network(params,dims,..., conditional=True, cond_shape, ...)
   bijector_fn = get_bijector_fn(
@@ -44,7 +46,7 @@
   )
   nll = - dist.log_prob(y, conditional_input=x)
 #+end_src
-* Implementation
+** Implementation
 #+begin_src python
   # unconditional case:
   dist, variables = mctm.distributions.unconditional.get_dist(name, dims, kwds...)
@@ -57,8 +59,7 @@
   hist = fit_distribution(model, data, ...)
 #+end_src
 
-
-* Models
+** Models
 
 | Models                       | sim | benchmark | malnutrition |
 |------------------------------+-----+-----------+--------------|
@@ -84,7 +85,7 @@
 - S :: Satisfactory results
 - O :: HP optimized
 
-* Flexibility is not enough
+** Flexibility is not enough
 https://github.com/probabilists/zuko/issues/36#issuecomment-1995122776
 
 #+begin_quote
@@ -97,9 +98,9 @@ Stacking several multi-variate transformations with different (sometimes randomi
 For example if $p(x_1,x_2,\ldots,x_n)=p(x_1)\prod p(x_i|x1)$ (star-shaped dependency graph), the order $1 \to n$ leads to a simple function, while the order $n \to 1$ does not. This is somewhat related to finding the Bayesian network (a directed acyclic graph) with the least number of edges that explains the data. In fact, the "simplest" Bayesian network is sometimes confused with the causal graph of the data.
 #+end_quote
 
-* Hyper Parameters of other polynomial Flows
+** Hyper Parameters of other polynomial Flows
 
-** Ramasinghe et al. 2022: Robust Normalizing Flows Using Bernstein-type Polynomials [cite:@Ramasinghe2022]
+*** Ramasinghe et al. 2022: Robust Normalizing Flows Using Bernstein-type Polynomials [cite:@Ramasinghe2022]
 #+begin_quote
 For each $B^n_j$ , we employ a fully-connected neural net with three layers to obtain the parameters, except in the case of $B^0_n$ in which we directly optimize the parameters.
 
@@ -116,7 +117,7 @@ In contrast, for 2D toy distributions and and images we used higher number of la
 For all the experiments, we use a Kumaraswamy distribution with parameters $a = 2$ and $b = 5$ as the base density. Using a standard normal distribution after converting it to a density on $[0, 1]$ using a nonlinear transformation, e.g., $1+\tanh(z)$ , also yielded similar results.
 #+end_quote
 
-** Durkan et al. 2019: Neural Spline Flows [cite:@Durkan2019b]
+*** Durkan et al. 2019: Neural Spline Flows [cite:@Durkan2019b]
 #+begin_quote
 We modify MAF by replacing permutations with invertible linear layers.
 Hyperparameter settings are shown for coupling flows in
@@ -172,11 +173,11 @@ transformations, the layers must be masked so as to preserve autoregressive stru
 the ResMADE architecture outlined by Nash and Durkan [cite:@Nash2019]
 #+end_quote
 
-*** Nash et al. 2019: Autoregressive Energy Machines [cite:@Nash2019]
+**** Nash et al. 2019: Autoregressive Energy Machines [cite:@Nash2019]
 #+CAPTION: ResMADE architecture with $ D = 3 $ input data dimensions and $ H = 4 $ hidden units. The degree of each hidden unit and output is indicated with an integer label. Sequential degree assignment results in each hidden layer having the same masking structure, here alternating between dependence on the first input, or the first two inputs. These layers can be combined using any binary elementwise operation, while preserving autoregressive structure. In particular, residual connections can be added in a straightforward manner.The ResMADE architecture consists of an initial masked projection to the target hidden dimensionality, a sequence of masked residual blocks, and finally a masked linear layer to the output units.
 [[file:gfx/ResMADE.png][ResMade Arcitecture]]
 
-** Jaini et al. 2019:  Sum-of-Squares Polynomial Flow [cite:@Jaini2019]
+*** Jaini et al. 2019:  Sum-of-Squares Polynomial Flow [cite:@Jaini2019]
 #+begin_quote
 ...we implement the conditioner network in the same way as in [cite:@Papamakarios2018].
 
@@ -191,15 +192,77 @@ We used stochastic gradient descent to train our models with
 - with number of epochs for training = 40.
 #+end_quote
 
-* Debug DAPE
+** Debug DAPE
 
-** conditional@coupling_flow-moons
+*** conditional@coupling_flow-moons
 #+begin_src emacs-lisp
   debugpy :cwd "/home/work/Projekte/MCTM/code/" :program "scripts/train.py" :args ["--log-level" "info" "--experiment-name" "unconditional-hybrid-pre-trained-moons" "unconditional@coupling_flow-moons" "coupling_flow" "moons" "/tmp" "--test-mode=true"]
 #+end_src
 
-** conditional@elementwise_flow-moons
+*** conditional@elementwise_flow-moons
 
 #+begin_src emacs-lisp
   debugpy :cwd "/home/work/Projekte/MCTM/code/" :program "scripts/train.py" :args ["--log-level" "info" "--experiment-name" "conditional-moons" "conditional@elemntwise_flow-moons" "elementwise_flow" "moons" "/tmp" "--test-mode=true"]
 #+end_src
+
+** Generic Normalizing Flow implementation
+*** Element-wise
+#+begin_src python
+  model = DenistyRegressionModel(
+      dims = 3,
+      distribution = "normalizing_flow",
+      transformations = [
+          {
+              "name": "scale",
+              "parameters" [3],
+          },
+          {
+              "name": "shift",
+              "parameter_fn": "polynomial",
+              "parameter_fn_kwargs": {
+                  "order": 3
+              }
+          },
+          {
+              "name": "bernstein_poly",
+              "parameter_fn": "fully_connected_net",
+              "parameter_kwargs": {
+                  ...,
+                  conditional=True
+              },
+              "parameter_constrains":{
+                  "type": "function",
+                  "name": "softplus",
+                  ""
+              }
+          }
+      ]
+  )
+#+end_src
+*** Multi Variate
+#+begin_src python
+  model = DenistyRegressionModel(
+      dims = 3,
+      distribution = "normalizing_flow",
+      transformations = {
+          "bernstein_poly" : {
+              "parameter_fn": "coupling_flow",
+              "parameter_kwargs": {
+                  ...
+              }
+          }
+      }
+  )
+#+end_src
+* Meeting
+** TK, TN, DR <2024-05-31 Fri 13:00>
+*** Paper
+- Inhalt passt erst mal, muss aber stark gekürzt werden
+- Detailgrad abhängig von finaler Zielgruppe
+- Notation fehlerhaft, aber erst mal in Ordnung
+- Weitere Fokus auf detaillierte Ausarbeitung der Malnutrition Ergebnisse
+*** Malnutrition als nächsten Schwerpunkt
+- Joint Density auf Manutrition Daten schätzen
+- Vergleich mit MCTM Paper
+- Ergebnisse gerne vorab per Mail an alle
+- PDF plots statt CDF
