@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-06-25 19:25:04 (Marcel Arpogaus)
+# changed : 2024-08-22 13:14:06 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -21,6 +21,7 @@ the final model in many cases.
 """
 
 import logging
+from copy import deepcopy
 from functools import partial
 from itertools import chain
 from typing import Any, Callable, Dict, List, Tuple, Union
@@ -28,7 +29,7 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
-from bernstein_flow.bijectors import BernsteinBijector
+from bernstein_flow.bijectors import BernsteinPolynomial
 from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 from tensorflow_probability.python.internal import prefer_static
@@ -199,7 +200,7 @@ def _get_parametrized_bijector_fn(
 
         def bijector_fn(unconstrained_parameters: tf.Tensor) -> tfb.Bijector:
             constrained_parameters = parameter_constrain_fn(unconstrained_parameters)
-            bijector = BernsteinBijector(constrained_parameters, name=bijector_name)
+            bijector = BernsteinPolynomial(constrained_parameters, name=bijector_name)
 
             return bijector
 
@@ -595,6 +596,7 @@ def _get_stacked_flow(
         flow_parametrization_fn,
         get_base_distribution=get_base_distribution,
         **base_distribution_kwargs,
+        dims=dims,
     )
 
     return distribution_fn, parameter_fn, trainable_variables
@@ -855,7 +857,6 @@ def get_masked_autoregressive_flow(
     base_distribution_kwargs = distribution_kwargs.pop("base_distribution_kwargs", {})
     if "dims" not in base_distribution_kwargs:
         base_distribution_kwargs["dims"] = dims
-    print(base_distribution_kwargs)
 
     (
         flow_parametrization_fn,
@@ -938,7 +939,7 @@ def get_masked_autoregressive_flow_first_dim_masked(
     ) -> tfb.RealNVP:
         def bijector_fn(x0: tf.Tensor, *arg: Any, **kwargs: Any) -> tfb.Bijector:
             conditioned_parameter_networks = list(
-                map(lambda net: partial(net, conditional_input=x0), parameter_networks)
+                map(lambda net: net(x0), parameter_networks)
             )
             stacked_maf_bijector = flow_parametrization_fn(
                 conditioned_parameter_networks
@@ -988,7 +989,7 @@ def _get_parametrized_bijector(
         if isinstance(bijector, type):
             bijector_cls = bijector
         elif bijector == "BernsteinBijector":
-            bijector_cls = BernsteinBijector
+            bijector_cls = BernsteinPolynomial
         elif "." not in bijector:
             bijector_cls = getattr_from_module("tfb." + bijector)
         else:
@@ -1136,6 +1137,7 @@ def get_normalizing_flow(
     default_parameters_constraint_fn: Callable[
         [tf.Tensor], Union[Dict[str, tf.Tensor], List[tf.Tensor], tf.Tensor]
     ] = tf.identity,
+    **kwargs,
 ) -> Tuple[Callable, Callable, List]:
     """Get a function to parametrize a elementwise transformed distribution.
 
@@ -1152,7 +1154,10 @@ def get_normalizing_flow(
     base_distribution_kwargs
         Keyword arguments for the base distribution.
     default_parameters_constraint_fn
-        Default constraining function to use, if not provided. Default: `tf.identity`
+        Default constraining function to use, if not provided. Default: `tf.identity`.
+    kwargs
+        Additional optional keyword arguments
+        passed to `_get_transformed_distribution_fn`.
 
     Returns
     -------
@@ -1172,7 +1177,7 @@ def get_normalizing_flow(
     parameters_constraint_fns = {}
     trainable_parameters = {}
 
-    for bijector in bijectors:
+    for bijector in deepcopy(bijectors):
         bijector_name = bijector[bijector_name_key]
         __LOGGER__.debug("processing definition of bijector %s", bijector_name)
         (
@@ -1269,6 +1274,7 @@ def get_normalizing_flow(
         flow_parametrization_fn,
         get_base_distribution=get_base_distribution,
         **base_distribution_kwargs,
+        **kwargs,
     )
 
     return distribution_fn, parameter_fn, list(trainable_parameters.values())
