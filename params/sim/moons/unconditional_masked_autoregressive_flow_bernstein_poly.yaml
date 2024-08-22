@@ -29,7 +29,7 @@ model_kwargs:
     scale: false
     shift: false
     base_distribution_kwargs:
-      distribution_type: truncated_normal
+      distribution_name: truncated_normal
   parameter_kwargs:
     activation: tanh
     hidden_units:

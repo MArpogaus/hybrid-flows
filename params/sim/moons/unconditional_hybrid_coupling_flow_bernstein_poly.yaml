@@ -19,7 +19,7 @@ model_kwargs:
   base_distribution_kwargs:
     allow_flexible_bounds: true
     # base_distribution_kwargs:
-    #   distribution_type: truncated_normal
+    #   distribution_name: truncated_normal
     bijector_name: bernstein_poly
     bounds: smooth
     high: 4
