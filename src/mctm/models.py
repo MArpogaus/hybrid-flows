@@ -112,6 +112,7 @@ class HybridDenistyRegressionModel(DensityRegressionModel):
                 distribution=base_distribution,
                 distribution_kwargs=base_distribution_kwargs,
                 parameter_kwargs=base_parameter_kwargs,
+                **kwargs,
             )
         if base_checkpoint_path:
             self.base_model.load_weights(
