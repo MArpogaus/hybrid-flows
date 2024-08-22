@@ -6,7 +6,7 @@ import pandas as pd
 import tensorflow as tf
 from sklearn.compose import make_column_transformer
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import StandardScaler
 
 from mctm.utils.tensorflow import set_seed
 
@@ -22,6 +22,7 @@ def get_dataset(
     dtype=tf.float32,
     seed=1,
     column_transformers=[],
+    test_mode=False,
 ):
     """Load and preprocesse a dataset for training, validation, and testing.
 
@@ -47,6 +48,9 @@ def get_dataset(
         covariates = data.columns[~data.columns.isin(targets)].to_list()
         print(f"{covariates=}")
 
+    if test_mode:
+        data = data.groupby(covariates).sample(frac=0.2, random_state=1)
+
     # Split the dataset into train, validation, and test sets
     set_seed(seed)
     train_val_data, test_data = train_test_split(
@@ -64,7 +68,7 @@ def get_dataset(
 
     # Apply data scaling using column transformer
     if scale:
-        column_transformers = [(MinMaxScaler(), targets)] + column_transformers
+        column_transformers = [(StandardScaler(), targets)] + column_transformers
         ct = make_column_transformer(
             *column_transformers,
             remainder=StandardScaler(),
