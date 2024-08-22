@@ -5,6 +5,7 @@ import logging
 import os
 from functools import partial
 from shutil import which
+from typing import Any, Dict
 
 import mctm.scheduler
 import numpy as np
@@ -13,7 +14,8 @@ import seaborn as sns
 import tensorflow as tf
 import tensorflow.keras as K
 from mctm.data.benchmark import get_dataset as get_benchmark_dataset
-from mctm.data.sklearn_datasets import get_dataset as get_train_dataset
+from mctm.data.malnutrion import get_dataset as get_malnutrition_dataset
+from mctm.data.sklearn_datasets import get_dataset as get_sim_dataset
 from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
 from mctm.utils import str2bool
 from mctm.utils.pipeline import pipeline, prepare_pipeline
@@ -22,19 +24,23 @@ from mctm.utils.visualisation import (
     plot_2d_data,
     plot_copula_function,
     plot_flow,
+    plot_malnutrition_data,
+    plot_malnutrition_samples,
+    plot_marginal_cdf_and_pdf,
     plot_samples,
     setup_latex,
 )
+from tensorflow_probability import distributions as tfd
 
 __LOGGER__ = logging.getLogger(__name__)
 
 
-def plot_trafos(joint_dist, x: np.ndarray, y: np.ndarray):
+def plot_trafos(joint_dist: tfd.Distribution, x: np.ndarray, y: np.ndarray) -> tuple:
     """Plot transformations of the joint distribution.
 
     Parameters
     ----------
-    joint_dist : tfp.distributions.JointDistribution
+    joint_dist : tfp.Distribution
         Joint distribution to be plotted.
     x : np.ndarray
         Input data.
@@ -69,6 +75,7 @@ def plot_trafos(joint_dist, x: np.ndarray, y: np.ndarray):
         ],
         data=np.concatenate([y, z2, z1, z, pit, x], -1),
     )
+
     g = sns.JointGrid(data=df, x="$y1$", y="$y2$", height=2)
     g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
     g.plot_marginals(sns.kdeplot)
@@ -101,11 +108,24 @@ def plot_trafos(joint_dist, x: np.ndarray, y: np.ndarray):
     )
 
 
-def get_after_fit_hook(results_path: str, is_hybrid: bool, **kwargs):
+def sim_after_fit_hook(
+    model: object,
+    x: tf.Tensor,
+    y: tf.Tensor,
+    results_path: str,
+    is_hybrid: bool,
+    **kwargs,
+) -> callable:
     """Provide after fit plot.
 
     Parameters
     ----------
+    model : object
+        The model that was trained.
+    x : tf.Tensor
+        Input data.
+    y : tf.Tensor
+        True values.
     results_path : str
         Path to save the result images.
     is_hybrid : bool
@@ -119,51 +139,103 @@ def get_after_fit_hook(results_path: str, is_hybrid: bool, **kwargs):
         Hook function to be called after fitting the model.
 
     """
+    if len(x) > 2000:
+        indices = np.random.choice(len(x), size=2000, replace=False)
+        x = x.numpy()[indices]
+        y = y.numpy()[indices]
 
-    def plot_after_fit(model, x: tf.Tensor, y: tf.Tensor):
-        if len(x) > 2000:
-            indices = np.random.choice(len(x), size=2000, replace=False)
-            x = x.numpy()[indices]
-            y = y.numpy()[indices]
+    fig = plot_samples(model(x), y, seed=1, **kwargs)
+    fig.savefig(os.path.join(results_path, "samples.pdf"), bbox_inches="tight")
 
-        fig = plot_samples(model(x), y, seed=1, **kwargs)
-        fig.savefig(os.path.join(results_path, "samples.pdf"))
-        if is_hybrid:
-            fig1, fig2, fig3 = plot_flow(model(x), x, y, seed=1, **kwargs)
-            fig1.savefig(os.path.join(results_path, "data.pdf"))
-            fig2.savefig(os.path.join(results_path, "z1.pdf"))
-            fig3.savefig(os.path.join(results_path, "z2.pdf"))
+    if is_hybrid:
+        fig1, fig2, fig3 = plot_flow(model(x), x, y, seed=1, **kwargs)
+        fig1.savefig(os.path.join(results_path, "data.pdf"), bbox_inches="tight")
+        fig2.savefig(os.path.join(results_path, "z1.pdf"), bbox_inches="tight")
+        fig3.savefig(os.path.join(results_path, "z2.pdf"), bbox_inches="tight")
 
-            c_fig = plot_copula_function(model(x), y, "contour", -0.1, 1.1, 200)
-            c_fig.savefig(os.path.join(results_path, "copula_contour.pdf"))
+        c_fig = plot_copula_function(model(x), y, "contour", -0.1, 1.1, 200)
+        c_fig.savefig(
+            os.path.join(results_path, "copula_contour.pdf"), bbox_inches="tight"
+        )
 
-            c_fig = plot_copula_function(model(x), y, "surface", -0.1, 1.1, 200)
-            c_fig.savefig(os.path.join(results_path, "copula_surface.pdf"))
+        c_fig = plot_copula_function(model(x), y, "surface", -0.1, 1.1, 200)
+        c_fig.savefig(
+            os.path.join(results_path, "copula_surface.pdf"), bbox_inches="tight"
+        )
 
-            (
-                data_figure,
-                normalized_data_figure,
-                pit_figure,
-                decorelated_data_figure,
-                latent_dist_figure,
-            ) = plot_trafos(model(x), x, y)
+        (
+            data_figure,
+            normalized_data_figure,
+            pit_figure,
+            decorelated_data_figure,
+            latent_dist_figure,
+        ) = plot_trafos(model(x), x, y)
 
-            data_figure.savefig(os.path.join(results_path, "data_scatter.pdf"))
-            normalized_data_figure.savefig(
-                os.path.join(results_path, "normalized_data.pdf")
-            )
-            pit_figure.savefig(os.path.join(results_path, "pit.pdf"))
-            decorelated_data_figure.savefig(
-                os.path.join(results_path, "decorelated_data.pdf")
-            )
-            latent_dist_figure.savefig(
-                os.path.join(results_path, "latent_distribution.pdf")
-            )
-
-    return plot_after_fit
+        data_figure.savefig(os.path.join(results_path, "data_scatter.pdf"))
+        normalized_data_figure.savefig(
+            os.path.join(results_path, "normalized_data.pdf"), bbox_inches="tight"
+        )
+        pit_figure.savefig(os.path.join(results_path, "pit.pdf"))
+        decorelated_data_figure.savefig(
+            os.path.join(results_path, "decorelated_data.pdf"), bbox_inches="tight"
+        )
+        latent_dist_figure.savefig(
+            os.path.join(results_path, "latent_distribution.pdf"), bbox_inches="tight"
+        )
 
 
-def get_learning_rate(fit_kwargs: dict):
+def malnutrition_after_fit_hook(
+    model: object,
+    x: tf.Tensor,
+    validation_data: tuple,
+    results_path: str,
+    seed: int,
+    targets: list,
+    plot_samples_kwargs: Dict[str, Any] = {},
+    plot_marginals_kwargs: Dict[str, Any] = {},
+) -> None:
+    """Provide after fit plot for malnutrition data.
+
+    Parameters
+    ----------
+    model : object
+        The model that was trained.
+    x : tf.Tensor
+        Input data.
+    y : tf.Tensor
+        True values.
+    validation_data : tuple
+        Validation data, containing features and targets.
+    results_path : str
+        Path to save the result images.
+    N : int
+        Number of samples to plot.
+    seed : int
+        Random seed for sampling.
+    targets : list
+        List of target variable names.
+    plot_samples_kwargs : Dict[str, Any]
+        Additional kwargs passed to `plot_malnutrition_samples`
+    plot_marginals_kwargs : Dict[str, Any]
+        Additional kwargs passed to `plot_marginal_cdf_and_pdf`
+
+    """
+    x, y = validation_data._input_dataset._tensors
+    fig = plot_malnutrition_samples(model, x, y, seed, targets, **plot_samples_kwargs)
+    fig.savefig(os.path.join(results_path, "samples.pdf"), bbox_inches="tight")
+
+    fig = plot_marginal_cdf_and_pdf(
+        model=model,
+        covariates=[1, 3, 6, 9, 12, 24],
+        target_names=targets,
+        **plot_marginals_kwargs,
+    )
+    fig.savefig(
+        os.path.join(results_path, "malnutrition_dist.pdf"), bbox_inches="tight"
+    )
+
+
+def get_learning_rate(fit_kwargs: dict) -> tuple:
     """Get learning rate scheduler.
 
     Parameters
@@ -182,6 +254,7 @@ def get_learning_rate(fit_kwargs: dict):
         schduler_class_name = "".join(map(str.title, scheduler_name.split("_")))
         scheduler_kwargs = fit_kwargs["learning_rate"]["scheduler_kwargs"]
         __LOGGER__.info(f"{scheduler_name=}({scheduler_kwargs})")
+
         scheduler = getattr(
             mctm.scheduler,
             schduler_class_name,
@@ -241,7 +314,7 @@ def run(
     results_path: str,
     test_mode: bool,
     params: dict,
-):
+) -> tuple:
     """Execute experiment.
 
     Parameters
@@ -297,9 +370,12 @@ def run(
 
     if dataset_type == "benchmark":
         get_dataset_fn = get_benchmark_dataset
-        get_dataset_kwargs = {"dataset_name": dataset_name, "test_mode": test_mode}
+        get_dataset_kwargs = {
+            "dataset_name": dataset_name,
+            "test_mode": test_mode,
+        }
 
-        def preprocess_dataset(data, model):
+        def preprocess_dataset(data, model) -> dict:
             return {
                 "x": tf.ones_like(data[0], dtype=model.dtype),
                 "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
@@ -311,28 +387,70 @@ def run(
 
         plot_data = None
         after_fit_hook = False
-    else:
-        get_dataset_fn = get_train_dataset
+    elif dataset_type == "malnutrition":
+        get_dataset_fn = get_malnutrition_dataset
+        get_dataset_kwargs = {
+            **dataset_kwargs,
+            "test_mode": test_mode,
+        }
+        batch_size = fit_kwargs.pop("batch_size")
+
+        def mk_ds(data):
+            return tf.data.Dataset.from_tensor_slices((data[0], data[1])).batch(
+                batch_size, drop_remainder=True
+            )
+
+        def preprocess_dataset(data, model) -> dict:
+            return {
+                "x": mk_ds(data[0]),
+                "validation_data": mk_ds(data[1]),
+            }
+
+        figsize = get_figsize(params["textwidth"])
+        fig_height = figsize[0]
+
+        plot_data = partial(
+            plot_malnutrition_data,
+            targets=dataset_kwargs["targets"],
+            covariates=dataset_kwargs["covariates"],
+            seed=params["seed"],
+            frac=0.2,
+            hue="cage",
+            height=fig_height / 3,
+        )
+        after_fit_hook = partial(
+            malnutrition_after_fit_hook,
+            seed=params["seed"],
+            results_path=args.results_path,
+            targets=dataset_kwargs["targets"],
+            plot_samples_kwargs=dict(height=fig_height / 3),
+            plot_marginals_kwargs=dict(figsize=figsize),
+        )
+
+    elif dataset_type == "sim":
+        get_dataset_fn = get_sim_dataset
         get_dataset_kwargs = {
             **dataset_kwargs,
             "dataset_name": dataset_name,
             "test_mode": test_mode,
         }
 
-        def preprocess_dataset(data, model):
+        def preprocess_dataset(data, model) -> dict:
             return {
                 "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype),
                 "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
             }
 
-        fig_width = get_figsize(params["textwidth"], fraction=0.5)[0]
-
-        plot_data = partial(plot_2d_data, figsize=(fig_width, fig_width))
-        after_fit_hook = get_after_fit_hook(
+        fig_height = get_figsize(params["textwidth"], fraction=0.5)[0]
+        plot_data = partial(plot_2d_data, figsize=(fig_height, fig_height))
+        after_fit_hook = partial(
+            sim_after_fit_hook,
             results_path=results_path,
             is_hybrid=get_model == HybridDenistyRegressionModel,
-            height=fig_width,
+            height=fig_height,
         )
+    else:
+        raise ValueError(f"Invalid dataset type: {dataset_type}")
 
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
 
@@ -371,37 +489,60 @@ def run(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a model")
-    parser.add_argument("--log-file", type=str, help="path for log file")
     parser.add_argument(
-        "--log-level", type=str, default="INFO", help="logging severaty level"
+        "--log-file",
+        type=str,
+        help="path for log file",
     )
     parser.add_argument(
-        "--test-mode", default=False, type=str2bool, help="activate test-mode"
+        "--log-level",
+        type=str,
+        default="INFO",
+        help="logging severity level",
     )
     parser.add_argument(
-        "--experiment-name", type=str, help="MLFlow experiment name", required=True
+        "--test-mode",
+        default=False,
+        type=str2bool,
+        help="activate test-mode",
     )
-    parser.add_argument("--run-name", type=str, help="MLFlow run name", required=True)
     parser.add_argument(
-        "stage_name",
+        "--experiment-name",
+        type=str,
+        help="MLFlow experiment name",
+        required=True,
+    )
+    parser.add_argument(
+        "--run-name",
+        type=str,
+        help="MLFlow run name",
+        required=True,
+    )
+    parser.add_argument(
+        "--stage-name",
         type=str,
         help="name of dvc stage",
+        required=True,
     )
     parser.add_argument(
-        "dataset_type",
+        "--dataset-type",
         type=str,
         help="type of dataset",
+        required=True,
     )
     parser.add_argument(
-        "dataset_name",
+        "--dataset-name",
         type=str,
         help="name of dataset",
+        required=True,
     )
     parser.add_argument(
-        "results_path",
+        "--results-path",
         type=str,
         help="destination for model checkpoints and logs.",
+        required=True,
     )
+
     args = parser.parse_args()
     __LOGGER__.info("CLI arguments: %s", vars(args))
 
