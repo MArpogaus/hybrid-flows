@@ -36,6 +36,18 @@ def nll_loss(y, dist):
     return -dist.log_prob(y)
 
 
+def nll_loss(y, dist):
+    marginal_dist = tfd.Independent(
+        tfd.TransformedDistribution(
+            distribution=tfd.Normal(0, 1),
+            bijector=tfb.Invert(tfb.Chain(dist.bijector.bijector.bijectors[1:])),
+        ),
+        1,
+    )
+
+    return -dist.log_prob(y) - marginal_dist.log_prob(y)
+
+
 def plot_grid(data, **kwargs):
     """Plot sns.PairGrid."""
     sns.set_theme(style="white")
@@ -155,7 +167,6 @@ def validation_plot(samples, measurements, feature_name, covariates, **kwds):
     ax[0].set_title("Empirical CDF")
     ax[0].set_xlabel(feature_name)
     ax[0].set_ylabel(f"$F(y|{','.join(covariates)})$")
-    ax[0].set_xscale("log")
     ax[0].legend(
         loc="upper left",
         fontsize=8,
@@ -298,27 +309,47 @@ data, dims = get_dataset(
 )
 
 # %% plot data
-(unscaled_train_data, _, _), dims = get_dataset(**dataset_kwargs, scale=False)
-unscaled_train_data_df = pd.DataFrame(
-    np.concatenate([unscaled_train_data[1], unscaled_train_data[0]], -1),
+data_df = pd.DataFrame(
+    np.concatenate([data[0][1], data[0][0]], -1),
     columns=targets + covariates,
 )
 fig = plot_grid(
-    unscaled_train_data_df.groupby(covariates).sample(frac=0.2),
+    data_df.groupby(covariates).sample(frac=0.2),
     vars=targets,
     hue="cage",
 )
-fig.savefig(figure_path + f"/malnutrition_data.{img_ext}")
+fig.set(xlim=[-4, 4])
+data_df.describe()
+
+# %% plot data
+(train_data, _, _) = data
+train_data_df = pd.DataFrame(
+    np.concatenate([train_data[1], train_data[0]], -1),
+    columns=targets + covariates,
+)
+fig = plot_grid(
+    train_data_df.groupby(covariates).sample(frac=0.2, random_state=seed),
+    vars=targets,
+    hue="cage",
+)
+fig.set(xlim=(-4, 4))
+fig.savefig(figure_path + f"/malnutrition_data.{img_ext}", bbox_inches="tight")
 
 # %% prepare data
 X, Y = data[0][0], data[0][1]
 
 # %% model
 # TODO: Stimmt die Modellspezifikation in Klein et al. 2022?
-marginal_bijectors = [
+set_seed(seed + 1)
+x_domain = np.min(X), np.max(X)
+lambda_parameters_constraint_fn = lambda x: tf.linalg.LinearOperatorLowerTriangular(
+    tf.vectorized_map(create_lambda_matrix, x)
+)
+bijectors = [
     {
         "bijector": "BernsteinBijector",
         "bijector_kwargs": {
+            "domain": (-4, 4),
             "extrapolation": True,
         },
         "parameters_fn": "parameter_vector",
@@ -339,8 +370,8 @@ marginal_bijectors = [
             "dtype": "float",
             "polynomial_order": 6,
             "conditional_event_shape": 1,
-            "low": 0,
-            "high": 35,
+            "domain": x_domain,
+            "extrapolation": True,
         },
         # "parameter_fn": "parameter_vector_or_simple_network",
         # "parameter_fn_kwargs": {
@@ -361,34 +392,58 @@ marginal_bijectors = [
             "dtype": "float",
             "polynomial_order": 6,
             "conditional_event_shape": 1,
-            "low": 0,
-            "high": 35,
+            "domain": x_domain,
+            "extrapolation": True,
+            "initializer": tf.ones,
+            # "thetas_constrain_fn": get_thetas_constrain_fn(bounds=(0, 100)),
         },
-        "parameters_constraint_fn": lambda x: tf.linalg.LinearOperatorLowerTriangular(
-            tf.vectorized_map(create_lambda_matrix, x)
-        ),
+        "parameters_constraint_fn": lambda_parameters_constraint_fn,
     },
 ]
 
+marginal_model = DensityRegressionModel(
+    distribution="normalizing_flow",
+    bijectors=bijectors[:-1],
+    base_distribution_kwargs={"dims": 0},
+    # base_distribution_kwargs={
+    #     "distribution_name": "tfd.MultivariateNormalTriL",
+    #     "parameters_fn": "bernstein_polynomial",  # "parameter_vector",
+    #     "parameters_fn_kwargs": {
+    #         "parameter_shape": [np.sum(np.arange(dims))],
+    #         "dtype": "float",
+    #         "polynomial_order": 3,
+    #         "conditional_event_shape": 1,
+    #         "domain": x_domain,
+    #         "extrapolation": True,
+    #     },
+    #     "parameters_constraint_fn": lambda scale: {
+    #         "loc": 0,
+    #         "scale_tril": tf.vectorized_map(create_lambda_matrix, scale),
+    #     },
+    # },
+)
 mctm_model = DensityRegressionModel(
     distribution="normalizing_flow",
-    bijectors=marginal_bijectors,
+    bijectors=bijectors,
     base_distribution_kwargs={"dims": dims},
     # base_distribution_kwargs={
     #     "distribution_name": "tfd.MultivariateNormalTriL",
     #     "parameters_fn": "bernstein_polynomial",  # "parameter_vector",
     #     "parameters_fn_kwargs": {
-    #         "parameter_shape": [dims + np.sum(np.arange(dims + 1))],
+    #         "parameter_shape": [np.sum(np.arange(dims))],
     #         "dtype": "float",
     #         "polynomial_order": 3,
     #         "conditional_event_shape": 1,
-    #         "low": 0,
-    #         "high": 35,
+    #         "domain": x_domain,
+    #         "extrapolation": True,
     #     },
-    #     "parameters_constraint_fn": slice_loc_scale,
+    #     "parameters_constraint_fn": lambda scale: {
+    #         "loc": 0,
+    #         "scale_tril": tf.vectorized_map(create_lambda_matrix, scale),
+    #     },
     # },
 )
-
+# lamda_params = mctm_model.trainable_parameters.pop(-1)
 
 # %% distribution
 joint_dist = mctm_model(tf.ones((1, 3)))
@@ -402,13 +457,34 @@ joint_dist.log_prob(tf.ones((2, 2, 3)))
 mctm_model.trainable_parameters
 
 # %% bijector
-joint_dist.bijector  # .bijector.bijectors
+joint_dist.bijector.bijector.bijectors
 
 # %% parameter function
-params = mctm_model.parameter_fn(tf.ones((2, 1)))
+params = marginal_model.parameter_fn(tf.ones((1, 1)))
 params
 
-# %% fit model
+# %% parameter function
+params = mctm_model.parameter_fn(tf.ones((1, 1)))
+params
+
+# %% lambda
+lambda_parameters_constraint_fn(params[-1]).to_dense()
+
+# %% fit marginal model
+# hist = fit_distribution(
+#     model=marginal_model,
+#     seed=seed,
+#     results_path=results_path,
+#     loss=nll_loss,
+#     **preprocess_dataset(data, None),
+#     **fit_kwargs,
+# )
+
+# %% fit joint model
+# for i in range(2):
+#     mctm_model.trainable_parameters[i] = tf.Variable(
+#         marginal_model.trainable_parameters[i].numpy().copy(), trainable=False
+#     )
 hist = fit_distribution(
     model=mctm_model,
     seed=seed,
@@ -432,7 +508,7 @@ for (i, c), label in zip(enumerate(targets), targets):
     axs[i].set_title(label)
 axs[0].set_xticks((t.min(), t.max()))
 fig.tight_layout(w_pad=-0.1)
-fig.savefig(figure_path + f"/malnutrition_params.{img_ext}")
+fig.savefig(figure_path + f"/malnutrition_params.{img_ext}", bbox_inches="tight")
 
 
 # %% rank correlation
@@ -463,7 +539,7 @@ for ax, (a, b) in zip(
     ax.set_xticks(ages[0:-1:8])
 
 fig.tight_layout()
-fig.savefig(figure_path + f"/rank_correlation.{img_ext}")
+fig.savefig(figure_path + f"/rank_correlation.{img_ext}", bbox_inches="tight")
 
 # %% marginal cdf and pdf
 palette = "icefire"
@@ -477,9 +553,12 @@ marginal_dist = tfd.TransformedDistribution(
     distribution=tfd.Normal(0, 1),
     bijector=tfb.Invert(tfb.Chain(joint_dist.bijector.bijector.bijectors[1:])),
 )
+marginal_dist = marginal_model(
+    tf.convert_to_tensor(ages, dtype=mctm_model.dtype)[..., None]
+)
 
 
-y = np.linspace(0, 1, 100)[..., None, None]
+y = np.linspace(-4, 4, 100)[..., None, None]
 
 cdf = marginal_dist.cdf(y).numpy()
 pdf = marginal_dist.prob(y).numpy()
@@ -511,7 +590,7 @@ axs[0, 0].set_ylabel(r"$F(y|\text{age})$")
 axs[1, 0].set_ylabel(r"$f(y|\text{age})$")
 
 fig.tight_layout(w_pad=0)
-fig.savefig(figure_path + f"/malnutrition_dist.{img_ext}")
+fig.savefig(figure_path + f"/malnutrition_dist.{img_ext}", bbox_inches="tight")
 
 
 # %% samples
@@ -523,7 +602,7 @@ fig = plot_grid(
     vars=targets,
     hue="cage",
 )
-fig.savefig(figure_path + f"/mctm_samples.{img_ext}")
+fig.savefig(figure_path + f"/mctm_samples.{img_ext}", bbox_inches="tight")
 
 
 # %% validation plots
@@ -535,11 +614,13 @@ measurements = samples_df[(samples_df.source == "data") & (samples_df.cage == ca
 ]
 samples = samples_df[(samples_df.source == "model") & (samples_df.cage == cage)][column]
 fig = validation_plot(samples, measurements, feature_name=column, covariates=["cage"])
-fig.savefig(figure_path + f"/validation_plots_{cage}.{img_ext}")
+fig.savefig(figure_path + f"/validation_plots_{cage}.{img_ext}", bbox_inches="tight")
 
 # %% reliability diagram (samples)
 samples_df = get_samples_df(1, mctm_model, X, Y, targets)
-for column in targets:
+fig, axs = plt.subplots(1, len(targets), sharey=True, sharex=True)
+
+for column, ax in zip(targets, axs):
 
     def apply_ecdf(df):
         model_df = df.loc[df.source == "model", column]
@@ -575,13 +656,16 @@ for column in targets:
         columns=["model", "data", "cage"],
     )
 
-    fig = plt.figure()
-    sns.lineplot(ecdf_df, x="model", y="data", hue="cage", estimator=None)
-    fig.savefig(figure_path + f"/reliability_plot_samples_{column}.{img_ext}")
+    sns.lineplot(ecdf_df, x="model", y="data", hue="cage", estimator=None, ax=ax)
+    ax.set_title(column)
+fig.tight_layout(pad=0)
+fig.savefig(figure_path + f"/reliability_plot_samples.{img_ext}", bbox_inches="tight")
 
-# %% reliability diagram (CDF)
+# %% reliability diagram (cdf)
 samples_df = get_samples_df(1, mctm_model, X, Y, targets)
-for column in targets:
+fig, axs = plt.subplots(1, len(targets), sharey=True, sharex=True)
+
+for column, ax in zip(targets, axs):
 
     def apply_ecdf(df):
         data_df = df.loc[df.source == "data", column]
@@ -627,6 +711,146 @@ for column in targets:
         columns=["model", "data", "cage"],
     )
 
-    fig = plt.figure()
-    sns.lineplot(ecdf_df, x="model", y="data", hue="cage", estimator=None)
-    fig.savefig(figure_path + f"/reliability_plot_cdf_{column}.{img_ext}")
+    sns.lineplot(ecdf_df, x="model", y="data", hue="cage", estimator=None, ax=ax)
+    ax.set_title(column)
+fig.tight_layout(pad=0)
+fig.savefig(figure_path + f"/reliability_plot_cdf.{img_ext}", bbox_inches="tight")
+
+# %% reliability
+reliability_df = get_samples_df(1, mctm_model, X, Y, targets).pivot(columns="source")
+reliability_df.columns = reliability_df.columns.map("{0[1]}_{0[0]}".format)
+reliability_df = reliability_df.drop(columns="model_cage").rename(
+    columns={"data_cage": "cage"}
+)
+
+
+def apply_cdf(df):
+    data_cols = ["data_" + c for c in targets]
+    model_cols = ["model_" + c for c in targets]
+    measurements = df.loc[:, data_cols].values
+    samples = df.loc[:, model_cols].values
+    marginal_dist = tfd.TransformedDistribution(
+        distribution=tfd.Normal(0, 1),
+        bijector=tfb.Invert(
+            tfb.Chain(
+                mctm_model(df.cage.unique()[..., None]).bijector.bijector.bijectors[-2:]
+            )
+        ),
+    )
+    model_cdf = marginal_dist.cdf(measurements).numpy()
+    data_ecdf = np.stack(list(map(lambda x: ecdf(x, x), measurements.T)), 1)
+    samples_ecdf = np.stack(list(map(lambda x: ecdf(x, x), samples.T)), 1)
+    cdf_columns = ["cdf_" + c for c in targets]
+    data_ecdf_columns = ["ecdf_data_" + c for c in targets]
+    samples_ecdf_columns = ["ecdf_model_" + c for c in targets]
+    df.loc[:, cdf_columns] = model_cdf
+    df.loc[:, data_ecdf_columns] = data_ecdf
+    df.loc[:, samples_ecdf_columns] = samples_ecdf
+    return df
+
+
+reliability_df = (
+    reliability_df.groupby("cage")
+    .apply(apply_cdf, include_groups=True)
+    .reset_index(drop=True)
+)
+
+# Binning the predicted probabilities
+# Create bins for the predicted probabilities
+bins = np.linspace(0, 1, num=11)  # 10 equally spaced bins from 0 to 1
+for column in targets:
+    reliability_df.loc[:, "cdf_binned_" + column] = reliability_df.loc[
+        :, "cdf_" + column
+    ].apply(pd.cut, by_row=False, bins=bins, include_lowest=True)
+for column in targets:
+    reliability_df.loc[:, "ecdf_binned_" + column] = reliability_df.loc[
+        :, "ecdf_model_" + column
+    ].apply(pd.cut, by_row=False, bins=bins, include_lowest=True)
+
+
+# %%
+columnwidth = 400
+
+fig, axs = plt.subplots(
+    2,
+    dims,
+    sharey="row",
+    sharex=True,
+    # figsize=get_figsize(columnwidth, fraction=0.9),
+)
+
+common_errorbar_kwargs = dict(
+    markersize=0.2,
+    marker="o",
+    # capsize=1,
+    color="C0",
+    linewidth=0.5,
+)
+
+# Iterate over groups for different kinds
+for i, column in enumerate(targets):
+    # Extract categories and corresponding mean ECDF values
+    cdf_bin_col = "cdf_binned_" + column
+    ecdf_bin_col = "ecdf_binned_" + column
+    ecdf_data_col = "ecdf_data_" + column
+    ecdf_model_col = "ecdf_model_" + column
+    predicted_bins = reliability_df[cdf_bin_col].cat.categories.astype(str)
+    grpd_data = reliability_df.groupby(cdf_bin_col)[ecdf_data_col]
+    observed_freqs = grpd_data.mean()
+
+    quantiles = grpd_data.quantile([0.25, 0.975]).unstack()
+
+    pi = (quantiles - observed_freqs.values[..., None]).T.abs()
+
+    axs[0][i].errorbar(
+        predicted_bins, observed_freqs, yerr=pi, **common_errorbar_kwargs
+    )
+    axs[0][i].set_box_aspect(1)
+
+    grpd_data = reliability_df.groupby(ecdf_bin_col)[ecdf_model_col]
+    observed_freqs = grpd_data.mean()
+
+    quantiles = grpd_data.quantile([0.25, 0.975]).unstack()
+
+    pi = (quantiles - observed_freqs.values[..., None]).T.abs()
+
+    axs[1][i].errorbar(
+        predicted_bins, observed_freqs, yerr=pi, **common_errorbar_kwargs
+    )
+    axs[1][i].set_box_aspect(1)
+
+    xticks = [0, len(predicted_bins) - 1]
+    axs[1][i].set_xticks(xticks, predicted_bins[xticks])
+
+    # Set labels and titles
+    axs[0][i].set_title(
+        f"{column.upper()}",
+    )
+    if i == 0:
+        axs[0][i].set_ylabel("Observed relative\nfrequencies")
+        axs[1][i].set_ylabel("Observed relative\nfrequencies")
+    axs[1][i].set_xlabel("Predicted probabilities\n(binned)")
+
+    # Add diagonal line
+    axs[0][i].plot(
+        [predicted_bins[0], predicted_bins[-1]],
+        [0, 1],
+        linestyle=":",
+        linewidth=0.5,
+        color="gray",
+    )
+    axs[1][i].plot(
+        [predicted_bins[0], predicted_bins[-1]],
+        [0, 1],
+        linestyle=":",
+        linewidth=0.5,
+        color="gray",
+    )
+
+# axs[-1].set_xlabel("relative frequencies\n (samples)")
+
+# Final adjustments
+sns.despine()
+# fig.autofmt_xdate()
+fig.tight_layout(pad=0)
+fig.savefig("reliability_diagram.pdf", dpi=300, bbox_inches="tight")
