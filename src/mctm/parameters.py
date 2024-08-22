@@ -1,16 +1,12 @@
 # -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# AUTHOR INFORMATION ###########################################################
+# %% Author ####################################################################
 # file    : parameters.py
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
-# created : 2023-08-24 16:15:23 (Marcel Arpogaus)
-# changed : 2024-06-19 21:18:24 (Marcel Arpogaus)
-# DESCRIPTION ##################################################################
-# ...
-# LICENSE ######################################################################
-# ...
-################################################################################
-# IMPORTS ######################################################################
+# created : 2024-08-22 13:16:19 (Marcel Arpogaus)
+# changed : 2024-08-22 13:46:55 (Marcel Arpogaus)
+
+# %% Description ###############################################################
 """Functions defining ANNs.
 
 The 'parameters' module contains functions for defining ANNs based on certain
@@ -21,11 +17,12 @@ vectors, and autoregressive parameter networks.
 
 """
 
+# %% imports ###################################################################
 from typing import Any, Callable, Dict, List, Tuple, Union
 
 import tensorflow as tf
 import tensorflow.keras as K
-from bernstein_flow.bijectors import BernsteinBijector
+from bernstein_flow.bijectors import BernsteinPolynomial
 
 from .nn import (
     build_conditional_net,
@@ -36,6 +33,7 @@ from .nn import (
 )
 
 
+# %% functions #################################################################
 def get_parameter_vector_fn(
     parameter_shape: Tuple[int, ...],
     initializer: Callable[[Tuple[int, ...], ...], tf.Tensor] = tf.random.normal,
@@ -70,7 +68,7 @@ def get_fully_connected_network_fn(
     input_shape: Tuple[int, ...],
     conditional: bool = False,
     conditional_event_shape: Tuple[int, ...] = (),
-    **kwargs,
+    **kwargs: Any,
 ) -> Tuple[Callable[..., tf.Tensor], List[tf.Variable]]:
     """Create a simple fully connected parameter network.
 
@@ -124,7 +122,7 @@ def get_fully_connected_network_fn(
 
 
 def get_parameter_vector_or_simple_network_fn(
-    parameter_shape: Tuple[int, ...], conditional: bool, **kwargs
+    parameter_shape: Tuple[int, ...], conditional: bool, **kwargs: Any
 ) -> Union[
     Tuple[K.Model, List[tf.Variable]],
     Tuple[Callable[..., tf.Variable], tf.Variable],
@@ -165,9 +163,9 @@ def get_fully_connected_res_net_fn(
     conditional_event_shape: Tuple[int, ...] = (),
     name: str = "res_net",
     dtype: tf.dtypes.DType = tf.float32,
-    **kwargs,
+    **kwargs: Any,
 ) -> Tuple[Callable[..., K.Model], List[tf.Variable]]:
-    """Generate an fully connected ResNet model.
+    """Generate a fully connected ResNet model.
 
     Parameters
     ----------
@@ -226,7 +224,7 @@ def get_fully_connected_res_net_fn(
 
 
 def get_masked_autoregressive_network_fn(
-    parameter_shape: Tuple[int, ...], conditional: bool = False, **kwargs
+    parameter_shape: Tuple[int, ...], conditional: bool = False, **kwargs: Any
 ) -> Tuple[Callable[..., Callable[..., tf.Tensor]], List[tf.Variable]]:
     """Create an autoregressive parameter network.
 
@@ -306,7 +304,7 @@ def get_masked_autoregressive_network_with_additive_conditioner_fn(
     )
 
     def parameter_fn(
-        conditional_input: tf.Variable = None, **kwargs
+        conditional_input: tf.Variable = None, **kwargs: Any
     ) -> Callable[[tf.Variable, tf.Variable], tf.Variable]:
         made_net = masked_autoregressive_parameter_network_fn(
             conditional_input, **kwargs
@@ -316,7 +314,6 @@ def get_masked_autoregressive_network_with_additive_conditioner_fn(
         def call_x0(x0: tf.Tensor):
             pv2 = x0_net(x0)
 
-            @tf.function
             def call_made(x: tf.Tensor) -> tf.Tensor:
                 pv1 = made_net(x)
                 return pv1 + pv2
@@ -337,9 +334,9 @@ def get_fully_connected_autoregressive_network_fn(
     conditional_event_shape: Tuple[int, ...] = (),
     name: str = "autoregressive_res_net",
     dtype: tf.dtypes.DType = tf.float32,
-    **kwargs,
+    **kwargs: Any,
 ) -> Tuple[Callable[..., K.Model], List[tf.Variable]]:
-    """Generate an autoregressive ResNet model.
+    """Generate a fully connected autoregressive ResNet model.
 
     Parameters
     ----------
@@ -401,11 +398,11 @@ def get_bernstein_polynomial_fn(
     parameter_shape: Tuple[int, ...],
     polynomial_order: int,
     conditional_event_shape: Tuple[int, ...],
-    high: float,
-    low: float,
     dtype: tf.dtypes.DType,
-    **kwargs,
-) -> Tuple[Callable[tf.Tensor, tf.Tensor], tf.Variable]:
+    initializer: Callable[[Tuple[int, ...], ...], tf.Tensor] = tf.random.normal,
+    thetas_constrain_fn: Callable[[tf.Tensor], tf.Tensor] = tf.identity,
+    **kwargs: Any,
+) -> Tuple[Callable[[tf.Tensor], tf.Tensor], tf.Variable]:
     """Create a Bernstein polynomial parameter lambda.
 
     Parameters
@@ -416,12 +413,12 @@ def get_bernstein_polynomial_fn(
         Order of the polynomial.
     conditional_event_shape : tuple of int
         Shape of the conditional event.
-    high : float
-        High range value for Bernstein Polynomial.
-    low : float
-        Low range value for Bernstein Polynomial.
     dtype : tf.dtypes.DType
         Data type of the parameter.
+    initializer : callable, optional
+        Function returning initial parameters, by default tf.random.normal.
+    thetas_constrain_fn : callable, optional
+        Function to constrain thetas, by default tf.identity.
     kwargs : dict, optional
         Additional keyword arguments.
 
@@ -436,13 +433,13 @@ def get_bernstein_polynomial_fn(
     )
     _, parameter_vector = get_parameter_vector_fn(
         parameter_shape=parameter_shape,
-        dtype=dtype,  # initializer=tf.ones
-        **kwargs,
+        dtype=dtype,
+        initializer=initializer,
     )
 
-    def get_parameter_fn(conditional_input=None, **kwargs):
-        b_poly = BernsteinBijector(parameter_vector)
-        y = b_poly((conditional_input[..., None] - low) / (high - low))
+    def get_parameter_fn(conditional_input=None, **_):
+        b_poly = BernsteinPolynomial(thetas_constrain_fn(parameter_vector), **kwargs)
+        y = b_poly(conditional_input[..., None])
         return tf.reduce_sum(y, 1)
 
     return get_parameter_fn, parameter_vector
