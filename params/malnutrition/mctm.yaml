@@ -1,0 +1,50 @@
+compile_kwargs: {}
+  # jit_compile: true
+fit_kwargs:
+  epochs: &epochs 100
+  batch_size: 128
+  learning_rate:
+    scheduler_kwargs:
+      decay_steps: *epochs
+      initial_learning_rate: 0.005
+    scheduler_name: cosine_decay
+  reduce_lr_on_plateau: false
+  early_stopping: false
+  monitor: val_loss
+  verbose: true
+model_kwargs:
+  distribution: normalizing_flow
+  bijectors:
+  - bijector: BernsteinBijector
+    bijector_kwargs:
+      domain: [-4, 4]
+      extrapolation: true
+    parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+    parameters_constraint_fn_kwargs:
+      allow_flexible_bounds: true
+      bounds: smooth
+      high: 4
+      low: -4
+    parameters_fn: parameter_vector
+    parameters_fn_kwargs:
+      dtype: float32
+      parameter_shape: [&dims 3, 6]
+  - bijector: Shift
+    parameters_fn: bernstein_polynomial
+    parameters_fn_kwargs:
+      conditional_event_shape: 1
+      domain: &x_domain [0, 35]
+      dtype: float
+      extrapolation: true
+      parameter_shape: [*dims]
+      polynomial_order: 6
+  - bijector: ScaleMatvecLinearOperator
+    parameters_constraint_fn: mctm.activations.lambda_parameters_constraint_fn
+    parameters_fn: bernstein_polynomial
+    parameters_fn_kwargs:
+      conditional_event_shape: 1
+      domain: *x_domain
+      dtype: float
+      extrapolation: true
+      parameter_shape: [3]
+      polynomial_order: 3
