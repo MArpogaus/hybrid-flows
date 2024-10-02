@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2023-06-19 17:01:16 (Marcel Arpogaus)
-# changed : 2024-08-22 13:14:06 (Marcel Arpogaus)
+# changed : 2024-10-02 12:08:28 (Marcel Arpogaus)
 # DESCRIPTION ##################################################################
 # ...
 # LICENSE ######################################################################
@@ -118,10 +118,10 @@ def _get_trainable_distribution(
     distribution_fn, parameters_shape = get_distribution_fn(
         dims=dims, **distribution_kwargs
     )
-    parameter_fn, trainable_parameters = get_parameter_fn(
+    parameter_fn, trainable_variables = get_parameter_fn(
         parameters_shape, **parameter_kwargs
     )
-    return distribution_fn, parameter_fn, trainable_parameters
+    return distribution_fn, parameter_fn, trainable_variables, []
 
 
 def _get_base_distribution(
@@ -599,7 +599,7 @@ def _get_stacked_flow(
         dims=dims,
     )
 
-    return distribution_fn, parameter_fn, trainable_variables
+    return distribution_fn, parameter_fn, trainable_variables, []
 
 
 def _get_num_masked(dims: int, layer: int) -> int:
@@ -875,7 +875,7 @@ def get_masked_autoregressive_flow(
         **base_distribution_kwargs,
     )
 
-    return distribution_fn, parameter_fn, trainable_variables
+    return distribution_fn, parameter_fn, trainable_variables, []
 
 
 def get_masked_autoregressive_flow_first_dim_masked(
@@ -954,7 +954,7 @@ def get_masked_autoregressive_flow_first_dim_masked(
         **base_distribution_kwargs,
     )
 
-    return distribution_fn, parameter_fn, trainable_variables
+    return distribution_fn, parameter_fn, trainable_variables, []
 
 
 def _get_parametrized_bijector(
@@ -1070,12 +1070,13 @@ def _get_parameter_fn(
         )
 
     # get parameter fn
-    if parameters:
+    if parameters is not None:
         __LOGGER__.debug("got constant parameters %s", str(parameters))
 
-        def parameter_fn(*_, **__):  # noqa: E731
+        def parameter_fn(*_, **__):
             return parameters
 
+        return parameter_fn, [parameters]
     else:
         if callable(parameters_fn):
             __LOGGER__.debug("using provided callable as parameter function")
@@ -1085,11 +1086,11 @@ def _get_parameter_fn(
             get_parameter_fn = getattr(parameters_lib, f"get_{parameters_fn}_fn")
 
         __LOGGER__.debug("initializing parametrization function")
-        parameter_fn, trainable_parameters = get_parameter_fn(
+        parameter_fn, trainable_variables = get_parameter_fn(
             **parameters_fn_kwargs,
         )
 
-    return parameter_fn, trainable_parameters
+        return parameter_fn, trainable_variables
 
 
 def _get_parameters_constraint_fn(
@@ -1167,6 +1168,7 @@ def get_normalizing_flow(
     """
     bijector_name_key = "bijector"
     bijector_kwargs_key = "bijector_kwargs"
+    trainable_key = "trainable"
     parameters_key = "parameters"
     parameters_fn_key = "parameters_fn"
     parameters_fn_kwargs_key = "parameters_fn_kwargs"
@@ -1175,28 +1177,41 @@ def get_normalizing_flow(
 
     parameter_fns = {}
     parameters_constraint_fns = {}
-    trainable_parameters = {}
+    trainable_variables = {}
+    non_trainable_variables = {}
 
-    for bijector in deepcopy(bijectors):
-        bijector_name = bijector[bijector_name_key]
-        __LOGGER__.debug("processing definition of bijector %s", bijector_name)
-        (
-            parameter_fns[bijector_name],
-            trainable_parameters[bijector_name],
-        ) = _get_parameter_fn(
-            parameters=bijector.pop(parameters_key, None),
-            parameters_fn=bijector.pop(parameters_fn_key, None),
-            **bijector.pop(parameters_fn_kwargs_key, {}),
-        )
-        if parameters_constraint_fn_key in bijector:
-            parameters_constraint_fns[bijector_name] = _get_parameters_constraint_fn(
-                parameters_constraint_fn=bijector.pop(
-                    parameters_constraint_fn_key, None
-                ),
-                **bijector.pop(parameters_constraint_fn_kwargs_key, {}),
-            )
+    for bijector in bijectors:
+        if isinstance(bijector, tfb.Bijector):
+            parameter_fns[bijector.name] = lambda *_, **__: None
         else:
-            parameters_constraint_fns[bijector_name] = default_parameters_constraint_fn
+            bijector = deepcopy(bijector)
+            bijector_name = bijector[bijector_name_key]
+            __LOGGER__.debug("processing definition of bijector %s", bijector_name)
+            (
+                parameter_fns[bijector_name],
+                variables,
+            ) = _get_parameter_fn(
+                parameters=bijector.get(parameters_key, None),
+                parameters_fn=bijector.get(parameters_fn_key, None),
+                **bijector.get(parameters_fn_kwargs_key, {}),
+            )
+            if bijector.get(trainable_key, True):
+                trainable_variables[bijector_name] = variables
+            else:
+                non_trainable_variables[bijector_name] = variables
+            if parameters_constraint_fn_key in bijector:
+                parameters_constraint_fns[bijector_name] = (
+                    _get_parameters_constraint_fn(
+                        parameters_constraint_fn=bijector.get(
+                            parameters_constraint_fn_key, None
+                        ),
+                        **bijector.get(parameters_constraint_fn_kwargs_key, {}),
+                    )
+                )
+            else:
+                parameters_constraint_fns[bijector_name] = (
+                    default_parameters_constraint_fn
+                )
 
     __LOGGER__.debug("parameter function %s", str(parameter_fns))
 
@@ -1206,15 +1221,13 @@ def get_normalizing_flow(
     ):
         (
             base_distribution_parameter_fn,
-            base_distribution_trainable_parameters,
+            base_distribution_trainable_variables,
         ) = _get_parameter_fn(
             parameters=base_distribution_kwargs.pop(parameters_key, None),
             parameters_fn=base_distribution_kwargs.pop(parameters_fn_key, None),
             **base_distribution_kwargs.pop(parameters_fn_kwargs_key, {}),
         )
-        trainable_parameters["base_distribution"] = (
-            base_distribution_trainable_parameters
-        )
+        trainable_variables["base_distribution"] = base_distribution_trainable_variables
         if parameters_constraint_fn_key in base_distribution_kwargs:
             base_distribution_parameter_constraint_fns = _get_parameters_constraint_fn(
                 parameters_constraint_fn=base_distribution_kwargs.pop(
@@ -1242,16 +1255,21 @@ def get_normalizing_flow(
     def flow_parametrization_fn(all_parameters):
         bijectors_list = []
         for bijector, bijector_parameters in zip(bijectors, all_parameters):
-            bijector_name = bijector[bijector_name_key]
-            bijector_kwargs = bijector.get(bijector_kwargs_key, {})
-            bijectors_list.append(
-                _get_parametrized_bijector(
-                    bijector=bijector_name,
-                    parameters=bijector_parameters,
-                    parameters_constraint_fn=parameters_constraint_fns[bijector_name],
-                    bijector_kwargs=bijector_kwargs,
+            if isinstance(bijector, tfb.Bijector):
+                bijectors_list.append(bijector)
+            else:
+                bijector_name = bijector[bijector_name_key]
+                bijector_kwargs = bijector.get(bijector_kwargs_key, {})
+                bijectors_list.append(
+                    _get_parametrized_bijector(
+                        bijector=bijector_name,
+                        parameters=bijector_parameters,
+                        parameters_constraint_fn=parameters_constraint_fns[
+                            bijector_name
+                        ],
+                        bijector_kwargs=bijector_kwargs,
+                    )
                 )
-            )
 
         if reverse_flow:
             # The Chain bijector uses the reversed list in the forward call.
@@ -1277,7 +1295,12 @@ def get_normalizing_flow(
         **kwargs,
     )
 
-    return distribution_fn, parameter_fn, list(trainable_parameters.values())
+    return (
+        distribution_fn,
+        parameter_fn,
+        list(chain.from_iterable(trainable_variables.values())),
+        list(chain.from_iterable(non_trainable_variables.values())),
+    )
 
 
 # actual functions that are composed of base functions

@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 13:16:19 (Marcel Arpogaus)
-# changed : 2024-08-22 13:46:55 (Marcel Arpogaus)
+# changed : 2024-10-02 11:48:15 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions defining ANNs.
@@ -38,7 +38,7 @@ def get_parameter_vector_fn(
     parameter_shape: Tuple[int, ...],
     initializer: Callable[[Tuple[int, ...], ...], tf.Tensor] = tf.random.normal,
     dtype: tf.dtypes.DType = tf.float32,
-) -> Tuple[Callable[..., tf.Variable], tf.Variable]:
+) -> Tuple[Callable[..., tf.Variable], List[tf.Variable]]:
     """Create a TensorFlow parameter vector with a given shape and dtype.
 
     Parameters
@@ -53,14 +53,14 @@ def get_parameter_vector_fn(
     Returns
     -------
     tuple
-        A tuple with a callable that returns the parameter vector and the parameter
-        vector itself.
+        A tuple with a callable that returns the parameter vector and a list containing
+        the parameter vector itself.
 
     """
     parameter_vector = tf.Variable(
         initializer(parameter_shape, dtype=dtype), trainable=True
     )
-    return lambda *_, **__: parameter_vector, parameter_vector
+    return lambda *_, **__: parameter_vector, [parameter_vector]
 
 
 def get_fully_connected_network_fn(
@@ -402,7 +402,7 @@ def get_bernstein_polynomial_fn(
     initializer: Callable[[Tuple[int, ...], ...], tf.Tensor] = tf.random.normal,
     thetas_constrain_fn: Callable[[tf.Tensor], tf.Tensor] = tf.identity,
     **kwargs: Any,
-) -> Tuple[Callable[[tf.Tensor], tf.Tensor], tf.Variable]:
+) -> Tuple[Callable[[tf.Tensor], tf.Tensor], List[tf.Variable]]:
     """Create a Bernstein polynomial parameter lambda.
 
     Parameters
@@ -442,4 +442,4 @@ def get_bernstein_polynomial_fn(
         y = b_poly(conditional_input[..., None])
         return tf.reduce_sum(y, 1)
 
-    return get_parameter_fn, parameter_vector
+    return get_parameter_fn, [parameter_vector]
