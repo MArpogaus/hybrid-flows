@@ -1,4 +1,5 @@
 """Util functions."""
+
 # -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
 # AUTHOR INFORMATION ###########################################################
 # file    : utils.py
@@ -11,9 +12,9 @@
 # LICENSE ######################################################################
 # ...
 ################################################################################
-
 import argparse
 import importlib
+from collections.abc import Mapping, MutableMapping, MutableSequence
 
 
 # FUNCTION DEFINITIONS #########################################################
@@ -33,7 +34,7 @@ def flatten_dict(d, parent_key="", sep="."):
     items = []
     for key, value in d.items():
         new_key = sep.join((parent_key, str(key))) if parent_key else str(key)
-        if isinstance(value, dict) and len(value):
+        if isinstance(value, Mapping) and len(value):
             items.extend(flatten_dict(value, new_key, sep=sep).items())
         else:
             items.append((new_key, value))
@@ -89,13 +90,13 @@ def filter_recursive(filter_func, collection):
 
 
     """
-    if isinstance(collection, dict):
+    if isinstance(collection, Mapping):
         return {
             k: v_filtered
             for k, v in collection.copy().items()
             if (v_filtered := filter_recursive(filter_func, v)) is not None
         }
-    elif isinstance(collection, list):
+    elif isinstance(collection, MutableSequence):
         return [
             v_filterd
             for v in collection.copy()
@@ -115,3 +116,19 @@ def getattr_from_module(module_attr):
     module_name, attr = module_attr.rsplit(".", 1)
     module = importlib.import_module(module_name)
     return getattr(module, attr)
+
+
+def deepupdate(d: MutableMapping, u: Mapping):
+    """Recursively update elements in a Mapping.
+
+    References
+    ----------
+    https://stackoverflow.com/a/3233356
+
+    """
+    for k, v in u.items():
+        if isinstance(v, Mapping):
+            d[k] = deepupdate(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
