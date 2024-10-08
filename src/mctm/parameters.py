@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 13:16:19 (Marcel Arpogaus)
-# changed : 2024-10-02 11:48:15 (Marcel Arpogaus)
+# changed : 2024-10-08 21:03:30 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions defining ANNs.
@@ -443,3 +443,14 @@ def get_bernstein_polynomial_fn(
         return tf.reduce_sum(y, 1)
 
     return get_parameter_fn, [parameter_vector]
+
+
+def get_test_parameters_fn(input_shape, param_shape):
+    """Test parameter function."""
+    return lambda x: tf.ones([*input_shape, *param_shape]) * x, None
+
+
+def get_test_parameters_nested_fn(input_shape, param_shape):
+    """Test parameter function."""
+    parameter_fn, vars = get_test_parameters_fn(input_shape, param_shape)
+    return lambda x: lambda xx: x * parameter_fn(xx), vars
