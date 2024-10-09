@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2024-10-09 07:44:50 (Marcel Arpogaus)
+# changed : 2024-10-09 13:56:47 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -36,7 +36,7 @@ from .parameters import (
     get_parameter_vector_or_simple_network_fn,
 )
 from .utils import getattr_from_module
-from .utils.decorators import recurse_on_key, reduce_dict, skip_if_bijector
+from .utils.decorators import recurse_on_key, reduce_dict, skip_no_dict
 
 # %% globals ###################################################################
 __LOGGER__ = logging.getLogger(__name__)
@@ -216,14 +216,18 @@ def _get_parameters_constraint_fn(
         )
         parameters_constraint_fn = getattr_from_module(parameters_constraint_fn)
 
-    return parameters_constraint_fn(**parameters_constraint_fn_kwargs)
+    if len(parameters_constraint_fn_kwargs) or isinstance(
+        parameters_constraint_fn, type
+    ):
+        return parameters_constraint_fn(**parameters_constraint_fn_kwargs)
+    else:
+        return parameters_constraint_fn
 
 
 def _init_parameters_fn(bijectors):
     trainable_variables: List[tf.Variable] = []
     non_trainable_variables: List[tf.Variable] = []
 
-    @skip_if_bijector
     @recurse_on_key(__NESTED_BIJECTOR_KEY__)
     @reduce_dict(
         __PARAMETERS_KEY__,
@@ -329,7 +333,6 @@ def _init_parameters_fn(bijectors):
 
 
 def _get_eval_parameter_fn(*args, **kwargs):
-    @skip_if_bijector
     @recurse_on_key(__NESTED_BIJECTOR_KEY__)
     @reduce_dict(
         __PARAMETERS_KEY__,
@@ -385,7 +388,7 @@ def _get_bijector_class(bijector: Union[tfb.Bijector, type, str]) -> type:
     return bijector_cls
 
 
-@skip_if_bijector
+@skip_no_dict
 def _init_bijector_from_dict(
     bijector_definition: Dict[str, Any],
 ) -> tfp.bijectors.Bijector:
@@ -444,38 +447,48 @@ def _init_bijector_from_dict(
         parameters_constraint_fn=parameters_constraint_fn,
         **parameters_constraint_fn_kwargs,
     )
+
+    if callable(parameters):
+        parameters_fn = parameters
+    else:
+        parameters_fn = None
+
+    if parameters_constraint_fn is not None:
+        __LOGGER__.debug("Parameter constrain function provided")
+        if parameters_fn is not None:
+            __LOGGER__.debug("Redefining constraint parameter_fn")
+
+            def parameters_fn(*args, **kwargs):
+                return parameters_constraint_fn(parameters(*args, **kwargs))
+        else:
+            parameters = parameters_constraint_fn(parameters)
+
     if nested_bijector is not None:
-        __LOGGER__.debug("Detected nested bijector")
-        if callable(parameters):
+        __LOGGER__.debug("Detected nested bijector: %s", nested_bijector)
+        if parameters_fn is not None:
             __LOGGER__.debug(
                 "Parameters are callable: Passing bijector_fn to %s",
                 bijector_cls.__name__,
             )
-            parameters_fn = parameters
-
             bijector_fn = _get_bijector_fn(parameters_fn, nested_bijector)
 
             bijector = bijector_cls(bijector_fn=bijector_fn, **bijector_kwargs)
         else:
-            # NOTE: This is probably only covering the use of the Chain bijector.
-            #       We could consider implicit chaining and passing on this chain.
             bijector = bijector_cls(
-                list(map(_init_bijector_from_dict, nested_bijector)),
+                _init_nested_bijector_from_dict(
+                    nested_bijector_definition=nested_bijector,
+                    parent_parameters=parameters,
+                ),
                 **bijector_kwargs,
             )
-
-    elif parameters_constraint_fn is not None:
-        constrained_parameters = parameters_constraint_fn(parameters)
-        if isinstance(constrained_parameters, list):
-            bijector = bijector_cls(*constrained_parameters, **bijector_kwargs)
-        elif isinstance(constrained_parameters, dict):
-            bijector = bijector_cls(**constrained_parameters, **bijector_kwargs)
-        else:
-            bijector = bijector_cls(constrained_parameters, **bijector_kwargs)
-    elif parameters is not None:
-        bijector = bijector_cls(parameters, **bijector_kwargs)
-    else:
+    elif parameters is None:
         bijector = bijector_cls(**bijector_kwargs)
+    elif isinstance(parameters, list):
+        bijector = bijector_cls(*parameters, **bijector_kwargs)
+    elif isinstance(parameters, dict):
+        bijector = bijector_cls(**parameters, **bijector_kwargs)
+    else:
+        bijector = bijector_cls(parameters, **bijector_kwargs)
 
     if invert:
         return tfb.Invert(bijector)
@@ -485,17 +498,23 @@ def _init_bijector_from_dict(
 
 def _get_bijector_fn(parameters_fn, nested_bijector):
     def bijector_fn(y: tf.Tensor, *args: Any, **kwargs: Any) -> tfb.Bijector:
-        pvector = parameters_fn(y, **kwargs)
+        parent_parameters = parameters_fn(y, **kwargs)
 
-        initialized_nested_bijectors: List[tfb.Bijector] = []
+        return _init_nested_bijector_from_dict(
+            nested_bijector_definition=nested_bijector.copy(),
+            parent_parameters=parent_parameters,
+        )
 
-        offset = 0
+    return bijector_fn
 
-        for bj in nested_bijector:
+
+def _init_nested_bijector_from_dict(nested_bijector_definition, parent_parameters):
+    initialized_nested_bijectors: List[tfb.Bijector] = []
+
+    offset = 0
+    for bj in nested_bijector_definition:
+        if isinstance(bj, dict):
             nested_bijector_kwargs = bj.copy()
-            __LOGGER__.debug(
-                "Processing nested bijector: %s", bj[__BIJECTOR_NAME_KEY__]
-            )
             __LOGGER__.debug("Nested bijector config: %s", nested_bijector_kwargs)
             if nested_bijector_kwargs.get(__PARAMETERIZED_BY_PARENT_KEY__, False):
                 __LOGGER__.debug("Bijector is parameterized by parent")
@@ -504,7 +523,7 @@ def _get_bijector_fn(parameters_fn, nested_bijector):
                     parameters_slice_size = nested_bijector_kwargs[
                         __PARAMETER_SLICE_SIZE_KEY__
                     ]
-                    parent_parameters = pvector[
+                    processed_parent_parameters = parent_parameters[
                         ..., offset : offset + parameters_slice_size
                     ]
                     __LOGGER__.debug(
@@ -515,7 +534,7 @@ def _get_bijector_fn(parameters_fn, nested_bijector):
                     offset += parameters_slice_size
                 elif offset == 0:
                     __LOGGER__.debug("Using whole parameter vector provided by parent")
-                    parent_parameters = pvector
+                    processed_parent_parameters = parent_parameters
                 else:
                     raise ValueError(
                         "Parameter slicing has to be used in all nested bijectors."
@@ -530,7 +549,7 @@ def _get_bijector_fn(parameters_fn, nested_bijector):
                 if callable(nested_parameters):
                     __LOGGER__.debug("Nested params are callable")
                     nested_parameters_fn = nested_parameters
-                    parent_parameters_add = parent_parameters
+                    parent_parameters_add = processed_parent_parameters
 
                     def parameters(*args: Any, **kwargs: Any) -> tf.Tensor:
                         __LOGGER__.debug("Nested parameters: %s", nested_parameters)
@@ -546,35 +565,42 @@ def _get_bijector_fn(parameters_fn, nested_bijector):
                 elif nested_parameters is not None:
                     __LOGGER__.debug("Nested params are tensor: adding")
                     nested_bijector_kwargs[__PARAMETERS_KEY__] = (
-                        nested_parameters + parent_parameters
+                        nested_parameters + processed_parent_parameters
                     )
                 else:
                     __LOGGER__.debug("Nested params are None: using parent")
-                    nested_bijector_kwargs[__PARAMETERS_KEY__] = parent_parameters
+                    nested_bijector_kwargs[__PARAMETERS_KEY__] = (
+                        processed_parent_parameters
+                    )
 
                 __LOGGER__.debug(
                     "Nested bijector config after parameter handling: %s",
                     nested_bijector_kwargs,
                 )
-                initialized_nested_bijectors.append(
-                    _init_bijector_from_dict(
-                        nested_bijector_kwargs,
-                    )
-                )
-
-        assert offset == 0 or (
-            offset == pvector.shape[-1]
-        ), "Not all parameters from parent bijector used. Check your config!"
-        __LOGGER__.debug(
-            "Initialized nested bijectors: %s",
-            initialized_nested_bijectors,
-        )
-        if len(initialized_nested_bijectors) > 1:
-            return tfb.Chain(initialized_nested_bijectors)
+            bijector = _init_bijector_from_dict(
+                nested_bijector_kwargs,
+            )
+        elif isinstance(bj, tfb.Bijector):
+            __LOGGER__.debug("Nested bijector is already initialized: %s", bj)
+            bijector = bj
         else:
-            return initialized_nested_bijectors[0]
+            raise ValueError(
+                "nested bijector has incompatible type: %s",
+                nested_bijector_kwargs,
+            )
+        initialized_nested_bijectors.append(bijector)
 
-    return bijector_fn
+    assert offset == 0 or (
+        offset == parent_parameters.shape[-1]
+    ), "Not all parameters from parent bijector used. Check your config!"
+    __LOGGER__.debug(
+        "Initialized nested bijectors: %s",
+        initialized_nested_bijectors,
+    )
+    if len(initialized_nested_bijectors) > 1:
+        return tfb.Chain(initialized_nested_bijectors)
+    else:
+        return initialized_nested_bijectors[0]
 
 
 def _get_transformed_distribution_fn(

@@ -14,11 +14,9 @@
 # %% imports ###################################################################
 from typing import Any, Callable, Dict, List
 
-from tensorflow_probability import bijectors as tfb
-
 
 # %% functions #################################################################
-def skip_if_bijector(fn: Callable) -> Callable:
+def skip_no_dict(fn: Callable) -> Callable:
     """Decorate a function to skip function execution if input is a bijector.
 
     Parameters
@@ -34,10 +32,10 @@ def skip_if_bijector(fn: Callable) -> Callable:
     """
 
     def process(entry: Any) -> Any:
-        if isinstance(entry, tfb.Bijector):
-            return entry
-        else:
+        if isinstance(entry, dict):
             return fn(entry)
+        else:
+            return entry
 
     return process
 
@@ -67,6 +65,7 @@ def reduce_dict(result_key: str, keep_keys: List[str] = []) -> Callable:
     """
 
     def decorator(fn: Callable) -> Callable:
+        @skip_no_dict
         def process(entry: Dict[str, Any]) -> Dict[str, Any]:
             result = {k: entry[k] for k in keep_keys if k in entry}
             result[result_key] = fn(**entry)
@@ -95,7 +94,7 @@ def recurse_on_key(key: str) -> Callable:
     def decorator(fn: Callable) -> Callable:
         def process(entry: Dict[str, Any]) -> Dict[str, Any]:
             results = entry.copy()
-            if key in entry.keys():
+            if isinstance(entry, dict) and key in entry.keys():
                 nested_node = entry.get(key)
                 if isinstance(nested_node, dict):
                     nested_node = [nested_node]

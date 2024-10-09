@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 13:16:19 (Marcel Arpogaus)
-# changed : 2024-10-08 21:03:30 (Marcel Arpogaus)
+# changed : 2024-10-09 12:45:56 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions defining ANNs.
