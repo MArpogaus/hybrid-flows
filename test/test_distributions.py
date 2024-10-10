@@ -6,7 +6,9 @@ from typing import Callable
 import pytest
 import tensorflow as tf
 import tensorflow_probability as tfp
+from bernstein_flow.bijectors import BernsteinPolynomial
 from mctm.distributions import (
+    __ALL_KEYS__,
     __BIJECTOR_KWARGS_KEY__,
     __BIJECTOR_NAME_KEY__,
     __NESTED_BIJECTOR_KEY__,
@@ -19,8 +21,11 @@ from mctm.distributions import (
     __PARAMETERS_KEY__,
     __TRAINABLE_KEY__,
     _get_eval_parameter_fn,
+    _get_layer_overwrites,
+    _get_num_masked,
     _init_bijector_from_dict,
     _init_parameters_fn,
+    get_coupling_flow,
     get_normalizing_flow,
 )
 from mctm.parameters import (
@@ -356,12 +361,14 @@ def test_get_normalizing_flow(
     assert callable(parameter_fn)
     assert isinstance(trainable_variables, list)
     assert len(trainable_variables) == 2
+    assert len(set(map(id, trainable_variables))) == len(trainable_variables)
     for v, e in zip(trainable_variables, (1.0, 3.0)):
         assert isinstance(v, tf.Variable)
         assert v.trainable
         assert v == e
     assert isinstance(non_trainable_variables, list)
     assert len(non_trainable_variables) == 0
+    assert len(set(map(id, non_trainable_variables))) == len(non_trainable_variables)
 
     test_input1 = 4
     test_input2 = 8 * tf.range(20.0)[..., None]
@@ -448,12 +455,14 @@ def test_get_normalizing_flow_deeply_nested(
     assert callable(parameter_fn)
     assert isinstance(trainable_variables, list)
     assert len(trainable_variables) == 2
+    assert len(set(map(id, trainable_variables))) == len(trainable_variables)
     for v, e in zip(trainable_variables, (1.0, 3.0)):
         assert isinstance(v, tf.Variable)
         assert v.trainable
         assert v == e
     assert isinstance(non_trainable_variables, list)
     assert len(non_trainable_variables) == 0
+    assert len(set(map(id, non_trainable_variables))) == len(non_trainable_variables)
 
     test_input1 = 12
     test_input2 = tf.range(32.0)[..., None]
@@ -547,8 +556,10 @@ def test_get_normalizing_flow_maf(mock_maf_bijectors):
     assert callable(parameter_fn)
     assert isinstance(trainable_variables, list)
     assert len(trainable_variables) == 0
+    assert len(set(map(id, trainable_variables))) == len(trainable_variables)
     assert isinstance(non_trainable_variables, list)
     assert len(non_trainable_variables) == 1
+    assert len(set(map(id, non_trainable_variables))) == len(non_trainable_variables)
     assert isinstance(non_trainable_variables[0], tf.Variable)
     assert non_trainable_variables[0].trainable
     assert (
@@ -639,7 +650,8 @@ def test_get_normalizing_flow_realnvp(mock_realnvp_bijectors):
 
             assert callable(p[__PARAMETERS_KEY__])
             assert tf.reduce_all(p[__PARAMETERS_KEY__](test_input2) == test_result)
-
+            for k in p.keys():
+                assert k in __ALL_KEYS__
     dist = distribution_fn(all_parameters)
     assert isinstance(dist, tfp.distributions.Distribution)
     assert dist.batch_shape == []
@@ -686,4 +698,265 @@ def test_get_normalizing_flow_realnvp(mock_realnvp_bijectors):
     assert transformed_sample.shape == (7, dims)
     assert base_sample.shape == (7, dims)
     assert reconstructed_sample.shape == (7, dims)
+    assert tf.reduce_all(tf.abs(reconstructed_sample - transformed_sample) < 1e-6)
+
+
+def test_get_coupling_bernstein_flow(mock_realnvp_bijectors):
+    """Testing a coupling flow with Bernstein polynomial transformation."""
+    dims = 5
+    kwargs = dict(
+        dims=dims,
+        # bijector="RationalQuadraticSpline",
+        bijector="BernsteinPolynomial",
+        bijector_kwargs={"domain": [0, 1], "extrapolation": False},
+        invert=True,
+        layer_overwrites={
+            -2: {"parameters_constraint_fn_kwargs": {"high": 5, "low": -5}},
+            -1: {"parameters_constraint_fn_kwargs": {"high": 5, "low": -5}},
+        },
+        num_layers=8,
+        num_parameters=16,
+        parameters_constraint_fn_kwargs={
+            "allow_flexible_bounds": False,
+            "bounds": "linear",
+            "high": 1,
+            "low": 0,
+        },
+        parameters_fn_kwargs={
+            "activation": "relu",
+            "batch_norm": False,
+            "dropout": 0,
+            "hidden_units": [100] * 3,
+        },
+    )
+    (
+        distribution_fn,
+        parameter_fn,
+        trainable_variables,
+        non_trainable_variables,
+    ) = get_coupling_flow(**kwargs)
+
+    assert callable(distribution_fn)
+    assert callable(parameter_fn)
+    assert isinstance(trainable_variables, list)
+
+    assert (
+        len(trainable_variables)
+        == (len(kwargs["parameters_fn_kwargs"]["hidden_units"]) + 1)
+        * kwargs["num_layers"]
+        * 2
+    )
+    assert len(set(map(id, trainable_variables))) == len(trainable_variables)
+    for v in trainable_variables:
+        assert isinstance(v, tf.Variable)
+        assert v.trainable
+    assert isinstance(non_trainable_variables, list)
+    assert len(non_trainable_variables) == 0
+
+    test_input1 = 1
+    all_parameters = parameter_fn(test_input1)
+    assert isinstance(all_parameters, list)
+    assert len(all_parameters) == 2 * kwargs["num_layers"] - kwargs["num_layers"] % 2
+    assert len(
+        set(
+            map(
+                lambda x: id(x[__PARAMETERS_KEY__] if isinstance(x, dict) else x),
+                all_parameters,
+            )
+        )
+    ) == len(all_parameters)
+    for i, p in enumerate(all_parameters):
+        if isinstance(p, dict):
+            assert callable(p[__PARAMETERS_KEY__])
+            bs = 20
+            num_masked = _get_num_masked(kwargs["dims"], i // 2)
+
+            test_input2 = i * tf.ones((bs, num_masked))
+            output_shape = [
+                bs,
+                dims - num_masked,
+                kwargs["num_parameters"],
+            ]
+
+            assert p[__PARAMETERS_KEY__](test_input2).shape == output_shape
+            for k in p.keys():
+                assert k in __ALL_KEYS__
+
+    dist = distribution_fn(all_parameters)
+    assert isinstance(dist, tfp.distributions.Distribution)
+    assert dist.batch_shape == []
+    assert dist.event_shape == [kwargs["dims"]]
+
+    flow = dist.bijector
+    assert isinstance(flow, tfp.python.bijectors.chain._Chain)
+
+    for i, (b) in enumerate(dist.bijector.bijectors):
+        if i % 2 == 0:
+            bs = 20
+            num_masked = _get_num_masked(kwargs["dims"], i // 2)
+
+            test_input2 = i * tf.ones((bs, num_masked))
+            output_shape = [
+                bs,
+                dims - num_masked,
+                kwargs["num_parameters"],
+            ]
+            assert isinstance(b, tfb.RealNVP)
+            assert b._num_masked == num_masked
+            assert isinstance(b._bijector_fn, Callable)
+
+            nested_flow = b._bijector_fn(test_input2)
+
+            assert isinstance(nested_flow, tfp.python.bijectors.invert._Invert)
+            assert isinstance(nested_flow.bijector, BernsteinPolynomial)
+            bpoly_bijector = nested_flow.bijector
+            layer_overwrites = _get_layer_overwrites(
+                kwargs["layer_overwrites"], i // 2, kwargs["num_layers"]
+            )
+            assert tf.reduce_all(
+                tf.abs(
+                    bpoly_bijector.thetas[..., 0]
+                    - layer_overwrites.get(
+                        __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__,
+                        kwargs[__PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__],
+                    )["low"]
+                )
+                < 1e-5
+            )
+            assert tf.reduce_all(
+                tf.abs(
+                    bpoly_bijector.thetas[..., -1]
+                    - layer_overwrites.get(
+                        __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__,
+                        kwargs[__PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__],
+                    )["high"]
+                )
+                < 1e-5
+            )
+        else:
+            assert isinstance(b, tfb.Permute)
+
+    # Test flow forward and inverse transformations
+    transformed_sample = dist.sample(7)
+    base_sample = dist.bijector.inverse(transformed_sample)
+    reconstructed_sample = dist.bijector.forward(base_sample)
+
+    assert transformed_sample.shape == (7, kwargs["dims"])
+    assert base_sample.shape == (7, kwargs["dims"])
+    assert reconstructed_sample.shape == (7, kwargs["dims"])
+    assert tf.reduce_all(tf.abs(reconstructed_sample - transformed_sample) < 1e-6)
+
+
+def test_get_coupling_spline_flow(mock_realnvp_bijectors):
+    """Testing a coupling flow with spline transformation."""
+    dims = 5
+    kwargs = dict(
+        dims=dims,
+        bijector="RationalQuadraticSpline",
+        bijector_kwargs={"range_min": -5},
+        num_layers=7,
+        num_parameters=32 * 3 - 1,
+        parameters_constraint_fn_kwargs={
+            "interval_width": 10,
+            "min_slope": 0.001,
+            "min_bin_width": 0.001,
+            "nbins": 32,
+        },
+        parameters_fn_kwargs={
+            "activation": "relu",
+            "batch_norm": False,
+            "dropout": 0,
+            "hidden_units": [16] * 3,
+        },
+    )
+    (
+        distribution_fn,
+        parameter_fn,
+        trainable_variables,
+        non_trainable_variables,
+    ) = get_coupling_flow(**kwargs)
+
+    assert callable(distribution_fn)
+    assert callable(parameter_fn)
+    assert isinstance(trainable_variables, list)
+
+    assert (
+        len(trainable_variables)
+        == (len(kwargs["parameters_fn_kwargs"]["hidden_units"]) + 1)
+        * kwargs["num_layers"]
+        * 2
+    )
+    assert len(set(map(id, trainable_variables))) == len(trainable_variables)
+    for v in trainable_variables:
+        assert isinstance(v, tf.Variable)
+        assert v.trainable
+    assert isinstance(non_trainable_variables, list)
+    assert len(non_trainable_variables) == 0
+
+    test_input1 = 1
+    all_parameters = parameter_fn(test_input1)
+    assert isinstance(all_parameters, list)
+    assert len(all_parameters) == 2 * kwargs["num_layers"] - kwargs["num_layers"] % 2
+    assert len(
+        set(
+            map(
+                lambda x: id(x[__PARAMETERS_KEY__] if isinstance(x, dict) else x),
+                all_parameters,
+            )
+        )
+    ) == len(all_parameters)
+    for i, p in enumerate(all_parameters):
+        if isinstance(p, dict):
+            assert callable(p[__PARAMETERS_KEY__])
+            bs = 20
+            num_masked = _get_num_masked(kwargs["dims"], i // 2)
+
+            test_input2 = i * tf.ones((bs, num_masked))
+            output_shape = [
+                bs,
+                dims - num_masked,
+                kwargs["num_parameters"],
+            ]
+
+            assert p[__PARAMETERS_KEY__](test_input2).shape == output_shape
+            for k in p.keys():
+                assert k in __ALL_KEYS__
+
+    dist = distribution_fn(all_parameters)
+    assert isinstance(dist, tfp.distributions.Distribution)
+    assert dist.batch_shape == []
+    assert dist.event_shape == [kwargs["dims"]]
+
+    flow = dist.bijector
+    assert isinstance(flow, tfp.python.bijectors.chain._Chain)
+
+    for i, (b) in enumerate(dist.bijector.bijectors):
+        if i % 2 == 0:
+            bs = 20
+            num_masked = _get_num_masked(kwargs["dims"], i // 2)
+
+            test_input2 = i * tf.ones((bs, num_masked))
+            output_shape = [
+                bs,
+                dims - num_masked,
+                kwargs["num_parameters"],
+            ]
+            assert isinstance(b, tfb.RealNVP)
+            assert b._num_masked == num_masked
+            assert isinstance(b._bijector_fn, Callable)
+
+            nested_flow = b._bijector_fn(test_input2)
+
+            assert isinstance(nested_flow, tfb.RationalQuadraticSpline)
+        else:
+            assert isinstance(b, tfb.Permute)
+
+    # Test flow forward and inverse transformations
+    transformed_sample = dist.sample(7)
+    base_sample = dist.bijector.inverse(transformed_sample)
+    reconstructed_sample = dist.bijector.forward(base_sample)
+
+    assert transformed_sample.shape == (7, kwargs["dims"])
+    assert base_sample.shape == (7, kwargs["dims"])
+    assert reconstructed_sample.shape == (7, kwargs["dims"])
     assert tf.reduce_all(tf.abs(reconstructed_sample - transformed_sample) < 1e-6)
