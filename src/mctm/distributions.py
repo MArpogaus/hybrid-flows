@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2024-10-10 10:36:44 (Marcel Arpogaus)
+# changed : 2024-10-10 17:57:32 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions for probability distributions.
@@ -831,7 +831,7 @@ def get_coupling_flow(
         Additional keyword arguments passed to `get_parameter_fn`,
         by default {}.
     **kwargs : Dict[str, Any]
-        Additional keyword arguments passed to `get_normalizing_flow`.
+        Additional keyword arguments added to the nested bijector definition.
 
     Returns
     -------
@@ -886,6 +886,121 @@ def get_coupling_flow(
             bijectors.append(tfb.Permute(permutation=permutation))
 
     __LOGGER__.info(pformat(bijectors))
+    return get_normalizing_flow(
+        dims=dims, bijectors=bijectors, reverse_flow=False, inverse_flow=False
+    )
+
+
+def _get_masked_autoregressive_flow_bijector_def(
+    dims: int,
+    num_layers: int,
+    num_parameters: int,
+    layer_overwrites: Dict[Union[int, str], Dict[str, Any]] = {},
+    get_parameter_fn: Callable[
+        ..., Any
+    ] = parameters_lib.get_masked_autoregressive_network_fn,
+    parameters_fn_kwargs: Dict[str, Any] = {},
+    **kwargs: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Get a Masked Autoregressive Flow (MAF) distribution as a callable.
+
+    Parameters
+    ----------
+    dims : int
+        The dimension of the distribution.
+    num_layers : int
+        The number of layers in the flow.
+    num_parameters : int
+        The number of parameters in each layer.
+    layer_overwrites : Dict[Union[int, str], Dict[str, Any]], optional
+        Layer specific overwrites for bijectors, by default {}.
+    get_parameter_fn : Callable[..., Any], optional
+        A function to get the parameter lambda,
+        by default parameters_lib.get_masked_autoregressive_network_fn
+    parameters_fn_kwargs : Dict[str, Any], optional
+        Additional keyword arguments passed to `get_parameter_fn`,
+        by default {}.
+    **kwargs : Dict[str, Any]
+        Additional keyword arguments added to the nested bijector definition.
+
+
+    Returns
+    -------
+    distribution_fn : Callable[[tf.Tensor], tfd.Distribution]
+        A function to parametrize the distribution
+    parameter_fn : Callable[[tf.Tensor], tf.Variable]
+        A callable for parameter networks
+    trainable_parameters : List[tf.Variable]
+        A list of trainable parameters.
+    non_trainable_parameters : List[tf.Variable]
+        A list of non-trainable parameters.
+
+    """
+    bijectors = []
+
+    for layer in range(num_layers):
+        # The nested bijector config is abstracted from the user.
+        # In order took keep the overwrite mechanism intuitive we add it after the
+        # overwrites have been applied.
+
+        nested_bijector_def = deepupdate(
+            deepcopy(
+                {
+                    __PARAMETERIZED_BY_PARENT_KEY__: True,
+                    **kwargs,
+                }
+            ),
+            _get_layer_overwrites(layer_overwrites, layer, num_layers),
+        )
+        bijector_def = {
+            __BIJECTOR_NAME_KEY__: "MaskedAutoregressiveFlow",
+            __NESTED_BIJECTOR_KEY__: nested_bijector_def,
+            __PARAMETERS_FN_KEY__: get_parameter_fn,
+            __PARAMETERS_FN_KWARGS_KEY__: {
+                "parameter_shape": (dims, num_parameters),
+                **parameters_fn_kwargs,
+            },
+        }
+        bijectors.append(bijector_def)
+
+    __LOGGER__.info(pformat(bijectors))
+
+    return bijectors
+
+
+def get_masked_autoregressive_flow(
+    dims: int,
+    **kwargs: Dict[str, Any],
+) -> Tuple[
+    Callable[[tf.Tensor], tfd.Distribution],
+    Callable[[tf.Tensor], tf.Variable],
+    List[tf.Variable],
+    List[tf.Variable],
+]:
+    """Get a Masked Autoregressive Flow (MAF) distribution as a callable.
+
+    Parameters
+    ----------
+    dims : int
+        The dimension of the distribution.
+    **kwargs : Dict[str, Any]
+        Additional keyword arguments passed to
+        `_get_masked_autoregressive_flow_bijector_def`.
+
+
+    Returns
+    -------
+    distribution_fn : Callable[[tf.Tensor], tfd.Distribution]
+        A function to parametrize the distribution
+    parameter_fn : Callable[[tf.Tensor], tf.Variable]
+        A callable for parameter networks
+    trainable_parameters : List[tf.Variable]
+        A list of trainable parameters.
+    non_trainable_parameters : List[tf.Variable]
+        A list of non-trainable parameters.
+
+    """
+    bijectors = _get_masked_autoregressive_flow_bijector_def(dims=dims, **kwargs)
     return get_normalizing_flow(
         dims=dims, bijectors=bijectors, reverse_flow=False, inverse_flow=False
     )
