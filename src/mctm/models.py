@@ -48,9 +48,8 @@ class DensityRegressionModel(K.Model):
             trainable_variables,
             non_trainable_variables,
         ) = getattr(distributions, "get_" + distribution)(**kwargs)
-
-        self._trainable_weights += trainable_variables
-        self._non_trainable_weights += non_trainable_variables
+        self._trainable_weights.extend(trainable_variables)
+        self._non_trainable_weights.extend(non_trainable_variables)
 
     def call(self, inputs, **kwargs):
         """Compute the distribution for the given input arguments.
