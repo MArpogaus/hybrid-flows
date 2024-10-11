@@ -11,7 +11,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11"
 ]
 dependencies = [
-  'bernstein_flow @ git+https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector.git@3006ed8',
+  'bernstein_flow @ git+https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector.git@00c83f8',
   'tensorflow-datasets==4.9.*',
   'tensorflow==2.15.*',
   'tensorflow_probability==0.23.*',
@@ -33,15 +33,22 @@ develop = [
   'python-lsp-server[all]',
   'ruff'
 ]
+docs = [
+  'pdoc'
+]
 optuna = [
   'mctm[train]',
   'optuna~=3.5.0',
   'optuna-integration~=3.5.0',
   'plotly~=5.18.0'
 ]
+test = [
+  'pytest',
+  'pytest-xdist'
+]
 train = [
-  'dvc[ssh]==3.51.*',
-  'mlflow==2.13.*'
+  'dvc[ssh]==3.*',
+  'mlflow==2.*'
 ]
 
 [tool.commitizen]
