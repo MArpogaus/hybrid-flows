@@ -268,8 +268,51 @@ def coupling_bernstein_flow_kwargs(request):
     }
 
 
+@pytest.fixture(
+    params=[
+        {
+            "activation": "relu",
+            "batch_norm": False,
+            "dropout": 0,
+            "hidden_units": [16] * 4,
+        },
+        {
+            "activation": "relu",
+            "batch_norm": True,
+            "dropout": 0,
+            "hidden_units": [32] * 2,
+            "conditional": True,
+            "conditional_event_shape": 10,
+        },
+    ]
+)
+def feed_forward_kwargs(request):
+    """Yield different kwargs for feed forward networks."""
+    return request.param
+
+
+@pytest.fixture(
+    params=[
+        {
+            "activation": "relu",
+            "hidden_units": [16] * 2,
+            "conditional": True,
+            "conditional_event_shape": 10,
+        },
+        {
+            "activation": "relu",
+            "hidden_units": [16] * 4,
+            "conditional": False,
+        },
+    ]
+)
+def made_kwargs(request):
+    """Yield different kwargs for made networks."""
+    return request.param
+
+
 @pytest.fixture(params=[5, 8])
-def coupling_spline_flow_kwargs(request):
+def coupling_spline_flow_kwargs(request, feed_forward_kwargs):
     """Mock kwargs for coupling Bernstein flow."""
     return {
         __BIJECTOR_NAME_KEY__: "RationalQuadraticSpline",
@@ -280,12 +323,7 @@ def coupling_spline_flow_kwargs(request):
             "min_bin_width": 0.001,
             "nbins": 32,
         },
-        __PARAMETERS_FN_KWARGS_KEY__: {
-            "activation": "relu",
-            "batch_norm": False,
-            "dropout": 0,
-            "hidden_units": [16] * 4,
-        },
+        __PARAMETERS_FN_KWARGS_KEY__: feed_forward_kwargs,
         "dims": 2,
         "num_layers": request.param,
         "num_parameters": 32 * 3 - 1,
@@ -294,7 +332,7 @@ def coupling_spline_flow_kwargs(request):
 
 
 @pytest.fixture(params=[5, 7])
-def masked_autoregressive_bernstein_flow_kwargs(request):
+def masked_autoregressive_bernstein_flow_kwargs(request, made_kwargs):
     """Mock kwargs for coupling Bernstein flow."""
     return {
         __BIJECTOR_NAME_KEY__: "BernsteinPolynomial",
@@ -306,15 +344,52 @@ def masked_autoregressive_bernstein_flow_kwargs(request):
             "high": -4,
             "low": 4,
         },
-        __PARAMETERS_FN_KWARGS_KEY__: {
-            "activation": "relu",
-            "hidden_units": [16] * 2,
-            "conditional": True,
-            "conditional_event_shape": 10,
-        },
+        __PARAMETERS_FN_KWARGS_KEY__: made_kwargs,
         "dims": 7,
         "num_layers": 3,
+        "num_parameters": request.param,
+    }
+
+
+@pytest.fixture(params=[2, 3])
+def masked_autoregressive_spline_flow_kwargs(request, made_kwargs):
+    """Mock kwargs for coupling Bernstein flow."""
+    return {
+        __BIJECTOR_NAME_KEY__: "RationalQuadraticSpline",
+        __BIJECTOR_KWARGS_KEY__: {"range_min": -5},
+        __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__: {
+            "interval_width": 10,
+            "min_slope": 0.001,
+            "min_bin_width": 0.001,
+            "nbins": 32,
+        },
+        __PARAMETERS_FN_KWARGS_KEY__: made_kwargs,
+        "dims": request.param,
+        "num_layers": 3,
+        "num_parameters": 32 * 3 - 1,
+    }
+
+
+@pytest.fixture(params=[5, 7])
+def masked_autoregressive_flow_first_dim_masked_kwargs(
+    request, feed_forward_kwargs, made_kwargs
+):
+    """Mock kwargs for coupling Bernstein flow."""
+    return {
+        __BIJECTOR_NAME_KEY__: "BernsteinPolynomial",
+        __BIJECTOR_KWARGS_KEY__: {"domain": [0, 1], "extrapolation": False},
+        __INVERT_BIJECTOR_KEY__: True,
+        __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__: {
+            "allow_flexible_bounds": False,
+            "bounds": "linear",
+            "high": -4,
+            "low": 4,
+        },
+        "dims": 7,
+        "num_layers": request.param,
         "num_parameters": 8,
+        "x0_parameters_fn_kwargs": feed_forward_kwargs,
+        "maf_parameters_fn_kwargs": made_kwargs,
     }
 
 
@@ -442,7 +517,9 @@ def test_get_normalizing_flow(
         parameter_fn,
         trainable_variables,
         non_trainable_variables,
-    ) = get_normalizing_flow(bijectors=mock_bijector_data, dims=dims)
+    ) = get_normalizing_flow(
+        bijectors=mock_bijector_data, dims=dims, inverse_flow=True, reverse_flow=True
+    )
 
     assert callable(distribution_fn)
     assert callable(parameter_fn)
@@ -791,6 +868,9 @@ def test_get_normalizing_flow_realnvp(mock_realnvp_bijectors):
 def test_get_coupling_bernstein_flow(batch_size, coupling_bernstein_flow_kwargs):
     """Testing a coupling flow with Bernstein polynomial transformation."""
     dims = coupling_bernstein_flow_kwargs["dims"]
+    is_conditional = coupling_bernstein_flow_kwargs[__PARAMETERS_FN_KWARGS_KEY__].get(
+        "conditional", False
+    )
     (
         distribution_fn,
         parameter_fn,
@@ -818,14 +898,24 @@ def test_get_coupling_bernstein_flow(batch_size, coupling_bernstein_flow_kwargs)
     assert isinstance(non_trainable_variables, list)
     assert len(non_trainable_variables) == 0
 
-    test_input1 = None
+    if is_conditional:
+        test_input1 = tf.ones(
+            (
+                batch_size,
+                coupling_spline_flow_kwargs[__PARAMETERS_FN_KWARGS_KEY__][
+                    "conditional_event_shape"
+                ],
+            )
+        )
+    else:
+        test_input1 = None
     all_parameters = parameter_fn(test_input1)
     assert isinstance(all_parameters, list)
-    assert (
-        len(all_parameters)
-        == 2 * coupling_bernstein_flow_kwargs["num_layers"]
+    expected_lenght = (
+        2 * coupling_bernstein_flow_kwargs["num_layers"]
         - coupling_bernstein_flow_kwargs["num_layers"] % 2
     )
+    assert len(all_parameters) == expected_lenght
     assert len(
         set(
             map(
@@ -929,6 +1019,10 @@ def test_get_coupling_bernstein_flow(batch_size, coupling_bernstein_flow_kwargs)
 def test_get_coupling_spline_flow(batch_size, coupling_spline_flow_kwargs):
     """Testing a coupling flow with spline transformation."""
     dims = coupling_spline_flow_kwargs["dims"]
+    is_conditional = coupling_spline_flow_kwargs[__PARAMETERS_FN_KWARGS_KEY__].get(
+        "conditional", False
+    )
+
     (
         distribution_fn,
         parameter_fn,
@@ -940,14 +1034,26 @@ def test_get_coupling_spline_flow(batch_size, coupling_spline_flow_kwargs):
     assert callable(parameter_fn)
     assert isinstance(trainable_variables, list)
 
-    assert (
-        len(trainable_variables)
-        == (
-            len(coupling_spline_flow_kwargs["parameters_fn_kwargs"]["hidden_units"]) + 1
+    expected_lenght = (
+        (
+            len(
+                coupling_spline_flow_kwargs[__PARAMETERS_FN_KWARGS_KEY__][
+                    "hidden_units"
+                ]
+            )
+            + 1
         )
         * coupling_spline_flow_kwargs["num_layers"]
-        * 2
+        * (4 if is_conditional else 2)
+        * (
+            2
+            if coupling_spline_flow_kwargs[__PARAMETERS_FN_KWARGS_KEY__].get(
+                "batch_norm", False
+            )
+            else 1
+        )
     )
+    assert len(trainable_variables) == expected_lenght
     assert len(set(map(id, trainable_variables))) == len(trainable_variables)
     for v in trainable_variables:
         assert isinstance(v, tf.Variable)
@@ -955,7 +1061,17 @@ def test_get_coupling_spline_flow(batch_size, coupling_spline_flow_kwargs):
     assert isinstance(non_trainable_variables, list)
     assert len(non_trainable_variables) == 0
 
-    test_input1 = None
+    if is_conditional:
+        test_input1 = tf.ones(
+            (
+                batch_size,
+                coupling_spline_flow_kwargs[__PARAMETERS_FN_KWARGS_KEY__][
+                    "conditional_event_shape"
+                ],
+            )
+        )
+    else:
+        test_input1 = None
     all_parameters = parameter_fn(test_input1)
     assert isinstance(all_parameters, list)
     assert (
@@ -1022,13 +1138,16 @@ def test_get_coupling_spline_flow(batch_size, coupling_spline_flow_kwargs):
             assert isinstance(b, tfb.Permute)
 
     # Test flow forward and inverse transformations
-    transformed_sample = dist.sample(7)
+    transformed_sample = dist.sample(batch_size)
     base_sample = dist.bijector.inverse(transformed_sample)
     reconstructed_sample = dist.bijector.forward(base_sample)
 
-    assert transformed_sample.shape == (7, coupling_spline_flow_kwargs["dims"])
-    assert base_sample.shape == (7, coupling_spline_flow_kwargs["dims"])
-    assert reconstructed_sample.shape == (7, coupling_spline_flow_kwargs["dims"])
+    assert transformed_sample.shape == (batch_size, coupling_spline_flow_kwargs["dims"])
+    assert base_sample.shape == (batch_size, coupling_spline_flow_kwargs["dims"])
+    assert reconstructed_sample.shape == (
+        batch_size,
+        coupling_spline_flow_kwargs["dims"],
+    )
     assert tf.reduce_all(tf.abs(reconstructed_sample - transformed_sample) < 1e-6)
 
 
@@ -1037,6 +1156,9 @@ def test_get_masked_autoregressive_bernstein_flow(
 ):
     """Testing a masked_autoregressive flow with Bernstein polynomial transformation."""
     dims = masked_autoregressive_bernstein_flow_kwargs["dims"]
+    is_conditional = masked_autoregressive_bernstein_flow_kwargs[
+        __PARAMETERS_FN_KWARGS_KEY__
+    ].get("conditional", False)
     (
         distribution_fn,
         parameter_fn,
@@ -1068,12 +1190,15 @@ def test_get_masked_autoregressive_bernstein_flow(
     assert isinstance(non_trainable_variables, list)
     assert len(non_trainable_variables) == 0
 
-    test_input1 = tf.ones(
-        batch_size,
-        masked_autoregressive_bernstein_flow_kwargs[__PARAMETERS_FN_KWARGS_KEY__][
-            "conditional_event_shape"
-        ],
-    )
+    if is_conditional:
+        test_input1 = tf.ones(
+            batch_size,
+            masked_autoregressive_bernstein_flow_kwargs[__PARAMETERS_FN_KWARGS_KEY__][
+                "conditional_event_shape"
+            ],
+        )
+    else:
+        test_input1 = None
     all_parameters = parameter_fn(test_input1)
     assert isinstance(all_parameters, list)
     assert (
@@ -1099,7 +1224,10 @@ def test_get_masked_autoregressive_bernstein_flow(
             ]
 
             parameters_fn = p[__PARAMETERS_KEY__]
-            assert parameters_fn.__closure__[2].cell_contents.name == "made"
+            if is_conditional:
+                assert parameters_fn.__closure__[2].cell_contents.name == "made"
+            else:
+                assert parameters_fn.__closure__[1].cell_contents.name == "made"
             assert parameters_fn(test_input2).shape == output_shape
             for k in p.keys():
                 assert k in __ALL_KEYS__
@@ -1163,35 +1291,21 @@ def test_get_masked_autoregressive_bernstein_flow(
     assert tf.reduce_all(tf.abs(reconstructed_sample - transformed_sample) < 1e-6)
 
 
-def test_get_masked_autoregressive_spline_flow(mock_realnvp_bijectors):
+def test_get_masked_autoregressive_spline_flow(
+    batch_size, masked_autoregressive_spline_flow_kwargs
+):
     """Testing a masked_autoregressive flow with spline transformation."""
-    bs = 32
-    dims = 5
-    kwargs = dict(
-        dims=dims,
-        bijector="RationalQuadraticSpline",
-        bijector_kwargs={"range_min": -5},
-        num_layers=7,
-        num_parameters=32 * 3 - 1,
-        parameters_constraint_fn_kwargs={
-            "interval_width": 10,
-            "min_slope": 0.001,
-            "min_bin_width": 0.001,
-            "nbins": 32,
-        },
-        parameters_fn_kwargs={
-            "activation": "relu",
-            "hidden_units": [16] * 2,
-            "conditional": True,
-            "conditional_event_shape": 17,
-        },
-    )
+    batch_size = 32
+    dims = masked_autoregressive_spline_flow_kwargs["dims"]
+    is_conditional = masked_autoregressive_spline_flow_kwargs[
+        __PARAMETERS_FN_KWARGS_KEY__
+    ].get("conditional", False)
     (
         distribution_fn,
         parameter_fn,
         trainable_variables,
         non_trainable_variables,
-    ) = get_masked_autoregressive_flow(**kwargs)
+    ) = get_masked_autoregressive_flow(**masked_autoregressive_spline_flow_kwargs)
 
     assert callable(distribution_fn)
     assert callable(parameter_fn)
@@ -1199,8 +1313,15 @@ def test_get_masked_autoregressive_spline_flow(mock_realnvp_bijectors):
 
     assert (
         len(trainable_variables)
-        == (len(kwargs["parameters_fn_kwargs"]["hidden_units"]) + 1)
-        * kwargs["num_layers"]
+        == (
+            len(
+                masked_autoregressive_spline_flow_kwargs["parameters_fn_kwargs"][
+                    "hidden_units"
+                ]
+            )
+            + 1
+        )
+        * masked_autoregressive_spline_flow_kwargs["num_layers"]
         * 2
     )
     assert len(set(map(id, trainable_variables))) == len(trainable_variables)
@@ -1210,12 +1331,18 @@ def test_get_masked_autoregressive_spline_flow(mock_realnvp_bijectors):
     assert isinstance(non_trainable_variables, list)
     assert len(non_trainable_variables) == 0
 
-    test_input1 = tf.ones(
-        bs, kwargs[__PARAMETERS_FN_KWARGS_KEY__]["conditional_event_shape"]
-    )
+    if is_conditional:
+        test_input1 = tf.ones(
+            batch_size,
+            masked_autoregressive_spline_flow_kwargs[__PARAMETERS_FN_KWARGS_KEY__][
+                "conditional_event_shape"
+            ],
+        )
+    else:
+        test_input1 = None
     all_parameters = parameter_fn(test_input1)
     assert isinstance(all_parameters, list)
-    assert len(all_parameters) == kwargs["num_layers"]
+    assert len(all_parameters) == masked_autoregressive_spline_flow_kwargs["num_layers"]
     assert len(
         set(
             map(
@@ -1228,15 +1355,20 @@ def test_get_masked_autoregressive_spline_flow(mock_realnvp_bijectors):
         if isinstance(p, dict):
             assert callable(p[__PARAMETERS_KEY__])
 
-            test_input2 = i * tf.ones((bs, dims))
+            test_input2 = i * tf.ones((batch_size, dims))
             output_shape = [
-                bs,
+                batch_size,
                 dims,
-                kwargs["num_parameters"],
+                masked_autoregressive_spline_flow_kwargs["num_parameters"],
             ]
 
             parameters_fn = p[__PARAMETERS_KEY__]
-            assert parameters_fn.__closure__[2].cell_contents.name == "made"
+
+            if is_conditional:
+                assert parameters_fn.__closure__[2].cell_contents.name == "made"
+            else:
+                assert parameters_fn.__closure__[1].cell_contents.name == "made"
+
             assert parameters_fn(test_input2).shape == output_shape
             for k in p.keys():
                 assert k in __ALL_KEYS__
@@ -1244,17 +1376,17 @@ def test_get_masked_autoregressive_spline_flow(mock_realnvp_bijectors):
     dist = distribution_fn(all_parameters)
     assert isinstance(dist, tfp.distributions.Distribution)
     assert dist.batch_shape == []
-    assert dist.event_shape == [kwargs["dims"]]
+    assert dist.event_shape == [masked_autoregressive_spline_flow_kwargs["dims"]]
 
     flow = dist.bijector
     assert isinstance(flow, tfp.python.bijectors.chain._Chain)
 
     for i, (b) in enumerate(dist.bijector.bijectors):
-        test_input2 = i * tf.ones((bs, dims))
+        test_input2 = i * tf.ones((batch_size, dims))
         output_shape = [
-            bs,
+            batch_size,
             dims,
-            kwargs["num_parameters"],
+            masked_autoregressive_spline_flow_kwargs["num_parameters"],
         ]
         assert isinstance(b, tfb.MaskedAutoregressiveFlow)
         assert isinstance(b._bijector_fn, Callable)
@@ -1268,7 +1400,13 @@ def test_get_masked_autoregressive_spline_flow(mock_realnvp_bijectors):
     base_sample = dist.bijector.inverse(transformed_sample)
     reconstructed_sample = dist.bijector.forward(base_sample)
 
-    assert transformed_sample.shape == (7, kwargs["dims"])
-    assert base_sample.shape == (7, kwargs["dims"])
-    assert reconstructed_sample.shape == (7, kwargs["dims"])
+    assert transformed_sample.shape == (
+        7,
+        masked_autoregressive_spline_flow_kwargs["dims"],
+    )
+    assert base_sample.shape == (7, masked_autoregressive_spline_flow_kwargs["dims"])
+    assert reconstructed_sample.shape == (
+        7,
+        masked_autoregressive_spline_flow_kwargs["dims"],
+    )
     assert tf.reduce_all(tf.abs(reconstructed_sample - transformed_sample) < 1e-6)
