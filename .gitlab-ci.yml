@@ -26,8 +26,8 @@ train-job:
   - mlflow run .
   artifacts:
     paths:
-    - dvc.lock
-    - results/
+    - ./experiments/dvc.lock
+    - ./experiments/results/
     expire_in: 1 week
 
 report-job:
@@ -36,6 +36,7 @@ report-job:
   - ai-cli
   script:
   # DVC Metrics
+  - cd ./experiments/
   - echo '# Train Run' > report.md
   - echo '## Metrics ' >> report.md
   - dvc metrics show --show-md >> report.md

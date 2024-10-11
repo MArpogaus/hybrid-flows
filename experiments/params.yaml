@@ -1,0 +1,59 @@
+log-level: info
+seed: 1
+textwidth: 487.8225
+testmode: true
+
+sim_datasets:
+- type: sim
+  name: moons
+- type: sim
+  name: circles
+
+benchmark_datasets:
+- type: benchmark
+  name: bsds300
+- type: benchmark
+  name: gas
+- type: benchmark
+  name: hepmass
+- type: benchmark
+  name: miniboone
+- type: benchmark
+  name: power
+
+sim_models:
+# - conditional_multivariate_flow_bernstein_poly
+# - unconditional_hybrid_coupling_flow_bernstein_poly
+# - unconditional_hybrid_coupling_flow_quadratic_spline
+# - unconditional_hybrid_masked_autoregressive_flow_bernstein_poly_first_dim_masked
+# - unconditional_multivariate_flow_bernstein_poly
+- conditional_coupling_flow_bernstein_poly
+- conditional_coupling_flow_quadratic_spline
+- conditional_masked_autoregressive_flow_bernstein_poly
+- conditional_masked_autoregressive_flow_quadratic_spline
+- conditional_multivariate_normal
+- unconditional_coupling_flow_bernstein_poly
+- unconditional_coupling_flow_quadratic_spline
+- unconditional_masked_autoregressive_flow_bernstein_poly
+- unconditional_masked_autoregressive_flow_quadratic_spline
+- unconditional_multivariate_normal
+
+benchmark_models:
+# - unconditional_coupling_flow_bernstein_poly
+# - unconditional_elementwise_flow_bernstein_poly
+# - unconditional_hybrid_coupling_flow_bernstein_poly
+# - unconditional_hybrid_masked_autoregressive_flow_bernstein_poly_first_dim_masked
+# - unconditional_masked_autoregressive_flow_bernstein_poly
+# - unconditional_masked_autoregressive_flow_bernstein_poly
+# - unconditional_multivariate_flow_bernstein_poly
+# - unconditional_multivariate_normal
+- unconditional_coupling_flow_quadratic_spline
+- unconditional_masked_autoregressive_flow_quadratic_spline
+
+malnutrition_models:
+- mctm
+
+malnutrition_kwargs:
+  data_path: datasets/malnutrition/india.raw
+  targets: [stunting, wasting, underweight]
+  covariates: [mage]

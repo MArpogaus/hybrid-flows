@@ -1,4 +1,0 @@
-[core]
-    remote = mnt
-['remote "mnt"']
-    url = /dvc
