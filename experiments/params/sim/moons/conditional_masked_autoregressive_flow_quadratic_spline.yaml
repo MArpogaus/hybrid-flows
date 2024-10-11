@@ -25,7 +25,7 @@ model_kwargs:
     min_bin_width: 0.001
     nbins: 32
   num_parameters: 95 # 32 * 3 - 1
-  parameter_kwargs:
+  parameters_fn_kwargs:
     activation: relu
     conditional: true
     conditional_event_shape: 1

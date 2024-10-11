@@ -31,7 +31,7 @@ model_kwargs:
     0:
       bijector_kwargs:
         domain: [0, 1]
-  parameter_kwargs:
+  parameters_fn_kwargs:
     activation: relu
     conditional: true
     conditional_event_shape: 1
