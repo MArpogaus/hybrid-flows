@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 from copy import deepcopy
+from pprint import pformat
 from typing import Any, Protocol
 
 import dvc.api
@@ -107,7 +108,7 @@ def prepare_pipeline(results_path, log_file, log_level, stage_name_or_params_fil
     else:
         params = dvc.api.params_show(stages=stage_name_or_params_file_path)
 
-    __LOGGER__.info("params: %s", params)
+    __LOGGER__.info("params: %s", pformat(params))
 
     return params
 
