@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2024-10-11 14:23:31 (Marcel Arpogaus)
+# changed : 2024-10-11 17:03:44 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions for probability distributions.
@@ -790,9 +790,7 @@ def get_coupling_flow(
     num_parameters: int,
     num_masked: Union[int, None] = None,
     layer_overwrites: Dict[Union[int, str], Dict[str, Any]] = {},
-    get_parameter_fn: Callable[
-        ..., Any
-    ] = parameters_lib.get_fully_connected_network_fn,
+    parameters_fn: Callable[..., Any] = parameters_lib.get_fully_connected_network_fn,
     parameters_fn_kwargs: Dict[str, Any] = {},
     get_base_distribution: Callable[..., tfd.Distribution] = _get_base_distribution,
     base_distribution_kwargs: Dict[str, Any] = {},
@@ -817,11 +815,11 @@ def get_coupling_flow(
         Number of dimensions to mask, by default None.
     layer_overwrites : Dict[Union[int, str], Dict[str, Any]], optional
         Layer specific overwrites for bijectors, by default {}.
-    get_parameter_fn : Callable[..., Any], optional
+    parameters_fn : Callable[..., Any], optional
         A function to get the parameter lambda,
         by default parameters_lib.get_fully_connected_network_fn.
     parameters_fn_kwargs : Dict[str, Any], optional
-        Additional keyword arguments passed to `get_parameter_fn`,
+        Additional keyword arguments passed to `parameter_fn`,
         by default {}.
     get_base_distribution : Callable, optional
         The base distribution lambda,
@@ -866,7 +864,7 @@ def get_coupling_flow(
                 "num_masked": nm,
             },
             __NESTED_BIJECTOR_KEY__: nested_bijector_def,
-            __PARAMETERS_FN_KEY__: get_parameter_fn,
+            __PARAMETERS_FN_KEY__: parameters_fn,
             __PARAMETERS_FN_KWARGS_KEY__: {
                 "input_shape": (nm,),
                 "parameter_shape": (dims - nm, num_parameters),
@@ -899,7 +897,7 @@ def _get_masked_autoregressive_flow_bijector_def(
     num_layers: int,
     num_parameters: int,
     layer_overwrites: Dict[Union[int, str], Dict[str, Any]] = {},
-    get_parameter_fn: Callable[
+    parameters_fn: Callable[
         ..., Any
     ] = parameters_lib.get_masked_autoregressive_network_fn,
     parameters_fn_kwargs: Dict[str, Any] = {},
@@ -917,11 +915,11 @@ def _get_masked_autoregressive_flow_bijector_def(
         The number of parameters in each layer.
     layer_overwrites : Dict[Union[int, str], Dict[str, Any]], optional
         Layer specific overwrites for bijectors, by default {}.
-    get_parameter_fn : Callable[..., Any], optional
+    parameters_fn : Callable[..., Any], optional
         A function to get the parameter lambda,
         by default parameters_lib.get_masked_autoregressive_network_fn
     parameters_fn_kwargs : Dict[str, Any], optional
-        Additional keyword arguments passed to `get_parameter_fn`,
+        Additional keyword arguments passed to `parameters_fn`,
         by default {}.
     **kwargs : Dict[str, Any]
         Additional keyword arguments added to the nested bijector definition.
@@ -958,7 +956,7 @@ def _get_masked_autoregressive_flow_bijector_def(
         bijector_def = {
             __BIJECTOR_NAME_KEY__: "MaskedAutoregressiveFlow",
             __NESTED_BIJECTOR_KEY__: nested_bijector_def,
-            __PARAMETERS_FN_KEY__: get_parameter_fn,
+            __PARAMETERS_FN_KEY__: parameters_fn,
             __PARAMETERS_FN_KWARGS_KEY__: {
                 "parameter_shape": (dims, num_parameters),
                 **parameters_fn_kwargs,
@@ -1024,11 +1022,11 @@ def get_masked_autoregressive_flow(
 def get_masked_autoregressive_flow_first_dim_masked(
     dims: int,
     num_parameters: int,
-    get_x0_parameter_fn: Callable[
+    x0_parameters_fn: Callable[
         ..., Any
     ] = parameters_lib.get_fully_connected_network_fn,
     x0_parameters_fn_kwargs: Dict[str, Any] = {},
-    get_maf_parameter_fn: Callable[
+    maf_parameters_fn: Callable[
         ..., Any
     ] = parameters_lib.get_masked_autoregressive_network_fn,
     maf_parameters_fn_kwargs: Dict[str, Any] = {},
@@ -1049,17 +1047,17 @@ def get_masked_autoregressive_flow_first_dim_masked(
         The dimension of the distribution.
     num_parameters : int
         The number of parameters in each layer.
-    get_x0_parameter_fn : Callable[..., Any], optional
+    x0_parameters_fn : Callable[..., Any], optional
         A function to get the parameter lambda of the encapsulating RealNVP bjector,
         by default parameters_lib.get_fully_connected_network_fn.
     x0_parameters_fn_kwargs : Dict[str, Any], optional
-        Additional keyword arguments passed to `get_x0_parameter_fn`,
+        Additional keyword arguments passed to `x0_parameters_fn`,
         by default {}.
-    get_maf_parameter_fn : Callable[..., Any], optional
+    maf_parameters_fn : Callable[..., Any], optional
         A function to get the parameter lambda of the MAF bjectors,
         by default parameters_lib.get_fully_connected_network_fn.
     maf_parameters_fn_kwargs : Dict[str, Any], optional
-        Additional keyword arguments passed to `get_maf_parameter_fn`,
+        Additional keyword arguments passed to `maf_parameters_fn`,
         by default {}.
     get_base_distribution : Callable, optional
         The base distribution lambda,
@@ -1086,7 +1084,7 @@ def get_masked_autoregressive_flow_first_dim_masked(
     nested_bijector_def = _get_masked_autoregressive_flow_bijector_def(
         dims=dims - 1,
         num_parameters=num_parameters,
-        get_parameter_fn=get_maf_parameter_fn,
+        parameters_fn=maf_parameters_fn,
         parameters_fn_kwargs=maf_parameters_fn_kwargs,
         **kwargs,
     )
@@ -1096,7 +1094,7 @@ def get_masked_autoregressive_flow_first_dim_masked(
             "num_masked": 1,
         },
         __NESTED_BIJECTOR_KEY__: nested_bijector_def,
-        __PARAMETERS_FN_KEY__: get_x0_parameter_fn,
+        __PARAMETERS_FN_KEY__: x0_parameters_fn,
         __PARAMETERS_FN_KWARGS_KEY__: {
             "input_shape": (1,),
             "parameter_shape": (dims - 1, num_parameters),
