@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 13:16:19 (Marcel Arpogaus)
-# changed : 2024-10-09 12:45:56 (Marcel Arpogaus)
+# changed : 2024-10-11 11:14:23 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions defining ANNs.
@@ -18,7 +18,7 @@ vectors, and autoregressive parameter networks.
 """
 
 # %% imports ###################################################################
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, List, Tuple, Union
 
 import tensorflow as tf
 import tensorflow.keras as K
@@ -263,69 +263,6 @@ def get_masked_autoregressive_network_fn(
             return lambda x: parameter_network(x, **kwargs)
 
     return parameter_network_fn, parameter_network.trainable_variables
-
-
-def get_masked_autoregressive_network_with_additive_conditioner_fn(
-    parameter_shape: Tuple[int, ...],
-    input_shape: Tuple[int, ...],
-    made_kwargs: Dict[str, Any],
-    x0_kwargs: Dict[str, Any],
-) -> Tuple[
-    Callable[..., Callable[..., Callable[[tf.Variable, tf.Variable], tf.Variable]]],
-    List[tf.Variable],
-]:
-    """Create an autoregressive parameter network with an additive conditioner.
-
-    Parameters
-    ----------
-    parameter_shape : tuple of int
-        The shape of the parameter.
-    input_shape : tuple of int
-        The shape of the input.
-    made_kwargs : dict
-        Keyword arguments for MADE (Masked Autoregressive Flow with
-        Autoregressive Conditioner).
-    x0_kwargs : dict
-        Keyword arguments for the additive conditioner network.
-
-    Returns
-    -------
-    tuple
-        A tuple containing a callable parameter network and its trainable variables.
-
-    """
-    (
-        masked_autoregressive_parameter_network_fn,
-        masked_autoregressive_trainable_variables,
-    ) = get_masked_autoregressive_network_fn(parameter_shape, **made_kwargs)
-
-    x0_parameter_network_fn, x0_trainable_variables = get_fully_connected_network_fn(
-        parameter_shape=parameter_shape, input_shape=input_shape, **x0_kwargs
-    )
-
-    def parameter_fn(
-        conditional_input: tf.Variable = None, **kwargs: Any
-    ) -> Callable[[tf.Variable, tf.Variable], tf.Variable]:
-        made_net = masked_autoregressive_parameter_network_fn(
-            conditional_input, **kwargs
-        )
-        x0_net = x0_parameter_network_fn(conditional_input, **kwargs)
-
-        def call_x0(x0: tf.Tensor):
-            pv2 = x0_net(x0)
-
-            def call_made(x: tf.Tensor) -> tf.Tensor:
-                pv1 = made_net(x)
-                return pv1 + pv2
-
-            return call_made
-
-        return call_x0
-
-    trainable_parameters = (
-        masked_autoregressive_trainable_variables + x0_trainable_variables
-    )
-    return parameter_fn, trainable_parameters
 
 
 def get_fully_connected_autoregressive_network_fn(
