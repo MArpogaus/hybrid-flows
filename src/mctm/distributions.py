@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2024-10-10 17:57:32 (Marcel Arpogaus)
+# changed : 2024-10-11 14:23:31 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions for probability distributions.
@@ -676,10 +676,9 @@ def _get_layer_overwrites(
 # %% public functions ##########################################################
 def get_normalizing_flow(
     bijectors: List[Dict[str, Any]],
-    reverse_flow: bool = True,
-    inverse_flow: bool = True,
+    reverse_flow: bool = False,
+    inverse_flow: bool = False,
     get_base_distribution: Callable[..., tfd.Distribution] = _get_base_distribution,
-    base_distribution_kwargs: Dict[str, Any] = {},
     **kwargs,
 ) -> Tuple[
     Callable[[tf.Tensor], tfd.TransformedDistribution],
@@ -687,22 +686,20 @@ def get_normalizing_flow(
     List[tf.Variable],
     List[tf.Variable],
 ]:
-    """Get a function to parametrize a elementwise transformed distribution.
+    """Get functions and variables to parametrize transformed distributions.
 
     Parameters
     ----------
     bijectors : List[Dict[str, Any]]
         List of dictionaries describing bijective transformations.
     reverse_flow : bool, optional
-        Reverse chain of bijectors, by default True.
+        Reverse chain of bijectors, by default False.
     inverse_flow : bool, optional
         Invert flow to transform from the data to the base distribution,
-        by default True.
+        by default False.
     get_base_distribution : Callable, optional
         The base distribution lambda,
         by default parameters_lib._get_base_distribution.
-    base_distribution_kwargs : Dict[str, Any], optional
-        Keyword arguments for the base distribution, by default {}.
     **kwargs : Any
         Additional optional keyword arguments passed
         to `parameters_lib._get_transformed_distribution_fn`.
@@ -718,30 +715,25 @@ def get_normalizing_flow(
     bijectors_parameters_fns, trainable_variables, non_trainable_variables = (
         _init_parameters_fn(bijectors)
     )
-    if (
-        __PARAMETERS_KEY__ in base_distribution_kwargs
-        or __PARAMETERS_FN_KEY__ in base_distribution_kwargs
-    ):
+    if __PARAMETERS_KEY__ in kwargs or __PARAMETERS_FN_KEY__ in kwargs:
         (
             base_distribution_parameter_fn,
             base_distribution_trainable_variables,
             _,
             __,
         ) = _init_parameters_fn(
-            parameters=base_distribution_kwargs.pop(__PARAMETERS_KEY__, None),
-            parameters_fn=base_distribution_kwargs.pop(__PARAMETERS_FN_KEY__, None),
-            **base_distribution_kwargs.pop(__PARAMETERS_FN_KWARGS_KEY__, {}),
+            parameters=kwargs.pop(__PARAMETERS_KEY__, None),
+            parameters_fn=kwargs.pop(__PARAMETERS_FN_KEY__, None),
+            **kwargs.pop(__PARAMETERS_FN_KWARGS_KEY__, {}),
         )
         if base_distribution_trainable_variables is not None:
             trainable_variables.extend(base_distribution_trainable_variables)
-        if __PARAMETERS_CONSTRAINT_FN_KEY__ in base_distribution_kwargs:
+        if __PARAMETERS_CONSTRAINT_FN_KEY__ in kwargs:
             base_distribution_parameter_constraint_fn = _get_parameters_constraint_fn(
-                parameters_constraint_fn=base_distribution_kwargs.pop(
+                parameters_constraint_fn=kwargs.pop(
                     __PARAMETERS_CONSTRAINT_FN_KEY__, None
                 ),
-                **base_distribution_kwargs.pop(
-                    __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__, {}
-                ),
+                **kwargs.pop(__PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__, {}),
             )
     else:
         base_distribution_parameter_fn = None
@@ -781,7 +773,6 @@ def get_normalizing_flow(
     distribution_fn = _get_transformed_distribution_fn(
         flow_parametrization_fn,
         get_base_distribution=get_base_distribution,
-        **base_distribution_kwargs,
         **kwargs,
     )
 
@@ -803,6 +794,8 @@ def get_coupling_flow(
         ..., Any
     ] = parameters_lib.get_fully_connected_network_fn,
     parameters_fn_kwargs: Dict[str, Any] = {},
+    get_base_distribution: Callable[..., tfd.Distribution] = _get_base_distribution,
+    base_distribution_kwargs: Dict[str, Any] = {},
     **kwargs: Dict[str, Any],
 ) -> Tuple[
     Callable[[tf.Tensor], tfd.Distribution],
@@ -810,7 +803,7 @@ def get_coupling_flow(
     List[tf.Variable],
     List[tf.Variable],
 ]:
-    """Get a Coupling Flow distribution as a callable.
+    """Get functions and variables to parametrize a Coupling Flow distribution.
 
     Parameters
     ----------
@@ -830,6 +823,11 @@ def get_coupling_flow(
     parameters_fn_kwargs : Dict[str, Any], optional
         Additional keyword arguments passed to `get_parameter_fn`,
         by default {}.
+    get_base_distribution : Callable, optional
+        The base distribution lambda,
+        by default parameters_lib._get_base_distribution.
+    base_distribution_kwargs : Dict[str, Any], optional
+        Keyword arguments for the base distribution, by default {}.
     **kwargs : Dict[str, Any]
         Additional keyword arguments added to the nested bijector definition.
 
@@ -887,7 +885,12 @@ def get_coupling_flow(
 
     __LOGGER__.info(pformat(bijectors))
     return get_normalizing_flow(
-        dims=dims, bijectors=bijectors, reverse_flow=False, inverse_flow=False
+        dims=dims,
+        bijectors=bijectors,
+        reverse_flow=False,
+        inverse_flow=False,
+        get_base_distribution=get_base_distribution,
+        **base_distribution_kwargs,
     )
 
 
@@ -902,7 +905,7 @@ def _get_masked_autoregressive_flow_bijector_def(
     parameters_fn_kwargs: Dict[str, Any] = {},
     **kwargs: Dict[str, Any],
 ) -> Dict[str, Any]:
-    """Get a Masked Autoregressive Flow (MAF) distribution as a callable.
+    """Get functions and variables to parametrize a Masked Autoregressive Flow (MAF).
 
     Parameters
     ----------
@@ -970,6 +973,8 @@ def _get_masked_autoregressive_flow_bijector_def(
 
 def get_masked_autoregressive_flow(
     dims: int,
+    get_base_distribution: Callable[..., tfd.Distribution] = _get_base_distribution,
+    base_distribution_kwargs: Dict[str, Any] = {},
     **kwargs: Dict[str, Any],
 ) -> Tuple[
     Callable[[tf.Tensor], tfd.Distribution],
@@ -977,12 +982,17 @@ def get_masked_autoregressive_flow(
     List[tf.Variable],
     List[tf.Variable],
 ]:
-    """Get a Masked Autoregressive Flow (MAF) distribution as a callable.
+    """Get functions and variables to parametrize a Masked Autoregressive Flow (MAF).
 
     Parameters
     ----------
     dims : int
         The dimension of the distribution.
+    get_base_distribution : Callable, optional
+        The base distribution lambda,
+        by default parameters_lib._get_base_distribution.
+    base_distribution_kwargs : Dict[str, Any], optional
+        Keyword arguments for the base distribution, by default {}.
     **kwargs : Dict[str, Any]
         Additional keyword arguments passed to
         `_get_masked_autoregressive_flow_bijector_def`.
@@ -1002,7 +1012,104 @@ def get_masked_autoregressive_flow(
     """
     bijectors = _get_masked_autoregressive_flow_bijector_def(dims=dims, **kwargs)
     return get_normalizing_flow(
-        dims=dims, bijectors=bijectors, reverse_flow=False, inverse_flow=False
+        dims=dims,
+        bijectors=bijectors,
+        reverse_flow=False,
+        inverse_flow=False,
+        get_base_distribution=get_base_distribution,
+        **base_distribution_kwargs,
+    )
+
+
+def get_masked_autoregressive_flow_first_dim_masked(
+    dims: int,
+    num_parameters: int,
+    get_x0_parameter_fn: Callable[
+        ..., Any
+    ] = parameters_lib.get_fully_connected_network_fn,
+    x0_parameters_fn_kwargs: Dict[str, Any] = {},
+    get_maf_parameter_fn: Callable[
+        ..., Any
+    ] = parameters_lib.get_masked_autoregressive_network_fn,
+    maf_parameters_fn_kwargs: Dict[str, Any] = {},
+    get_base_distribution: Callable[..., tfd.Distribution] = _get_base_distribution,
+    base_distribution_kwargs: Dict[str, Any] = {},
+    **kwargs: Dict[str, Any],
+) -> Tuple[
+    Callable[[tf.Tensor], tfd.Distribution],
+    Callable[[tf.Tensor], tf.Variable],
+    List[tf.Variable],
+    List[tf.Variable],
+]:
+    """Get functions and variables to parametrize a MAF with the first dimension masked.
+
+    Parameters
+    ----------
+    dims : int
+        The dimension of the distribution.
+    num_parameters : int
+        The number of parameters in each layer.
+    get_x0_parameter_fn : Callable[..., Any], optional
+        A function to get the parameter lambda of the encapsulating RealNVP bjector,
+        by default parameters_lib.get_fully_connected_network_fn.
+    x0_parameters_fn_kwargs : Dict[str, Any], optional
+        Additional keyword arguments passed to `get_x0_parameter_fn`,
+        by default {}.
+    get_maf_parameter_fn : Callable[..., Any], optional
+        A function to get the parameter lambda of the MAF bjectors,
+        by default parameters_lib.get_fully_connected_network_fn.
+    maf_parameters_fn_kwargs : Dict[str, Any], optional
+        Additional keyword arguments passed to `get_maf_parameter_fn`,
+        by default {}.
+    get_base_distribution : Callable, optional
+        The base distribution lambda,
+        by default parameters_lib._get_base_distribution.
+    base_distribution_kwargs : Dict[str, Any], optional
+        Keyword arguments for the base distribution, by default {}.
+    **kwargs : Dict[str, Any]
+        Additional keyword arguments passed to
+        `_get_masked_autoregressive_flow_bijector_def`.
+
+
+    Returns
+    -------
+    distribution_fn : Callable[[tf.Tensor], tfd.Distribution]
+        A function to parametrize the distribution
+    parameter_fn : Callable[[tf.Tensor], tf.Variable]
+        A callable for parameter networks
+    trainable_parameters : List[tf.Variable]
+        A list of trainable parameters.
+    non_trainable_parameters : List[tf.Variable]
+        A list of non-trainable parameters.
+
+    """
+    nested_bijector_def = _get_masked_autoregressive_flow_bijector_def(
+        dims=dims - 1,
+        num_parameters=num_parameters,
+        get_parameter_fn=get_maf_parameter_fn,
+        parameters_fn_kwargs=maf_parameters_fn_kwargs,
+        **kwargs,
+    )
+    bijector_def = {
+        __BIJECTOR_NAME_KEY__: "RealNVP",
+        __BIJECTOR_KWARGS_KEY__: {
+            "num_masked": 1,
+        },
+        __NESTED_BIJECTOR_KEY__: nested_bijector_def,
+        __PARAMETERS_FN_KEY__: get_x0_parameter_fn,
+        __PARAMETERS_FN_KWARGS_KEY__: {
+            "input_shape": (1,),
+            "parameter_shape": (dims - 1, num_parameters),
+            **x0_parameters_fn_kwargs,
+        },
+    }
+    return get_normalizing_flow(
+        dims=dims,
+        bijectors=[bijector_def],
+        reverse_flow=False,
+        inverse_flow=False,
+        get_base_distribution=get_base_distribution,
+        **base_distribution_kwargs,
     )
 
 
