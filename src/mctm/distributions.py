@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2024-10-11 17:03:44 (Marcel Arpogaus)
+# changed : 2024-10-18 17:26:00 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions for probability distributions.
@@ -29,11 +29,17 @@ import tensorflow_probability as tfp
 from bernstein_flow.bijectors import BernsteinPolynomial
 from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
+from tensorflow_probability.python.internal import prefer_static
 
 from . import activations as activations_lib
 from . import parameters as parameters_lib
 from .utils import deepupdate, getattr_from_module
-from .utils.decorators import recurse_on_key, reduce_dict, skip_no_dict
+from .utils.decorators import (
+    recurse_on_key,
+    reduce_dict,
+    skip_no_dict,
+    vectorized_map_if_batched,
+)
 
 # %% globals ###################################################################
 __LOGGER__ = logging.getLogger(__name__)
@@ -99,9 +105,9 @@ def _get_multivariate_normal_fn(
 def _get_trainable_distribution(
     dims: int,
     get_distribution_fn: Callable[..., Any],
-    distribution_kwargs: Dict[str, Any],
-    get_parameter_fn: Callable[..., Any],
-    parameter_kwargs: Dict[str, Any],
+    parameters_fn: Callable[..., Any],
+    parameters_fn_kwargs: Dict[str, Any],
+    **distribution_kwargs: Dict[str, Any],
 ) -> Tuple[
     Callable[[tf.Tensor], tfd.Distribution],
     Callable[[tf.Tensor], tf.Variable],
@@ -116,12 +122,12 @@ def _get_trainable_distribution(
         The dimension of the distribution.
     get_distribution_fn
         A function to get the distribution lambda.
+    parameters_fn
+        A function to get the parameter lambda.
+    parameters_fn_kwargs
+        Keyword arguments for the parameters fn.
     distribution_kwargs
         Keyword arguments for the distribution.
-    get_parameter_fn
-        A function to get the parameter lambda.
-    parameter_kwargs
-        Keyword arguments for the parameters.
 
     Returns
     -------
@@ -138,14 +144,16 @@ def _get_trainable_distribution(
     distribution_fn, parameters_shape = get_distribution_fn(
         dims=dims, **distribution_kwargs
     )
-    parameter_fn, trainable_variables = get_parameter_fn(
-        parameters_shape, **parameter_kwargs
+    parameter_fn, trainable_variables = parameters_fn(
+        parameters_shape, **parameters_fn_kwargs
     )
     return distribution_fn, parameter_fn, trainable_variables, []
 
 
 def _get_base_distribution(
-    dims: int = 0, distribution_name: str = "normal", **kwargs: Any
+    dims: int = 0,
+    distribution_name: str = "normal",
+    **kwargs: Any,
 ) -> tfd.Distribution:
     """Get the default base distribution.
 
@@ -186,6 +194,7 @@ def _get_base_distribution(
 
     if dims:
         dist = tfd.Sample(dist, sample_shape=[dims])
+
     return dist
 
 
@@ -244,6 +253,14 @@ def _init_parameters_fn(
     trainable_variables: List[tf.Variable] = []
     non_trainable_variables: List[tf.Variable] = []
 
+    bj_count = 0
+
+    def variable_renamer(next_creator, name, **kwargs):
+        name = name if name is not None else ""
+        name = "/".join((f"bijector_{bj_count}", name))
+        var = next_creator(name=name, **kwargs)
+        return var
+
     @recurse_on_key(__NESTED_BIJECTOR_KEY__)
     @reduce_dict(
         __PARAMETERS_KEY__,
@@ -290,6 +307,8 @@ def _init_parameters_fn(
             If both `parameters` and `parameters_fn` are provided.
 
         """
+        nonlocal bj_count
+        bj_count += 1
         if parameters is not None and parameters_fn is not None:
             raise ValueError(
                 "The arguments '%s' and '%s' are "
@@ -301,30 +320,33 @@ def _init_parameters_fn(
         variables: List[tf.Variable] = []
 
         # get parameter fn
-        if parameters is not None:
-            __LOGGER__.debug("Got constant parameters %s", str(parameters))
+        with tf.variable_creator_scope(variable_renamer):
+            if parameters is not None:
+                __LOGGER__.debug("Got constant parameters %s", str(parameters))
 
-            if not isinstance(parameters, tf.Variable):
-                parameters = tf.Variable(parameters)
+                if not isinstance(parameters, tf.Variable):
+                    parameters = tf.Variable(parameters)
 
-            def parameters_fn(*_, **__):
-                return parameters
+                def parameters_fn(*_, **__):
+                    return parameters
 
-            variables = [parameters]
-        elif parameters_fn is not None:
-            if callable(parameters_fn):
-                __LOGGER__.debug("Using provided callable as parameter function")
-                get_parameters_fn = parameters_fn
+                variables = [parameters]
+            elif parameters_fn is not None:
+                if callable(parameters_fn):
+                    __LOGGER__.debug("Using provided callable as parameter function")
+                    get_parameters_fn = parameters_fn
+                else:
+                    __LOGGER__.debug("Parameter function: %s", parameters_fn)
+                    get_parameters_fn = getattr(
+                        parameters_lib, f"get_{parameters_fn}_fn"
+                    )
+
+                __LOGGER__.debug("Initializing parametrization function")
+                parameters_fn, variables = get_parameters_fn(
+                    **parameters_fn_kwargs,
+                )
             else:
-                __LOGGER__.debug("Parameter function: %s", parameters_fn)
-                get_parameters_fn = getattr(parameters_lib, f"get_{parameters_fn}_fn")
-
-            __LOGGER__.debug("Initializing parametrization function")
-            parameters_fn, variables = get_parameters_fn(
-                **parameters_fn_kwargs,
-            )
-        else:
-            parameters_fn = None
+                parameters_fn = None
 
         if variables:
             if trainable:
@@ -339,7 +361,7 @@ def _init_parameters_fn(
     return bijectors_parameters_fns, trainable_variables, non_trainable_variables
 
 
-def _get_eval_parameter_fn(*args, **kwargs):
+def _get_eval_parameter_fn(*conditional_input, **kwargs):
     @recurse_on_key(__NESTED_BIJECTOR_KEY__)
     @reduce_dict(
         __PARAMETERS_KEY__,
@@ -347,7 +369,9 @@ def _get_eval_parameter_fn(*args, **kwargs):
     )
     def eval_parameter_fn(parameters, **entry):
         if callable(parameters):
-            val = parameters(*args, **kwargs)
+            val = parameters(conditional_input, **kwargs)
+            if callable(val):
+                val = vectorized_map_if_batched(val)
         else:
             val = parameters
         return val
@@ -495,15 +519,23 @@ def _init_bijector_from_dict(
 
 
 def _get_bijector_fn(parameters_fn, nested_bijector):
-    def bijector_fn(y: tf.Tensor, *args: Any, **kwargs: Any) -> tfb.Bijector:
+    def bijector_fn(y: tf.Tensor, *_: Any, **kwargs: Any) -> tfb.Bijector:
         parent_parameters = parameters_fn(y, **kwargs)
-
         return _init_nested_bijector_from_dict(
             nested_bijector_definition=nested_bijector.copy(),
             parent_parameters=parent_parameters,
         )
 
     return bijector_fn
+
+
+def get_nested_parameters_fn(nested_parameters_fn, parent_parameters):
+    def parameters_fn(inputs: Any, **kwargs: Any) -> tf.Tensor:
+        __LOGGER__.debug("Nested parameters fn: %s", nested_parameters_fn)
+        __LOGGER__.debug("Nested parameters fn id: %s", id(nested_parameters_fn))
+        return nested_parameters_fn(inputs, **kwargs) + parent_parameters
+
+    return parameters_fn
 
 
 def _init_nested_bijector_from_dict(
@@ -549,20 +581,9 @@ def _init_nested_bijector_from_dict(
                 # TODO: allow custom reduction method here
                 if callable(nested_parameters):
                     __LOGGER__.debug("Nested params are callable")
-                    nested_parameters_fn = nested_parameters
-                    parent_parameters_add = processed_parent_parameters
-
-                    def parameters(*args: Any, **kwargs: Any) -> tf.Tensor:
-                        __LOGGER__.debug("Nested parameters: %s", nested_parameters)
-                        __LOGGER__.debug(
-                            "Nested parameters id: %s", id(nested_parameters)
-                        )
-                        return (
-                            nested_parameters_fn(*args, **kwargs)
-                            + parent_parameters_add
-                        )
-
-                    nested_bijector_kwargs[__PARAMETERS_KEY__] = parameters
+                    nested_bijector_kwargs[__PARAMETERS_KEY__] = (
+                        get_nested_parameters_fn(nested_parameters, parent_parameters)
+                    )
                 elif nested_parameters is not None:
                     __LOGGER__.debug("Nested params are tensor: adding")
                     nested_bijector_kwargs[__PARAMETERS_KEY__] = (
@@ -629,13 +650,18 @@ def _get_transformed_distribution_fn(
     """
 
     def distribution_fn(parameters: tf.Tensor) -> tfd.TransformedDistribution:
-        if isinstance(parameters, tuple) and len(parameters) == 2:
-            parameters, base_parameters = parameters
+        input_shape, parameters, base_parameters = parameters
+        if base_parameters is not None:
             kwargs.update(base_parameters)
             __LOGGER__.debug("got parameters for base distribution.")
 
         __LOGGER__.debug("base distribution kwargs: %s", str(kwargs))
         base_distribution = get_base_distribution(**kwargs)
+        if input_shape is not None:
+            base_distribution = tfd.BatchBroadcast(
+                base_distribution, with_shape=input_shape[:1]
+            )
+
         bijector = flow_parametrization_fn(parameters)
         return tfd.TransformedDistribution(
             distribution=base_distribution,
@@ -715,6 +741,7 @@ def get_normalizing_flow(
     bijectors_parameters_fns, trainable_variables, non_trainable_variables = (
         _init_parameters_fn(bijectors)
     )
+    # TODO: This is crap
     if __PARAMETERS_KEY__ in kwargs or __PARAMETERS_FN_KEY__ in kwargs:
         (
             base_distribution_parameter_fn,
@@ -739,16 +766,22 @@ def get_normalizing_flow(
         base_distribution_parameter_fn = None
         base_distribution_parameter_constraint_fn = None
 
-    def parameter_fn(*args: Any, **kwargs: Any) -> Union[list, Tuple[list, Any]]:
-        eval_parameter_fn = _get_eval_parameter_fn(*args, **kwargs)
+    def parameter_fn(
+        conditional_input: Union[tf.Tensor, None], **kwargs: Any
+    ) -> Union[list, Tuple[list, Any]]:
+        if tf.is_tensor(conditional_input):
+            input_shape = prefer_static.shape(conditional_input)
+        else:
+            input_shape = None
+        eval_parameter_fn = _get_eval_parameter_fn(conditional_input, **kwargs)
         bijectors_parameters = list(map(eval_parameter_fn, bijectors_parameters_fns))
         if base_distribution_parameter_fn is not None:
-            base_params = base_distribution_parameter_fn(*args, **kwargs)
+            base_params = base_distribution_parameter_fn(*conditional_input, **kwargs)
             if base_distribution_parameter_constraint_fn is not None:
                 base_params = base_distribution_parameter_constraint_fn(base_params)
-            return bijectors_parameters, base_params
         else:
-            return bijectors_parameters
+            base_params = None
+        return input_shape, bijectors_parameters, base_params
 
     def flow_parametrization_fn(all_parameters: list):
         bijectors_list = list(map(_init_bijector_from_dict, all_parameters))
@@ -868,6 +901,7 @@ def get_coupling_flow(
             __PARAMETERS_FN_KWARGS_KEY__: {
                 "input_shape": (nm,),
                 "parameter_shape": (dims - nm, num_parameters),
+                "name": f"coupling_layer_{layer}",
                 **parameters_fn_kwargs,
             },
         }
@@ -901,6 +935,7 @@ def _get_masked_autoregressive_flow_bijector_def(
         ..., Any
     ] = parameters_lib.get_masked_autoregressive_network_fn,
     parameters_fn_kwargs: Dict[str, Any] = {},
+    maf_kwargs: Dict[str, Any] = {},
     **kwargs: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Get functions and variables to parametrize a Masked Autoregressive Flow (MAF).
@@ -920,6 +955,9 @@ def _get_masked_autoregressive_flow_bijector_def(
         by default parameters_lib.get_masked_autoregressive_network_fn
     parameters_fn_kwargs : Dict[str, Any], optional
         Additional keyword arguments passed to `parameters_fn`,
+        by default {}.
+    maf_kwargs : Dict[str, Any]
+        Additional keyword arguments added to the MAF bijector definition,
         by default {}.
     **kwargs : Dict[str, Any]
         Additional keyword arguments added to the nested bijector definition.
@@ -960,7 +998,9 @@ def _get_masked_autoregressive_flow_bijector_def(
             __PARAMETERS_FN_KWARGS_KEY__: {
                 "parameter_shape": (dims, num_parameters),
                 **parameters_fn_kwargs,
+                "name": f"maf_layer_{layer}",
             },
+            **maf_kwargs.copy(),
         }
         bijectors.append(bijector_def)
 
@@ -1086,6 +1126,7 @@ def get_masked_autoregressive_flow_first_dim_masked(
         num_parameters=num_parameters,
         parameters_fn=maf_parameters_fn,
         parameters_fn_kwargs=maf_parameters_fn_kwargs,
+        maf_kwargs={__PARAMETERIZED_BY_PARENT_KEY__: True},
         **kwargs,
     )
     bijector_def = {
@@ -1114,5 +1155,5 @@ def get_masked_autoregressive_flow_first_dim_masked(
 get_multivariate_normal = partial(
     _get_trainable_distribution,
     get_distribution_fn=_get_multivariate_normal_fn,
-    get_parameter_fn=parameters_lib.get_parameter_vector_or_simple_network_fn,
+    parameters_fn=parameters_lib.get_parameter_vector_or_simple_network_fn,
 )

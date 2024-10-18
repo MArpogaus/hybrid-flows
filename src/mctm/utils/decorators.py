@@ -4,15 +4,17 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-09 06:38:42 (Marcel Arpogaus)
-# changed : 2024-10-09 06:38:42 (Marcel Arpogaus)
-
-# %% License ###################################################################
+# changed : 2024-10-18 17:33:05 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Module for useful decorator functions."""
 
 # %% imports ###################################################################
+from functools import partial
 from typing import Any, Callable, Dict, List
+
+import tensorflow as tf
+from tensorflow_probability.python.internal import prefer_static
 
 
 # %% functions #################################################################
@@ -104,3 +106,35 @@ def recurse_on_key(key: str) -> Callable:
         return process
 
     return decorator
+
+
+def vectorized_map_if_batched(fn: Callable) -> Callable:
+    """Decorate a function to use `tf.vectorized_map` if the input tensor is batched.
+
+    Parameters
+    ----------
+    fn : Callable
+        Function to be decorated
+
+    Raises
+    ------
+    ValueError
+        If the input tensors ranks is not in [2, 3]
+
+    Returns
+    -------
+    Callable
+        The decorated function.
+
+    """
+
+    def dec_fn(y: tf.Tensor, *_: Any, **kwargs: Dict[str, Any]):
+        y_rank = prefer_static.rank(y)
+        if y_rank == 2:
+            return fn(y, **kwargs)
+        elif y_rank == 3:
+            return tf.vectorized_map(partial(fn, **kwargs), y)
+        else:
+            raise ValueError("Unsupported input rank: %s", y_rank)
+
+    return dec_fn

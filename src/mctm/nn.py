@@ -19,7 +19,7 @@ class ConstantLayer(K.layers.Layer):
 
     """
 
-    def __init__(self, parameter_shape: Tuple[int, ...]):
+    def __init__(self, parameter_shape: Tuple[int, ...], **kwargs):
         """Initialize a constant layer.
 
         Parameters
@@ -28,7 +28,7 @@ class ConstantLayer(K.layers.Layer):
             Shape of the constant parameter.
 
         """
-        super().__init__()
+        super().__init__(**kwargs)
         self.theta_0 = self.add_weight(
             shape=parameter_shape, initializer="random_normal", trainable=True
         )
@@ -55,7 +55,7 @@ def _build_autoregressive_net(
     output_shape: Tuple[int, ...],
     submodel_build_fn: Callable[..., K.Model],
     dtype: tf.dtypes.DType = tf.float32,
-    name: str = "ar_net",
+    name: str = "ar",
     **kwargs,
 ) -> K.Model:
     """Build an autoregressive model.
@@ -86,13 +86,13 @@ def _build_autoregressive_net(
     assert (
         input_shape[0] == output_shape[0]
     ), "First dim of input and output shapes must be equal"
-    fc = [ConstantLayer(output_shape[1:])(inputs)]
+    fc = [ConstantLayer(output_shape[1:], name=f"{name}_constant_layer")(inputs)]
     for i in range(1, input_shape[0]):
         x = inputs[..., :i]
         fc_out = submodel_build_fn(
             input_shape=[i],
             output_shape=[1] + (output_shape[1:] if len(output_shape) > 1 else [1]),
-            name=f"ar_sub_net_{i}",
+            name=f"{name}_sub_net_{i}",
             dtype=dtype,
             **kwargs,
         )(x)
@@ -225,7 +225,7 @@ def build_fully_connected_net(
         A Keras model representing the fully connected network.
 
     """
-    x = K.Input(shape=input_shape, name="input", dtype=dtype)
+    x = K.Input(shape=input_shape, name="/".join((name, "input")), dtype=dtype)
     inputs = [x]
 
     if conditional:
@@ -233,44 +233,62 @@ def build_fully_connected_net(
             conditional_event_shape is not None
         ), "Conditional event shape must be provided if network is conditional."
         c = K.Input(
-            shape=conditional_event_shape, name="conditional_input", dtype=dtype
+            shape=conditional_event_shape,
+            name="/".join((name, "conditional_input")),
+            dtype=dtype,
         )
         inputs.append(c)
 
     if batch_norm:
-        x = K.layers.BatchNormalization(name="batch_norm", dtype=dtype)(x)
+        x = K.layers.BatchNormalization(
+            name="/".join((name, "batch_norm")), dtype=dtype
+        )(x)
         if conditional:
-            c = K.layers.BatchNormalization(name="conditional_batch_norm", dtype=dtype)(
-                c
-            )
+            c = K.layers.BatchNormalization(
+                name="/".join((name, "conditional_batch_norm")), dtype=dtype
+            )(c)
 
     for i, h in enumerate(hidden_units):
         if dropout > 0:
-            x = K.layers.Dropout(dropout, name=f"dropout_{i}", dtype=dtype)(x)
+            x = K.layers.Dropout(
+                dropout, name="/".join((name, f"dropout_{i}")), dtype=dtype
+            )(x)
         x = K.layers.Dense(
-            h, activation=None, name=f"hidden_layer_{i}", dtype=dtype, **kwargs
+            h,
+            activation=None,
+            name="/".join((name, f"hidden_layer_{i}")),
+            dtype=dtype,
+            **kwargs,
         )(x)
         if conditional:
             if dropout > 0:
                 c = K.layers.Dropout(
-                    dropout, name=f"conditional_dropout_{i}", dtype=dtype
+                    dropout,
+                    name="/".join((name, f"conditional_dropout_{i}")),
+                    dtype=dtype,
                 )(c)
             c_out = K.layers.Dense(
                 h,
                 activation=None,
-                name=f"conditional_hidden_layer_{i}",
+                name="/".join((name, f"conditional_hidden_layer_{i}")),
                 dtype=dtype,
                 **kwargs,
             )(c)
-            x = K.layers.Add(name=f"add_c_out_{i}", dtype=dtype)([x, c_out])
-        x = K.layers.Activation(activation, name=f"{activation}_{i}", dtype=dtype)(x)
+            x = K.layers.Add(name="/".join((name, f"add_c_out_{i}")), dtype=dtype)(
+                [x, c_out]
+            )
+        x = K.layers.Activation(
+            activation, name="/".join((name, f"{activation}_{i}")), dtype=dtype
+        )(x)
         if batch_norm:
-            x = K.layers.BatchNormalization(name=f"batch_norm_{i}", dtype=dtype)(x)
+            x = K.layers.BatchNormalization(
+                name="/".join((name, f"batch_norm_{i}")), dtype=dtype
+            )(x)
 
     pv = K.layers.Dense(
         tf.reduce_prod(output_shape),
         activation="linear",
-        name="parameter_vector",
+        name="/".join((name, "parameter_vector")),
         dtype=dtype,
         **kwargs,
     )(x)
@@ -285,7 +303,7 @@ def build_conditional_net(
     parameter_net: K.Model,
     conditioning_net_build_fn: Callable[..., K.Model] = build_fully_connected_net,
     dtype: tf.dtypes.DType = tf.float32,
-    name: str = "conditional_net",
+    name: str = "net",
     **kwargs,
 ) -> K.Model:
     """Combine a given model with an additional conditional input.
@@ -314,10 +332,15 @@ def build_conditional_net(
         The conditional Model.
 
     """
+    name = "/".join(("conditional", name))
     inputs = []
-    normal_input = K.Input(shape=input_shape, name="input", dtype=dtype)
+    normal_input = K.Input(
+        shape=input_shape, name="/".join((name, "input")), dtype=dtype
+    )
     conditional_input = K.Input(
-        shape=conditional_event_shape, name="conditional_input", dtype=dtype
+        shape=conditional_event_shape,
+        name="/".join((name, "conditional_input")),
+        dtype=dtype,
     )
     inputs = [normal_input, conditional_input]
 
@@ -326,11 +349,13 @@ def build_conditional_net(
     conditional_fc_out = conditioning_net_build_fn(
         input_shape=conditional_event_shape,
         output_shape=output_shape,
-        name="conditioning_net",
+        name="/".join((name, "conditioning_net")),
         **kwargs,
     )(conditional_input)
 
-    out = K.layers.Add(name="add_conditional_out")([out, conditional_fc_out])
+    out = K.layers.Add(name="/".join((name, "add_conditional_out")))(
+        [out, conditional_fc_out]
+    )
 
     return K.models.Model(inputs=inputs, outputs=out, name=name)
 
@@ -379,22 +404,29 @@ def build_masked_autoregressive_net(
 
     params = reduce_prod(output_shape[1:])
 
-    normal_input = K.Input(shape=input_shape, name="input", dtype=dtype)
+    normal_input = K.Input(
+        shape=input_shape, name="/".join((name, "input")), dtype=dtype
+    )
     inputs = [normal_input]
     made_layer = tfb.AutoregressiveNetwork(
-        event_shape=input_shape, params=params, name="made_layer", **kwargs
+        event_shape=input_shape,
+        params=params,
+        name="/".join((name, "network")),
+        **kwargs,
     )
 
     if conditional:
         conditional_input = K.Input(
-            shape=conditional_event_shape, name="conditional_input", dtype=dtype
+            shape=conditional_event_shape,
+            name="/".join((name, "conditional_input")),
+            dtype=dtype,
         )
         inputs.append(conditional_input)
         made_out = made_layer(normal_input, conditional_input=conditional_input)
     else:
         made_out = made_layer(normal_input)
 
-    out = K.layers.Reshape(output_shape, name="reshape_pv")(made_out)
+    out = K.layers.Reshape(output_shape, name="/".join((name, "reshape_pv")))(made_out)
 
     return K.Model(inputs=inputs, outputs=out, name=name)
 

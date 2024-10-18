@@ -16,7 +16,7 @@ import os
 import tensorflow.keras as K
 from tensorflow_probability import distributions as tfd
 
-from mctm import distributions, parameters
+from mctm import distributions
 
 
 # MODEL DEFINITIONS #########################################################
@@ -39,9 +39,6 @@ class DensityRegressionModel(K.Model):
         :param **kwargs: Additional keyword arguments.
         """
         super().__init__()
-        parameter_fn = kwargs.pop("parameter_fn", False)
-        if isinstance(parameter_fn, str):
-            kwargs["get_parameter_fn"] = getattr(parameters, f"get_{parameter_fn}_fn")
         (
             self.distribuition_fn,
             self.parameter_fn,
