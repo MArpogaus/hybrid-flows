@@ -7,12 +7,15 @@ from functools import partial
 from shutil import which
 from typing import Any, Dict
 
-import mctm.scheduler
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import tensorflow as tf
 import tensorflow.keras as K
+from tensorflow_probability import bijectors as tfb
+from tensorflow_probability import distributions as tfd
+
+import mctm.scheduler
 from mctm.data.benchmark import get_dataset as get_benchmark_dataset
 from mctm.data.malnutrion import get_dataset as get_malnutrition_dataset
 from mctm.data.sklearn_datasets import get_dataset as get_sim_dataset
@@ -30,8 +33,6 @@ from mctm.utils.visualisation import (
     plot_samples,
     setup_latex,
 )
-from tensorflow_probability import bijectors as tfb
-from tensorflow_probability import distributions as tfd
 
 __LOGGER__ = logging.getLogger(__name__)
 

@@ -4,6 +4,7 @@ import os
 
 import pytest
 import tensorflow as tf
+
 from mctm.distributions import (
     __BIJECTOR_KWARGS_KEY__,
     __BIJECTOR_NAME_KEY__,
@@ -210,7 +211,7 @@ def model_config(request):
 
 @pytest.fixture
 def data():
-    """Generate toy data"""
+    """Generate toy data."""
     tf.random.set_seed(1)
     eps = tf.random.normal((NUM_SAMPLES, DATA_DIMS))
     x = tf.random.uniform((NUM_SAMPLES, DATA_DIMS), -1, 1)
