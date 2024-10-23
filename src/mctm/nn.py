@@ -26,6 +26,8 @@ class ConstantLayer(K.layers.Layer):
         ----------
         parameter_shape
             Shape of the constant parameter.
+        kwargs
+            Additional key-word arguments passed to the initializer of `K.layers.Layer`.
 
         """
         super().__init__(**kwargs)

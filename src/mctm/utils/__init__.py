@@ -15,21 +15,31 @@
 import argparse
 import importlib
 from collections.abc import Mapping, MutableMapping, MutableSequence
+from typing import Any, Callable, Union
 
 
 # FUNCTION DEFINITIONS #########################################################
-def flatten_dict(d, parent_key="", sep="."):
+def flatten_dict(d: Mapping[str, Any], parent_key: str = "", sep: str = ".") -> dict:
     """Recursively flatten a nested dictionary.
 
     This function takes a nested dictionary and flattens it by concatenating
     keys with the specified separator. It is a utility for working with
     configuration dictionaries and similar structures.
 
-    :param dict d: The input nested dictionary to be flattened.
-    :param str parent_key: Used for recursion, indicating the parent key.
-    :param str sep: The separator used to concatenate keys.
-    :return: A flattened dictionary.
-    :rtype: dict
+    Parameters
+    ----------
+    d : dict
+        The input nested dictionary to be flattened.
+    parent_key : str, optional
+        Used for recursion, indicating the parent key.
+    sep : str, optional
+        The separator used to concatenate keys.
+
+    Returns
+    -------
+    dict
+        A flattened dictionary.
+
     """
     items = []
     for key, value in d.items():
@@ -41,18 +51,28 @@ def flatten_dict(d, parent_key="", sep="."):
     return dict(items)
 
 
-def str2bool(v):
+def str2bool(v: str) -> bool:
     """Convert a string to a boolean value.
 
     This function converts a string representing a boolean value
     ("true", "false", "1", "0", "yes", "no", etc.) to a Python boolean
     value (True or False).
 
-    :param str v: The input string to be converted.
-    :return: The boolean value based on the input string.
-    :rtype: bool
-    :raises argparse.ArgumentTypeError: If the input string cannot be converted
-                                        to a boolean.
+    Parameters
+    ----------
+    v : str
+        The input string to be converted.
+
+    Returns
+    -------
+    bool
+        The boolean value based on the input string.
+
+    Raises
+    ------
+    argparse.ArgumentTypeError
+        If the input string cannot be converted to a boolean.
+
     """
     if isinstance(v, bool):
         return v
@@ -64,7 +84,9 @@ def str2bool(v):
         raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
-def filter_recursive(filter_func, collection):
+def filter_recursive(
+    filter_func: Callable[[Any], bool], collection: Union[Mapping, MutableSequence]
+) -> Union[Mapping, MutableSequence, Any]:
     """Recursively filters out all non-iterable values in a collection.
 
     Parameters
@@ -88,7 +110,6 @@ def filter_recursive(filter_func, collection):
     >>> filter_recursive(greater_than_one, d)
     {'b': {'c': 2, 'd': {'e': 3}}}
 
-
     """
     if isinstance(collection, Mapping):
         return {
@@ -98,15 +119,31 @@ def filter_recursive(filter_func, collection):
         }
     elif isinstance(collection, MutableSequence):
         return [
-            v_filterd
+            v_filtered
             for v in collection.copy()
-            if (v_filterd := filter_recursive(filter_func, v)) is not None
+            if (v_filtered := filter_recursive(filter_func, v)) is not None
         ]
     else:
         return collection if filter_func(collection) else None
 
 
-def getattr_from_module(module_attr):
+def getattr_from_module(module_attr: str) -> Any:
+    """Retrieve an attribute from a specified module.
+
+    This function replaces certain prefixes in the module attribute string
+    and imports the module to retrieve the desired attribute.
+
+    Parameters
+    ----------
+    module_attr : str
+        The module attribute string to be processed.
+
+    Returns
+    -------
+    Any
+        The requested attribute from the imported module.
+
+    """
     module_attr = (
         module_attr.replace("tfb.", "tensorflow_probability.python.bijectors.", 1)
         .replace("tfd.", "tensorflow_probability.python.distributions.", 1)
@@ -118,8 +155,20 @@ def getattr_from_module(module_attr):
     return getattr(module, attr)
 
 
-def deepupdate(d: MutableMapping, u: Mapping):
+def deepupdate(d: MutableMapping, u: Mapping) -> MutableMapping:
     """Recursively update elements in a Mapping.
+
+    Parameters
+    ----------
+    d : MutableMapping
+        The dictionary to update.
+    u : Mapping
+        The dictionary used to update.
+
+    Returns
+    -------
+    MutableMapping
+        The updated dictionary.
 
     References
     ----------
