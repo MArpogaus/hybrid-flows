@@ -15,8 +15,7 @@ fit_kwargs:
   verbose: true
 model_kwargs:
   distribution: multivariate_normal
-  distribution_kwargs: {}
-  parameter_kwargs:
+  parameters_fn_kwargs:
     activation: relu
     batch_norm: true
     conditional: true
