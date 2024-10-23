@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2024-10-18 17:26:00 (Marcel Arpogaus)
+# changed : 2024-10-23 15:14:03 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions for probability distributions.
@@ -529,7 +529,29 @@ def _get_bijector_fn(parameters_fn, nested_bijector):
     return bijector_fn
 
 
-def get_nested_parameters_fn(nested_parameters_fn, parent_parameters):
+def get_nested_parameters_fn(
+    nested_parameters_fn: Callable[tf.Tensor, tf.Tensor], parent_parameters: tf.Tensor
+) -> Callable[tf.Tensor, tf.Tensor]:
+    """Get the parameter function of nested bijectors.
+
+    If the nested bijector has a parameter function of its own, we redefine it here
+    and add the parent parameters to its result.
+
+    Parameters
+    ----------
+    nested_parameters_fn : Callable[tf.Tensor, tf.Tensor]
+        The parameters function of the nested bijector.
+    parent_parameters : tf.Tensor
+        The Parameters of the parent bijector.
+
+    Returns
+    -------
+    Callable[tf.Tensor, tf.Tensor]
+        The redefined parameter function, adding the parents parameters.
+
+
+    """
+
     def parameters_fn(inputs: Any, **kwargs: Any) -> tf.Tensor:
         __LOGGER__.debug("Nested parameters fn: %s", nested_parameters_fn)
         __LOGGER__.debug("Nested parameters fn id: %s", id(nested_parameters_fn))
@@ -699,6 +721,26 @@ def _get_layer_overwrites(
     return layer_overwrites.get(layer, layer_overwrites.get(layer - num_layers, {}))
 
 
+@recurse_on_key(__NESTED_BIJECTOR_KEY__)
+@skip_no_dict
+def validate_bijector_definition(dict):
+    """Check if Bijector definition contains all required and no unknonw keys.
+
+    Parameters
+    ----------
+    dict : Dict[str, Any]
+        Bijector definition
+
+
+    """
+    bj_err = f"Bijector definition invalid:\n{pformat(dict)}\n"
+    assert __BIJECTOR_NAME_KEY__ in dict, (
+        bj_err + f"Key '{__BIJECTOR_NAME_KEY__}' is required."
+    )
+    for k in dict:
+        assert k in __ALL_KEYS__, bj_err + f"Unknown key: '{k}'"
+
+
 # %% public functions ##########################################################
 def get_normalizing_flow(
     bijectors: List[Dict[str, Any]],
@@ -738,6 +780,10 @@ def get_normalizing_flow(
         and a list of non-trainable parameters.
 
     """
+    # check if bijector configuration is valid
+    list(map(validate_bijector_definition, bijectors))
+
+    # initialize parameters functions
     bijectors_parameters_fns, trainable_variables, non_trainable_variables = (
         _init_parameters_fn(bijectors)
     )
