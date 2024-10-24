@@ -24,7 +24,7 @@ dvc_merge_all_exps(){
     done
     echo "Merging all experiments into workspace"
     git checkout -
-    git merge --squash dvc-exp-merge
+    git merge --no-edit dvc-exp-merge
     git branch -D dvc-exp-merge
     dvc checkout --force
 }
