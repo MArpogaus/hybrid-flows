@@ -1,12 +1,11 @@
 #!/bin/bash
-set -u
+set -ux
 
-cd $(dirname $0)
+cd "$(dirname $0)"
 
 # Configure remote, pull and check out cache
 dvc remote add --force --local local /data/mctm/
-dvc pull -r local --force
-dvc checkout
+dvc pull -r local --force --allow-missing
 
 # Helper functions
 dvc_queue_exp_for_stage(){
@@ -16,13 +15,17 @@ dvc_queue_exp_for_stage(){
         dvc exp run --queue "$s" -n "$s"
     done
 }
-dvc_apply_all_exps(){
-    for s in $(dvc exp ls --names-only);
+dvc_merge_all_exps(){
+    git checkout -b dvc-exp-merge
+    for s in $(dvc exp ls --sha-only);
     do
-        echo "Applying experiment '$s' to workspace"
-        dvc exp apply "$s"
-        dvc push -r local "$s"
+        echo "Merging experiment '$s' onto separate branch"
+        git merge -X theirs --no-edit "$s"
     done
+    echo "Merging al lexperiments into workspace"
+    git checkout -
+    git merge --squash dvc-exp-merge
+    git branch -D dvc-exp-merge
 }
 wait_for_queue() {
     while : ; do
@@ -48,11 +51,11 @@ dvc_repro_parallel(){
     # wait until dvc queue has been processed
     wait_for_queue
 
-    # Show results
-    dvc exp show --only-changed
+    # print queue
+    dvc queue status
 
     # Apply all experiments to the workspace
-    dvc_apply_all_exps
+    dvc_merge_all_exps
 
     # Clear queue and remove experiments
     dvc queue remove --all
@@ -64,3 +67,6 @@ dvc_repro_parallel train-sim -j16
 
 # reproduce experiments for benchmark data
 dvc_repro_parallel train-benchmark -j4
+
+# Push all changes to the remote cache
+dvc push -r local
