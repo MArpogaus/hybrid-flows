@@ -12,21 +12,21 @@ dvc checkout
 dvc_queue_exp_for_stage(){
     for s in $(dvc status | grep $1 | tr -d :);
     do
-        echo "Queuing exp for stage $s"
+        echo "Queuing experiment for stage $s"
         dvc exp run --queue $s
     done
 }
 dvc_apply_all_exps(){
     for s in $(dvc exp ls --sha-only);
     do
-        echo "Applying exp '$s' to workspace"
+        echo "Applying experiment '$s' to workspace"
         dvc exp apply $s
     done
 }
 wait_for_queue() {
     while : ; do
         # Check if there are any queued or running experiments
-        queue_status=$(dvc queue status | tail -n +2 | grep Queued)
+        queue_status=$(dvc queue status | tail -n +2 | grep -P '(Queued|Running)')
 
         if [[ -z "$queue_status" ]]; then
             echo "All experiments have been processed."
