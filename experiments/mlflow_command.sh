@@ -22,10 +22,11 @@ dvc_merge_all_exps(){
         echo "Merging experiment '$s' onto separate branch"
         git merge -X theirs --no-edit "$s"
     done
-    echo "Merging al lexperiments into workspace"
+    echo "Merging all experiments into workspace"
     git checkout -
     git merge --squash dvc-exp-merge
     git branch -D dvc-exp-merge
+    dvc checkout --force
 }
 wait_for_queue() {
     while : ; do
