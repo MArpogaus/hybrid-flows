@@ -10,17 +10,18 @@ dvc checkout
 
 # Helper functions
 dvc_queue_exp_for_stage(){
-    for s in $(dvc status | grep $1 | tr -d :);
+    for s in $(dvc status | grep "$1" | tr -d :);
     do
         echo "Queuing experiment for stage $s"
-        dvc exp run --queue $s
+        dvc exp run --queue "$s" -n "$s"
     done
 }
 dvc_apply_all_exps(){
-    for s in $(dvc exp ls --sha-only);
+    for s in $(dvc exp ls --names-only);
     do
         echo "Applying experiment '$s' to workspace"
-        dvc exp apply $s
+        dvc exp apply "$s"
+        dvc push -r local "$s"
     done
 }
 wait_for_queue() {
@@ -33,29 +34,29 @@ wait_for_queue() {
             break
         fi
 
-        echo "Still having $(wc -l <<< $queue_status) experiments in the queue..."
+        echo "Still having $(wc -l <<< "$queue_status") experiments in the queue..."
         sleep 10  # Wait for 10 seconds before checking again
     done
 }
 dvc_repro_parallel(){
     # Queue all matching stages as experiments for parallel executions
-    dvc_queue_exp_for_stage $1
+    dvc_queue_exp_for_stage "$1"
 
     # Start parallel execution of experiments
-    dvc queue start $2
+    dvc queue start "$2"
 
     # wait until dvc queue has been processed
     wait_for_queue
 
+    # Show results
+    dvc exp show --only-changed
+
     # Apply all experiments to the workspace
     dvc_apply_all_exps
 
-    # Clear queue and remove experimenets
+    # Clear queue and remove experiments
     dvc queue remove --all
     dvc exp rm --rev HEAD
-
-    # Reproduce stage to checkout cached results
-    dvc repro $1
 }
 
 # reproduce experiments for simulation data
@@ -63,6 +64,3 @@ dvc_repro_parallel train-sim -j16
 
 # reproduce experiments for benchmark data
 dvc_repro_parallel train-benchmark -j4
-
-# push newest results to remote cache
-dvc push -r local
