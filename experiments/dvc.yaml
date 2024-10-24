@@ -23,7 +23,22 @@ stages:
     deps:
     - scripts/train.py
     - ../pyproject.toml
-    - ../src/mctm
+    - ../src/mctm/data/__init__.py
+    - ../src/mctm/data/sklearn_datasets.py
+    - ../src/mctm/utils/__init__.py
+    - ../src/mctm/utils/mlflow.py
+    - ../src/mctm/utils/tensorflow.py
+    - ../src/mctm/utils/visualisation.py
+    - ../src/mctm/utils/decorators.py
+    - ../src/mctm/utils/pipeline.py
+    - ../src/mctm/__init__.py
+    - ../src/mctm/preprocessing.py
+    - ../src/mctm/scheduler.py
+    - ../src/mctm/activations.py
+    - ../src/mctm/models.py
+    - ../src/mctm/nn.py
+    - ../src/mctm/parameters.py
+    - ../src/mctm/distributions.py
     metrics:
     - results/${item.dataset.type}/${item.dataset.name}/${item.model}/metrics.yaml
     outs:
@@ -57,7 +72,22 @@ stages:
     deps:
     - scripts/train.py
     - ../pyproject.toml
-    - ../src/mctm
+    - ../src/mctm/data/__init__.py
+    - ../src/mctm/data/benchmark.py
+    - ../src/mctm/utils/__init__.py
+    - ../src/mctm/utils/mlflow.py
+    - ../src/mctm/utils/tensorflow.py
+    - ../src/mctm/utils/visualisation.py
+    - ../src/mctm/utils/decorators.py
+    - ../src/mctm/utils/pipeline.py
+    - ../src/mctm/__init__.py
+    - ../src/mctm/preprocessing.py
+    - ../src/mctm/scheduler.py
+    - ../src/mctm/activations.py
+    - ../src/mctm/models.py
+    - ../src/mctm/nn.py
+    - ../src/mctm/parameters.py
+    - ../src/mctm/distributions.py
     - datasets/${item.dataset.type}/${item.dataset.name}_train.npy
     - datasets/${item.dataset.type}/${item.dataset.name}_validate.npy
     metrics:

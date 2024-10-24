@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,emacs,linux,macos,windows
-# Edit at https://www.toptal.com/developers/gitignore?templates=python,jupyternotebooks,emacs,linux,macos,windows
+# Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,linux,windows,macos,emacs
+# Edit at https://www.toptal.com/developers/gitignore?templates=python,jupyternotebooks,linux,windows,macos,emacs
 
 ### Emacs ###
 # -*- mode: gitignore; -*-
@@ -88,6 +88,7 @@ ipython_config.py
 
 # Icon must end with two \r
 Icon
+
 
 # Thumbnails
 ._*
@@ -306,7 +307,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,emacs,linux,macos,windows
-mlruns
-mlartifacts
-ipynb/
+# End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,linux,windows,macos,emacs

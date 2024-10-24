@@ -2706,21 +2706,80 @@ stages:
       sim-moons --run-name conditional_coupling_flow_bernstein_poly_moons --stage-name
       train-sim@dataset0-conditional_coupling_flow_bernstein_poly --dataset-type sim
       --dataset-name moons --results-path results/sim/moons/conditional_coupling_flow_bernstein_poly
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -2787,25 +2846,25 @@ stages:
     outs:
     - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: a6d882359c50021b98e4d2f3ba975351
-      size: 24850
+      md5: 9e2fb2601a06054f00adc8551d349199
+      size: 260561
     - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 43eb321f0ab3c5eac5c48d0e4e705906
-      size: 54
+      md5: ac630787887fe77848aab05a2ccf87df
+      size: 56
     - path:
         results/sim/moons/conditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 3f9a500779aebcfeb99c42fa2a3df9c7
+      md5: 673f242f430b266089b30bad127402d5
       size: 2432984
     - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 91dac9696626f13949f8fb7a8f6de976
-      size: 98945
+      md5: b303e5665266b82c23109527d9695680
+      size: 179143
     - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: 53f82d54d0693d96b3e420b8671f037f
-      size: 4431
+      md5: 9ab34fc080fa82dee547b6463bb0162c
+      size: 5501
   train-sim@dataset1-unconditional_elementwise_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-circles --run-name unconditional_elementwise_flow_bernstein_poly_circles
@@ -2894,21 +2953,80 @@ stages:
       sim-circles --run-name unconditional_multivariate_normal_circles --stage-name
       train-sim@dataset1-unconditional_multivariate_normal --dataset-type sim --dataset-name
       circles --results-path results/sim/circles/unconditional_multivariate_normal
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -2931,8 +3049,7 @@ stages:
           verbose: true
         model_kwargs:
           distribution: multivariate_normal
-          distribution_kwargs: {}
-          parameter_kwargs:
+          parameters_fn_kwargs:
             conditional: false
             dtype: float32
       params/sim/dataset.yaml:
@@ -2947,45 +3064,104 @@ stages:
     outs:
     - path: results/sim/circles/unconditional_multivariate_normal/dataset.pdf
       hash: md5
-      md5: 68618f1b988306f46bcbeb52ead97fc2
-      size: 25008
+      md5: e221cfc80ef1abaf380a87cabbe672d7
+      size: 261694
     - path: results/sim/circles/unconditional_multivariate_normal/metrics.yaml
       hash: md5
-      md5: c2776455dcfff59f2984f2b7b1d27175
-      size: 53
+      md5: 6aa522e3c12dac28b505fe90e6ce08ee
+      size: 58
     - path:
         results/sim/circles/unconditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: a871f4f698a96db68ae7a1d481e30322
+      md5: b033429ec64e80e3d20af5297ffa50bc
       size: 11000
     - path: results/sim/circles/unconditional_multivariate_normal/samples.pdf
       hash: md5
-      md5: 2463a14f12728d57d1c33b8b88d30575
-      size: 99918
+      md5: ef2d87c17a864920cafa3b2ea152bb92
+      size: 154033
     - path: results/sim/circles/unconditional_multivariate_normal/train.log
       hash: md5
-      md5: e94755f4bb63ec57ef4c2b7fb731892c
-      size: 1391
+      md5: 624e08fd856a82d2960a45037e2bb0bb
+      size: 1911
   train-sim@dataset0-unconditional_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name unconditional_coupling_flow_quadratic_spline_moons --stage-name
       train-sim@dataset0-unconditional_coupling_flow_quadratic_spline --dataset-type
       sim --dataset-name moons --results-path results/sim/moons/unconditional_coupling_flow_quadratic_spline
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -3037,25 +3213,25 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 87d10ba5c82bfff6929ba30724ee6e38
-      size: 24850
+      md5: 3522f4d72c5727da497478ff1fd85279
+      size: 260561
     - path: results/sim/moons/unconditional_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 217ec62c5cc5fb883cf1f7e577060c5e
-      size: 51
+      md5: a71074d3e50e100c52aec73a7e0c5553
+      size: 55
     - path:
         results/sim/moons/unconditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 45c7dad2cbe55190f0ce811157e0bb44
+      md5: 85bc836100cd38e98f261209f34aa190
       size: 1119168
     - path: results/sim/moons/unconditional_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: dcdf1e1a4447e07b55b1f092214f0b04
-      size: 101233
+      md5: 1073239d044377a88ae61c582651c5ac
+      size: 154412
     - path: results/sim/moons/unconditional_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: 78eac8c4114286ccd035043501e71ff9
-      size: 3788
+      md5: 46b71f675cbbeafad0caf60ae9863088
+      size: 4740
   train-sim@dataset1-conditional_multivariate_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-circles --run-name conditional_multivariate_flow_bernstein_poly_circles
@@ -3407,21 +3583,80 @@ stages:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name unconditional_multivariate_normal_moons --stage-name train-sim@dataset0-unconditional_multivariate_normal
       --dataset-type sim --dataset-name moons --results-path results/sim/moons/unconditional_multivariate_normal
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -3452,51 +3687,109 @@ stages:
           verbose: true
         model_kwargs:
           distribution: multivariate_normal
-          distribution_kwargs: {}
-          parameter_kwargs:
+          parameters_fn_kwargs:
             conditional: false
             dtype: float32
     outs:
     - path: results/sim/moons/unconditional_multivariate_normal/dataset.pdf
       hash: md5
-      md5: 4083ad60def66a74608f193a4981d838
-      size: 24850
+      md5: a21dd39e77fca7e43ae9ff9ff0519074
+      size: 260561
     - path: results/sim/moons/unconditional_multivariate_normal/metrics.yaml
       hash: md5
-      md5: f3ff8955b36288e80f9c185edc409e94
-      size: 53
+      md5: e19f9c8b0af01685b33ceb415a0f3001
+      size: 58
     - path: results/sim/moons/unconditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: 234dc66e5f2c051156af6168a952f4c0
+      md5: 475d044de6adf57b70e71cde32a28ce2
       size: 11000
     - path: results/sim/moons/unconditional_multivariate_normal/samples.pdf
       hash: md5
-      md5: 3f7141c7d94f1edd299b4de5240c39a6
-      size: 103162
+      md5: 388019e337a4893b5f3271cdeedefa02
+      size: 153215
     - path: results/sim/moons/unconditional_multivariate_normal/train.log
       hash: md5
-      md5: 3e60a944b8b6727330a30a011f2c63bb
-      size: 1372
+      md5: e3c67f7a9c57ef55a4846cb4e668bfb3
+      size: 1854
   train-sim@dataset1-conditional_masked_autoregressive_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-circles --run-name conditional_masked_autoregressive_flow_bernstein_poly_circles
       --stage-name train-sim@dataset1-conditional_masked_autoregressive_flow_bernstein_poly
       --dataset-type sim --dataset-name circles --results-path results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -3560,28 +3853,28 @@ stages:
     - path:
         results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 62f1d1920d451fc71dc806b5b93e13c6
-      size: 25008
+      md5: 40ffcd7a753bddeaabc8d6ede0d7ec10
+      size: 261694
     - path:
         results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 1e87320e1c2650002416949c55b431e1
-      size: 54
+      md5: b6c496ba3ce5829f9c97ee8c063f566e
+      size: 56
     - path:
         results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 36e79df1d94f5e3da53288bc49e11035
+      md5: 926ce69b569494a86bc1ec6041b2288e
       size: 52336
     - path:
         results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 92c8292450460c03f3d255d4e99209dc
-      size: 101475
+      md5: 09be1d2842526721b4ddeb94f6b31edd
+      size: 179222
     - path:
         results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly/train.log
       hash: md5
-      md5: a483d39c2fe2a60047f49981289510e4
-      size: 3778
+      md5: 40368f39c70efbc72035e396ae13458a
+      size: 4904
   train-sim@dataset0-conditional_elementwise_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name conditional_elementwise_flow_bernstein_poly_moons --stage-name
@@ -3679,21 +3972,80 @@ stages:
       sim-circles --run-name conditional_coupling_flow_bernstein_poly_circles --stage-name
       train-sim@dataset1-conditional_coupling_flow_bernstein_poly --dataset-type sim
       --dataset-name circles --results-path results/sim/circles/conditional_coupling_flow_bernstein_poly
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -3761,45 +4113,104 @@ stages:
     outs:
     - path: results/sim/circles/conditional_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: b796e6d1aa5b4e1cdac520e27c64287d
-      size: 25008
+      md5: 834c0229987e0c65ab26d914b73ff498
+      size: 261694
     - path: results/sim/circles/conditional_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 31712920412072dd600bdd6494e7b7a7
-      size: 52
+      md5: b3af6e39c7241cfc1558338affe41985
+      size: 56
     - path:
         results/sim/circles/conditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: bb8ab397127246e52bd0dc640a1345db
+      md5: 3de957d08f92aa8f673df2c652dfbb0f
       size: 2432984
     - path: results/sim/circles/conditional_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 9eb9c452abc4bb76f53a73e8e3962156
-      size: 97287
+      md5: 973d15260c1912c039b57cbb6550375b
+      size: 176239
     - path: results/sim/circles/conditional_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: 75ab97f5e49370fc408d629b29706900
-      size: 4448
+      md5: 536629b6fed43da3f44b06efa6fa0569
+      size: 5558
   train-sim@dataset0-unconditional_coupling_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name unconditional_coupling_flow_bernstein_poly_moons --stage-name
       train-sim@dataset0-unconditional_coupling_flow_bernstein_poly --dataset-type
       sim --dataset-name moons --results-path results/sim/moons/unconditional_coupling_flow_bernstein_poly
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -3864,25 +4275,25 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: a47d785bf2adf9df91d6acf293045777
-      size: 24850
+      md5: 4e39a42cca6e592946fc8d4e981b7c8f
+      size: 260561
     - path: results/sim/moons/unconditional_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 844476e47d066670f331bbad919d9098
-      size: 53
+      md5: ce7d17b7f186f7019e4ea763c8eb5f5f
+      size: 56
     - path:
         results/sim/moons/unconditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 797e85d6bcc2d52ff9eef2cfa3efd423
+      md5: 3db4bd8de17f366a0a21d1777388d83b
       size: 1221320
     - path: results/sim/moons/unconditional_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 4489f795ec8c1494e21aee2e1465b448
-      size: 98908
+      md5: 76bee60204b29ddc26db338fe93216e4
+      size: 182148
     - path: results/sim/moons/unconditional_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: 9e74d1d0612de53197d23b0fa01f43d0
-      size: 4169
+      md5: 27a1ad71d592f0ec8d5ff46ef15c2ac9
+      size: 5154
   train-sim@dataset0-conditional_multivariate_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name conditional_multivariate_flow_bernstein_poly_moons --stage-name
@@ -4199,21 +4610,80 @@ stages:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name conditional_multivariate_normal_moons --stage-name train-sim@dataset0-conditional_multivariate_normal
       --dataset-type sim --dataset-name moons --results-path results/sim/moons/conditional_multivariate_normal
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -4244,8 +4714,7 @@ stages:
           verbose: true
         model_kwargs:
           distribution: multivariate_normal
-          distribution_kwargs: {}
-          parameter_kwargs:
+          parameters_fn_kwargs:
             activation: relu
             batch_norm: true
             conditional: true
@@ -4257,44 +4726,103 @@ stages:
     outs:
     - path: results/sim/moons/conditional_multivariate_normal/dataset.pdf
       hash: md5
-      md5: 7b50bf0b242c0e52e0a13cfdad7b6f62
-      size: 24850
+      md5: 90558879dd268bf634743f13577e6d5a
+      size: 260561
     - path: results/sim/moons/conditional_multivariate_normal/metrics.yaml
       hash: md5
-      md5: 6ce28852e431aeb616dcff90e732f460
-      size: 53
+      md5: 5b36cc94f9c95795562d317501829eca
+      size: 56
     - path: results/sim/moons/conditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: d465e33bd838eb97b7f2175d26c1bc99
+      md5: 14acc2cddbb66bb195e1f93806d5a303
       size: 55560
     - path: results/sim/moons/conditional_multivariate_normal/samples.pdf
       hash: md5
-      md5: f8a8a5cf7ab9dc22edcf592a76245315
-      size: 101629
+      md5: 406db82eac76f9cd5abd5162a4ecd688
+      size: 158684
     - path: results/sim/moons/conditional_multivariate_normal/train.log
       hash: md5
-      md5: cbd315c663e60f06e11f13649f1fbb51
-      size: 1663
+      md5: 4dde2a45ab6c0da132ced501c8bc0844
+      size: 2116
   train-sim@dataset1-unconditional_coupling_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-circles --run-name unconditional_coupling_flow_bernstein_poly_circles --stage-name
       train-sim@dataset1-unconditional_coupling_flow_bernstein_poly --dataset-type
       sim --dataset-name circles --results-path results/sim/circles/unconditional_coupling_flow_bernstein_poly
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -4360,45 +4888,104 @@ stages:
     outs:
     - path: results/sim/circles/unconditional_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: f1889d15da7ae828f83aa68fcbaa0790
-      size: 25008
+      md5: 1fb3f7da401992157ca209314cc0b864
+      size: 261694
     - path: results/sim/circles/unconditional_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: dd019ae2e2df6da71e9f167f88f1a7bb
-      size: 54
+      md5: 42b3a3274c80e6b5d07f175069d6a113
+      size: 55
     - path:
         results/sim/circles/unconditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: fbd89541ca76ab1c812229641df56525
+      md5: 28d6e443303dd868c6b0581f5a87d292
       size: 1221320
     - path: results/sim/circles/unconditional_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: f2134b08e8294dd1141132a004d2931f
-      size: 96802
+      md5: 0f8707d590fc4ac1e37a1c3dbad602d9
+      size: 164989
     - path: results/sim/circles/unconditional_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: 960855ad59c753828206808486bf183f
-      size: 4189
+      md5: 26c0cc3f33a99e7a8549895d93209cd3
+      size: 5210
   train-sim@dataset0-conditional_masked_autoregressive_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name conditional_masked_autoregressive_flow_bernstein_poly_moons
       --stage-name train-sim@dataset0-conditional_masked_autoregressive_flow_bernstein_poly
       --dataset-type sim --dataset-name moons --results-path results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -4449,7 +5036,7 @@ stages:
                 domain:
                 - 0
                 - 1
-          parameter_kwargs:
+          parameters_fn_kwargs:
             activation: relu
             conditional: true
             conditional_event_shape: 1
@@ -4461,48 +5048,107 @@ stages:
     - path:
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: e22bcecceb38c55737fff74933067203
-      size: 24850
+      md5: 90558879dd268bf634743f13577e6d5a
+      size: 260561
     - path:
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: e53c46a4b293b3712c57fbd2e196db98
-      size: 52
+      md5: 6ecbe3b9cf008f9892e533c8c2b659a7
+      size: 56
     - path:
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: f37093a2193a14b845907a6ab7677d92
-      size: 15920
+      md5: 48d330bb4982798ef81c64b1e3812c48
+      size: 52336
     - path:
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 1e2a5ccf5181edafc4720cd96e20c2bf
-      size: 100575
+      md5: 130220c1b42b9893e35b31713eaf65dd
+      size: 181681
     - path:
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/train.log
       hash: md5
-      md5: dc73ebdf5151e7c1cfc84eb6c5df1eb3
-      size: 3883
+      md5: f338dbcca8aeb4141e368fe627319406
+      size: 4847
   train-sim@dataset1-conditional_multivariate_normal:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-circles --run-name conditional_multivariate_normal_circles --stage-name
       train-sim@dataset1-conditional_multivariate_normal --dataset-type sim --dataset-name
       circles --results-path results/sim/circles/conditional_multivariate_normal --test-mode
-      true
+      false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -4525,8 +5171,7 @@ stages:
           verbose: true
         model_kwargs:
           distribution: multivariate_normal
-          distribution_kwargs: {}
-          parameter_kwargs:
+          parameters_fn_kwargs:
             activation: relu
             batch_norm: true
             conditional: true
@@ -4547,24 +5192,24 @@ stages:
     outs:
     - path: results/sim/circles/conditional_multivariate_normal/dataset.pdf
       hash: md5
-      md5: da91ef044eba3929637d812b2c56640d
-      size: 25008
+      md5: f7cb2f210a9ab49f713f534cec3d8b4e
+      size: 261694
     - path: results/sim/circles/conditional_multivariate_normal/metrics.yaml
       hash: md5
-      md5: 1469c4f13cb142b36c6b0c1e76ee2816
-      size: 53
+      md5: 78652b727a0ba13d123ecd16b181cff4
+      size: 57
     - path: results/sim/circles/conditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: 9a9fbf335507d964fc8b7737c8bdf93c
+      md5: 937f475e68b4fbaf9a752778512dc5d3
       size: 55560
     - path: results/sim/circles/conditional_multivariate_normal/samples.pdf
       hash: md5
-      md5: 825b2a530b47e07f7bf3eb59fec4ea99
-      size: 97316
+      md5: 15c327de85690dbee5bfbbc9538081fa
+      size: 150334
     - path: results/sim/circles/conditional_multivariate_normal/train.log
       hash: md5
-      md5: f7e1107ceeafc524059624e81a923c98
-      size: 1682
+      md5: 98720ed11d28ecce8eda543b017627e0
+      size: 2174
   train-sim@dataset0-unconditional_hybrid_masked_autoregressive_flow_bernstein_poly_first_dim_masked:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name
@@ -4771,21 +5416,80 @@ stages:
       sim-circles --run-name unconditional_masked_autoregressive_flow_bernstein_poly_circles
       --stage-name train-sim@dataset1-unconditional_masked_autoregressive_flow_bernstein_poly
       --dataset-type sim --dataset-name circles --results-path results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -4847,48 +5551,107 @@ stages:
     - path:
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 6dc42e7ef67656acc431c99cc1f17478
-      size: 25008
+      md5: afbf9c307a97b1e33b1d8695f33e97ee
+      size: 261694
     - path:
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 1e87320e1c2650002416949c55b431e1
-      size: 54
+      md5: b6c496ba3ce5829f9c97ee8c063f566e
+      size: 56
     - path:
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 36e79df1d94f5e3da53288bc49e11035
+      md5: 926ce69b569494a86bc1ec6041b2288e
       size: 52336
     - path:
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: bf654d58bddc3487cad2a1848fb07e56
-      size: 101475
+      md5: 9953223051849be22716a75df8aae223
+      size: 179222
     - path:
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/train.log
       hash: md5
-      md5: 00fa3c7eabef7c1ade4d52f1ed7592d5
-      size: 3517
+      md5: fc874afea2d53ec4e9bf169fc3b19461
+      size: 4557
   train-sim@dataset0-unconditional_masked_autoregressive_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name unconditional_masked_autoregressive_flow_bernstein_poly_moons
       --stage-name train-sim@dataset0-unconditional_masked_autoregressive_flow_bernstein_poly
       --dataset-type sim --dataset-name moons --results-path results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -4939,7 +5702,7 @@ stages:
                 domain:
                 - 0
                 - 1
-          parameter_kwargs:
+          parameters_fn_kwargs:
             activation: relu
             hidden_units:
             - 16
@@ -4949,28 +5712,28 @@ stages:
     - path:
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 4d87ba26a7ebc4208526726cc1ccd6f2
-      size: 24850
+      md5: 7e41b8391e55b9841ef8fe5ff61a85b7
+      size: 260561
     - path:
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: e53c46a4b293b3712c57fbd2e196db98
-      size: 52
+      md5: 6ecbe3b9cf008f9892e533c8c2b659a7
+      size: 56
     - path:
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: f37093a2193a14b845907a6ab7677d92
-      size: 15920
+      md5: 48d330bb4982798ef81c64b1e3812c48
+      size: 52336
     - path:
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 3d208d4f4c06cf2cbf5a96fae81d38a2
-      size: 100575
+      md5: 399fcf9878530dadf1637c737f36ae87
+      size: 181681
     - path:
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/train.log
       hash: md5
-      md5: c922089aae7d754ac179c97fb8fdae25
-      size: 3558
+      md5: 7d3766d4e94dd865852f581b71c843b7
+      size: 4500
   train-malnutrition@mctm:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       malnutrition --run-name mctm --stage-name train-malnutrition@mctm --dataset-type
@@ -5092,21 +5855,80 @@ stages:
       sim-moons --run-name conditional_coupling_flow_quadratic_spline_moons --stage-name
       train-sim@dataset0-conditional_coupling_flow_quadratic_spline --dataset-type
       sim --dataset-name moons --results-path results/sim/moons/conditional_coupling_flow_quadratic_spline
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -5160,45 +5982,104 @@ stages:
     outs:
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 555766848b00eb871ae7044696e7ff14
-      size: 24850
+      md5: 90558879dd268bf634743f13577e6d5a
+      size: 260561
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 25e64a870b9a5e8ea5fb458612d48470
+      md5: 052404c154b01c03bb1989fc4da38a46
       size: 54
     - path:
         results/sim/moons/conditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: b615af19d7b6e9782472306991b00b3c
+      md5: 261b6b53ab09ab7b11ab1d459e6bab40
       size: 2228400
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 15fcc5beac5475fb2370fb1e7c7b9ab9
-      size: 101530
+      md5: 2ab2e97d4a9985f21e46288d3ab642bd
+      size: 174429
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: b8a6bf572f78770a6172bcc35413d859
-      size: 4052
+      md5: 2a141060da58a4bd9fc826e5e854c0e8
+      size: 5086
   train-sim@dataset0-conditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name conditional_masked_autoregressive_flow_quadratic_spline_moons
       --stage-name train-sim@dataset0-conditional_masked_autoregressive_flow_quadratic_spline
       --dataset-type sim --dataset-name moons --results-path results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -5239,7 +6120,7 @@ stages:
             min_bin_width: 0.001
             nbins: 32
           num_parameters: 95
-          parameter_kwargs:
+          parameters_fn_kwargs:
             activation: relu
             conditional: true
             conditional_event_shape: 1
@@ -5251,48 +6132,107 @@ stages:
     - path:
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 1a8f8c059eecf21857b85bf7111034e3
-      size: 24850
+      md5: 9b3e4358c39f86fbffe65ccbbc63e5cf
+      size: 260561
     - path:
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 243456e158b377c077ff8dcf2a3dd4e5
-      size: 53
+      md5: 0673a0f769bae67bf7c4cdc975999b39
+      size: 55
     - path:
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 8fe72e1336dd5e26a2db6ccb22865ad2
-      size: 26064
+      md5: 248fe6725c1e7ef0033d50c9621e945f
+      size: 116472
     - path:
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 587fdfaed4ebbd74862439bac53b3b94
-      size: 100858
+      md5: 95ab5aaf7a21c61780e3e95266741549
+      size: 176069
     - path:
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: dad12629e4592c3af0d4ff31e6f62f52
-      size: 3592
+      md5: 68ccae56b9409e96144f2e2e68d7312e
+      size: 4406
   train-sim@dataset0-unconditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name unconditional_masked_autoregressive_flow_quadratic_spline_moons
       --stage-name train-sim@dataset0-unconditional_masked_autoregressive_flow_quadratic_spline
       --dataset-type sim --dataset-name moons --results-path results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -5333,7 +6273,7 @@ stages:
             min_bin_width: 0.001
             nbins: 32
           num_parameters: 95
-          parameter_kwargs:
+          parameters_fn_kwargs:
             activation: relu
             hidden_units:
             - 16
@@ -5343,48 +6283,107 @@ stages:
     - path:
         results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 2999e4b5a114af3a32e49fe1982b0bab
-      size: 24850
+      md5: 9a560110fa97c2c1a528f3b9c4f87cb8
+      size: 260561
     - path:
         results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 243456e158b377c077ff8dcf2a3dd4e5
-      size: 53
+      md5: 0673a0f769bae67bf7c4cdc975999b39
+      size: 55
     - path:
         results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 8fe72e1336dd5e26a2db6ccb22865ad2
-      size: 26064
+      md5: 248fe6725c1e7ef0033d50c9621e945f
+      size: 116472
     - path:
         results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 7fbebda5bad11c99e710ed08ee617f0f
-      size: 100858
+      md5: a6c90e3f6f96934883b7c130d0d984c0
+      size: 176069
     - path:
         results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: ed8faedd78f332b9d6eb71d59db022c4
-      size: 3267
+      md5: edae415ec50aa251d0fadd36ecaa47ab
+      size: 4059
   train-sim@dataset1-unconditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-circles --run-name unconditional_masked_autoregressive_flow_quadratic_spline_circles
       --stage-name train-sim@dataset1-unconditional_masked_autoregressive_flow_quadratic_spline
       --dataset-type sim --dataset-name circles --results-path results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -5436,48 +6435,107 @@ stages:
     - path:
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: ffab4a15b23c9feb9084e52210e4a727
-      size: 25008
+      md5: b682f1f7b655eb16de694e1d897421e4
+      size: 261694
     - path:
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: d0d20ffb27ea768574e463aab2474f0c
-      size: 54
+      md5: feeb45473253ad916097da259274e450
+      size: 55
     - path:
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 1edcbf3d7cbc6d45138cb256b5c603f6
+      md5: 74432f55335a739734c225568560199e
       size: 116472
     - path:
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 8aac1caed21407aefae0eebde5312989
-      size: 96460
+      md5: 6d01645e9bd00313e90c0e691117312d
+      size: 182394
     - path:
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: b076d239269ea04d522758add862831d
-      size: 3225
+      md5: a8baa2e265bc23bb5ee8d198ce68ca83
+      size: 4116
   train-sim@dataset1-conditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-circles --run-name conditional_masked_autoregressive_flow_quadratic_spline_circles
       --stage-name train-sim@dataset1-conditional_masked_autoregressive_flow_quadratic_spline
       --dataset-type sim --dataset-name circles --results-path results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -5531,48 +6589,107 @@ stages:
     - path:
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 1c26342008d54330745f6329357d768e
-      size: 25008
+      md5: 38b81d02c2592f15ff4be737673d77fc
+      size: 261694
     - path:
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: d0d20ffb27ea768574e463aab2474f0c
-      size: 54
+      md5: feeb45473253ad916097da259274e450
+      size: 55
     - path:
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 1edcbf3d7cbc6d45138cb256b5c603f6
+      md5: 74432f55335a739734c225568560199e
       size: 116472
     - path:
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: fe382b500f4bc7455593dbe456f6d660
-      size: 96460
+      md5: ce86622b1364b0d3862d88e661d1667b
+      size: 182394
     - path:
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: 64ade173d3cd2bf771a24895caa22b18
-      size: 3486
+      md5: 84c5c98b1764ebd87872d5a6f4f36699
+      size: 4463
   train-sim@dataset1-unconditional_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-circles --run-name unconditional_coupling_flow_quadratic_spline_circles
       --stage-name train-sim@dataset1-unconditional_coupling_flow_quadratic_spline
       --dataset-type sim --dataset-name circles --results-path results/sim/circles/unconditional_coupling_flow_quadratic_spline
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -5625,45 +6742,104 @@ stages:
     outs:
     - path: results/sim/circles/unconditional_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: c1325339445817d13887f7a6c640e9f0
-      size: 25008
+      md5: d70355290bdcc83989adfc9cebb82bad
+      size: 261694
     - path: results/sim/circles/unconditional_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 0a1de47a6b6360348726487d12a20312
-      size: 54
+      md5: d8cf9b930fbc74097c743ce9f01dcc23
+      size: 56
     - path:
         results/sim/circles/unconditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: d6c9d31b5518665c5f64dce47998aa01
+      md5: 89f367698a3d031a22aba09a3032367f
       size: 1119168
     - path: results/sim/circles/unconditional_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: cf1ca4e90f63b6c3fe04518c732c107c
-      size: 96035
+      md5: c994507beae5751ff7b408f73002536c
+      size: 157782
     - path: results/sim/circles/unconditional_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: 9be43a1a09e02dedc417fcc05eabb6bf
-      size: 3810
+      md5: cbdf76108b21d9e7a4c7297833c6b376
+      size: 4798
   train-sim@dataset1-conditional_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-circles --run-name conditional_coupling_flow_quadratic_spline_circles --stage-name
       train-sim@dataset1-conditional_coupling_flow_quadratic_spline --dataset-type
       sim --dataset-name circles --results-path results/sim/circles/conditional_coupling_flow_quadratic_spline
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/sklearn_datasets.py
+      hash: md5
+      md5: 50a45734213822dae2cf7607c270e772
+      size: 1044
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: bd5dbd1b034c28aa7ca027cd7c2f5816
+      size: 42870
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 76054c426cde08e66f999d180b3ca307
+      size: 4953
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: 661871210c89b0c3e7e9c203f3121a8d
+      size: 14162
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: aefeb026e9470c2543ef0876af869bf0
+      size: 13174
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: dbe90f82262547a757deba85da92c9fc
+      size: 5392
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: 19b399fda674000be3f3b1ce335d3947
+      size: 7494
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 8812017df827f5c89b2383e982341f55
+      size: 4607
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: d8daab105ec10839357582475112f4a8
+      size: 17420
     params:
       params.yaml:
         seed: 1
@@ -5718,25 +6894,25 @@ stages:
     outs:
     - path: results/sim/circles/conditional_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 07765f278c5489f98af36302316e4d3a
-      size: 25008
+      md5: 9b424161c41aa460a6c3eea54488dedf
+      size: 261694
     - path: results/sim/circles/conditional_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 903a9af4f456b413e9c5b528f77145a1
-      size: 52
+      md5: a99c7b39f1b6fff1f046aaa5aed4b21a
+      size: 56
     - path:
         results/sim/circles/conditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 0f1c1bd302fbbd54ea61b614f9fe1f98
+      md5: 8f959ccd88dff58270c7fa620eb7a353
       size: 2228400
     - path: results/sim/circles/conditional_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: e67eaf3aa5d02274917f40e4f4dba72e
-      size: 96633
+      md5: 6a425663e11e3ac18caf501a8a9e68b4
+      size: 164171
     - path: results/sim/circles/conditional_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: 603fb8647eb79089083dae025d368a0e
-      size: 4069
+      md5: c2158d9ccf4434cad0b9764cd3afb26f
+      size: 5145
   train-benchmark@dataset0-unconditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       benchmark-bsds300 --run-name unconditional_masked_autoregressive_flow_quadratic_spline_bsds300

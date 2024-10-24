@@ -1,15 +1,68 @@
 #!/bin/bash
-set -ux
+set -u
 
 cd $(dirname $0)
 
+# Configure remote, pull and check out cache
 dvc remote add --force --local local /data/mctm/
 dvc pull -r local --force
 dvc checkout
 
-# set -eu
+# Helper functions
+dvc_queue_exp_for_stage(){
+    for s in $(dvc status | grep $1 | tr -d :);
+    do
+        echo "Queuing exp for stage $s"
+        dvc exp run --queue $s
+    done
+}
+dvc_apply_all_exps(){
+    for s in $(dvc exp ls --sha-only);
+    do
+        echo "Applying exp '$s' to workspace"
+        dvc exp apply $s
+    done
+}
+wait_for_queue() {
+    while : ; do
+        # Check if there are any queued or running experiments
+        queue_status=$(dvc queue status | tail -n +2 | grep Queued)
 
-#dvc exp run $@
-dvc repro
+        if [[ -z "$queue_status" ]]; then
+            echo "All experiments have been processed."
+            break
+        fi
 
+        echo "Still having $(wc -l <<< $queue_status) experiments in the queue..."
+        sleep 10  # Wait for 10 seconds before checking again
+    done
+}
+dvc_repro_parallel(){
+    # Queue all matching stages as experiments for parallel executions
+    dvc_queue_exp_for_stage $1
+
+    # Start parallel execution of experiments
+    dvc queue start $2
+
+    # wait until dvc queue has been processed
+    wait_for_queue
+
+    # Apply all experiments to the workspace
+    dvc_apply_all_exps
+
+    # Clear queue and remove experimenets
+    dvc queue remove --all
+    dvc exp rm --rev HEAD
+
+    # Reproduce stage to checkout cached results
+    dvc repro $1
+}
+
+# reproduce experiments for simulation data
+dvc_repro_parallel train-sim -j16
+
+# reproduce experiments for benchmark data
+dvc_repro_parallel train-benchmark -j4
+
+# push newest results to remote cache
 dvc push -r local
