@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 13:16:19 (Marcel Arpogaus)
-# changed : 2024-10-11 11:14:23 (Marcel Arpogaus)
+# changed : 2024-10-25 15:43:20 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions defining ANNs.
@@ -67,7 +67,7 @@ def get_fully_connected_network_fn(
     parameter_shape: Tuple[int, ...],
     input_shape: Tuple[int, ...],
     conditional: bool = False,
-    conditional_event_shape: Tuple[int, ...] = (),
+    conditional_event_shape: Union[Tuple[int, ...], None] = None,
     **kwargs: Any,
 ) -> Tuple[Callable[..., tf.Tensor], List[tf.Variable]]:
     """Create a simple fully connected parameter network.
@@ -160,7 +160,7 @@ def get_fully_connected_res_net_fn(
     parameter_shape: Tuple[int, ...],
     input_shape: Tuple[int, ...],
     conditional: bool = False,
-    conditional_event_shape: Tuple[int, ...] = (),
+    conditional_event_shape: Union[Tuple[int, ...], None] = None,
     name: str = "res_net",
     dtype: tf.dtypes.DType = tf.float32,
     **kwargs: Any,
@@ -268,7 +268,7 @@ def get_masked_autoregressive_network_fn(
 def get_fully_connected_autoregressive_network_fn(
     parameter_shape: Tuple[int, ...],
     conditional: bool = False,
-    conditional_event_shape: Tuple[int, ...] = (),
+    conditional_event_shape: Union[Tuple[int, ...], None] = None,
     name: str = "autoregressive_res_net",
     dtype: tf.dtypes.DType = tf.float32,
     **kwargs: Any,
