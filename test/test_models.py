@@ -9,6 +9,8 @@ from mctm.distributions import (
     __BIJECTOR_KWARGS_KEY__,
     __BIJECTOR_NAME_KEY__,
     __INVERT_BIJECTOR_KEY__,
+    __PARAMETER_SLICE_SIZE_KEY__,
+    __PARAMETERS_CONSTRAINT_FN_KEY__,
     __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__,
     __PARAMETERS_FN_KWARGS_KEY__,
 )
@@ -20,6 +22,13 @@ tf.random.set_seed(1)
 # Define toy data parameters
 NUM_SAMPLES = 1000
 DATA_DIMS = 3
+
+
+@pytest.fixture(autouse=True)
+def setup():
+    """Set random seed and disable GPU usage at the beginning of all tests."""
+    tf.random.set_seed(1)
+    tf.config.set_visible_devices([], "GPU")
 
 
 @pytest.fixture(params=[1, 16, 32])
@@ -68,6 +77,7 @@ def batch_size(request):
                     "batch_norm": False,
                     "dropout": 0,
                     "conditional": False,
+                    "conditional_event_shape": DATA_DIMS,
                 },
                 __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__: {
                     "allow_flexible_bounds": False,
@@ -78,6 +88,75 @@ def batch_size(request):
                 "dims": DATA_DIMS,
                 "num_layers": 3,
                 "num_parameters": 16,
+            },
+        ),
+        (
+            "coupling_flow",
+            {
+                __BIJECTOR_NAME_KEY__: "BernsteinPolynomial",
+                __BIJECTOR_KWARGS_KEY__: {
+                    "domain": [0, 1],
+                    "extrapolation": False,
+                },
+                __INVERT_BIJECTOR_KEY__: True,
+                __PARAMETERS_FN_KWARGS_KEY__: {
+                    "activation": "relu",
+                    "hidden_units": [16] * 2,
+                    "batch_norm": False,
+                    "dropout": 0,
+                    "conditional": True,
+                    "conditional_event_shape": DATA_DIMS,
+                },
+                __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__: {
+                    "allow_flexible_bounds": False,
+                    "bounds": "linear",
+                    "high": 1,
+                    "low": 0,
+                },
+                "dims": DATA_DIMS,
+                "num_layers": 3,
+                "num_parameters": 16,
+            },
+        ),
+        (
+            "coupling_flow",
+            {
+                __PARAMETERS_FN_KWARGS_KEY__: {
+                    "activation": "relu",
+                    "hidden_units": [16] * 2,
+                    "batch_norm": False,
+                    "dropout": 0,
+                    "conditional": False,
+                },
+                "dims": DATA_DIMS,
+                "num_layers": 3,
+                "num_parameters": 16,
+                "nested_bijectors": [
+                    {
+                        __BIJECTOR_NAME_KEY__: "Scale",
+                        __PARAMETERS_CONSTRAINT_FN_KEY__: "tf.math.softplus",
+                        __PARAMETER_SLICE_SIZE_KEY__: 1,
+                    },
+                    {
+                        __BIJECTOR_NAME_KEY__: "Shift",
+                        __PARAMETER_SLICE_SIZE_KEY__: 1,
+                    },
+                    {
+                        __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__: {
+                            "allow_flexible_bounds": False,
+                            "bounds": "linear",
+                            "high": 1,
+                            "low": 0,
+                        },
+                        __BIJECTOR_NAME_KEY__: "BernsteinPolynomial",
+                        __BIJECTOR_KWARGS_KEY__: {
+                            "domain": [0, 1],
+                            "extrapolation": False,
+                        },
+                        __INVERT_BIJECTOR_KEY__: True,
+                        __PARAMETER_SLICE_SIZE_KEY__: 14,
+                    },
+                ],
             },
         ),
         (
@@ -124,7 +203,7 @@ def batch_size(request):
                 },
                 __BIJECTOR_NAME_KEY__: "BernsteinPolynomial",
                 __BIJECTOR_KWARGS_KEY__: {"domain": [0, 1], "extrapolation": False},
-                "invert": True,
+                __INVERT_BIJECTOR_KEY__: True,
             },
         ),
         (
@@ -147,7 +226,44 @@ def batch_size(request):
                 },
                 __BIJECTOR_NAME_KEY__: "BernsteinPolynomial",
                 __BIJECTOR_KWARGS_KEY__: {"domain": [0, 1], "extrapolation": False},
-                "invert": True,
+                __INVERT_BIJECTOR_KEY__: True,
+            },
+        ),
+        (
+            "masked_autoregressive_flow",
+            {
+                "dims": DATA_DIMS,
+                "num_layers": 2,
+                "num_parameters": 8,
+                "nested_bijectors": [
+                    {
+                        __BIJECTOR_NAME_KEY__: "Scale",
+                        __PARAMETERS_CONSTRAINT_FN_KEY__: "tf.math.softplus",
+                        __PARAMETER_SLICE_SIZE_KEY__: 1,
+                    },
+                    {__BIJECTOR_NAME_KEY__: "Shift", __PARAMETER_SLICE_SIZE_KEY__: 1},
+                    {
+                        __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__: {
+                            "allow_flexible_bounds": False,
+                            "bounds": "linear",
+                            "high": -4,
+                            "low": 4,
+                        },
+                        __BIJECTOR_NAME_KEY__: "BernsteinPolynomial",
+                        __BIJECTOR_KWARGS_KEY__: {
+                            "domain": [0, 1],
+                            "extrapolation": False,
+                        },
+                        __INVERT_BIJECTOR_KEY__: True,
+                        __PARAMETER_SLICE_SIZE_KEY__: 6,
+                    },
+                ],
+                __PARAMETERS_FN_KWARGS_KEY__: {
+                    "hidden_units": [16] * 4,
+                    "activation": "relu",
+                    "conditional": True,
+                    "conditional_event_shape": DATA_DIMS,
+                },
             },
         ),
         (
@@ -199,7 +315,7 @@ def batch_size(request):
                 },
                 __BIJECTOR_NAME_KEY__: "BernsteinPolynomial",
                 __BIJECTOR_KWARGS_KEY__: {"domain": [0, 1], "extrapolation": False},
-                "invert": True,
+                __INVERT_BIJECTOR_KEY__: True,
             },
         ),
     ]
