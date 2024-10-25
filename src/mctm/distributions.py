@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2024-10-23 15:14:03 (Marcel Arpogaus)
+# changed : 2024-10-25 16:00:07 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions for probability distributions.
@@ -424,30 +424,30 @@ def _init_bijector_from_dict(
     Bijector Definition
     -------------------
     bijector : Union[tfb.Bijector, type, str]
-        Bijector class, instance or name as string.
+    Bijector class, instance or name as string.
     parameters : Any
-        Parameters to pass to the bijector.
+    Parameters to pass to the bijector.
     parameters_constraint_fn : Optional[Union[Callable, str]], optional
-        Function to constrain the parameters, can be a callable, a string
-        referring to a function or None, by default None
+    Function to constrain the parameters, can be a callable, a string
+    referring to a function or None, by default None
     invert : bool, optional
         If `True` the parameterized bijector gets inverted, by default False.
-    bijector_kwargs : Dict[str, Any], optional
+        bijector_kwargs : Dict[str, Any], optional
         Additional keyword arguments to pass to the bijector, by default {}.
-    nested_bijector : Optional[List[Dict[str, Any]]], optional
+        nested_bijector : Optional[List[Dict[str, Any]]], optional
         A list of dictionaries, each representing a nested bijector,
         by default None.
 
     Returns
     -------
     tfp.bijectors.Bijector
-        The parameterized bijector.
+    The parameterized bijector.
 
     Raises
     ------
     ValueError
         If parameter slicing is required but not used in all nested bijectors.
-    AssertionError
+        AssertionError
         If not all parameters from parent bijector are used.
 
     """
@@ -578,9 +578,13 @@ def _init_nested_bijector_from_dict(
                     parameters_slice_size = nested_bijector_kwargs[
                         __PARAMETER_SLICE_SIZE_KEY__
                     ]
-                    processed_parent_parameters = parent_parameters[
-                        ..., offset : offset + parameters_slice_size
-                    ]
+                    if parameters_slice_size > 1:
+                        processed_parent_parameters = parent_parameters[
+                            ..., offset : offset + parameters_slice_size
+                        ]
+                    else:
+                        processed_parent_parameters = parent_parameters[..., offset]
+
                     __LOGGER__.debug(
                         "Initializing bijector with parameters [%s:%s]",
                         offset,
@@ -719,6 +723,18 @@ def _get_layer_overwrites(
     layer_overwrites: Dict[Union[int, str], Dict[str, Any]], layer: int, num_layers: int
 ) -> Dict[str, Any]:
     return layer_overwrites.get(layer, layer_overwrites.get(layer - num_layers, {}))
+
+
+def _get_nested_bijector_def(num_layers, layer_overwrites, layer, **kwargs):
+    return deepupdate(
+        deepcopy(
+            {
+                __PARAMETERIZED_BY_PARENT_KEY__: True,
+                **kwargs,
+            }
+        ),
+        _get_layer_overwrites(layer_overwrites, layer, num_layers),
+    )
 
 
 @recurse_on_key(__NESTED_BIJECTOR_KEY__)
@@ -873,6 +889,7 @@ def get_coupling_flow(
     parameters_fn_kwargs: Dict[str, Any] = {},
     get_base_distribution: Callable[..., tfd.Distribution] = _get_base_distribution,
     base_distribution_kwargs: Dict[str, Any] = {},
+    nested_bijectors: Union[List[Union[Dict[str, Any], tfb.Bijector]], None] = None,
     **kwargs: Dict[str, Any],
 ) -> Tuple[
     Callable[[tf.Tensor], tfd.Distribution],
@@ -905,6 +922,9 @@ def get_coupling_flow(
         by default parameters_lib._get_base_distribution.
     base_distribution_kwargs : Dict[str, Any], optional
         Keyword arguments for the base distribution, by default {}.
+    nested_bijectors: Union[List[Union[Dict, tfb.Bijector]], None] = None, optional
+        In addition to provide nested bijector definition as kwargs, this
+        argument can be used to provide multiple nested bijectors in a list.
     **kwargs : Dict[str, Any]
         Additional keyword arguments added to the nested bijector definition.
 
@@ -928,15 +948,15 @@ def get_coupling_flow(
         # RealNVP's nested bijector config is abstracted from the user.
         # In order took keep the overwrite mechanism intuitive we add it after the
         # overwrites have been applied.
-        nested_bijector_def = deepupdate(
-            deepcopy(
-                {
-                    __PARAMETERIZED_BY_PARENT_KEY__: True,
-                    **kwargs,
-                }
-            ),
-            _get_layer_overwrites(layer_overwrites, layer, num_layers),
-        )
+        if nested_bijectors is None:
+            nested_bijector_def = _get_nested_bijector_def(
+                num_layers, layer_overwrites, layer, **kwargs
+            )
+        else:
+            nested_bijector_def = [
+                _get_nested_bijector_def(num_layers, layer_overwrites, layer, **d)
+                for d in nested_bijectors
+            ]
         realnvp_bijector_def = {
             __BIJECTOR_NAME_KEY__: "RealNVP",
             __BIJECTOR_KWARGS_KEY__: {
@@ -982,6 +1002,7 @@ def _get_masked_autoregressive_flow_bijector_def(
     ] = parameters_lib.get_masked_autoregressive_network_fn,
     parameters_fn_kwargs: Dict[str, Any] = {},
     maf_kwargs: Dict[str, Any] = {},
+    nested_bijectors: Union[List[Union[Dict[str, Any], tfb.Bijector]], None] = None,
     **kwargs: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Get functions and variables to parametrize a Masked Autoregressive Flow (MAF).
@@ -1005,6 +1026,9 @@ def _get_masked_autoregressive_flow_bijector_def(
     maf_kwargs : Dict[str, Any]
         Additional keyword arguments added to the MAF bijector definition,
         by default {}.
+    nested_bijectors: Union[List[Union[Dict, tfb.Bijector]], None] = None, optional
+        In addition to provide nested bijector definition as kwargs, this
+        argument can be used to provide multiple nested bijectors in a list.
     **kwargs : Dict[str, Any]
         Additional keyword arguments added to the nested bijector definition.
 
@@ -1028,15 +1052,16 @@ def _get_masked_autoregressive_flow_bijector_def(
         # In order took keep the overwrite mechanism intuitive we add it after the
         # overwrites have been applied.
 
-        nested_bijector_def = deepupdate(
-            deepcopy(
-                {
-                    __PARAMETERIZED_BY_PARENT_KEY__: True,
-                    **kwargs,
-                }
-            ),
-            _get_layer_overwrites(layer_overwrites, layer, num_layers),
-        )
+        if nested_bijectors is None:
+            nested_bijector_def = _get_nested_bijector_def(
+                num_layers, layer_overwrites, layer, **kwargs
+            )
+        else:
+            nested_bijector_def = [
+                _get_nested_bijector_def(num_layers, layer_overwrites, layer, **d)
+                for d in nested_bijectors
+            ]
+
         bijector_def = {
             __BIJECTOR_NAME_KEY__: "MaskedAutoregressiveFlow",
             __NESTED_BIJECTOR_KEY__: nested_bijector_def,
