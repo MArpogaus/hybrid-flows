@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-29 13:22:38 (Marcel Arpogaus)
-# changed : 2024-10-29 13:22:38 (Marcel Arpogaus)
+# changed : 2024-10-29 13:40:17 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -18,7 +18,7 @@ import os
 import sys
 from copy import deepcopy
 from pprint import pformat
-from typing import Any, Protocol
+from typing import Any, Dict, Optional, Protocol, Tuple, Union
 
 import dvc.api
 import mlflow
@@ -28,76 +28,75 @@ from matplotlib.pyplot import Figure
 
 from mctm.utils import filter_recursive
 from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
-from mctm.utils.tensorflow import fit_distribution, set_seed, get_learning_rate
+from mctm.utils.tensorflow import fit_distribution, get_learning_rate, set_seed
 
 # %% globals ###################################################################
 __LOGGER__ = logging.getLogger(__name__)
 
 
 # %% classes ###################################################################
-# Function signatures for pipeline callbacks
-class getDataset(Protocol):
-    """Callback."""
+class GetDataset(Protocol):
+    """Signature for dataset retrieval function."""
 
-    def __call__(self) -> "tuple[Any, Any]":
-        """Call."""
-
-
-class getModel(Protocol):
-    """Callback."""
-
-    def __call__(self, dataset: "tuple[Any,Any]") -> Any:
-        """Call."""
+    def __call__(self, **kwargs: Any) -> Tuple[Any, Any]:
+        """Retrieve dataset."""
 
 
-class doPlotData(Protocol):
-    """Callback."""
+class GetModel(Protocol):
+    """Signature for model creation function."""
 
-    def __call__(self, X: Any, Y: Any) -> "Figure":
-        """Call."""
-
-
-class doPreprocessDataset(Protocol):
-    """Callback."""
-
-    def __call__(self, X: Any, Y: Any, model: Any) -> "dict":
-        """Call."""
+    def __call__(self, dims: Any, **kwargs: Any) -> Any:
+        """Create and return model."""
 
 
-class doAfterFit(Protocol):
-    """Callback."""
+class DoPlotData(Protocol):
+    """Signature for data plotting function."""
 
-    def __call__(self, model: Any, x: Any, y: Any, **kwargs: dict) -> None:
-        """Call."""
+    def __call__(self, X: Any, Y: Any) -> Figure:
+        """Plot data."""
 
 
-# %% functions #################################################################
-def prepare_pipeline(results_path, log_file, log_level, stage_name_or_params_file_path):
-    """Prepare the pipeline by configuring logging and loading parameters.
+class DoPreprocessDataset(Protocol):
+    """Signature for dataset preprocessing function."""
 
-    It creates the output path and builds the parameters from the arguments.
+    def __call__(self, data: Tuple[Any, Any], model: Any) -> Dict[str, Any]:
+        """Preprocess dataset."""
+
+
+class DoAfterFit(Protocol):
+    """Signature for post-fit hook function."""
+
+    def __call__(self, model: Any, **kwargs: Dict[str, Any]) -> None:
+        """Execute post-fit operations."""
+
+
+def prepare_pipeline(
+    results_path: str,
+    log_file: Optional[str],
+    log_level: str,
+    stage_name_or_params_file_path: Union[str, io.IOBase],
+) -> Dict:
+    """Prepare the pipeline configuration and load parameters.
 
     Parameters
     ----------
     results_path : str
-        Path to store the results.
-    log_file : str
-        Path to the log file.
+        Directory path for storing results.
+    log_file : Optional[str]
+        File path for logging, or None.
     log_level : str
-        Logging level.
-    stage_name_or_params_file_path : Union[str, io.Base]
+        Level of logging.
+    stage_name_or_params_file_path : Union[str, io.IOBase]
         Path to the parameters file or a file-like object.
 
     Returns
     -------
-    dict
-        A dictionary containing loaded parameters.
+    Dict
+        Loaded parameters as a dictionary.
 
     """
-    # prepare results directory
     os.makedirs(results_path, exist_ok=True)
 
-    # configure logging
     handlers = [logging.StreamHandler(sys.stdout)]
     if log_file:
         log_file = os.path.join(results_path, log_file)
@@ -109,7 +108,6 @@ def prepare_pipeline(results_path, log_file, log_level, stage_name_or_params_fil
         handlers=handlers,
     )
 
-    # load params
     if isinstance(stage_name_or_params_file_path, io.IOBase):
         with stage_name_or_params_file_path as param_file:
             params = yaml.safe_load(param_file)
@@ -125,57 +123,61 @@ def pipeline(
     experiment_name: str,
     run_name: str,
     results_path: str,
-    log_file: str,
+    log_file: Optional[str],
     seed: int,
-    get_dataset_fn: getDataset,
-    dataset_kwargs: dict,
-    get_model_fn: getModel,
-    model_kwargs: dict,
-    preprocess_dataset: doPreprocessDataset,
-    fit_kwargs: dict,
-    compile_kwargs: dict,
-    plot_data: doPlotData,
-    after_fit_hook: doAfterFit,
-    **extra_params_to_log,
-):
-    """Pipeline.
+    get_dataset_fn: GetDataset,
+    dataset_kwargs: Dict[str, Any],
+    get_model_fn: GetModel,
+    model_kwargs: Dict[str, Any],
+    preprocess_dataset: Optional[DoPreprocessDataset],
+    fit_kwargs: Dict[str, Any],
+    compile_kwargs: Dict[str, Any],
+    plot_data: Optional[DoPlotData],
+    after_fit_hook: Optional[DoAfterFit],
+    **extra_params_to_log: Any,
+) -> Tuple[Dict[str, Any], Any, Dict[str, Any]]:
+    """High-level machine learning pipeline for conducting experiments.
 
-    The function represents a high-level machine learning pipeline that can
-    be used to perform the experiments.
-    It includes various stages such as loading a dataset, creating a model,
-    preprocessing the dataset,
-    training the model, and logging experiment results.
+    This pipeline includes stages like dataset loading, model creation,
+    dataset preprocessing, and model training with logging of results.
 
-    Notes
-    -----
-     - get_dataset_fn is a callback because we have no common
-       interface for how to generate a dataset
-     - assumes models history has "loss" and "val_loss"
+    Parameters
+    ----------
+    experiment_name : str
+        MLflow experiment name for logging.
+    run_name : str
+        Name of the MLflow run.
+    results_path : str
+        Path for storing results and artifacts.
+    log_file : Optional[str]
+        Path to log file or None.
+    seed : int
+        Seed for random operations to ensure reproducibility.
+    get_dataset_fn : GetDataset
+        Callback function to load the dataset.
+    dataset_kwargs : Dict[str, Any]
+        Arguments for the dataset loading function.
+    get_model_fn : GetModel
+        Callback function to create the model.
+    model_kwargs : Dict[str, Any]
+        Arguments for the model creation function.
+    preprocess_dataset : Optional[DoPreprocessDataset]
+        Callback function for dataset preprocessing.
+    fit_kwargs : Dict[str, Any]
+        Arguments for the model fitting function.
+    compile_kwargs : Dict[str, Any]
+        Arguments for model compilation.
+    plot_data : Optional[DoPlotData]
+        Callback function for data plotting.
+    after_fit_hook : Optional[DoAfterFit]
+        Callback function executed after model fitting.
+    extra_params_to_log: Dict[str, Any]
+        Additional parameters to log with MLFlow.
 
-    :param str experiment_name: The name of the MLflow experiment to
-                               log the results.
-    :param str run_name: The name of the MLflow run.
-    :param str results_path: The path where the results and artifacts
-                            will be stored.
-    :param str log_file: The path to a log file, or None.
-    :param int seed: The random seed for reproducibility.
-    :param callable get_dataset_fn: A function that loads and
-                                   returns the dataset.
-    :param dict dataset_kwargs: Keyword arguments for the
-                             dataset loading function.
-    :param callable get_model_fn: A function that creates and returns the model.
-    :param dict model_kwargs: Keyword arguments for the model creation function.
-    :param callable preprocess_dataset: A function for preprocessing
-                                       the dataset.
-    :param dict fit_kwargs: Keyword arguments for the model fitting function.
-    :param callable plot_data: A function for plotting the dataset.
-    :param callable after_fit_hook: A function to be executed after
-                                   model fitting.
-    :param dict extra_params_to_log: Additional parameters to log
-                                     to params.yaml.
-    :return: A tuple containing the training history, model, and
-             preprocessed dataset.
-    :rtype: Tuple
+    Returns
+    -------
+    Tuple[Dict[str, Any], Any, Dict[str, Any]]
+        A tuple containing the training history, model, and preprocessed dataset.
 
     """
     learning_rate, lr_scheduler = get_learning_rate(fit_kwargs)
@@ -184,6 +186,7 @@ def pipeline(
         lambda x: not callable(x) and not isinstance(x, type),
         deepcopy(vars()),
     )
+
     # Drop Callback functions from MLFlow logging
     call_args["fit_kwargs"].pop("callbacks", None)
 
@@ -191,13 +194,10 @@ def pipeline(
     data, dims = get_dataset_fn(**dataset_kwargs)
     model = get_model_fn(dims=dims, **model_kwargs)
 
-    # Evaluate Model
     if experiment_name:
         mlflow.set_experiment(experiment_name)
         __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
     with start_run_with_exception_logging(run_name=run_name):
-        # Auto log all MLflow entities
-
         mlflow.autolog(log_models=False)
         mlflow.log_dict(call_args, "params.yaml")
         log_cfg(call_args)
@@ -206,10 +206,11 @@ def pipeline(
             fig = plot_data(*data)
             fig.savefig(os.path.join(results_path, "dataset.pdf"))
 
-        if preprocess_dataset:
-            preprocessed = preprocess_dataset(data, model)
-        else:
-            preprocessed = {"x": data[0], "y": data[1]}
+        preprocessed = (
+            preprocess_dataset(data, model)
+            if preprocess_dataset
+            else {"x": data[0], "y": data[1]}
+        )
         fit_kwargs.update(preprocessed)
 
         hist = fit_distribution(
@@ -226,10 +227,10 @@ def pipeline(
         min_loss = hist.history["loss"][min_idx]
         min_val_loss = hist.history["val_loss"][min_idx]
         epochs = len(hist.history["loss"])
-        __LOGGER__.info("training finished after %s epochs.", epochs)
-        __LOGGER__.info("best train loss: %s", min_loss)
-        __LOGGER__.info("best validation loss: %s", min_val_loss)
-        __LOGGER__.info("minimum reached after %s epochs", min_idx)
+        __LOGGER__.info("Training completed after %s epochs.", epochs)
+        __LOGGER__.info("Best train loss: %s", min_loss)
+        __LOGGER__.info("Best validation loss: %s", min_val_loss)
+        __LOGGER__.info("Minimum loss reached after %s epochs.", min_idx)
 
         mlflow.log_metric("best_epoch", min_idx)
         mlflow.log_metric("final_epoch", epochs)
