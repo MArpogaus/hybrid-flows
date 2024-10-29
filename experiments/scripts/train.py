@@ -15,7 +15,6 @@ import tensorflow.keras as K
 from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 
-import mctm.scheduler
 from mctm.data.benchmark import get_dataset as get_benchmark_dataset
 from mctm.data.malnutrion import get_dataset as get_malnutrition_dataset
 from mctm.data.sklearn_datasets import get_dataset as get_sim_dataset
@@ -237,38 +236,6 @@ def malnutrition_after_fit_hook(
     )
 
 
-def get_learning_rate(fit_kwargs: dict) -> tuple:
-    """Get learning rate scheduler.
-
-    Parameters
-    ----------
-    fit_kwargs : dict
-        Dictionary containing fit parameters.
-
-    Returns
-    -------
-    tuple
-        Initial learning rate and learning rate scheduler.
-
-    """
-    if isinstance(fit_kwargs["learning_rate"], dict):
-        scheduler_name = fit_kwargs["learning_rate"]["scheduler_name"]
-        schduler_class_name = "".join(map(str.title, scheduler_name.split("_")))
-        scheduler_kwargs = fit_kwargs["learning_rate"]["scheduler_kwargs"]
-        __LOGGER__.info(f"{scheduler_name=}({scheduler_kwargs})")
-
-        scheduler = getattr(
-            mctm.scheduler,
-            schduler_class_name,
-            getattr(K.optimizers.schedules, schduler_class_name, None),
-        )(**scheduler_kwargs)
-
-        fit_kwargs["callbacks"] = [K.callbacks.LearningRateScheduler(scheduler)]
-        return scheduler_kwargs["initial_learning_rate"], fit_kwargs["learning_rate"]
-    else:
-        return fit_kwargs["learning_rate"], {}
-
-
 class MeanNegativeLogLikelihood(K.metrics.Mean):
     """Custom metric for mean negative log likelihood."""
 
@@ -350,9 +317,6 @@ def run(
     fit_kwargs = params["fit_kwargs"]
     compile_kwargs = params["compile_kwargs"]
     dataset_kwargs = params["dataset_kwargs"][dataset_name]
-
-    learning_rate, extra_params_to_log = get_learning_rate(fit_kwargs)
-    fit_kwargs["learning_rate"] = learning_rate
 
     if "base_distribution" in model_kwargs.keys():
         get_model = HybridDenistyRegressionModel
@@ -501,7 +465,6 @@ def run(
         compile_kwargs=compile_kwargs,
         plot_data=plot_data,
         after_fit_hook=after_fit_hook,
-        **extra_params_to_log,
     )
 
     return history, model, preprocessed

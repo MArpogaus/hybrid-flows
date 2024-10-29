@@ -1,6 +1,17 @@
+# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
+# %% Author ####################################################################
+# file    : pipeline.py
+# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
+#
+# created : 2024-10-29 13:22:38 (Marcel Arpogaus)
+# changed : 2024-10-29 13:22:38 (Marcel Arpogaus)
+
+# %% License ###################################################################
+
+# %% Description ###############################################################
 """Pipeline."""
 
-# IMPORT MODULES ###############################################################
+# %% imports ###################################################################
 import io
 import logging
 import os
@@ -17,17 +28,14 @@ from matplotlib.pyplot import Figure
 
 from mctm.utils import filter_recursive
 from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
-from mctm.utils.tensorflow import fit_distribution, set_seed
+from mctm.utils.tensorflow import fit_distribution, set_seed, get_learning_rate
 
-# MODULE GLOBAL OBJECTS ########################################################
+# %% globals ###################################################################
 __LOGGER__ = logging.getLogger(__name__)
 
 
-# CLASS DEFINITIONS ############################################################
-
+# %% classes ###################################################################
 # Function signatures for pipeline callbacks
-
-
 class getDataset(Protocol):
     """Callback."""
 
@@ -63,7 +71,7 @@ class doAfterFit(Protocol):
         """Call."""
 
 
-# PUBLIC FUNCTIONS #############################################################
+# %% functions #################################################################
 def prepare_pipeline(results_path, log_file, log_level, stage_name_or_params_file_path):
     """Prepare the pipeline by configuring logging and loading parameters.
 
@@ -170,6 +178,8 @@ def pipeline(
     :rtype: Tuple
 
     """
+    learning_rate, lr_scheduler = get_learning_rate(fit_kwargs)
+    fit_kwargs.update(learning_rate=learning_rate)
     call_args = filter_recursive(
         lambda x: not callable(x) and not isinstance(x, type),
         deepcopy(vars()),

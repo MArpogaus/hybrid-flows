@@ -1,26 +1,33 @@
-"""Tensorflow utils."""
-
 # -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# AUTHOR INFORMATION ###########################################################
+# %% Author ####################################################################
 # file    : tensorflow.py
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
-# created : 2023-08-23 15:52:34 (Marcel Arpogaus)
-# changed : 2023-10-06 11:01:38 (Marcel Arpogaus)
-# DESCRIPTION ##################################################################
-# ...
-# LICENSE ######################################################################
-# ...
-################################################################################
-# IMPORT MODULES ###############################################################
+# created : 2024-10-29 12:55:08 (Marcel Arpogaus)
+# changed : 2024-10-29 12:55:08 (Marcel Arpogaus)
+
+# %% License ###################################################################
+
+# %% Description ###############################################################
+"""Tensorflow utils."""
+
+# %% imports ###################################################################
+import logging
 import os
+from typing import Any, Dict, Tuple, Union
 
 import tensorflow as tf
 import tensorflow.keras as K
+from tensorflow.keras.optimizers.schedules import LearningRateSchedule
+
+import mctm.scheduler
+
+# %% globals ###################################################################
+__LOGGER__ = logging.getLogger(__name__)
 
 
 # PUBLIC FUNCTIONS #############################################################
-def set_seed(seed):
+def set_seed(seed: int):
     """Set the random seed for reproducibility in NumPy and TensorFlow.
 
     :param int seed: The random seed value to set.
@@ -33,6 +40,40 @@ def set_seed(seed):
     # NOTE: that determinism in general comes at the expense of lower performance
     #       and so your model may run slower when op determinism is enabled.
     tf.config.experimental.enable_op_determinism()
+
+
+def get_learning_rate(
+    fit_kwargs: Dict[str, Any],
+) -> Tuple[Union[float, LearningRateSchedule], Dict[str, Any]]:
+    """Get learning rate scheduler.
+
+    Parameters
+    ----------
+    fit_kwargs : dict
+        Dictionary containing fit parameters.
+
+    Returns
+    -------
+    tuple
+        Initial learning rate and learning rate scheduler.
+
+    """
+    if isinstance(fit_kwargs["learning_rate"], dict):
+        scheduler_name = fit_kwargs["learning_rate"]["scheduler_name"]
+        schduler_class_name = "".join(map(str.title, scheduler_name.split("_")))
+        scheduler_kwargs = fit_kwargs["learning_rate"]["scheduler_kwargs"]
+        __LOGGER__.info(f"{scheduler_name=}({scheduler_kwargs})")
+
+        scheduler = getattr(
+            mctm.scheduler,
+            schduler_class_name,
+            getattr(K.optimizers.schedules, schduler_class_name, None),
+        )(**scheduler_kwargs)
+
+        fit_kwargs["callbacks"] = [K.callbacks.LearningRateScheduler(scheduler)]
+        return scheduler_kwargs["initial_learning_rate"], fit_kwargs["learning_rate"]
+    else:
+        return fit_kwargs["learning_rate"], {}
 
 
 # Construct and fit model.
