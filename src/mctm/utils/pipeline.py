@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-29 13:22:38 (Marcel Arpogaus)
-# changed : 2024-10-29 13:40:17 (Marcel Arpogaus)
+# changed : 2024-10-29 14:30:56 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -198,7 +198,8 @@ def pipeline(
         mlflow.set_experiment(experiment_name)
         __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
     with start_run_with_exception_logging(run_name=run_name):
-        mlflow.autolog(log_models=False)
+        mlflow.autolog()
+        mlflow.tensorflow.autolog(checkpoint_save_weights_only=True)
         mlflow.log_dict(call_args, "params.yaml")
         log_cfg(call_args)
 
