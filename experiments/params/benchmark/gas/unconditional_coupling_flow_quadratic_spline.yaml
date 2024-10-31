@@ -76,9 +76,6 @@ model_kwargs:
   parameters_fn_kwargs:
     activation: relu
     batch_norm: false
-    dropout: 0.1
+    dropout: false # 0.1
     res_blocks: 2
-    res_block_projection: 256
-    hidden_units:
-    - 256
-    - 256
+    hidden_features: 256
