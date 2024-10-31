@@ -93,7 +93,7 @@ def _build_autoregressive_net(
         x = inputs[..., :i]
         fc_out = submodel_build_fn(
             input_shape=[i],
-            output_shape=[1] + (output_shape[1:] if len(output_shape) > 1 else [1]),
+            output_shape=[1] + list(output_shape[1:] if len(output_shape) > 1 else [1]),
             name=f"{name}_sub_net_{i}",
             dtype=dtype,
             **kwargs,
@@ -107,81 +107,6 @@ def _build_autoregressive_net(
     return K.models.Model(inputs=inputs, outputs=out, name=name)
 
 
-def _build_res_net(
-    input_shape: Tuple[int, ...],
-    output_shape: Tuple[int, ...],
-    submodel_build_fn: Callable[..., K.Model],
-    res_blocks: int,
-    res_block_projection: int,
-    activation: str = "relu",
-    dtype: tf.dtypes.DType = tf.float32,
-    name: str = "fc_res_net",
-    **kwargs,
-) -> K.Model:
-    """Build a ResNet model.
-
-    Parameters
-    ----------
-    input_shape
-        The shape of the input data.
-    output_shape
-        Shape of the output layer.
-    res_blocks
-        Number of residual blocks, by default 0.
-    res_block_projection
-        Hidden units of residual blocks in and output layers.
-    submodel_build_fn
-        Function to build the resudual blocks.
-    activation
-        Activation function for the hidden units, by default `"relu"`.
-    dtype
-        The dtype of the operation, by default `tf.float32`.
-    name
-        Name of the Keras model.
-    kwargs
-        Additional keyword arguments passed to `_get_fully_connected_net`.
-
-
-    Returns
-    -------
-        The parameter network model.
-
-    """
-    inputs = K.Input(shape=input_shape, name="res_net_input", dtype=dtype)
-
-    x = inputs
-    if res_blocks:
-        input_shape = [res_block_projection]
-        x = K.layers.Dense(
-            res_block_projection,
-            activation=activation,
-            name="hidden_layer_res_in",
-            dtype=dtype,
-        )(x)
-        x = K.layers.Reshape(input_shape)(x)
-        for r in range(res_blocks):
-            fc_out = submodel_build_fn(
-                input_shape=input_shape,
-                output_shape=input_shape,
-                activation=activation,
-                name=f"res{r}",
-                dtype=dtype,
-                **kwargs,
-            )(x)
-            res_out = K.layers.Add(name=f"add_res{r}")([fc_out, x])
-            x = K.layers.Activation(activation, name=f"{activation}_res{r}")(res_out)
-    out = submodel_build_fn(
-        input_shape=input_shape,
-        output_shape=output_shape,
-        activation=activation,
-        name="fc_out",
-        dtype=dtype,
-        **kwargs,
-    )(x)
-
-    return K.models.Model(inputs=inputs, outputs=out, name=name)
-
-
 def build_fully_connected_net(
     input_shape: Tuple[int, ...],
     hidden_units: List[int],
@@ -189,8 +114,6 @@ def build_fully_connected_net(
     batch_norm: bool,
     output_shape: Tuple[int, ...],
     dropout: float,
-    conditional: bool = False,
-    conditional_event_shape: Tuple[int, ...] = None,
     dtype: tf.dtypes.DType = tf.float32,
     name: str = "fc",
     **kwargs,
@@ -230,31 +153,14 @@ def build_fully_connected_net(
     x = K.Input(shape=input_shape, name="/".join((name, "input")), dtype=dtype)
     inputs = [x]
 
-    if conditional:
-        assert (
-            conditional_event_shape is not None
-        ), "Conditional event shape must be provided if network is conditional."
-        c = K.Input(
-            shape=conditional_event_shape,
-            name="/".join((name, "conditional_input")),
-            dtype=dtype,
-        )
-        inputs.append(c)
-
     if batch_norm:
         x = K.layers.BatchNormalization(
             name="/".join((name, "batch_norm")), dtype=dtype
         )(x)
-        if conditional:
-            c = K.layers.BatchNormalization(
-                name="/".join((name, "conditional_batch_norm")), dtype=dtype
-            )(c)
 
     for i, h in enumerate(hidden_units):
         if dropout > 0:
-            x = K.layers.Dropout(
-                dropout, name="/".join((name, f"dropout_{i}")), dtype=dtype
-            )(x)
+            x = K.layers.Dropout(dropout, name="/".join((name, f"dropout_{i}")))(x)
         x = K.layers.Dense(
             h,
             activation=None,
@@ -262,23 +168,6 @@ def build_fully_connected_net(
             dtype=dtype,
             **kwargs,
         )(x)
-        if conditional:
-            if dropout > 0:
-                c = K.layers.Dropout(
-                    dropout,
-                    name="/".join((name, f"conditional_dropout_{i}")),
-                    dtype=dtype,
-                )(c)
-            c_out = K.layers.Dense(
-                h,
-                activation=None,
-                name="/".join((name, f"conditional_hidden_layer_{i}")),
-                dtype=dtype,
-                **kwargs,
-            )(c)
-            x = K.layers.Add(name="/".join((name, f"add_c_out_{i}")), dtype=dtype)(
-                [x, c_out]
-            )
         x = K.layers.Activation(
             activation, name="/".join((name, f"{activation}_{i}")), dtype=dtype
         )(x)
@@ -469,10 +358,16 @@ def build_fully_connected_autoregressive_net(
 def build_fully_connected_res_net(
     input_shape: Tuple[int, ...],
     output_shape: Tuple[int, ...],
+    res_blocks: int,
+    hidden_features: int,
+    activation: str,
+    batch_norm: bool,
+    dropout: float,
+    dtype: tf.dtypes.DType = tf.float32,
     name: str = "fc_res_net",
     **kwargs,
 ) -> K.Model:
-    """Build a ResNet model.
+    """Build a ResNet pre-activation model.
 
     Parameters
     ----------
@@ -480,21 +375,85 @@ def build_fully_connected_res_net(
         The shape of the input data.
     output_shape
         Shape of the output layer.
+    res_blocks
+        Number of residual blocks.
+    hidden_features
+        Hidden features of residual blocks.
+    activation
+        Activation function for the hidden units.
+    batch_norm
+        If True, apply batch normalization.
+    dropout
+        Dropout rate, between 0 and 1.
+    dtype
+        The dtype of the operation, by default `tf.float32`.
     name
-        Name of the Keras model.
+        Name of the Keras model, by default `"fc_res_net"`.
     kwargs
-        Additional keyword arguments passed to `_build_res_net`.
+        Additional keyword arguments passed to `K.layers.Dense`.
 
+    Reference
+    ---------
+    - K. He, X. Zhang, S. Ren, and J. Sun, Identity mappings in deep residual networks,
+      European Conference on Computer Vision, 2016.
+    - C. Durkan, A. Bekasov, I. Murray, and G. Papamakarios, Neural Spline Flows,
+      in Advances in Neural Information Processing Systems, 2019.
 
     Returns
     -------
         The parameter network model.
 
     """
-    return _build_res_net(
-        input_shape=input_shape,
-        output_shape=output_shape,
-        submodel_build_fn=build_fully_connected_net,
-        name=name,
+    inputs = K.Input(shape=input_shape, name="res_net_input", dtype=dtype)
+
+    x = inputs
+    projection = K.layers.Dense(
+        hidden_features,
+        activation=activation,
+        name="/".join((name, "projection")),
+        dtype=dtype,
+    )(x)
+    x = projection
+    for r in range(res_blocks):
+        if batch_norm:
+            x = K.layers.BatchNormalization(
+                name="/".join((name, f"batch_norm_{r}_1")), dtype=dtype
+            )(x)
+        x = K.layers.Activation(
+            activation, name="/".join((name, f"{activation}_{r}_1")), dtype=dtype
+        )(x)
+        x = K.layers.Dense(
+            hidden_features,
+            activation="linear",
+            name="/".join((name, f"hidden_layer_{r}_1")),
+            dtype=dtype,
+            **kwargs,
+        )(x)
+        if batch_norm:
+            x = K.layers.BatchNormalization(
+                name="/".join((name, f"batch_norm_{r}_2")), dtype=dtype
+            )(x)
+        x = K.layers.Activation(
+            activation, name="/".join((name, f"{activation}_{r}_2")), dtype=dtype
+        )(x)
+        if dropout > 0:
+            x = K.layers.Dropout(dropout, name="/".join((name, f"dropout_{r}")))(x)
+        x = K.layers.Dense(
+            hidden_features,
+            activation="linear",
+            name="/".join((name, f"hidden_layer_{r}_2")),
+            dtype=dtype,
+            **kwargs,
+        )(x)
+        x = K.layers.Add(name=f"add_res{r}")([projection, x])
+    out = K.layers.Dense(
+        tf.reduce_prod(output_shape),
+        activation="linear",
+        name="/".join((name, "output_layer")),
+        dtype=dtype,
         **kwargs,
+    )(x)
+    out_reshaped = K.layers.Reshape(output_shape, name="reshaped_output", dtype=dtype)(
+        out
     )
+    return K.models.Model(inputs=inputs, outputs=out_reshaped, name=name)
