@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 13:16:19 (Marcel Arpogaus)
-# changed : 2024-10-25 15:43:20 (Marcel Arpogaus)
+# changed : 2024-10-31 16:21:57 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions defining ANNs.
@@ -390,4 +390,4 @@ def get_test_parameters_fn(input_shape, param_shape):
 def get_test_parameters_nested_fn(input_shape, param_shape):
     """Test parameter function."""
     parameter_fn, vars = get_test_parameters_fn(input_shape, param_shape)
-    return lambda x: lambda xx: x * parameter_fn(xx), vars
+    return lambda x: lambda xx: x * parameter_fn(xx[..., None]), vars

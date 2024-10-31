@@ -24,13 +24,6 @@ NUM_SAMPLES = 1000
 DATA_DIMS = 3
 
 
-@pytest.fixture(autouse=True)
-def setup():
-    """Set random seed and disable GPU usage at the beginning of all tests."""
-    tf.random.set_seed(1)
-    tf.config.set_visible_devices([], "GPU")
-
-
 @pytest.fixture(params=[1, 16, 32])
 def batch_size(request):
     """Fixture yielding different batch sizes."""

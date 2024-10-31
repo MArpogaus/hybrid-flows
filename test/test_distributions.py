@@ -1,5 +1,17 @@
+# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
+# %% Author ####################################################################
+# file    : test_distributions.py
+# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
+#
+# created : 2024-10-31 13:56:39 (Marcel Arpogaus)
+# changed : 2024-10-31 17:13:05 (Marcel Arpogaus)
+
+# %% License ###################################################################
+
+# %% Description ###############################################################
 """Unit test for normalizing flow module."""
 
+# %% imports ###################################################################
 import logging
 from typing import Callable
 
@@ -42,15 +54,15 @@ from mctm.utils.decorators import recurse_on_key
 logging.basicConfig(level=logging.DEBUG)
 
 
-@pytest.fixture(autouse=True)
-def setup():
-    """Set random seed and disable GPU usage at the beginning of all tests."""
-    tf.random.set_seed(1)
-    tf.config.set_visible_devices([], "GPU")
+# %% fixtures ##################################################################
+@pytest.fixture(params=[3, 48])
+def dims(request):
+    """Fixture returning different data dimensions."""
+    return request.param
 
 
 @pytest.fixture
-def mock_bijector_data():
+def mock_bijector_data(dims):
     """Mock data for bijector configurations."""
     return [
         {
@@ -60,9 +72,6 @@ def mock_bijector_data():
         {
             __BIJECTOR_NAME_KEY__: "Shift",
             __PARAMETERS_KEY__: 1.0,
-        },
-        {
-            __BIJECTOR_NAME_KEY__: "Log",
         },
         {
             __BIJECTOR_NAME_KEY__: "RealNVP",
@@ -82,31 +91,68 @@ def mock_bijector_data():
                 },
             ],
             __PARAMETERS_FN_KEY__: "test_parameters_nested",
-            __PARAMETERS_FN_KWARGS_KEY__: {"input_shape": [1], "param_shape": [2]},
+            __PARAMETERS_FN_KWARGS_KEY__: {
+                "input_shape": [1],
+                "param_shape": [dims - 1, 2],
+            },
         },
-        tfb.Permute(permutation=[1, 0]),
+        tfb.Permute(permutation=list(reversed(range(dims)))),
     ]
 
 
 @pytest.fixture
-def mock_deeply_nested_bijectors(mock_bijector_data):
+def mock_deeply_nested_bijectors(dims):
     """Mock data for deeply nested bijector configurations."""
-    nested_bj = mock_bijector_data
-    nested_bj[1][__PARAMETERIZED_BY_PARENT_KEY__] = True
-    nested_bj[3][__PARAMETERIZED_BY_PARENT_KEY__] = True
     return [
         {
             __BIJECTOR_NAME_KEY__: "RealNVP",
             __BIJECTOR_KWARGS_KEY__: {"num_masked": 1},
-            __NESTED_BIJECTOR_KEY__: nested_bj,
+            __NESTED_BIJECTOR_KEY__: [
+                {
+                    __BIJECTOR_NAME_KEY__: "Scale",
+                    __BIJECTOR_KWARGS_KEY__: {"scale": 2.0},
+                },
+                {
+                    __BIJECTOR_NAME_KEY__: "Shift",
+                    __PARAMETERS_KEY__: 1.0,
+                    __PARAMETERIZED_BY_PARENT_KEY__: True,
+                },
+                {
+                    __BIJECTOR_NAME_KEY__: "RealNVP",
+                    __BIJECTOR_KWARGS_KEY__: {"num_masked": 1},
+                    __NESTED_BIJECTOR_KEY__: [
+                        {
+                            __BIJECTOR_NAME_KEY__: "Scale",
+                            __PARAMETERIZED_BY_PARENT_KEY__: True,
+                            __PARAMETERS_CONSTRAINT_FN_KEY__: "tf.math.softplus",
+                            __PARAMETER_SLICE_SIZE_KEY__: 1,
+                        },
+                        {
+                            __BIJECTOR_NAME_KEY__: "Shift",
+                            __PARAMETERIZED_BY_PARENT_KEY__: True,
+                            __PARAMETER_SLICE_SIZE_KEY__: 1,
+                            __PARAMETERS_KEY__: 3.0,
+                        },
+                    ],
+                    __PARAMETERS_FN_KEY__: "test_parameters_nested",
+                    __PARAMETERS_FN_KWARGS_KEY__: {
+                        "input_shape": [1],
+                        "param_shape": [dims - 2, 2] if dims > 3 else [2],
+                    },
+                    __PARAMETERIZED_BY_PARENT_KEY__: True,
+                },
+            ],
             __PARAMETERS_FN_KEY__: "test_parameters_nested",
-            __PARAMETERS_FN_KWARGS_KEY__: {"input_shape": [1], "param_shape": [2]},
+            __PARAMETERS_FN_KWARGS_KEY__: {
+                "input_shape": [1],
+                "param_shape": [1],
+            },
         },
     ]
 
 
 @pytest.fixture
-def mock_maf_bijectors():
+def mock_maf_bijectors(dims):
     """Mock data for MAF bijector configurations."""
     return [
         {
@@ -128,14 +174,18 @@ def mock_maf_bijectors():
                 tfb.Sigmoid(),
             ],
             __PARAMETERS_FN_KEY__: "test_parameters_nested",
-            __PARAMETERS_FN_KWARGS_KEY__: {"input_shape": [2], "param_shape": [2]},
+            __PARAMETERS_FN_KWARGS_KEY__: {
+                "input_shape": [dims],
+                "param_shape": [dims, 2],
+            },
         },
     ]
 
 
 @pytest.fixture
-def mock_realnvp_bijectors():
+def mock_realnvp_bijectors(dims):
     """Mock data for RealNVP bijector configurations."""
+    permutation = list(reversed(range(dims)))
     return [
         {
             __BIJECTOR_NAME_KEY__: "RealNVP",
@@ -158,11 +208,11 @@ def mock_realnvp_bijectors():
             __PARAMETERS_FN_KEY__: "test_parameters_nested",
             __PARAMETERS_FN_KWARGS_KEY__: {
                 "input_shape": [1],
-                "param_shape": [2],
+                "param_shape": [dims - 1, 2],
             },
             __PARAMETERS_CONSTRAINT_FN_KEY__: lambda x: x,
         },
-        tfb.Permute(permutation=[1, 0]),
+        tfb.Permute(permutation=permutation),
         {
             __BIJECTOR_NAME_KEY__: "RealNVP",
             __BIJECTOR_KWARGS_KEY__: {"num_masked": 1},
@@ -184,11 +234,11 @@ def mock_realnvp_bijectors():
             __PARAMETERS_FN_KEY__: "test_parameters_nested",
             __PARAMETERS_FN_KWARGS_KEY__: {
                 "input_shape": [1],
-                "param_shape": [2],
+                "param_shape": [dims - 1, 2],
             },
             __PARAMETERS_CONSTRAINT_FN_KEY__: lambda x: x / 2,
         },
-        tfb.Permute(permutation=[1, 0]),
+        tfb.Permute(permutation=permutation),
         {
             __BIJECTOR_NAME_KEY__: "RealNVP",
             __BIJECTOR_KWARGS_KEY__: {"num_masked": 1},
@@ -210,11 +260,11 @@ def mock_realnvp_bijectors():
             __PARAMETERS_FN_KEY__: "test_parameters_nested",
             __PARAMETERS_FN_KWARGS_KEY__: {
                 "input_shape": [1],
-                "param_shape": [2],
+                "param_shape": [dims - 1, 2],
             },
             __PARAMETERS_CONSTRAINT_FN_KEY__: lambda x: x / 3,
         },
-        tfb.Permute(permutation=[1, 0]),
+        tfb.Permute(permutation=permutation),
         {
             __BIJECTOR_NAME_KEY__: "RealNVP",
             __BIJECTOR_KWARGS_KEY__: {"num_masked": 1},
@@ -236,11 +286,11 @@ def mock_realnvp_bijectors():
             __PARAMETERS_FN_KEY__: "test_parameters_nested",
             __PARAMETERS_FN_KWARGS_KEY__: {
                 "input_shape": [1],
-                "param_shape": [2],
+                "param_shape": [dims - 1, 2],
             },
             __PARAMETERS_CONSTRAINT_FN_KEY__: lambda x: x / 4,
         },
-        tfb.Permute(permutation=[1, 0]),
+        tfb.Permute(permutation=permutation),
     ]
 
 
@@ -427,6 +477,7 @@ def mock_base_distribution_data():
     }
 
 
+# %% functions #################################################################
 def assert_all_parameter_have_unique_id(all_parameters):
     """Check that all parameters or parameter functions are unique."""
 
@@ -492,7 +543,7 @@ def check_maf_params_fn(
 
 
 def assert_flow_shapes(batch_size, dims, flow):
-    """Check shapes and RMSE of transformed samples."""
+    """Check shapes of transformed samples."""
     y1 = tf.ones((batch_size, dims))
     y2 = tf.ones((10, batch_size, dims))
     z1 = flow.forward(y1)
@@ -505,7 +556,7 @@ def assert_flow_shapes(batch_size, dims, flow):
     assert tf.reduce_all(y22.shape == z2.shape)
 
 
-def assert_bijectors_shapes(flow, test_input1):
+def assert_bijectors_shapes(flow, test_input1, dims):
     """Check bijectors type and parameters."""
     scale_bijector = flow[0]
     assert isinstance(scale_bijector, tfb.Scale)
@@ -515,10 +566,7 @@ def assert_bijectors_shapes(flow, test_input1):
     assert isinstance(shift_bijector, tfb.Shift)
     assert shift_bijector.shift == 1.0
 
-    exp_bijector = flow[2]
-    assert isinstance(exp_bijector, tfb.Log)
-
-    realnvp_bijector = flow[3]
+    realnvp_bijector = flow[2]
     assert isinstance(realnvp_bijector, tfb.RealNVP)
     assert realnvp_bijector._num_masked == 1
     assert isinstance(realnvp_bijector._bijector_fn, Callable)
@@ -536,11 +584,12 @@ def assert_bijectors_shapes(flow, test_input1):
     assert isinstance(netsed_flow.bijectors[1], tfb.Shift)
     assert tf.reduce_all(netsed_flow.bijectors[1].shift == 3 + test_result)
 
-    permute_bijector = flow[4]
+    permute_bijector = flow[3]
     assert isinstance(permute_bijector, tfb.Permute)
-    assert tf.reduce_all(permute_bijector.permutation == [1, 0])
+    assert tf.reduce_all(permute_bijector.permutation == list(reversed(range(dims))))
 
 
+# %% tests #####################################################################
 def test_init_parameters_fn_constant(mock_bijector_data):
     """Test _init_parameters_fn with constant parameters."""
     bijector_config = {
@@ -586,7 +635,7 @@ def test_init_parameters_fn_string(mock_bijector_data):
     assert tf.reduce_all(parameters_fn(test_input) == tf.ones([3, 5]))
 
 
-def test_init_bijector_from_dict(mock_bijector_data):
+def test_init_bijector_from_dict(mock_bijector_data, dims):
     """Test _init_bijector_from_dict with simple bijectors and nested bijectors."""
     bijectors_parameters_fns, trainable_variables, non_trainable_variables = (
         _init_parameters_fn(mock_bijector_data)
@@ -596,7 +645,7 @@ def test_init_bijector_from_dict(mock_bijector_data):
     all_parameters = list(map(eval_parameter_fn, bijectors_parameters_fns))
     assert_all_parameter_have_unique_id(all_parameters)
     flow = list(map(_init_bijector_from_dict, all_parameters))
-    assert_bijectors_shapes(flow, test_input1)
+    assert_bijectors_shapes(flow, test_input1, dims)
 
 
 def test_get_normalizing_flow(
@@ -604,9 +653,9 @@ def test_get_normalizing_flow(
     mock_bijector_data,
     mock_parameters_fn,
     mock_base_distribution_data,
+    dims,
 ):
     """Test get_normalizing_flow."""
-    dims = 2
     (
         distribution_fn,
         parameter_fn,
@@ -631,8 +680,8 @@ def test_get_normalizing_flow(
 
     test_input1 = 4
     test_input2 = 8 * tf.range(20.0)[..., None]
-    output_shape = sum(mock_bijector_data[3][__PARAMETERS_FN_KWARGS_KEY__].values(), [])
-    test_result = test_input1 * test_input2 * tf.ones(output_shape)
+    output_shape = sum(mock_bijector_data[2][__PARAMETERS_FN_KWARGS_KEY__].values(), [])
+    test_result = test_input1 * (tf.ones(output_shape) * test_input2[..., None])
     input_shape, all_parameters, base_params = parameter_fn(test_input1)
     assert input_shape is None
     assert isinstance(all_parameters, list)
@@ -641,10 +690,9 @@ def test_get_normalizing_flow(
     assert len(all_parameters) == len(mock_bijector_data)
     assert all_parameters[0][__PARAMETERS_KEY__] is None
     assert all_parameters[1][__PARAMETERS_KEY__] == 1.0
-    assert all_parameters[2][__PARAMETERS_KEY__] is None
-    assert callable(all_parameters[3][__PARAMETERS_KEY__])
+    assert callable(all_parameters[2][__PARAMETERS_KEY__])
     assert tf.reduce_all(
-        all_parameters[3][__PARAMETERS_KEY__](test_input2) == test_result
+        all_parameters[2][__PARAMETERS_KEY__](test_input2) == test_result
     )
 
     dist = distribution_fn((input_shape, all_parameters, base_params))
@@ -657,17 +705,16 @@ def test_get_normalizing_flow(
     assert_flow_shapes(32, dims, flow)
 
     bijectors = dist.bijector.bijector.bijectors
-    assert_bijectors_shapes(list(reversed(bijectors)), test_input1)
+    assert_bijectors_shapes(list(reversed(bijectors)), test_input1, dims)
 
     # Test flow forward and inverse transformations
     assert_sample_shapes(dist, num_samples, False, None, dims)
 
 
 def test_get_normalizing_flow_deeply_nested(
-    num_samples, mock_deeply_nested_bijectors, mock_base_distribution_data
+    num_samples, mock_deeply_nested_bijectors, mock_base_distribution_data, dims
 ):
     """Test get_normalizing_flow with deeply nested bijectors."""
-    dims = 3
     (
         distribution_fn,
         parameter_fn,
@@ -698,7 +745,7 @@ def test_get_normalizing_flow_deeply_nested(
     output_shape = sum(
         mock_deeply_nested_bijectors[0][__PARAMETERS_FN_KWARGS_KEY__].values(), []
     )
-    test_result = test_input1 * test_input2 * tf.ones(output_shape)
+    test_result = test_input1 * (tf.ones(output_shape) * test_input2[..., None])
     input_shape, all_parameters, base_params = parameter_fn(test_input1)
     assert input_shape is None
     assert isinstance(all_parameters, list)
@@ -740,10 +787,7 @@ def test_get_normalizing_flow_deeply_nested(
     assert isinstance(shift_bijector, tfb.Shift)
     assert tf.reduce_all(shift_bijector.shift == test_result + 1)
 
-    exp_bijector = nested_flow_1.bijectors[2]
-    assert isinstance(exp_bijector, tfb.Log)
-
-    realnvp_bijector = nested_flow_1.bijectors[3]
+    realnvp_bijector = nested_flow_1.bijectors[2]
     assert isinstance(realnvp_bijector, tfb.RealNVP)
     assert realnvp_bijector._num_masked == 1
     assert isinstance(realnvp_bijector._bijector_fn, Callable)
@@ -759,17 +803,12 @@ def test_get_normalizing_flow_deeply_nested(
     assert isinstance(nested_flow_2.bijectors[1], tfb.Shift)
     assert tf.reduce_all(nested_flow_2.bijectors[1].shift == 3 + test_result2)
 
-    permute_bijector = nested_flow_1.bijectors[4]
-    assert isinstance(permute_bijector, tfb.Permute)
-    assert tf.reduce_all(permute_bijector.permutation == [1, 0])
-
     # Test flow forward and inverse transformations
     assert_sample_shapes(dist, num_samples, False, None, dims)
 
 
-def test_get_normalizing_flow_maf(mock_maf_bijectors):
+def test_get_normalizing_flow_maf(mock_maf_bijectors, dims):
     """Test get_normalizing_flow with MAF bijectors."""
-    dims = 3
     (
         distribution_fn,
         parameter_fn,
@@ -795,9 +834,9 @@ def test_get_normalizing_flow_maf(mock_maf_bijectors):
     )
 
     test_input1 = -5
-    test_input2 = tf.ones([dims - 1, 1]) * 4
+    test_input2 = tf.ones([dims, 1]) * 4
     output_shape = sum(mock_maf_bijectors[0][__PARAMETERS_FN_KWARGS_KEY__].values(), [])
-    test_result = test_input1 * test_input2 * tf.ones(output_shape)
+    test_result = test_input1 * (tf.ones(output_shape) * test_input2[..., None])
     input_shape, all_parameters, base_params = parameter_fn(test_input1)
     assert input_shape is None
     assert isinstance(all_parameters, list)
@@ -845,16 +884,18 @@ def test_get_normalizing_flow_maf(mock_maf_bijectors):
     # sampling is not working since we dont use a valid parameter fn here
 
 
-def test_get_normalizing_flow_realnvp(num_samples, mock_realnvp_bijectors):
+def test_get_normalizing_flow_realnvp(num_samples, mock_realnvp_bijectors, dims):
     """Test get_normalizing_flow with RealNVP bijectors."""
-    dims = 2
     (
         distribution_fn,
         parameter_fn,
         trainable_variables,
         non_trainable_variables,
     ) = get_normalizing_flow(
-        bijectors=mock_realnvp_bijectors, inverse_flow=False, reverse_flow=False, dims=2
+        bijectors=mock_realnvp_bijectors,
+        inverse_flow=False,
+        reverse_flow=False,
+        dims=dims,
     )
 
     assert callable(distribution_fn)
@@ -869,10 +910,6 @@ def test_get_normalizing_flow_realnvp(num_samples, mock_realnvp_bijectors):
     assert len(non_trainable_variables) == 0
 
     test_input1 = 5
-    output_shape = sum(
-        mock_realnvp_bijectors[0][__PARAMETERS_FN_KWARGS_KEY__].values(), []
-    )
-    test_result = test_input1 * tf.ones(output_shape)
     input_shape, all_parameters, base_params = parameter_fn(test_input1)
     assert input_shape is None
     assert isinstance(all_parameters, list)
@@ -884,7 +921,7 @@ def test_get_normalizing_flow_realnvp(num_samples, mock_realnvp_bijectors):
         if isinstance(p, dict):
             test_input2 = i * tf.range(20.0)[..., None]
             output_shape = sum(p[__PARAMETERS_FN_KWARGS_KEY__].values(), [])
-            test_result = test_input1 * test_input2 * tf.ones(output_shape)
+            test_result = test_input1 * (tf.ones(output_shape) * test_input2[..., None])
 
             assert callable(p[__PARAMETERS_KEY__])
             assert tf.reduce_all(p[__PARAMETERS_KEY__](test_input2) == test_result)
@@ -909,7 +946,9 @@ def test_get_normalizing_flow_realnvp(num_samples, mock_realnvp_bijectors):
             test_input2 = -tf.range(20.0)[..., None]
             output_shape = sum(p[__PARAMETERS_FN_KWARGS_KEY__].values(), [])
             test_result = (
-                test_input1 * test_input2 * tf.ones(output_shape) / (i // 2 + 1)
+                test_input1
+                * (tf.ones(output_shape) * test_input2[..., None])
+                / (i // 2 + 1)
             )
             nested_flow = b._bijector_fn(test_input2)
             assert isinstance(nested_flow, tfb.Chain)
@@ -919,13 +958,13 @@ def test_get_normalizing_flow_realnvp(num_samples, mock_realnvp_bijectors):
             assert tf.reduce_all(
                 tf.abs(
                     nested_flow.bijectors[0].scale
-                    - tf.math.softplus(test_result[..., :1])
+                    - tf.math.softplus(test_result[..., 0])
                 )
                 < 1e-6
             )
             assert isinstance(nested_flow.bijectors[1], tfb.Shift)
             assert tf.reduce_all(
-                nested_flow.bijectors[1].shift == i // 2 + test_result[..., 1:]
+                nested_flow.bijectors[1].shift == i // 2 + test_result[..., 1]
             )
         else:
             assert p == b
