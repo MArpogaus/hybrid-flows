@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2024-10-25 16:00:07 (Marcel Arpogaus)
+# changed : 2024-11-01 13:42:40 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions for probability distributions.
@@ -361,7 +361,7 @@ def _init_parameters_fn(
     return bijectors_parameters_fns, trainable_variables, non_trainable_variables
 
 
-def _get_eval_parameter_fn(*conditional_input, **kwargs):
+def _get_eval_parameter_fn(conditional_input, **kwargs):
     @recurse_on_key(__NESTED_BIJECTOR_KEY__)
     @reduce_dict(
         __PARAMETERS_KEY__,
