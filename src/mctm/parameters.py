@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 13:16:19 (Marcel Arpogaus)
-# changed : 2024-10-31 16:21:57 (Marcel Arpogaus)
+# changed : 2024-11-01 13:52:44 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions defining ANNs.
@@ -379,7 +379,7 @@ def get_bernstein_polynomial_fn(
         y = b_poly(conditional_input[..., None])
         return tf.reduce_sum(y, 1)
 
-    return get_parameter_fn, [parameter_vector]
+    return get_parameter_fn, parameter_vector
 
 
 def get_test_parameters_fn(input_shape, param_shape):
