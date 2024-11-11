@@ -1,132 +1,286 @@
-# LICENSE ######################################################################
-# ...
-################################################################################
-# IMPORTS ######################################################################
-"""Classes for density regression models.
+# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
+# %% Author ####################################################################
+# file    : models.py
+# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
+#
+# created : 2024-11-03 15:57:47 (Marcel Arpogaus)
+# changed : 2024-11-11 18:30:56 (Marcel Arpogaus)
 
-The 'models' module defines classes for density regression models.
+# %% License ###################################################################
 
-It includes classes for DensityRegressionModel and HybridDensityRegressionModel,
-which are built on distribution from the 'distributions' module.
+# %% Description ###############################################################
+"""Definition of TensorFlow Keras models for density regression."""
 
-"""
-
-import os
+# %% imports ###################################################################
+from typing import Any, Callable, Dict, List, Tuple
 
 import tensorflow.keras as K
+from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 
 from mctm import distributions
 
 
-# MODEL DEFINITIONS #########################################################
+# %% classes ###################################################################
 class DensityRegressionModel(K.Model):
-    """A class representing a Density Regression Model.
+    """Density Regression Model.
 
-    :ivar callable distribution_lambda: A callable representing the
-                                       distribution.
-    :ivar callable distribution_parameters_lambda: A callable for distribution
-                                                  parameters.
-    :ivar list trainable_parameters: List of trainable parameters.
+    Attributes
+    ----------
+    distribuition_fn : Callable
+        Callable representing the distribution.
+    parameter_fn : Callable
+        Callable for distribution parameters.
 
-    :method call: Compute the distribution for given input arguments.
+    Methods
+    -------
+    call(inputs, **kwargs)
+        Compute the distribution for given input arguments.
+
     """
 
-    def __init__(self, distribution, **kwargs):
-        """Initialize a DensityRegressionModel.
+    def __init__(self, distribution: str, **kwargs: Any) -> None:
+        """Initialize DensityRegressionModel.
 
-        :param str distribution: The type of distribution to use.
-        :param **kwargs: Additional keyword arguments.
+        Parameters
+        ----------
+        distribution : str
+            Type of distribution to use.
+        **kwargs : dict
+            Additional keyword arguments for the distribution function.
+
         """
         super().__init__()
         (
             self.distribuition_fn,
-            self.parameter_fn,
+            self.parameters_fn,
             trainable_variables,
             non_trainable_variables,
-        ) = getattr(distributions, "get_" + distribution)(**kwargs)
+        ) = getattr(distributions, f"get_{distribution}")(**kwargs)
         self._trainable_weights.extend(trainable_variables)
         self._non_trainable_weights.extend(non_trainable_variables)
 
-    def call(self, inputs, **kwargs):
-        """Compute the distribution for the given input arguments.
+    def call(self, conditional_input: Any, **kwargs: Any) -> tfd.Distribution:
+        """Compute distribution for given inputs.
 
-        :param *args: Variable-length argument list.
-        :param **kwargs: Additional keyword arguments.
-        :return: The computed distribution.
-        :rtype: Distribution
+        Parameters
+        ----------
+        conditional_input : Any
+            Input data for distribution parameters.
+        **kwargs : dict
+            Additional keyword arguments.
+
+        Returns
+        -------
+        tfd.Distribution
+            Computed distribution.
+
         """
-        parameters = self.parameter_fn(inputs, **kwargs)
+        parameters = self.parameters_fn(conditional_input, **kwargs)
         return self.distribuition_fn(parameters)
 
 
-class HybridDenistyRegressionModel(DensityRegressionModel):
-    """A class representing a Hybrid Density Regression Model.
+class HybridDensityRegressionModel(K.Model):
+    """Hybrid Density Regression Model.
 
-    :ivar DensityRegressionModel base_model: The base density regression model.
+    Attributes
+    ----------
+    distribuition_fn : Callable
+        Callable representing the transformed distribution.
+    marginal_transformation_parametrization_fn : Callable
+        Function for marginal transformation parametrization.
+    marginal_transformation_parameters_fn : Callable
+        Function for marginal transformation parameters.
+    joint_transformation_parametrization_fn : Callable
+        Function for joint transformation parametrization.
+    joint_transformation_parameters_fn : Callable
+        Function for joint transformation parameters.
 
-    :method get_base_distribution: Get the base distribution.
+    Methods
+    -------
+    get_flow_parametrization_fn()
+        Return a function for flow transformations.
+    parameter_fn(inputs, **kwargs)
+        Compute parameters for marginal and joint transformations.
+    call(inputs, **kwargs)
+        Compute distribution for given inputs using the transformed distribution.
+
     """
 
     def __init__(
         self,
-        distribution,
-        distribution_kwargs,
-        parameter_kwargs,
-        base_distribution,
-        freeze_base_model,
-        base_checkpoint_path=None,
-        base_distribution_kwargs={},
-        base_parameter_kwargs={},
-        base_checkpoint_path_prefix="./",
-        **kwargs,
-    ):
-        """Initialize a HybridDensityRegressionModel.
+        marginal_bijectors: List[Dict[str, Any]],
+        joint_bijectors: List[Dict[str, Any]],
+        marginals_trainable: bool = True,
+        joint_trainable: bool = True,
+        **kwargs: Dict[str, Any],
+    ) -> None:
+        """Initialize HybridDensityRegressionModel.
 
-        :param str distribution: The type of distribution to use.
-        :param dict distribution_kwargs: Keyword arguments for the distribution.
-        :param dict parameter_kwargs: Keyword arguments for the parameters.
-        :param str base_distribution: The type of base distribution.
-        :param dict base_distribution_kwargs: Keyword arguments for the
-                                           base distribution.
-        :param dict base_parameter_kwargs: Keyword arguments for the base
-                                        parameters.
-        :param str base_checkpoint_path: The path to the base model's
-                                        checkpoint.
-        :param bool freeze_base_model: Whether to freeze the base model.
+        Parameters
+        ----------
+        marginal_bijectors: List[Dict[str, Any]]
+            Bijector definitions for element-wise marginal transformations.
+        joint_bijectors: List[Dict[str, Any]]
+            Bijector definitions for multi-dimensional transformations used to
+            de-correlate the data.
+        marginals_trainable: bool, optional
+            Train marginal flow variables if True. Default is `True`.
+        joint_trainable: bool, optional
+            Train joint flow variables if True. Default is `True`.
+        **kwargs : Dict[str, Any]
+            Additional keyword arguments for
+           `distributions._get_transformed_distribution_fn`.
+
         """
-        super().__init__(
-            distribution=distribution,
-            distribution_kwargs={
-                "get_base_distribution": self.get_base_distribution,
-                **distribution_kwargs,
-            },
-            parameter_kwargs=parameter_kwargs,
-            **kwargs,
+        super().__init__()
+        (
+            self.marginal_transformation_parameters_fn,
+            self.marginal_transformation_parametrization_fn,
+            self.marginal_transformation_trainable_variables,
+            self.marginal_transformation_non_trainable_variables,
+        ) = distributions._get_flow_parametrization_fn(
+            bijectors=marginal_bijectors,
+            reverse_flow=False,
+            inverse_flow=False,
+            variables_name="marginal",
+        )
+        (
+            self.joint_transformation_parameters_fn,
+            self.joint_transformation_parametrization_fn,
+            self.joint_transformation_trainable_variables,
+            self.joint_transformation_non_trainable_variables,
+        ) = distributions._get_flow_parametrization_fn(
+            bijectors=joint_bijectors,
+            reverse_flow=False,
+            inverse_flow=False,
+            variables_name="joint",
         )
 
-        if isinstance(base_distribution, DensityRegressionModel):
-            self.base_model = base_distribution
-        else:
-            self.base_model = DensityRegressionModel(
-                distribution=base_distribution,
-                distribution_kwargs=base_distribution_kwargs,
-                parameter_kwargs=base_parameter_kwargs,
-                **kwargs,
-            )
-        if base_checkpoint_path:
-            self.base_model.load_weights(
-                os.path.join(base_checkpoint_path_prefix, base_checkpoint_path)
-            )
-        if freeze_base_model:
-            self.base_model.trainable = False
+        self.distribuition_fn = distributions._get_transformed_distribution_fn(
+            self.get_flow_parametrization_fn(), **kwargs
+        )
 
-    def get_base_distribution(self, *args, **kwargs):
-        """Get the base distribution.
+        self.marginals_trainable = marginals_trainable
+        self.joint_trainable = joint_trainable
 
-        :param *args: Variable-length argument list. (ignored)
-        :param **kwargs: Additional keyword arguments. (ignored)
-        :return: The base distribution.
-        :rtype: Distribution
+    def parameters_fn(self, conditional_input: Any, **kwargs: Any) -> Tuple:
+        """Compute parameters for transformations.
+
+        Parameters
+        ----------
+        conditional_input : Any
+            Input data for transformation parameters.
+        **kwargs : dict
+            Additional keyword arguments.
+
+        Returns
+        -------
+        Tuple
+            Parameters for marginal and joint transformations.
+
         """
-        return tfd.Independent(self.base_model(None), 1)
+        input_shape, all_marginal_parameters = (
+            self.marginal_transformation_parameters_fn(conditional_input, **kwargs)
+        )
+        _, all_joint_parameters = self.joint_transformation_parameters_fn(
+            conditional_input, **kwargs
+        )
+        return input_shape, (all_marginal_parameters, all_joint_parameters)
+
+    def get_flow_parametrization_fn(self) -> Callable:
+        """Return function for flow transformations.
+
+        Returns
+        -------
+        Callable
+            Function that returns a Chain of bijectors.
+
+        """
+
+        def flow_parametrization_fn(all_parameters: list) -> tfb.Chain:
+            marginal_parameters, joint_parameters = all_parameters
+            bijectors_list = [
+                self.marginal_transformation_parametrization_fn(marginal_parameters),
+                self.joint_transformation_parametrization_fn(joint_parameters),
+            ]
+
+            return tfb.Chain(bijectors_list)
+
+        return flow_parametrization_fn
+
+    def call(self, inputs: Any, **kwargs: Any) -> tfd.Distribution:
+        """Compute transformed distribution for given inputs.
+
+        Parameters
+        ----------
+        inputs : Any
+            Input data for distribution parameters.
+        **kwargs : dict
+            Additional keyword arguments.
+
+        Returns
+        -------
+        tfd.Distribution
+            Computed transformed distribution.
+
+        """
+        parameters = self.parameters_fn(inputs, **kwargs)
+        return self.distribuition_fn(parameters)
+
+    @property
+    def marginals_trainable(self) -> bool:
+        """Train marginal flow variables if True. Default is `True`."""
+        return self._marginals_trainable
+
+    @marginals_trainable.setter
+    def marginals_trainable(self, value: bool) -> None:
+        """Set attribute `marginals_trainable` to `value`."""
+        self._marginals_trainable = value
+
+    @property
+    def joint_trainable(self) -> bool:
+        """Train joint flow variables if True. Default is `True`."""
+        return self._joint_trainable
+
+    @joint_trainable.setter
+    def joint_trainable(self, value: bool) -> None:
+        """Set attribute `joint_trainable` to `value`."""
+        self._joint_trainable = value
+
+    @property
+    def trainable_weights(self) -> List[Any]:
+        """Return trainable weights to be tuned by the optimizer."""
+        self._assert_weights_created()
+        if not self._trainable:
+            return []
+        trainable_variables = []
+        if self.marginals_trainable:
+            trainable_variables += self.marginal_transformation_trainable_variables
+        if self.joint_trainable:
+            trainable_variables += self.joint_transformation_trainable_variables
+        return self._dedup_weights(trainable_variables)
+
+    @property
+    def non_trainable_weights(self) -> List[Any]:
+        """Return all non-trainable weights."""
+        self._assert_weights_created()
+        non_trainable_variables = (
+            self.marginal_transformation_non_trainable_variables
+            + self.joint_transformation_non_trainable_variables
+        )
+
+        if not self._trainable:
+            non_trainable_variables += (
+                self.marginal_transformation_trainable_variables
+                + self.joint_transformation_trainable_variables
+            )
+        else:
+            if not self.marginals_trainable:
+                non_trainable_variables += (
+                    self.marginal_transformation_trainable_variables
+                )
+            if not self.joint_trainable:
+                non_trainable_variables += self.joint_transformation_trainable_variables
+
+        return self._dedup_weights(non_trainable_variables)
