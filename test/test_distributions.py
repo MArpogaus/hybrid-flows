@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-31 13:56:39 (Marcel Arpogaus)
-# changed : 2024-10-31 17:13:05 (Marcel Arpogaus)
+# changed : 2024-11-11 17:56:03 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -597,7 +597,7 @@ def test_init_parameters_fn_constant(mock_bijector_data):
         __BIJECTOR_NAME_KEY__: "dummy",
     }
     parameters_fn, trainable_variables, non_trainable_variables = _init_parameters_fn(
-        [bijector_config]
+        [bijector_config], variables_name="test"
     )
     assert parameters_fn is not None
     assert parameters_fn[0][__PARAMETERS_KEY__]() == 42
@@ -611,7 +611,7 @@ def test_init_parameters_fn_callable(mock_parameters_fn):
         __BIJECTOR_NAME_KEY__: "dummy",
     }
     all_parameters_fn, trainable_variables, non_trainable_variables = (
-        _init_parameters_fn([bijector_config])
+        _init_parameters_fn([bijector_config], variables_name=None)
     )
     parameters_fn = all_parameters_fn[0][__PARAMETERS_KEY__]
     assert parameters_fn is not None
@@ -627,7 +627,7 @@ def test_init_parameters_fn_string(mock_bijector_data):
         __BIJECTOR_NAME_KEY__: "dummy",
     }
     all_parameters_fn, trainable_variables, non_trainable_variables = (
-        _init_parameters_fn([bijector_config])
+        _init_parameters_fn([bijector_config], variables_name="test")
     )
     parameters_fn = all_parameters_fn[0][__PARAMETERS_KEY__]
     assert parameters_fn is not None
@@ -638,7 +638,7 @@ def test_init_parameters_fn_string(mock_bijector_data):
 def test_init_bijector_from_dict(mock_bijector_data, dims):
     """Test _init_bijector_from_dict with simple bijectors and nested bijectors."""
     bijectors_parameters_fns, trainable_variables, non_trainable_variables = (
-        _init_parameters_fn(mock_bijector_data)
+        _init_parameters_fn(mock_bijector_data, variables_name=None)
     )
     test_input1 = 10.0
     eval_parameter_fn = _get_eval_parameter_fn(test_input1)
@@ -682,10 +682,10 @@ def test_get_normalizing_flow(
     test_input2 = 8 * tf.range(20.0)[..., None]
     output_shape = sum(mock_bijector_data[2][__PARAMETERS_FN_KWARGS_KEY__].values(), [])
     test_result = test_input1 * (tf.ones(output_shape) * test_input2[..., None])
-    input_shape, all_parameters, base_params = parameter_fn(test_input1)
+    input_shape, all_parameters = parameter_fn(test_input1)
     assert input_shape is None
     assert isinstance(all_parameters, list)
-    assert base_params is None
+
     assert_all_parameter_have_unique_id(all_parameters)
     assert len(all_parameters) == len(mock_bijector_data)
     assert all_parameters[0][__PARAMETERS_KEY__] is None
@@ -695,7 +695,7 @@ def test_get_normalizing_flow(
         all_parameters[2][__PARAMETERS_KEY__](test_input2) == test_result
     )
 
-    dist = distribution_fn((input_shape, all_parameters, base_params))
+    dist = distribution_fn((input_shape, all_parameters))
     assert isinstance(dist, tfp.distributions.Distribution)
 
     flow = dist.bijector
@@ -746,10 +746,9 @@ def test_get_normalizing_flow_deeply_nested(
         mock_deeply_nested_bijectors[0][__PARAMETERS_FN_KWARGS_KEY__].values(), []
     )
     test_result = test_input1 * (tf.ones(output_shape) * test_input2[..., None])
-    input_shape, all_parameters, base_params = parameter_fn(test_input1)
+    input_shape, all_parameters = parameter_fn(test_input1)
     assert input_shape is None
     assert isinstance(all_parameters, list)
-    assert base_params is None
 
     assert_all_parameter_have_unique_id(all_parameters)
     assert len(all_parameters) == len(mock_deeply_nested_bijectors)
@@ -758,7 +757,7 @@ def test_get_normalizing_flow_deeply_nested(
         all_parameters[0][__PARAMETERS_KEY__](test_input2) == test_result
     )
 
-    dist = distribution_fn((input_shape, all_parameters, base_params))
+    dist = distribution_fn((input_shape, all_parameters))
     assert isinstance(dist, tfp.distributions.Distribution)
 
     flow = dist.bijector
@@ -837,10 +836,9 @@ def test_get_normalizing_flow_maf(mock_maf_bijectors, dims):
     test_input2 = tf.ones([dims, 1]) * 4
     output_shape = sum(mock_maf_bijectors[0][__PARAMETERS_FN_KWARGS_KEY__].values(), [])
     test_result = test_input1 * (tf.ones(output_shape) * test_input2[..., None])
-    input_shape, all_parameters, base_params = parameter_fn(test_input1)
+    input_shape, all_parameters = parameter_fn(test_input1)
     assert input_shape is None
     assert isinstance(all_parameters, list)
-    assert base_params is None
 
     assert_all_parameter_have_unique_id(all_parameters)
     assert len(all_parameters) == len(mock_maf_bijectors)
@@ -848,7 +846,7 @@ def test_get_normalizing_flow_maf(mock_maf_bijectors, dims):
         all_parameters[0][__PARAMETERS_KEY__](test_input2) == test_result
     )
 
-    dist = distribution_fn((input_shape, all_parameters, base_params))
+    dist = distribution_fn((input_shape, all_parameters))
     assert isinstance(dist, tfp.distributions.Distribution)
     assert dist.batch_shape == []
     assert dist.event_shape == [dims]
@@ -910,10 +908,9 @@ def test_get_normalizing_flow_realnvp(num_samples, mock_realnvp_bijectors, dims)
     assert len(non_trainable_variables) == 0
 
     test_input1 = 5
-    input_shape, all_parameters, base_params = parameter_fn(test_input1)
+    input_shape, all_parameters = parameter_fn(test_input1)
     assert input_shape is None
     assert isinstance(all_parameters, list)
-    assert base_params is None
 
     assert_all_parameter_have_unique_id(all_parameters)
     assert len(all_parameters) == len(mock_realnvp_bijectors)
@@ -927,7 +924,7 @@ def test_get_normalizing_flow_realnvp(num_samples, mock_realnvp_bijectors, dims)
             assert tf.reduce_all(p[__PARAMETERS_KEY__](test_input2) == test_result)
             for k in p.keys():
                 assert k in __ALL_KEYS__
-    dist = distribution_fn((input_shape, all_parameters, base_params))
+    dist = distribution_fn((input_shape, all_parameters))
     assert isinstance(dist, tfp.distributions.Distribution)
     assert dist.batch_shape == []
     assert dist.event_shape == [dims]
@@ -1030,10 +1027,9 @@ def test_get_coupling_bernstein_flow(
         )
     else:
         test_input1 = None
-    input_shape, all_parameters, base_params = parameter_fn(test_input1)
+    input_shape, all_parameters = parameter_fn(test_input1)
     assert tf.reduce_all(input_shape == (test_input1.shape if is_conditional else None))
     assert isinstance(all_parameters, list)
-    assert base_params is None
 
     assert_all_parameter_have_unique_id(all_parameters)
     expected_lenght = (
@@ -1060,7 +1056,7 @@ def test_get_coupling_bernstein_flow(
             for k in p.keys():
                 assert k in __ALL_KEYS__
 
-    dist = distribution_fn((input_shape, all_parameters, base_params))
+    dist = distribution_fn((input_shape, all_parameters))
     assert isinstance(dist, tfp.distributions.Distribution)
     assert dist.batch_shape == ([batch_size] if is_conditional else [])
     assert dist.event_shape == [coupling_bernstein_flow_kwargs["dims"]]
@@ -1184,10 +1180,9 @@ def test_get_coupling_spline_flow(batch_size, num_samples, coupling_spline_flow_
         )
     else:
         test_input1 = None
-    input_shape, all_parameters, base_params = parameter_fn(test_input1)
+    input_shape, all_parameters = parameter_fn(test_input1)
     assert tf.reduce_all(input_shape == (test_input1.shape if is_conditional else None))
     assert isinstance(all_parameters, list)
-    assert base_params is None
 
     assert_all_parameter_have_unique_id(all_parameters)
     assert (
@@ -1214,7 +1209,7 @@ def test_get_coupling_spline_flow(batch_size, num_samples, coupling_spline_flow_
             for k in p.keys():
                 assert k in __ALL_KEYS__
 
-    dist = distribution_fn((input_shape, all_parameters, base_params))
+    dist = distribution_fn((input_shape, all_parameters))
     assert isinstance(dist, tfp.distributions.Distribution)
     assert dist.batch_shape == ([batch_size] if is_conditional else [])
     assert dist.event_shape == [coupling_spline_flow_kwargs["dims"]]
@@ -1299,10 +1294,10 @@ def test_get_masked_autoregressive_bernstein_flow(
         )
     else:
         test_input1 = None
-    input_shape, all_parameters, base_params = parameter_fn(test_input1)
+    input_shape, all_parameters = parameter_fn(test_input1)
     assert tf.reduce_all(input_shape == (test_input1.shape if is_conditional else None))
     assert isinstance(all_parameters, list)
-    assert base_params is None
+
     assert_all_parameter_have_unique_id(all_parameters)
     assert (
         len(all_parameters) == masked_autoregressive_bernstein_flow_kwargs["num_layers"]
@@ -1318,7 +1313,7 @@ def test_get_masked_autoregressive_bernstein_flow(
                 is_conditional,
             )
 
-    dist = distribution_fn((input_shape, all_parameters, base_params))
+    dist = distribution_fn((input_shape, all_parameters))
     assert isinstance(dist, tfp.distributions.Distribution)
     assert dist.batch_shape == ([batch_size] if is_conditional else [])
     assert dist.event_shape == [masked_autoregressive_bernstein_flow_kwargs["dims"]]
@@ -1410,10 +1405,10 @@ def test_get_masked_autoregressive_spline_flow(
         )
     else:
         test_input1 = None
-    input_shape, all_parameters, base_params = parameter_fn(test_input1)
+    input_shape, all_parameters = parameter_fn(test_input1)
     assert tf.reduce_all(input_shape == (test_input1.shape if is_conditional else None))
     assert isinstance(all_parameters, list)
-    assert base_params is None
+
     assert_all_parameter_have_unique_id(all_parameters)
     assert len(all_parameters) == masked_autoregressive_spline_flow_kwargs["num_layers"]
     for i, p in enumerate(all_parameters):
@@ -1427,7 +1422,7 @@ def test_get_masked_autoregressive_spline_flow(
                 is_conditional,
             )
 
-    dist = distribution_fn((input_shape, all_parameters, base_params))
+    dist = distribution_fn((input_shape, all_parameters))
     assert isinstance(dist, tfp.distributions.Distribution)
     assert dist.batch_shape == ([batch_size] if is_conditional else [])
     assert dist.event_shape == [masked_autoregressive_spline_flow_kwargs["dims"]]
@@ -1529,10 +1524,10 @@ def test_get_masked_autoregressive_flow_first_dim_masked(
         )
     else:
         test_input1 = None
-    input_shape, all_parameters, base_params = parameter_fn(test_input1)
+    input_shape, all_parameters = parameter_fn(test_input1)
     assert tf.reduce_all(input_shape == (test_input1.shape if is_conditional else None))
     assert isinstance(all_parameters, list)
-    assert base_params is None
+
     assert_all_parameter_have_unique_id(all_parameters)
     assert (
         len(all_parameters[0][__NESTED_BIJECTOR_KEY__])
@@ -1560,7 +1555,7 @@ def test_get_masked_autoregressive_flow_first_dim_masked(
                 maf_is_conditional,
             )
 
-    dist = distribution_fn((input_shape, all_parameters, base_params))
+    dist = distribution_fn((input_shape, all_parameters))
     assert isinstance(dist, tfp.distributions.Distribution)
     assert dist.batch_shape == ([batch_size] if is_conditional else [])
     assert dist.event_shape == [

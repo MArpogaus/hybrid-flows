@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2024-11-01 13:42:40 (Marcel Arpogaus)
+# changed : 2024-11-11 18:06:20 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions for probability distributions.
@@ -248,7 +248,7 @@ def _get_parameters_constraint_fn(
 
 
 def _init_parameters_fn(
-    bijectors: List[Dict[str, Any]],
+    bijectors: List[Dict[str, Any]], variables_name: str
 ) -> Tuple[List[Optional[Callable[..., Any]]], List[tf.Variable], List[tf.Variable]]:
     trainable_variables: List[tf.Variable] = []
     non_trainable_variables: List[tf.Variable] = []
@@ -257,7 +257,10 @@ def _init_parameters_fn(
 
     def variable_renamer(next_creator, name, **kwargs):
         name = name if name is not None else ""
-        name = "/".join((f"bijector_{bj_count}", name))
+        name_seq = [f"bijector_{bj_count}", name]
+        if variables_name is not None:
+            name_seq = [variables_name] + name_seq
+        name = "/".join(name_seq)
         var = next_creator(name=name, **kwargs)
         return var
 
@@ -676,10 +679,11 @@ def _get_transformed_distribution_fn(
     """
 
     def distribution_fn(parameters: tf.Tensor) -> tfd.TransformedDistribution:
-        input_shape, parameters, base_parameters = parameters
-        if base_parameters is not None:
-            kwargs.update(base_parameters)
-            __LOGGER__.debug("got parameters for base distribution.")
+        input_shape, parameters = parameters
+        # TODO: implement parameterizeable base distribution
+        # if base_parameters is not None:
+        #     kwargs.update(base_parameters)
+        #     __LOGGER__.debug("got parameters for base distribution.")
 
         __LOGGER__.debug("base distribution kwargs: %s", str(kwargs))
         base_distribution = get_base_distribution(**kwargs)
@@ -763,6 +767,7 @@ def get_normalizing_flow(
     reverse_flow: bool = False,
     inverse_flow: bool = False,
     get_base_distribution: Callable[..., tfd.Distribution] = _get_base_distribution,
+    variables_name: str = None,
     **kwargs,
 ) -> Tuple[
     Callable[[tf.Tensor], tfd.TransformedDistribution],
@@ -783,7 +788,11 @@ def get_normalizing_flow(
         by default False.
     get_base_distribution : Callable, optional
         The base distribution lambda,
-        by default parameters_lib._get_base_distribution.
+        by default `parameters_lib._get_base_distribution`.
+    variables_name: str, optional
+        A optional prefix, given to all initialized variables. Used to avoid
+        duplicate names, when initializing multiple flows. By default: None
+
     **kwargs : Any
         Additional optional keyword arguments passed
         to `parameters_lib._get_transformed_distribution_fn`.
@@ -799,34 +808,37 @@ def get_normalizing_flow(
     # check if bijector configuration is valid
     list(map(validate_bijector_definition, bijectors))
 
+    (
+        parameter_fn,
+        flow_parametrization_fn,
+        trainable_variables,
+        non_trainable_variables,
+    ) = _get_flow_parametrization_fn(
+        bijectors=bijectors,
+        inverse_flow=inverse_flow,
+        reverse_flow=reverse_flow,
+        variables_name=variables_name,
+    )
+
+    distribution_fn = _get_transformed_distribution_fn(
+        flow_parametrization_fn,
+        get_base_distribution=get_base_distribution,
+        **kwargs,
+    )
+
+    return (
+        distribution_fn,
+        parameter_fn,
+        trainable_variables,
+        non_trainable_variables,
+    )
+
+
+def _get_flow_parametrization_fn(bijectors, inverse_flow, reverse_flow, variables_name):
     # initialize parameters functions
     bijectors_parameters_fns, trainable_variables, non_trainable_variables = (
-        _init_parameters_fn(bijectors)
+        _init_parameters_fn(bijectors=bijectors, variables_name=variables_name)
     )
-    # TODO: This is crap
-    if __PARAMETERS_KEY__ in kwargs or __PARAMETERS_FN_KEY__ in kwargs:
-        (
-            base_distribution_parameter_fn,
-            base_distribution_trainable_variables,
-            _,
-            __,
-        ) = _init_parameters_fn(
-            parameters=kwargs.pop(__PARAMETERS_KEY__, None),
-            parameters_fn=kwargs.pop(__PARAMETERS_FN_KEY__, None),
-            **kwargs.pop(__PARAMETERS_FN_KWARGS_KEY__, {}),
-        )
-        if base_distribution_trainable_variables is not None:
-            trainable_variables.extend(base_distribution_trainable_variables)
-        if __PARAMETERS_CONSTRAINT_FN_KEY__ in kwargs:
-            base_distribution_parameter_constraint_fn = _get_parameters_constraint_fn(
-                parameters_constraint_fn=kwargs.pop(
-                    __PARAMETERS_CONSTRAINT_FN_KEY__, None
-                ),
-                **kwargs.pop(__PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__, {}),
-            )
-    else:
-        base_distribution_parameter_fn = None
-        base_distribution_parameter_constraint_fn = None
 
     def parameter_fn(
         conditional_input: Union[tf.Tensor, None], **kwargs: Any
@@ -837,13 +849,7 @@ def get_normalizing_flow(
             input_shape = None
         eval_parameter_fn = _get_eval_parameter_fn(conditional_input, **kwargs)
         bijectors_parameters = list(map(eval_parameter_fn, bijectors_parameters_fns))
-        if base_distribution_parameter_fn is not None:
-            base_params = base_distribution_parameter_fn(*conditional_input, **kwargs)
-            if base_distribution_parameter_constraint_fn is not None:
-                base_params = base_distribution_parameter_constraint_fn(base_params)
-        else:
-            base_params = None
-        return input_shape, bijectors_parameters, base_params
+        return input_shape, bijectors_parameters
 
     def flow_parametrization_fn(all_parameters: list):
         bijectors_list = list(map(_init_bijector_from_dict, all_parameters))
@@ -865,15 +871,9 @@ def get_normalizing_flow(
 
         return flow
 
-    distribution_fn = _get_transformed_distribution_fn(
-        flow_parametrization_fn,
-        get_base_distribution=get_base_distribution,
-        **kwargs,
-    )
-
     return (
-        distribution_fn,
         parameter_fn,
+        flow_parametrization_fn,
         trainable_variables,
         non_trainable_variables,
     )
