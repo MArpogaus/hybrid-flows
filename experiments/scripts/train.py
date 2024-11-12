@@ -25,7 +25,6 @@ from mctm.utils.visualisation import (
     plot_2d_data,
     plot_malnutrition_data,
     plot_malnutrition_samples,
-    plot_marginal_cdf_and_pdf,
     plot_samples,
     setup_latex,
 )
@@ -222,15 +221,15 @@ def malnutrition_after_fit_hook(
     fig = plot_malnutrition_samples(model, x, y, seed, targets, **plot_samples_kwargs)
     fig.savefig(os.path.join(results_path, "samples.pdf"), bbox_inches="tight")
 
-    fig = plot_marginal_cdf_and_pdf(
-        model=model,
-        covariates=[1, 3, 6, 9, 12, 24],
-        target_names=targets,
-        **plot_marginals_kwargs,
-    )
-    fig.savefig(
-        os.path.join(results_path, "malnutrition_dist.pdf"), bbox_inches="tight"
-    )
+    # fig = plot_marginal_cdf_and_pdf(
+    #     model=model,
+    #     covariates=[1, 3, 6, 9, 12, 24],
+    #     target_names=targets,
+    #     **plot_marginals_kwargs,
+    # )
+    # fig.savefig(
+    #     os.path.join(results_path, "malnutrition_dist.pdf"), bbox_inches="tight"
+    # )
 
 
 class MeanNegativeLogLikelihood(K.metrics.Mean):
