@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-03 15:57:47 (Marcel Arpogaus)
-# changed : 2024-11-12 13:13:19 (Marcel Arpogaus)
+# changed : 2024-11-12 13:35:46 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -12,6 +12,7 @@
 """Definition of TensorFlow Keras models for density regression."""
 
 # %% imports ###################################################################
+from abc import ABC, abstractmethod
 from copy import deepcopy
 from typing import Any, Callable, Dict, List, Tuple
 
@@ -24,7 +25,30 @@ from mctm import distributions
 
 
 # %% classes ###################################################################
-class DensityRegressionModel(K.Model):
+class DensityRegressionBaseModel(ABC, K.Model):
+    """Abstract base class for density regression models."""
+
+    @abstractmethod
+    def call(self, inputs: Any, **kwargs: Any) -> tfd.Distribution:
+        """Compute distribution for given inputs."""
+
+    @property
+    @abstractmethod
+    def config(self) -> Dict[str, Any]:
+        """Abstract property holding the model configuration as a serializable dict."""
+
+    def get_config(self) -> Dict[str, Any]:
+        """Return dictionary containing all kwargs for serialization."""
+        return serialization_lib.serialize_dict(self.config)
+
+    @classmethod
+    def from_config(cls, config: Dict[str, Any]):
+        """Initialize model from serialized config dict."""
+        model = cls(**serialization_lib.deserialize_keras_object(config))
+        return model
+
+
+class DensityRegressionModel(DensityRegressionBaseModel):
     """Density Regression Model.
 
     Attributes
@@ -83,18 +107,13 @@ class DensityRegressionModel(K.Model):
         parameters = self.parameters_fn(conditional_input, **kwargs)
         return self.distribuition_fn(parameters)
 
-    def get_config(self) -> Dict[str, Any]:
-        """Return dictionary containing all kwargs for serialization."""
-        return serialization_lib.serialize_dict(self._config)
-
-    @classmethod
-    def from_config(cls, config: Dict[str, Any]):
-        """Initialize Model from serialized config dict."""
-        model = cls(**serialization_lib.deserialize_keras_object(config))
-        return model
+    @property
+    def config(self) -> Dict[str, Any]:
+        """Property holding the model configuration as a serializable dict."""
+        return self._config
 
 
-class HybridDensityRegressionModel(K.Model):
+class HybridDensityRegressionModel(DensityRegressionBaseModel):
     """Hybrid Density Regression Model.
 
     Attributes
@@ -304,18 +323,11 @@ class HybridDensityRegressionModel(K.Model):
 
         return self._dedup_weights(non_trainable_variables)
 
-    def get_config(self) -> Dict[str, Any]:
-        """Return dictionary containing all kwargs for serialization."""
-        return serialization_lib.serialize_dict(
-            dict(
-                marginals_trainable=self.marginals_trainable,
-                joint_trainable=self.joint_trainable,
-                **self._config,
-            )
+    @property
+    def config(self) -> Dict[str, Any]:
+        """Property holding the model configuration as a serializable dict."""
+        return dict(
+            marginals_trainable=self.marginals_trainable,
+            joint_trainable=self.joint_trainable,
+            **self._config,
         )
-
-    @classmethod
-    def from_config(cls, config: Dict[str, Any]):
-        """Initialize Model from serialized config dict."""
-        model = cls(**serialization_lib.deserialize_keras_object(config))
-        return model
