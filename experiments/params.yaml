@@ -1,7 +1,7 @@
 log-level: info
 seed: 1
 textwidth: 487.8225
-testmode: false
+testmode: true
 
 sim_datasets:
 - type: sim
@@ -32,11 +32,13 @@ sim_models:
 - conditional_masked_autoregressive_flow_bernstein_poly
 - conditional_masked_autoregressive_flow_quadratic_spline
 - conditional_multivariate_normal
+- conditional_multivariate_transformation_model
 - unconditional_coupling_flow_bernstein_poly
 - unconditional_coupling_flow_quadratic_spline
 - unconditional_masked_autoregressive_flow_bernstein_poly
 - unconditional_masked_autoregressive_flow_quadratic_spline
 - unconditional_multivariate_normal
+- unconditional_multivariate_transformation_model
 
 benchmark_models:
 # - unconditional_coupling_flow_bernstein_poly
@@ -51,7 +53,7 @@ benchmark_models:
 - unconditional_masked_autoregressive_flow_quadratic_spline
 
 malnutrition_models:
-- mctm
+- conditional_multivariate_transformation_model
 
 malnutrition_kwargs:
   data_path: datasets/malnutrition/india.raw
