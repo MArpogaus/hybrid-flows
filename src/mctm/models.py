@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-03 15:57:47 (Marcel Arpogaus)
-# changed : 2024-11-11 18:30:56 (Marcel Arpogaus)
+# changed : 2024-11-12 13:13:19 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -12,9 +12,11 @@
 """Definition of TensorFlow Keras models for density regression."""
 
 # %% imports ###################################################################
+from copy import deepcopy
 from typing import Any, Callable, Dict, List, Tuple
 
 import tensorflow.keras as K
+from keras.src.saving import serialization_lib
 from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 
@@ -51,6 +53,8 @@ class DensityRegressionModel(K.Model):
 
         """
         super().__init__()
+        self._config = deepcopy(kwargs)
+        self._config.update(distribution=distribution)
         (
             self.distribuition_fn,
             self.parameters_fn,
@@ -78,6 +82,16 @@ class DensityRegressionModel(K.Model):
         """
         parameters = self.parameters_fn(conditional_input, **kwargs)
         return self.distribuition_fn(parameters)
+
+    def get_config(self) -> Dict[str, Any]:
+        """Return dictionary containing all kwargs for serialization."""
+        return serialization_lib.serialize_dict(self._config)
+
+    @classmethod
+    def from_config(cls, config: Dict[str, Any]):
+        """Initialize Model from serialized config dict."""
+        model = cls(**serialization_lib.deserialize_keras_object(config))
+        return model
 
 
 class HybridDensityRegressionModel(K.Model):
@@ -134,6 +148,11 @@ class HybridDensityRegressionModel(K.Model):
 
         """
         super().__init__()
+        self._config = deepcopy(kwargs)
+        self._config.update(
+            marginal_bijectors=deepcopy(marginal_bijectors),
+            joint_bijectors=deepcopy(joint_bijectors),
+        )
         (
             self.marginal_transformation_parameters_fn,
             self.marginal_transformation_parametrization_fn,
@@ -284,3 +303,19 @@ class HybridDensityRegressionModel(K.Model):
                 non_trainable_variables += self.joint_transformation_trainable_variables
 
         return self._dedup_weights(non_trainable_variables)
+
+    def get_config(self) -> Dict[str, Any]:
+        """Return dictionary containing all kwargs for serialization."""
+        return serialization_lib.serialize_dict(
+            dict(
+                marginals_trainable=self.marginals_trainable,
+                joint_trainable=self.joint_trainable,
+                **self._config,
+            )
+        )
+
+    @classmethod
+    def from_config(cls, config: Dict[str, Any]):
+        """Initialize Model from serialized config dict."""
+        model = cls(**serialization_lib.deserialize_keras_object(config))
+        return model

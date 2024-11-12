@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 13:16:19 (Marcel Arpogaus)
-# changed : 2024-11-01 13:52:44 (Marcel Arpogaus)
+# changed : 2024-11-12 13:11:22 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions defining ANNs.
@@ -57,6 +57,9 @@ def get_parameter_vector_fn(
         the parameter vector itself.
 
     """
+    # HACK: Initialize keras initializer class
+    if isinstance(initializer, type):
+        initializer = initializer()
     parameter_vector = tf.Variable(
         initializer(parameter_shape, dtype=dtype), trainable=True
     )

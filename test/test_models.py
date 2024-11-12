@@ -1,9 +1,23 @@
+# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
+# %% Author ####################################################################
+# file    : test_models.py
+# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
+#
+# created : 2024-11-12 11:44:56 (Marcel Arpogaus)
+# changed : 2024-11-12 11:44:56 (Marcel Arpogaus)
+
+# %% License ###################################################################
+
+# %% Description ###############################################################
 """Unit test for density regression models."""
 
+# %% imports ###################################################################
 import os
 
+import numpy as np
 import pytest
 import tensorflow as tf
+from tensorflow import keras as K
 
 from mctm.distributions import (
     __BIJECTOR_KWARGS_KEY__,
@@ -15,9 +29,6 @@ from mctm.distributions import (
     __PARAMETERS_FN_KWARGS_KEY__,
 )
 from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
-
-# Set random seed for reproducibility
-tf.random.set_seed(1)
 
 # Define toy data parameters
 NUM_SAMPLES = 1024
@@ -231,7 +242,7 @@ def batch_size(request):
                 "nested_bijectors": [
                     {
                         __BIJECTOR_NAME_KEY__: "Scale",
-                        __PARAMETERS_CONSTRAINT_FN_KEY__: "tf.math.softplus",
+                        __PARAMETERS_CONSTRAINT_FN_KEY__: tf.math.softplus,
                         __PARAMETER_SLICE_SIZE_KEY__: 1,
                     },
                     {__BIJECTOR_NAME_KEY__: "Shift", __PARAMETER_SLICE_SIZE_KEY__: 1},
@@ -418,31 +429,7 @@ def test_density_regression_model(
     model.compile(**compile_kwargs)
     model.fit(x=x, y=y, epochs=1, verbose=False)
 
-    # Save model weights
-    weights_file = os.path.join(tmpdir, "weights.h5")
-    model.save_weights(weights_file)
-
-    # Create a new model with the same configuration
-    new_model = DensityRegressionModel(
-        distribution=distribution_name,
-        **distribution_kwargs,
-    )
-    new_model.compile(**compile_kwargs)
-    new_model.build([None, DATA_DIMS])
-
-    # Load saved weights
-    new_model.load_weights(weights_file)
-
-    # Check equality of trainable variables
-    for var1, var2 in zip(model.trainable_variables, new_model.trainable_variables):
-        assert tf.reduce_all(var1 == var2)
-
-    # Check equality of non-trainable variables
-    for var1, var2 in zip(
-        model.non_trainable_variables, new_model.non_trainable_variables
-    ):
-        assert tf.reduce_all(var1 == var2)
-
+    # test sampling and gradients
     with tf.GradientTape(persistent=True) as tape:
         # Test sampling
         if parameter_kwargs.get("conditional", False):
@@ -466,6 +453,50 @@ def test_density_regression_model(
         grads = tape.gradient(loss, model.trainable_weights)
         for g, v in zip(grads, model.trainable_weights):
             assert g.shape == v.shape
+
+    # Save model weights
+    weights_file = os.path.join(tmpdir, "weights.h5")
+    model.save_weights(weights_file)
+    config = model.get_config()
+
+    # Create a new model with the same configuration
+    new_model = DensityRegressionModel.from_config(config)
+    new_model.compile(**compile_kwargs)
+    new_model.build([None, DATA_DIMS])
+
+    # Load saved weights
+    new_model.load_weights(weights_file)
+
+    # Check equality of trainable variables
+    for var1, var2 in zip(model.trainable_variables, new_model.trainable_variables):
+        assert tf.reduce_all(var1 == var2)
+
+    # Check equality of non-trainable variables
+    for var1, var2 in zip(
+        model.non_trainable_variables, new_model.non_trainable_variables
+    ):
+        assert tf.reduce_all(var1 == var2)
+
+    # Save and load in keras format
+    keras_file = os.path.join(tmpdir, "model.keras")
+    model.save(keras_file)
+    loaded_keras_model = K.saving.load_model(keras_file, safe_mode=False)
+
+    nll1 = model(x).log_prob(y)
+    nll2 = loaded_keras_model(x).log_prob(y)
+    assert np.allclose(nll1, nll2)
+
+    # Check equality of trainable variables
+    for var1, var2 in zip(
+        model.trainable_variables, loaded_keras_model.trainable_variables
+    ):
+        assert tf.reduce_all(var1 == var2)
+
+    # Check equality of non-trainable variables
+    for var1, var2 in zip(
+        model.non_trainable_variables, loaded_keras_model.non_trainable_variables
+    ):
+        assert tf.reduce_all(var1 == var2)
 
 
 def test_hybrid_density_regression_model(
@@ -514,20 +545,32 @@ def test_hybrid_density_regression_model(
         model.compile(**compile_kwargs)
         model.fit(x=x, y=y, epochs=1, verbose=False)
 
+        # Test sampling and gradients
+        with tf.GradientTape(persistent=True) as tape:
+            # Test sampling
+            conditional_input = tf.ones((batch_size, DATA_DIMS))
+            dist = model(conditional_input)
+            assert dist.batch_shape == [batch_size]
+            samples = dist.sample(10)
+            assert samples.shape == (10, batch_size, DATA_DIMS)
+            assert dist.event_shape == [DATA_DIMS]
+
+            test_input = tf.ones((batch_size, DATA_DIMS))
+            loss = compile_kwargs["loss"](test_input, dist)
+            grads = tape.gradient(loss, model.trainable_weights)
+            if not (model.marginals_trainable or model.joint_trainable):
+                assert len(grads) == 0
+            for g, v in zip(grads, model.trainable_weights):
+                assert g.shape == v.shape
+
         # Save model weights
         weights_file = os.path.join(tmpdir, "weights.h5")
         model.save_weights(weights_file)
 
         # Create a new model with the same configuration
-        new_model = HybridDensityRegressionModel(
-            marginals_trainable=True,
-            joint_trainable=True,
-            dims=DATA_DIMS,
-            **hybrid_density_regression_model_config,
-        )
-        # Use property assignment
-        new_model.marginals_trainable = marginals_trainable
-        new_model.joint_trainable = joint_trainable
+        config = model.get_config()
+        new_model = HybridDensityRegressionModel.from_config(config)
+
         new_model.compile(**compile_kwargs)
 
         # Call model once to get weights ready
@@ -546,19 +589,26 @@ def test_hybrid_density_regression_model(
         ):
             assert tf.reduce_all(var1 == var2)
 
-        with tf.GradientTape(persistent=True) as tape:
-            # Test sampling
-            conditional_input = tf.ones((batch_size, DATA_DIMS))
-            dist = model(conditional_input)
-            assert dist.batch_shape == [batch_size]
-            samples = dist.sample(10)
-            assert samples.shape == (10, batch_size, DATA_DIMS)
-            assert dist.event_shape == [DATA_DIMS]
+        assert model.marginals_trainable == new_model.marginals_trainable
+        assert model.joint_trainable == new_model.joint_trainable
 
-            test_input = tf.ones((batch_size, DATA_DIMS))
-            loss = compile_kwargs["loss"](test_input, dist)
-            grads = tape.gradient(loss, model.trainable_weights)
-            if not (model.marginals_trainable or model.joint_trainable):
-                assert len(grads) == 0
-            for g, v in zip(grads, model.trainable_weights):
-                assert g.shape == v.shape
+        # Save and load in keras format
+        keras_file = os.path.join(tmpdir, "model.keras")
+        model.save(keras_file)
+        loaded_keras_model = K.saving.load_model(keras_file, safe_mode=False)
+
+        nll1 = model(x).log_prob(y)
+        nll2 = loaded_keras_model(x).log_prob(y)
+        assert np.allclose(nll1, nll2)
+
+        # Check equality of trainable variables
+        for var1, var2 in zip(
+            model.trainable_variables, loaded_keras_model.trainable_variables
+        ):
+            assert tf.reduce_all(var1 == var2)
+
+        # Check equality of non-trainable variables
+        for var1, var2 in zip(
+            model.non_trainable_variables, loaded_keras_model.non_trainable_variables
+        ):
+            assert tf.reduce_all(var1 == var2)
