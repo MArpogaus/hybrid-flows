@@ -12,20 +12,17 @@ import pandas as pd
 import seaborn as sns
 import tensorflow as tf
 import tensorflow.keras as K
-from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 
 from mctm.data.benchmark import get_dataset as get_benchmark_dataset
 from mctm.data.malnutrion import get_dataset as get_malnutrition_dataset
 from mctm.data.sklearn_datasets import get_dataset as get_sim_dataset
-from mctm.models import DensityRegressionModel, HybridDenistyRegressionModel
+from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
 from mctm.utils import str2bool
 from mctm.utils.pipeline import pipeline, prepare_pipeline
 from mctm.utils.visualisation import (
     get_figsize,
     plot_2d_data,
-    plot_copula_function,
-    plot_flow,
     plot_malnutrition_data,
     plot_malnutrition_samples,
     plot_marginal_cdf_and_pdf,
@@ -148,41 +145,41 @@ def sim_after_fit_hook(
     fig = plot_samples(model(x), y, seed=1, **kwargs)
     fig.savefig(os.path.join(results_path, "samples.pdf"), bbox_inches="tight")
 
-    if is_hybrid:
-        fig1, fig2, fig3 = plot_flow(model(x), x, y, seed=1, **kwargs)
-        fig1.savefig(os.path.join(results_path, "data.pdf"), bbox_inches="tight")
-        fig2.savefig(os.path.join(results_path, "z1.pdf"), bbox_inches="tight")
-        fig3.savefig(os.path.join(results_path, "z2.pdf"), bbox_inches="tight")
+    # if is_hybrid:
+    #     fig1, fig2, fig3 = plot_flow(model(x), x, y, seed=1, **kwargs)
+    #     fig1.savefig(os.path.join(results_path, "data.pdf"), bbox_inches="tight")
+    #     fig2.savefig(os.path.join(results_path, "z1.pdf"), bbox_inches="tight")
+    #     fig3.savefig(os.path.join(results_path, "z2.pdf"), bbox_inches="tight")
 
-        c_fig = plot_copula_function(model(x), y, "contour", -0.1, 1.1, 200)
-        c_fig.savefig(
-            os.path.join(results_path, "copula_contour.pdf"), bbox_inches="tight"
-        )
+    #     c_fig = plot_copula_function(model(x), y, "contour", -0.1, 1.1, 200)
+    #     c_fig.savefig(
+    #         os.path.join(results_path, "copula_contour.pdf"), bbox_inches="tight"
+    #     )
 
-        c_fig = plot_copula_function(model(x), y, "surface", -0.1, 1.1, 200)
-        c_fig.savefig(
-            os.path.join(results_path, "copula_surface.pdf"), bbox_inches="tight"
-        )
+    #     c_fig = plot_copula_function(model(x), y, "surface", -0.1, 1.1, 200)
+    #     c_fig.savefig(
+    #         os.path.join(results_path, "copula_surface.pdf"), bbox_inches="tight"
+    #     )
 
-        (
-            data_figure,
-            normalized_data_figure,
-            pit_figure,
-            decorelated_data_figure,
-            latent_dist_figure,
-        ) = plot_trafos(model(x), x, y)
+    #     (
+    #         data_figure,
+    #         normalized_data_figure,
+    #         pit_figure,
+    #         decorelated_data_figure,
+    #         latent_dist_figure,
+    #     ) = plot_trafos(model(x), x, y)
 
-        data_figure.savefig(os.path.join(results_path, "data_scatter.pdf"))
-        normalized_data_figure.savefig(
-            os.path.join(results_path, "normalized_data.pdf"), bbox_inches="tight"
-        )
-        pit_figure.savefig(os.path.join(results_path, "pit.pdf"))
-        decorelated_data_figure.savefig(
-            os.path.join(results_path, "decorelated_data.pdf"), bbox_inches="tight"
-        )
-        latent_dist_figure.savefig(
-            os.path.join(results_path, "latent_distribution.pdf"), bbox_inches="tight"
-        )
+    #     data_figure.savefig(os.path.join(results_path, "data_scatter.pdf"))
+    #     normalized_data_figure.savefig(
+    #         os.path.join(results_path, "normalized_data.pdf"), bbox_inches="tight"
+    #     )
+    #     pit_figure.savefig(os.path.join(results_path, "pit.pdf"))
+    #     decorelated_data_figure.savefig(
+    #         os.path.join(results_path, "decorelated_data.pdf"), bbox_inches="tight"
+    #     )
+    #     latent_dist_figure.savefig(
+    #         os.path.join(results_path, "latent_distribution.pdf"), bbox_inches="tight"
+    #     )
 
 
 def malnutrition_after_fit_hook(
@@ -318,19 +315,8 @@ def run(
     compile_kwargs = params["compile_kwargs"]
     dataset_kwargs = params["dataset_kwargs"][dataset_name]
 
-    if "base_distribution" in model_kwargs.keys():
-        get_model = HybridDenistyRegressionModel
-        if not model_kwargs.get("base_checkpoint_path", False):
-            fit_kwargs.update(
-                loss=lambda y, dist: -dist.log_prob(y) - dist.distribution.log_prob(y),
-            )
-            compile_kwargs.update(
-                metrics=[MeanNegativeLogLikelihood(name="nll")],
-            )
-        else:
-            model_kwargs.update(
-                base_checkpoint_path_prefix=results_path.split("/", 1)[0]
-            )
+    if "marginal_bijectors" in model_kwargs.keys():
+        get_model = HybridDensityRegressionModel
     else:
         get_model = DensityRegressionModel
 
@@ -361,20 +347,20 @@ def run(
         }
         batch_size = fit_kwargs.pop("batch_size")
 
-        def my_loss(y, dist):
-            marginal_dist = tfd.Independent(
-                tfd.TransformedDistribution(
-                    distribution=tfd.Normal(0, 1),
-                    bijector=tfb.Invert(
-                        tfb.Chain(dist.bijector.bijector.bijectors[1:])
-                    ),
-                ),
-                1,
-            )
+        # def my_loss(y, dist):
+        #     marginal_dist = tfd.Independent(
+        #         tfd.TransformedDistribution(
+        #             distribution=tfd.Normal(0, 1),
+        #             bijector=tfb.Invert(
+        #                 tfb.Chain(dist.bijector.bijector.bijectors[1:])
+        #             ),
+        #         ),
+        #         1,
+        #     )
 
-            return -dist.log_prob(y) - marginal_dist.log_prob(y)
+        #     return -dist.log_prob(y) - marginal_dist.log_prob(y)
 
-        fit_kwargs.update(loss=my_loss)
+        # fit_kwargs.update(loss=my_loss)
         compile_kwargs.update(
             metrics=[MeanNegativeLogLikelihood(name="nll")],
         )
@@ -430,7 +416,7 @@ def run(
         after_fit_hook = partial(
             sim_after_fit_hook,
             results_path=results_path,
-            is_hybrid=get_model == HybridDenistyRegressionModel,
+            is_hybrid=get_model == HybridDensityRegressionModel,
             height=fig_height,
         )
     else:
@@ -450,7 +436,7 @@ def run(
     if os.environ.get("CI", False):
         fit_kwargs.update(verbose=2)
 
-    history, model, preprocessed = pipeline(
+    return pipeline(
         experiment_name=experiment_name,
         run_name=run_name,
         results_path=results_path,
@@ -465,9 +451,8 @@ def run(
         compile_kwargs=compile_kwargs,
         plot_data=plot_data,
         after_fit_hook=after_fit_hook,
+        two_stage_training=params.get("two_stage_training", False),
     )
-
-    return history, model, preprocessed
 
 
 if __name__ == "__main__":

@@ -4,10 +4,10 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-29 13:22:38 (Marcel Arpogaus)
-# changed : 2024-10-29 14:30:56 (Marcel Arpogaus)
+# changed : 2024-11-12 19:35:53 (Marcel Arpogaus)
+
 
 # %% License ###################################################################
-
 # %% Description ###############################################################
 """Pipeline."""
 
@@ -18,7 +18,7 @@ import os
 import sys
 from copy import deepcopy
 from pprint import pformat
-from typing import Any, Dict, Optional, Protocol, Tuple, Union
+from typing import Any, Dict, Protocol, Tuple, Union
 
 import dvc.api
 import mlflow
@@ -26,6 +26,7 @@ import numpy as np
 import yaml
 from matplotlib.pyplot import Figure
 
+from mctm.models import DensityRegressionBaseModel, HybridDensityRegressionModel
 from mctm.utils import filter_recursive
 from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
 from mctm.utils.tensorflow import fit_distribution, get_learning_rate, set_seed
@@ -72,7 +73,7 @@ class DoAfterFit(Protocol):
 
 def prepare_pipeline(
     results_path: str,
-    log_file: Optional[str],
+    log_file: str,
     log_level: str,
     stage_name_or_params_file_path: Union[str, io.IOBase],
 ) -> Dict:
@@ -82,7 +83,7 @@ def prepare_pipeline(
     ----------
     results_path : str
         Directory path for storing results.
-    log_file : Optional[str]
+    log_file : str
         File path for logging, or None.
     log_level : str
         Level of logging.
@@ -123,17 +124,18 @@ def pipeline(
     experiment_name: str,
     run_name: str,
     results_path: str,
-    log_file: Optional[str],
+    log_file: str,
     seed: int,
     get_dataset_fn: GetDataset,
     dataset_kwargs: Dict[str, Any],
     get_model_fn: GetModel,
     model_kwargs: Dict[str, Any],
-    preprocess_dataset: Optional[DoPreprocessDataset],
+    preprocess_dataset: DoPreprocessDataset,
     fit_kwargs: Dict[str, Any],
     compile_kwargs: Dict[str, Any],
-    plot_data: Optional[DoPlotData],
-    after_fit_hook: Optional[DoAfterFit],
+    plot_data: DoPlotData,
+    after_fit_hook: DoAfterFit,
+    two_stage_training: bool,
     **extra_params_to_log: Any,
 ) -> Tuple[Dict[str, Any], Any, Dict[str, Any]]:
     """High-level machine learning pipeline for conducting experiments.
@@ -149,7 +151,7 @@ def pipeline(
         Name of the MLflow run.
     results_path : str
         Path for storing results and artifacts.
-    log_file : Optional[str]
+    log_file : str
         Path to log file or None.
     seed : int
         Seed for random operations to ensure reproducibility.
@@ -161,18 +163,20 @@ def pipeline(
         Callback function to create the model.
     model_kwargs : Dict[str, Any]
         Arguments for the model creation function.
-    preprocess_dataset : Optional[DoPreprocessDataset]
+    preprocess_dataset : DoPreprocessDataset
         Callback function for dataset preprocessing.
     fit_kwargs : Dict[str, Any]
         Arguments for the model fitting function.
     compile_kwargs : Dict[str, Any]
         Arguments for model compilation.
-    plot_data : Optional[DoPlotData]
+    plot_data : DoPlotData
         Callback function for data plotting.
-    after_fit_hook : Optional[DoAfterFit]
+    after_fit_hook : DoAfterFit
         Callback function executed after model fitting.
     extra_params_to_log: Dict[str, Any]
         Additional parameters to log with MLFlow.
+    two_stage_training: bool
+        When `True`, first fit the marginal then the joint distribution.
 
     Returns
     -------
@@ -197,15 +201,109 @@ def pipeline(
     if experiment_name:
         mlflow.set_experiment(experiment_name)
         __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
+
+    common_kwargs = dict(
+        call_args=call_args,
+        data=data,
+        results_path=results_path,
+        preprocess_dataset=preprocess_dataset,
+        model=model,
+        seed=seed,
+        compile_kwargs=compile_kwargs,
+    )
+
+    if two_stage_training:
+        assert get_model_fn == HybridDensityRegressionModel
+        with start_run_with_exception_logging(run_name=run_name):
+            log_call_args(call_args)
+            plot_and_log_data(plot_data, data, results_path)
+            model.marginals_trainable = True
+            model.joint_trainable = False
+            model.predict_marginals = True
+            hist1, preprocessed = fit_distribution_with_logging(
+                run_name="_".join((run_name, "marginals")),
+                plot_data=None,
+                fit_kwargs=fit_kwargs[0]
+                if isinstance(fit_kwargs, list)
+                else fit_kwargs,
+                after_fit_hook=after_fit_hook,
+                **common_kwargs,
+            )
+            model.marginals_trainable = False
+            model.joint_trainable = True
+            model.predict_marginals = False
+            hist2, _ = fit_distribution_with_logging(
+                run_name="_".join((run_name, "joint")),
+                plot_data=None,
+                fit_kwargs=fit_kwargs[1]
+                if isinstance(fit_kwargs, list)
+                else fit_kwargs,
+                after_fit_hook=after_fit_hook,
+                **common_kwargs,
+            )
+            return (hist1, hist2), model, preprocessed
+    else:
+        hist, preprocessed = fit_distribution_with_logging(
+            run_name=run_name,
+            plot_data=plot_data,
+            fit_kwargs=fit_kwargs,
+            after_fit_hook=after_fit_hook,
+            **common_kwargs,
+        )
+
+        return hist, model, preprocessed
+
+
+def fit_distribution_with_logging(
+    seed: int,
+    run_name: str,
+    call_args: Dict[str, Any],
+    data: Any,
+    preprocess_dataset: DoPreprocessDataset,
+    model: DensityRegressionBaseModel,
+    fit_kwargs: Dict[str, Any],
+    compile_kwargs: Dict[str, Any],
+    results_path: str,
+    plot_data: DoPlotData,
+    after_fit_hook: DoAfterFit,
+) -> Tuple[Dict[str, Any], Any, Dict[str, Any]]:
+    """Fit a distribution model, and log the parameters, train progress, model results.
+
+    Parameters
+    ----------
+    seed : int
+        Seed for random operations to ensure reproducibility.
+    run_name : str
+        Name of the MLflow run.
+    call_args : Dict[str, Any],
+        Call arguments passed to `pipeline`.
+    results_path : str
+        Path for storing results and artifacts.
+    data : Any
+        Data to fit the model on.
+    preprocess_dataset : DoPreprocessDataset
+        Callback function for dataset preprocessing.
+    model : DensityRegressionBaseModel
+        Instance of model to fit on the data.
+    fit_kwargs : Dict[str, Any]
+        Arguments for the model fitting function.
+    compile_kwargs : Dict[str, Any]
+        Arguments for model compilation.
+    plot_data : DoPlotData
+        Callback function for data plotting.
+    after_fit_hook : DoAfterFit
+        Callback function executed after model fitting.
+
+    Returns
+    -------
+    Tuple[Dict[str, Any], Any, Dict[str, Any]]
+        A tuple containing the training history, model, and preprocessed dataset.
+
+    """
     with start_run_with_exception_logging(run_name=run_name):
         mlflow.autolog()
-        mlflow.tensorflow.autolog(checkpoint_save_weights_only=True)
-        mlflow.log_dict(call_args, "params.yaml")
-        log_cfg(call_args)
-
-        if plot_data:
-            fig = plot_data(*data)
-            fig.savefig(os.path.join(results_path, "dataset.pdf"))
+        log_call_args(call_args)
+        plot_and_log_data(plot_data, data, results_path)
 
         preprocessed = (
             preprocess_dataset(data, model)
@@ -222,25 +320,49 @@ def pipeline(
             **fit_kwargs,
         )
 
-        if after_fit_hook:
-            after_fit_hook(model, **preprocessed)
-        min_idx = np.argmin(hist.history["val_loss"])
-        min_loss = hist.history["loss"][min_idx]
-        min_val_loss = hist.history["val_loss"][min_idx]
-        epochs = len(hist.history["loss"])
-        __LOGGER__.info("Training completed after %s epochs.", epochs)
-        __LOGGER__.info("Best train loss: %s", min_loss)
-        __LOGGER__.info("Best validation loss: %s", min_val_loss)
-        __LOGGER__.info("Minimum loss reached after %s epochs.", min_idx)
-
-        mlflow.log_metric("best_epoch", min_idx)
-        mlflow.log_metric("final_epoch", epochs)
-        mlflow.log_metric("min_loss", min_loss)
-        mlflow.log_metric("min_val_loss", min_val_loss)
-
-        with open(os.path.join(results_path, "metrics.yaml"), "w+") as results_file:
-            yaml.dump({"loss": min_loss, "val_loss": min_val_loss}, results_file)
+        run_after_fit_hook(after_fit_hook, model, preprocessed)
+        log_metrics(hist, results_path)
 
         mlflow.log_artifacts(results_path)
 
-        return hist, model, preprocessed
+        return hist, preprocessed
+
+
+def log_metrics(hist, results_path):
+    """Log metrics from Keras history object with MLFlow."""
+    min_idx = np.argmin(hist.history["val_loss"])
+    min_loss = hist.history["loss"][min_idx]
+    min_val_loss = hist.history["val_loss"][min_idx]
+    epochs = len(hist.history["loss"])
+    __LOGGER__.info("Training completed after %s epochs.", epochs)
+    __LOGGER__.info("Best train loss: %s", min_loss)
+    __LOGGER__.info("Best validation loss: %s", min_val_loss)
+    __LOGGER__.info("Minimum loss reached after %s epochs.", min_idx)
+
+    mlflow.log_metric("best_epoch", min_idx)
+    mlflow.log_metric("final_epoch", epochs)
+    mlflow.log_metric("min_loss", min_loss)
+    mlflow.log_metric("min_val_loss", min_val_loss)
+
+    with open(os.path.join(results_path, "metrics.yaml"), "w+") as results_file:
+        yaml.dump({"loss": min_loss, "val_loss": min_val_loss}, results_file)
+
+
+def run_after_fit_hook(after_fit_hook, model, preprocessed):
+    """Run the after fit hook."""
+    if after_fit_hook:
+        after_fit_hook(model, **preprocessed)
+
+
+def plot_and_log_data(plot_data, data, results_path):
+    """Plot the data using the provided function and log the figure using mlflow."""
+    if plot_data:
+        fig = plot_data(*data)
+        mlflow.log_figure(fig, "dataset.svg")
+        fig.savefig(os.path.join(results_path, "dataset.pdf"))
+
+
+def log_call_args(call_args):
+    """Log the call arguments to MLFlow."""
+    mlflow.log_dict(call_args, "params.yaml")
+    log_cfg(call_args)
