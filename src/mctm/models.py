@@ -4,10 +4,9 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-03 15:57:47 (Marcel Arpogaus)
-# changed : 2024-11-12 13:35:46 (Marcel Arpogaus)
+# changed : 2024-11-12 19:21:52 (Marcel Arpogaus)
 
 # %% License ###################################################################
-
 # %% Description ###############################################################
 """Definition of TensorFlow Keras models for density regression."""
 
@@ -16,6 +15,7 @@ from abc import ABC, abstractmethod
 from copy import deepcopy
 from typing import Any, Callable, Dict, List, Tuple
 
+import tensorflow as tf
 import tensorflow.keras as K
 from keras.src.saving import serialization_lib
 from tensorflow_probability import bijectors as tfb
@@ -29,7 +29,7 @@ class DensityRegressionBaseModel(ABC, K.Model):
     """Abstract base class for density regression models."""
 
     @abstractmethod
-    def call(self, inputs: Any, **kwargs: Any) -> tfd.Distribution:
+    def call(self, conditional_input: Any, **kwargs: Any) -> tfd.Distribution:
         """Compute distribution for given inputs."""
 
     @property
@@ -88,7 +88,7 @@ class DensityRegressionModel(DensityRegressionBaseModel):
         self._trainable_weights.extend(trainable_variables)
         self._non_trainable_weights.extend(non_trainable_variables)
 
-    def call(self, conditional_input: Any, **kwargs: Any) -> tfd.Distribution:
+    def call(self, conditional_input: tf.Tensor, **kwargs: Any) -> tfd.Distribution:
         """Compute distribution for given inputs.
 
         Parameters
@@ -146,6 +146,7 @@ class HybridDensityRegressionModel(DensityRegressionBaseModel):
         joint_bijectors: List[Dict[str, Any]],
         marginals_trainable: bool = True,
         joint_trainable: bool = True,
+        predict_marginals: bool = False,
         **kwargs: Dict[str, Any],
     ) -> None:
         """Initialize HybridDensityRegressionModel.
@@ -161,6 +162,8 @@ class HybridDensityRegressionModel(DensityRegressionBaseModel):
             Train marginal flow variables if True. Default is `True`.
         joint_trainable: bool, optional
             Train joint flow variables if True. Default is `True`.
+        predict_marginals: bool, optional
+            If `True` predict marginal else joint distribution. Default is `False`.
         **kwargs : Dict[str, Any]
             Additional keyword arguments for
            `distributions._get_transformed_distribution_fn`.
@@ -198,11 +201,15 @@ class HybridDensityRegressionModel(DensityRegressionBaseModel):
         self.distribuition_fn = distributions._get_transformed_distribution_fn(
             self.get_flow_parametrization_fn(), **kwargs
         )
+        self.marginal_distribuition_fn = distributions._get_transformed_distribution_fn(
+            self.marginal_transformation_parametrization_fn, **kwargs
+        )
 
         self.marginals_trainable = marginals_trainable
         self.joint_trainable = joint_trainable
+        self.predict_marginals = predict_marginals
 
-    def parameters_fn(self, conditional_input: Any, **kwargs: Any) -> Tuple:
+    def parameters_fn(self, conditional_input: tf.Tensor, **kwargs: Any) -> Tuple:
         """Compute parameters for transformations.
 
         Parameters
@@ -247,12 +254,14 @@ class HybridDensityRegressionModel(DensityRegressionBaseModel):
 
         return flow_parametrization_fn
 
-    def call(self, inputs: Any, **kwargs: Any) -> tfd.Distribution:
-        """Compute transformed distribution for given inputs.
+    def marginal_distribution(
+        self, conditional_input: tf.Tensor, **kwargs: Any
+    ) -> tfd.Distribution:
+        """Compute transformed marginal distribution for given inputs.
 
         Parameters
         ----------
-        inputs : Any
+        conditional_input : Any
             Input data for distribution parameters.
         **kwargs : dict
             Additional keyword arguments.
@@ -263,8 +272,68 @@ class HybridDensityRegressionModel(DensityRegressionBaseModel):
             Computed transformed distribution.
 
         """
-        parameters = self.parameters_fn(inputs, **kwargs)
+        marginal_parameters = self.marginal_transformation_parameters_fn(
+            conditional_input, **kwargs
+        )
+        return self.marginal_distribuition_fn(marginal_parameters)
+
+    def joint_distribution(
+        self, conditional_input: tf.Tensor, **kwargs: Any
+    ) -> tfd.Distribution:
+        """Compute transformed distribution for given inputs.
+
+        Parameters
+        ----------
+        conditional_input : Any
+            Input data for distribution parameters.
+        **kwargs : dict
+            Additional keyword arguments.
+
+        Returns
+        -------
+        tfd.Distribution
+            Computed transformed distribution.
+
+        """
+        parameters = self.parameters_fn(conditional_input, **kwargs)
         return self.distribuition_fn(parameters)
+
+    def copula_distribution(
+        self, conditional_input: tf.Tensor, **kwargs: Any
+    ) -> tfd.Distribution:
+        """Compute transformed distribution for given inputs.
+
+        Parameters
+        ----------
+        conditional_input : Any
+            Input data for distribution parameters.
+        **kwargs : dict
+            Additional keyword arguments.
+
+        Returns
+        -------
+        tfd.Distribution
+            Computed transformed distribution.
+
+        """
+        raise NotImplementedError
+
+    def call(self, conditional_input: tf.Tensor, **kwargs: Any) -> tfd.Distribution:
+        """If `predict_marginals` is `True` predict marginal else joint distribution."""
+        if self.predict_marginals:
+            return self.marginal_distribution(conditional_input, **kwargs)
+        else:
+            return self.joint_distribution(conditional_input, **kwargs)
+
+    @property
+    def predict_marginals(self) -> bool:
+        """If `True` predict marginal else joint distribution. Default is `False`."""
+        return self._predict_marginals
+
+    @predict_marginals.setter
+    def predict_marginals(self, value: bool) -> None:
+        """Set attribute `predict_marginals` to `value`."""
+        self._predict_marginals = value
 
     @property
     def marginals_trainable(self) -> bool:
@@ -329,5 +398,6 @@ class HybridDensityRegressionModel(DensityRegressionBaseModel):
         return dict(
             marginals_trainable=self.marginals_trainable,
             joint_trainable=self.joint_trainable,
+            predict_marginals=self.predict_marginals,
             **self._config,
         )
