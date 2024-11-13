@@ -3,6 +3,8 @@ set -ux
 
 cd "$(dirname $0)"
 
+CURRENT_BRANCH=${CI_COMMIT_REF_NAME:--}
+
 # Configure remote, pull and check out cache
 dvc remote add --force --local local /data/mctm/
 dvc pull -r local --force --allow-missing
@@ -23,7 +25,7 @@ dvc_merge_all_exps(){
         git merge -X theirs --no-edit "$s"
     done
     echo "Merging all experiments into workspace"
-    git checkout -
+    git checkout "$CURRENT_BRANCH"
     git merge --no-edit --no-ff dvc-exp-merge
     git branch -D dvc-exp-merge
     dvc checkout --force
