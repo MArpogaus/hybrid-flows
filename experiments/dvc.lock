@@ -7645,13 +7645,72 @@ stages:
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/benchmark.py
+      hash: md5
+      md5: 68a2414c23a1d225de633677f541c81f
+      size: 2461
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: 0d4ff4172e3a859a3b4f065de6d812f9
+      size: 43692
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: c7f2f0e6665129b399432f06f678d4d0
+      size: 14118
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: bec689a85638f3d6fda317622b51f74d
+      size: 13349
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: c697ac50e99dd1ba97a749c0a6dd4a28
+      size: 5768
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: d10ee5e4bd333b5dcdc618c86ec94036
+      size: 11960
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 01646f069ce1736f3bb3337625f8e9f3
+      size: 6355
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: datasets/benchmark/power_train.npy
       hash: md5
       md5: b4e926bbb226067d4f02b51fa2849ca2
@@ -7662,8 +7721,8 @@ stages:
       size: 4426568
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: 30d0130ef9fd3fc881e6f7137ce31117
+      size: 15730
     params:
       params.yaml:
         log-level: info
@@ -7703,27 +7762,24 @@ stages:
           parameters_fn_kwargs:
             activation: relu
             batch_norm: false
-            dropout: 0.2
+            dropout: false
             res_blocks: 1
-            res_block_projection: 128
-            hidden_units:
-            - 128
-            - 128
+            hidden_features: 128
     outs:
     - path:
         results/benchmark/power/unconditional_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 654aa7b9a91dee7339d22c5cf4f76b3a
-      size: 52
+      md5: fe152bc989d4efe466cb573cbd81e856
+      size: 54
     - path:
         results/benchmark/power/unconditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 20443ef1c93475ca33679294d3d4f9ce
-      size: 22399172
+      md5: b1250cfc1af28a9ecc09412a634133b9
+      size: 10375620
     - path: results/benchmark/power/unconditional_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: 3958ddeab62fe39e6a8953f335b15c2d
-      size: 24098
+      md5: cfd6a68a11d51842762bfd0aa4c00b3b
+      size: 24684
   train-benchmark@dataset3-unconditional_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       benchmark-miniboone --run-name unconditional_coupling_flow_quadratic_spline_miniboone
@@ -8167,13 +8223,72 @@ stages:
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 5c01866990ded569ed18548a65d6439b
-      size: 2104
-    - path: ../src/mctm
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
       hash: md5
-      md5: 57a656ac75d2491328e38cc96a45d4b0.dir
-      size: 629860
-      nfiles: 87
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/benchmark.py
+      hash: md5
+      md5: 68a2414c23a1d225de633677f541c81f
+      size: 2461
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: 0d4ff4172e3a859a3b4f065de6d812f9
+      size: 43692
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: c7f2f0e6665129b399432f06f678d4d0
+      size: 14118
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: bec689a85638f3d6fda317622b51f74d
+      size: 13349
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: c697ac50e99dd1ba97a749c0a6dd4a28
+      size: 5768
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: d10ee5e4bd333b5dcdc618c86ec94036
+      size: 11960
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 01646f069ce1736f3bb3337625f8e9f3
+      size: 6355
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
     - path: datasets/benchmark/power_train.npy
       hash: md5
       md5: b4e926bbb226067d4f02b51fa2849ca2
@@ -8184,8 +8299,8 @@ stages:
       size: 4426568
     - path: scripts/train.py
       hash: md5
-      md5: f82d376662d0a43709bde9b4b8c1ea5e
-      size: 17419
+      md5: 30d0130ef9fd3fc881e6f7137ce31117
+      size: 15730
     params:
       params.yaml:
         log-level: info
@@ -8230,18 +8345,18 @@ stages:
     - path:
         results/benchmark/power/unconditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 1ffe78523e618bdbc9e1282d13024593
-      size: 51
+      md5: 0c1480b66d66ae570d6857e2fc68c816
+      size: 52
     - path:
         results/benchmark/power/unconditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 95bcde6785f7812b82bef8d9165cbd93
+      md5: 9f7fa7469bde01fee65527c848d98820
       size: 36087488
     - path:
         results/benchmark/power/unconditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: ebbf71efb15ad82cd17542beda058fbe
-      size: 9333
+      md5: aab951b38bef8b9955659e7d0d31513f
+      size: 10352
   train-sim@dataset0-conditional_multivariate_transformation_model:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name conditional_multivariate_transformation_model_moons --stage-name
@@ -8908,3 +9023,184 @@ stages:
       hash: md5
       md5: 6ebf6bd4cc896f8fc6bd2384cc4be7c0
       size: 3705
+  train-malnutrition@conditional_multivariate_transformation_model:
+    cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
+      malnutrition --run-name conditional_multivariate_transformation_model --stage-name
+      train-malnutrition@conditional_multivariate_transformation_model --dataset-type
+      malnutrition --dataset-name india --results-path results/malnutrition/conditional_multivariate_transformation_model
+      --test-mode true
+    deps:
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 1bb8cefe554dc1c36064f36ce3518fca
+      size: 2100
+    - path: ../src/mctm/__init__.py
+      hash: md5
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/malnutrion.py
+      hash: md5
+      md5: 43ba54eb762789c08245e7f0cbbe8bd7
+      size: 3167
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: 0d4ff4172e3a859a3b4f065de6d812f9
+      size: 43692
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: c7f2f0e6665129b399432f06f678d4d0
+      size: 14118
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: bec689a85638f3d6fda317622b51f74d
+      size: 13349
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: c697ac50e99dd1ba97a749c0a6dd4a28
+      size: 5768
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: 21f9a348ffad2b7e63efd8b977332230
+      size: 2458
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: d10ee5e4bd333b5dcdc618c86ec94036
+      size: 11960
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 01646f069ce1736f3bb3337625f8e9f3
+      size: 6355
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: 309a92b943855a8121347b1516e4277f
+      size: 17052
+    - path: scripts/train.py
+      hash: md5
+      md5: 30d0130ef9fd3fc881e6f7137ce31117
+      size: 15730
+    params:
+      params.yaml:
+        seed: 1
+        textwidth: 487.8225
+      params/malnutrition/conditional_multivariate_transformation_model.yaml:
+        compile_kwargs: {}
+        fit_kwargs:
+          epochs: 100
+          batch_size: 128
+          learning_rate:
+            scheduler_kwargs:
+              decay_steps: 100
+              initial_learning_rate: 0.005
+            scheduler_name: cosine_decay
+          reduce_lr_on_plateau: false
+          early_stopping: false
+          monitor: val_loss
+          verbose: true
+        model_kwargs:
+          marginal_bijectors:
+          - bijector: BernsteinPolynomial
+            invert: true
+            bijector_kwargs:
+              domain:
+              - -4
+              - 4
+              extrapolation: true
+            parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+            parameters_constraint_fn_kwargs:
+              allow_flexible_bounds: true
+              bounds: smooth
+              high: 4
+              low: -4
+            parameters_fn: parameter_vector
+            parameters_fn_kwargs:
+              dtype: float32
+              parameter_shape:
+              - 3
+              - 6
+          - bijector: Shift
+            invert: true
+            parameters_fn: bernstein_polynomial
+            parameters_fn_kwargs:
+              conditional_event_shape: 1
+              domain: &id002
+              - 0
+              - 35
+              dtype: float
+              extrapolation: true
+              parameter_shape:
+              - 3
+              polynomial_order: 6
+          joint_bijectors:
+          - bijector: ScaleMatvecLinearOperator
+            invert: true
+            parameters_fn: bernstein_polynomial
+            parameters_fn_kwargs:
+              conditional_event_shape: 1
+              domain: *id002
+              dtype: float
+              extrapolation: true
+              parameter_shape:
+              - 3
+              polynomial_order: 3
+            parameters_constraint_fn: mctm.activations.lambda_parameters_constraint_fn
+        two_stage_training: true
+      params/malnutrition/dataset.yaml:
+        dataset_kwargs.india*:
+          data_path: datasets/malnutrition/india.raw
+          covariates:
+          - cage
+          targets:
+          - stunting
+          - wasting
+          - underweight
+          stratify: true
+          scale: true
+          column_transformers:
+          - - passthrough
+            - - cage
+    outs:
+    - path: results/malnutrition/conditional_multivariate_transformation_model/dataset.pdf
+      hash: md5
+      md5: 5b0d0f0caa9c16c737cc82dea2a9fc7a
+      size: 2394190
+    - path: results/malnutrition/conditional_multivariate_transformation_model/metrics.yaml
+      hash: md5
+      md5: 6518425ae29a038ec9e657daea6e67be
+      size: 52
+    - path:
+        results/malnutrition/conditional_multivariate_transformation_model/model_checkpoint.weights.h5
+      hash: md5
+      md5: c1092f40373e63b47e4437b8b800f2ab
+      size: 14152
+    - path: results/malnutrition/conditional_multivariate_transformation_model/samples.pdf
+      hash: md5
+      md5: bb2efd2b0369c46bd0f536e4adc4c7d0
+      size: 140039
+    - path: results/malnutrition/conditional_multivariate_transformation_model/train.log
+      hash: md5
+      md5: a2a882a27c749714f66831f00753fc0e
+      size: 6050

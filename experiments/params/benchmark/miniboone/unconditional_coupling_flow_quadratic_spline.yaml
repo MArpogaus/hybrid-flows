@@ -78,7 +78,4 @@ model_kwargs:
     batch_norm: false
     dropout: 0.2
     res_blocks: 1
-    res_block_projection: 32
-    hidden_units:
-    - 32
-    - 32
+    hidden_features: 32
