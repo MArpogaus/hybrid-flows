@@ -4610,7 +4610,7 @@ stages:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name conditional_multivariate_normal_moons --stage-name train-sim@dataset0-conditional_multivariate_normal
       --dataset-type sim --dataset-name moons --results-path results/sim/moons/conditional_multivariate_normal
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
@@ -4726,24 +4726,24 @@ stages:
     outs:
     - path: results/sim/moons/conditional_multivariate_normal/dataset.pdf
       hash: md5
-      md5: 4e94d0a37a21c64d105659dbb37f68cd
-      size: 24844
+      md5: 0d2a7bd3e46119fabc38904cfefd8b9d
+      size: 260561
     - path: results/sim/moons/conditional_multivariate_normal/metrics.yaml
       hash: md5
-      md5: dfca43c179f43ead8ae9ba954c92ba48
-      size: 52
+      md5: 5b36cc94f9c95795562d317501829eca
+      size: 56
     - path: results/sim/moons/conditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: 8fdc1f99dad69b7c07d3f1a24caed75b
+      md5: 1e2105b6963442b6ff358b0a87ed9392
       size: 55560
     - path: results/sim/moons/conditional_multivariate_normal/samples.pdf
       hash: md5
-      md5: 829184488fe23dbabe63d9b408b77442
-      size: 101640
+      md5: c00d89b727c8d330916b6b6a1b829637
+      size: 158684
     - path: results/sim/moons/conditional_multivariate_normal/train.log
       hash: md5
-      md5: e48035a32065899135689b4c72826449
-      size: 2295
+      md5: 560304d64030080ae90e6f043da4f638
+      size: 2231
   train-sim@dataset1-unconditional_coupling_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-circles --run-name unconditional_coupling_flow_bernstein_poly_circles --stage-name
@@ -6132,13 +6132,13 @@ stages:
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 13f00fd93968679eb97cd7cf4226034a
-      size: 260561
+      md5: 3c6d56487c22f6b1b1543a3a5da3f1cb
+      size: 24844
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: ffe4b854f5430fb84ecd7244fd110065
-      size: 55
+      md5: 5841860f209e282682d116927d919d1d
+      size: 54
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
@@ -6147,8 +6147,8 @@ stages:
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 3911b34d90bd6195ad4cab84dedee272
-      size: 170880
+      md5: 6333041d7c29efe465c8086c7a9f24d9
+      size: 100761
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
