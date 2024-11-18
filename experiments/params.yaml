@@ -33,6 +33,7 @@ sim_models:
 - conditional_masked_autoregressive_flow_quadratic_spline
 - conditional_multivariate_normal
 - conditional_multivariate_transformation_model
+- conditional_hybrid_coupling_flow_bernstein_poly
 - unconditional_coupling_flow_bernstein_poly
 - unconditional_coupling_flow_quadratic_spline
 - unconditional_masked_autoregressive_flow_bernstein_poly
