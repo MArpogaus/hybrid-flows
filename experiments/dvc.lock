@@ -5578,7 +5578,7 @@ stages:
       sim-moons --run-name unconditional_masked_autoregressive_flow_bernstein_poly_moons
       --stage-name train-sim@dataset0-unconditional_masked_autoregressive_flow_bernstein_poly
       --dataset-type sim --dataset-name moons --results-path results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
@@ -5712,28 +5712,28 @@ stages:
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 4e94d0a37a21c64d105659dbb37f68cd
-      size: 24844
+      md5: 59585039a5bb8e8eb7b561f20c311c5f
+      size: 260561
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 51d26d4e044059c01106242bb924f278
-      size: 53
+      md5: 019a520620d79b9928a6980173be127d
+      size: 56
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 0382e7f20080e4eeb9c3ef0f841f09a0
+      md5: 580ee4737e98ef98133ff4056e64271b
       size: 52336
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: aee2593341401f98f8f51da752f2e2fb
-      size: 103626
+      md5: 69679e55e15903930f5649807c6d781e
+      size: 181598
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/train.log
       hash: md5
-      md5: 44e939973775964b11757172a04a544e
-      size: 4380
+      md5: f3c873287886fa777ef114bbc478e2d1
+      size: 4514
   train-malnutrition@mctm:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       malnutrition --run-name mctm --stage-name train-malnutrition@mctm --dataset-type
@@ -8514,8 +8514,8 @@ stages:
       size: 260561
     - path: results/sim/moons/conditional_multivariate_transformation_model/metrics.yaml
       hash: md5
-      md5: 832b8951c8bc0fb9aa5df46dafdf24bb
-      size: 56
+      md5: 9701a031ec765592454460b8126288a8
+      size: 53
     - path: 
         results/sim/moons/conditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
