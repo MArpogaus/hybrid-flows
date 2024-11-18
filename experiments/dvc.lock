@@ -3068,8 +3068,8 @@ stages:
       size: 261694
     - path: results/sim/circles/unconditional_multivariate_normal/metrics.yaml
       hash: md5
-      md5: 6aa522e3c12dac28b505fe90e6ce08ee
-      size: 58
+      md5: c2776455dcfff59f2984f2b7b1d27175
+      size: 53
     - path: 
         results/sim/circles/unconditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
@@ -8867,7 +8867,7 @@ stages:
       sim-circles --run-name unconditional_multivariate_transformation_model_circles
       --stage-name train-sim@dataset1-unconditional_multivariate_transformation_model
       --dataset-type sim --dataset-name circles --results-path results/sim/circles/unconditional_multivariate_transformation_model
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
@@ -9004,25 +9004,25 @@ stages:
     outs:
     - path: results/sim/circles/unconditional_multivariate_transformation_model/dataset.pdf
       hash: md5
-      md5: 1ba9318f3d8bf69d883151a9fed582fd
-      size: 25002
+      md5: bb96ab5f6efe36cd61cdbb075fb1390f
+      size: 261694
     - path: results/sim/circles/unconditional_multivariate_transformation_model/metrics.yaml
       hash: md5
-      md5: 7aebf5367cdf83f13d6212cc3166bbb8
-      size: 54
+      md5: a224926e5c41ca0c979f195b79bdfc15
+      size: 57
     - path: 
         results/sim/circles/unconditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: 122f862dca381984e8feb9791f1a9fd2
+      md5: 940740a138482a661e073d57c85597f4
       size: 11272
     - path: results/sim/circles/unconditional_multivariate_transformation_model/samples.pdf
       hash: md5
-      md5: aecc61d4f9555170fbe5324540cae755
-      size: 102016
+      md5: ce8c1f97b4c2738457042610858658d8
+      size: 170376
     - path: results/sim/circles/unconditional_multivariate_transformation_model/train.log
       hash: md5
-      md5: 6ebf6bd4cc896f8fc6bd2384cc4be7c0
-      size: 3705
+      md5: b7f558e4e6f309cf6d258f5aad08e394
+      size: 4047
   train-malnutrition@conditional_multivariate_transformation_model:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       malnutrition --run-name conditional_multivariate_transformation_model --stage-name
