@@ -5416,7 +5416,7 @@ stages:
       sim-circles --run-name unconditional_masked_autoregressive_flow_bernstein_poly_circles
       --stage-name train-sim@dataset1-unconditional_masked_autoregressive_flow_bernstein_poly
       --dataset-type sim --dataset-name circles --results-path results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
@@ -5551,28 +5551,28 @@ stages:
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 9e790edd5bccded76eb4f184012729b1
-      size: 25002
+      md5: bb96ab5f6efe36cd61cdbb075fb1390f
+      size: 261694
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 8c0b8db913ae061e4c9f410b43a291d8
-      size: 52
+      md5: b6eda030863a069113c7d849a27e5276
+      size: 56
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 2313f68a0cf7d3f25a660908d467bae0
+      md5: d560804f105d5e6c740f7c3d6445f74a
       size: 52336
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 4d25a571165b283abfc3d5ceb6fad572
-      size: 101391
+      md5: e96379cba3ab796c11939bdc956cecae
+      size: 179545
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/train.log
       hash: md5
-      md5: 14a6d9960ab515d5ee6128ffc2c265d3
-      size: 4434
+      md5: cb8b1d29844abf6eea5087a9697fc6b3
+      size: 4571
   train-sim@dataset0-unconditional_masked_autoregressive_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name unconditional_masked_autoregressive_flow_bernstein_poly_moons
@@ -6589,13 +6589,13 @@ stages:
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: ec1e7ea1747720858b77ddae02d4f72e
-      size: 261694
+      md5: b1d097c9168e675d6c66d2bc9ed90f5c
+      size: 25002
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 7cc3c57b63d9c72a3b65568b412c56bf
-      size: 56
+      md5: 5e14f1c43eb39d2a5966faf7918a318f
+      size: 54
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
@@ -6604,8 +6604,8 @@ stages:
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 9bf9e59fd5885c53216f63b7142e204e
-      size: 169992
+      md5: 13a2eff6282143d68a5e250c371312bd
+      size: 96612
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
