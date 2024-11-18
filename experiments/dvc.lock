@@ -5048,13 +5048,13 @@ stages:
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 13f00fd93968679eb97cd7cf4226034a
-      size: 260561
+      md5: a853d707e9947cbb8767a3da8fa4738b
+      size: 24844
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 019a520620d79b9928a6980173be127d
-      size: 56
+      md5: 51d26d4e044059c01106242bb924f278
+      size: 53
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
@@ -5063,8 +5063,8 @@ stages:
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: e9c05589ee3730774bd1db4251f70e1b
-      size: 181598
+      md5: d1a415b43ec6d85334692a56fc9a2c15
+      size: 103626
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/train.log
       hash: md5
@@ -6006,7 +6006,7 @@ stages:
       sim-moons --run-name conditional_masked_autoregressive_flow_quadratic_spline_moons
       --stage-name train-sim@dataset0-conditional_masked_autoregressive_flow_quadratic_spline
       --dataset-type sim --dataset-name moons --results-path results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
@@ -6132,28 +6132,28 @@ stages:
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 3c6d56487c22f6b1b1543a3a5da3f1cb
-      size: 24844
+      md5: 13f00fd93968679eb97cd7cf4226034a
+      size: 260561
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 5841860f209e282682d116927d919d1d
-      size: 54
+      md5: ffe4b854f5430fb84ecd7244fd110065
+      size: 55
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 0005938d5b86aec3ed0a781123d4950f
+      md5: 4227873ac2a4200b150524922d9ca1ae
       size: 116472
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 6333041d7c29efe465c8086c7a9f24d9
-      size: 100761
+      md5: 3911b34d90bd6195ad4cab84dedee272
+      size: 170880
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: be6ba17a448b491fbb68bf2e8c808e88
-      size: 4288
+      md5: 7d4baca219148886714b4b9db54babfa
+      size: 4420
   train-sim@dataset0-unconditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name unconditional_masked_autoregressive_flow_quadratic_spline_moons
