@@ -8362,7 +8362,7 @@ stages:
       sim-moons --run-name conditional_multivariate_transformation_model_moons --stage-name
       train-sim@dataset0-conditional_multivariate_transformation_model --dataset-type
       sim --dataset-name moons --results-path results/sim/moons/conditional_multivariate_transformation_model
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
@@ -8510,25 +8510,25 @@ stages:
     outs:
     - path: results/sim/moons/conditional_multivariate_transformation_model/dataset.pdf
       hash: md5
-      md5: ee7d78d637dab05f3b30dc47969ddaef
-      size: 24844
+      md5: 59585039a5bb8e8eb7b561f20c311c5f
+      size: 260561
     - path: results/sim/moons/conditional_multivariate_transformation_model/metrics.yaml
       hash: md5
-      md5: 9701a031ec765592454460b8126288a8
-      size: 53
+      md5: 832b8951c8bc0fb9aa5df46dafdf24bb
+      size: 56
     - path: 
         results/sim/moons/conditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: dcec056d0384d591ebcc6665385abd05
-      size: 14136
+      md5: 9e3c9738b7c93566bdaed11b78553ff5
+      size: 11544
     - path: results/sim/moons/conditional_multivariate_transformation_model/samples.pdf
       hash: md5
-      md5: aefe39bd48dbc2b8e058524366305ac7
-      size: 105015
+      md5: 4169fc48d0119bf1c6d648c42a254791
+      size: 163603
     - path: results/sim/moons/conditional_multivariate_transformation_model/train.log
       hash: md5
-      md5: cc641c4ea7b8e4fe4b603802c5bd2358
-      size: 16879
+      md5: 5fd45c59071f2beead35cd1e4363f9b5
+      size: 5190
   train-sim@dataset0-unconditional_multivariate_transformation_model:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name unconditional_multivariate_transformation_model_moons --stage-name
