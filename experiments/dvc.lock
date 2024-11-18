@@ -5712,13 +5712,13 @@ stages:
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 59585039a5bb8e8eb7b561f20c311c5f
-      size: 260561
+      md5: 4e94d0a37a21c64d105659dbb37f68cd
+      size: 24844
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 019a520620d79b9928a6980173be127d
-      size: 56
+      md5: 51d26d4e044059c01106242bb924f278
+      size: 53
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
@@ -5727,8 +5727,8 @@ stages:
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 69679e55e15903930f5649807c6d781e
-      size: 181598
+      md5: aee2593341401f98f8f51da752f2e2fb
+      size: 103626
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/train.log
       hash: md5
@@ -6462,7 +6462,7 @@ stages:
       sim-circles --run-name conditional_masked_autoregressive_flow_quadratic_spline_circles
       --stage-name train-sim@dataset1-conditional_masked_autoregressive_flow_quadratic_spline
       --dataset-type sim --dataset-name circles --results-path results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
@@ -6589,28 +6589,28 @@ stages:
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: b1d097c9168e675d6c66d2bc9ed90f5c
-      size: 25002
+      md5: ec1e7ea1747720858b77ddae02d4f72e
+      size: 261694
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 5e14f1c43eb39d2a5966faf7918a318f
-      size: 54
+      md5: 7cc3c57b63d9c72a3b65568b412c56bf
+      size: 56
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 3c5b978caaecc266a576117c94e11cd5
+      md5: 8b445f907e1965f0e9d44c6650e6be97
       size: 116472
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 13a2eff6282143d68a5e250c371312bd
-      size: 96612
+      md5: 9bf9e59fd5885c53216f63b7142e204e
+      size: 169992
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: 7ef9a0f04fab36abc90cbb3ca31b777c
-      size: 4343
+      md5: d6e03dd5884cff342e6262247e37cfc1
+      size: 4478
   train-sim@dataset1-unconditional_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-circles --run-name unconditional_coupling_flow_quadratic_spline_circles
