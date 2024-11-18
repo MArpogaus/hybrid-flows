@@ -2850,8 +2850,8 @@ stages:
       size: 260561
     - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 04bad8adab5d33b1f68fed9eaa4b1949
-      size: 53
+      md5: 93a432beb744b74bc5a91e5308881696
+      size: 54
     - path: 
         results/sim/moons/conditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
@@ -5855,7 +5855,7 @@ stages:
       sim-moons --run-name conditional_coupling_flow_quadratic_spline_moons --stage-name
       train-sim@dataset0-conditional_coupling_flow_quadratic_spline --dataset-type
       sim --dataset-name moons --results-path results/sim/moons/conditional_coupling_flow_quadratic_spline
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
@@ -5982,25 +5982,25 @@ stages:
     outs:
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: af8466a95c1e7774636aa2a40359e391
-      size: 24844
+      md5: 59585039a5bb8e8eb7b561f20c311c5f
+      size: 260561
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 3fc5a7c347e5d6057ff22f3b27a28413
-      size: 53
+      md5: 5de9cc8349a8f34daa3128e8a0adc038
+      size: 54
     - path: 
         results/sim/moons/conditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 74199d6e84c9d1e858216612ef87cbd2
+      md5: 36d69a596a6902487a6f7e3525491aae
       size: 2228400
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: bb188fa554ee3added25fa01b16f2e66
-      size: 101333
+      md5: 13fb2ccf014b3da6cc74b9af734e478d
+      size: 155923
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: aa1809c07a14db6b4a726086a32a52fb
-      size: 4968
+      md5: e6548bd4177683f788d534566dfc72a3
+      size: 4901
   train-sim@dataset0-conditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name conditional_masked_autoregressive_flow_quadratic_spline_moons
