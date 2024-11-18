@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-29 13:22:38 (Marcel Arpogaus)
-# changed : 2024-11-12 19:35:53 (Marcel Arpogaus)
+# changed : 2024-11-18 14:46:43 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -302,7 +302,10 @@ def fit_distribution_with_logging(
     """
     with start_run_with_exception_logging(run_name=run_name):
         mlflow.autolog()
+        mlflow.tensorflow.autolog(checkpoint_save_weights_only=True)
+
         log_call_args(call_args)
+
         plot_and_log_data(plot_data, data, results_path)
 
         preprocessed = (
