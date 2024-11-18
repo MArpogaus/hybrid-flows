@@ -2953,7 +2953,7 @@ stages:
       sim-circles --run-name unconditional_multivariate_normal_circles --stage-name
       train-sim@dataset1-unconditional_multivariate_normal --dataset-type sim --dataset-name
       circles --results-path results/sim/circles/unconditional_multivariate_normal
-      --test-mode true
+      --test-mode false
     deps:
     - path: ../pyproject.toml
       hash: md5
@@ -3064,25 +3064,25 @@ stages:
     outs:
     - path: results/sim/circles/unconditional_multivariate_normal/dataset.pdf
       hash: md5
-      md5: 0018f6346e218b6876fca72e0f622079
-      size: 25002
+      md5: 88c6977e3bd85688a7aaf4744c355de6
+      size: 261694
     - path: results/sim/circles/unconditional_multivariate_normal/metrics.yaml
       hash: md5
-      md5: c2776455dcfff59f2984f2b7b1d27175
-      size: 53
+      md5: 6aa522e3c12dac28b505fe90e6ce08ee
+      size: 58
     - path: 
         results/sim/circles/unconditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: 1a64b033dc42a87b6cdf9ab69150932b
+      md5: c49afc1b0d6bd7a6cfafe2eb8bc30737
       size: 11000
     - path: results/sim/circles/unconditional_multivariate_normal/samples.pdf
       hash: md5
-      md5: 297e28cdfc83fda270c2ec92154688f5
-      size: 99915
+      md5: 25ba55d8246170d29e68367c03f48790
+      size: 154033
     - path: results/sim/circles/unconditional_multivariate_normal/train.log
       hash: md5
-      md5: 81af3c07f0bdae709d78f161a5000087
-      size: 1888
+      md5: b75cf1198ffcd257926349d52a1d454e
+      size: 2026
   train-sim@dataset0-unconditional_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name unconditional_coupling_flow_quadratic_spline_moons --stage-name
@@ -6435,13 +6435,13 @@ stages:
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: bb96ab5f6efe36cd61cdbb075fb1390f
-      size: 261694
+      md5: a9c4b80a47ccb49f07b81d6c7fec8ed4
+      size: 25002
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 7cc3c57b63d9c72a3b65568b412c56bf
-      size: 56
+      md5: 5e14f1c43eb39d2a5966faf7918a318f
+      size: 54
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
@@ -6450,8 +6450,8 @@ stages:
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 9f56b6624703af7c8bc505994aba4dda
-      size: 169992
+      md5: 74e435d7c5888a8c4f2c1fe3a5370fb3
+      size: 96612
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
