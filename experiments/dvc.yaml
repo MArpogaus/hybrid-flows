@@ -46,7 +46,7 @@ stages:
     - results/${item.dataset.type}/${item.dataset.name}/${item.model}/train.log
     - results/${item.dataset.type}/${item.dataset.name}/${item.model}/dataset.pdf
     - results/${item.dataset.type}/${item.dataset.name}/${item.model}/samples.pdf
-  
+
   eval-sim:
     matrix:
       dataset: ${sim_datasets}
@@ -66,7 +66,7 @@ stages:
       - dataset_kwargs.${item.dataset.name}*
     - params/${item.dataset.type}/${item.dataset.name}/${item.model}.yaml:
     deps:
-    - scripts/train.py
+    - scripts/evaluate_sim.py
     - ../pyproject.toml
     - ../src/mctm/data/__init__.py
     - ../src/mctm/data/sklearn_datasets.py

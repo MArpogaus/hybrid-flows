@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2024-11-18 16:07:20 (Marcel Arpogaus)
+# changed : 2024-11-21 14:46:50 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -19,32 +19,35 @@ from shutil import which
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import seaborn as sns
 import tensorflow as tf
 import tensorflow_probability as tfp
+from tensorflow_probability import distributions as tfd
 
 from mctm.data.sklearn_datasets import get_dataset
 from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
 from mctm.utils.pipeline import prepare_pipeline
-from mctm.utils.visualisation import setup_latex
+from mctm.utils.visualisation import plot_samples, setup_latex
 
 __LOGGER__ = logging.getLogger(__name__)
 
 
 # %% functions #################################################################
-def pdf_contour_plot(model, figure_path, fig_ext, n=200):
+def pdf_contour_plot(model, n=200):
     ls = np.linspace(0, 1, n, dtype=np.float32)
     xx, yy = np.meshgrid(ls[..., None], ls[..., None])
     grid = np.stack([xx.flatten(), yy.flatten()], -1)
 
-    if True:
-        joint_dist_0 = model.joint_distribution(tf.convert_to_tensor(0.0))
-        joint_dist_1 = model.joint_distribution(tf.convert_to_tensor(1.0))
+    try:
+        joint_dist = model(None)
+        p_y = joint_dist.prob(grid).numpy().reshape(-1, n)
+    except (TypeError, ValueError):
+        joint_dist_0 = model(tf.convert_to_tensor([0.0]))
+        joint_dist_1 = model(tf.convert_to_tensor([1.0]))
         p_y_0 = joint_dist_0.prob(grid).numpy().reshape(-1, n)
         p_y_1 = joint_dist_1.prob(grid).numpy().reshape(-1, n)
         p_y = p_y_0 + p_y_1
-    else:
-        joint_dist = model.joint_distribution(None)
-        p_y = joint_dist.prob(grid).numpy().reshape(-1, n)
 
     fig = plt.figure(figsize=plt.figaspect(1))
     plt.contourf(
@@ -54,11 +57,145 @@ def pdf_contour_plot(model, figure_path, fig_ext, n=200):
         cmap="plasma",
     )
     plt.axis("off")
-    fig.savefig(
-        os.path.join(figure_path, f"contour.{fig_ext}"),
-        bbox_inches="tight",
-        transparent=True,
+    return fig
+
+
+def plot_and_log_samples(model, x, *args, **kwargs):
+    joint_dist = model(x)
+
+    marginal_fig = None
+    joint_fig = plot_samples(joint_dist, *args, **kwargs)
+    if isinstance(model, HybridDensityRegressionModel):
+        marginal_dist = model.marginal_distribution(x)
+
+        marginal_fig = plot_samples(marginal_dist, *args, **kwargs)
+
+    return joint_fig, marginal_fig
+
+
+def plot_hybrid_model(model, x, y):
+    # HACK: Sample dist dos not support cdf
+    joint_dist = model.joint_distribution(x)
+    marginal_dist = model.marginal_distribution(x)
+    z1 = marginal_dist.bijector.inverse(y)
+    z2 = joint_dist.bijector.inverse(y)
+    marginal_dist2 = tfd.TransformedDistribution(
+        distribution=marginal_dist.distribution.distribution.distribution,
+        bijector=marginal_dist.bijector,
     )
+    pit = marginal_dist2.cdf(y)
+
+    df = pd.DataFrame(
+        columns=[
+            "$y1$",
+            "$y2$",
+            "$z_{1,1}$",
+            "$z_{1,2}$",
+            "$z_{2,1}$",
+            "$z_{2,2}$",
+            "$F_1(y_1)$",
+            "$F_2(y_2)$",
+            "$x$",
+        ],
+        data=np.concatenate([y, z1, z2, pit, x], -1),
+    )
+
+    # %% data
+    g = sns.JointGrid(data=df, x="$y1$", y="$y2$", height=2)
+    g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
+    g.plot_marginals(sns.histplot)
+    data_fig = g.figure
+
+    # %% normalized data
+    g = sns.JointGrid(data=df, x="$z_{1,1}$", y="$z_{1,2}$", height=2)
+    g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
+    g.plot_marginals(sns.histplot)
+    z1_fig = g.figure
+
+    # %% decorrelated data
+    g = sns.JointGrid(data=df, x="$z_{2,1}$", y="$z_{2,2}$", height=2)
+    g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
+    g.plot_marginals(sns.histplot)
+    z2_fig = g.figure
+
+    # %% PIT
+    g = sns.jointplot(df, x="$F_1(y_1)$", y="$F_2(y_2)$", height=2, s=4, alpha=0.5)
+    pit_fig = g.figure
+
+    return data_fig, z1_fig, z2_fig, pit_fig
+
+
+def plot_density_3d(model, n=200):
+    ls = np.linspace(0, 1, n, dtype=np.float32)
+    xx, yy = np.meshgrid(ls[..., None], ls[..., None])
+    grid = np.stack([xx.flatten(), yy.flatten()], -1)
+    try:
+        joint_dist = model.joint_distribution(None)
+        marginal_dist = model.marginal_distribution(None)
+        p_y = joint_dist.prob(grid).numpy()
+        p_z1 = marginal_dist.prob(grid).numpy()
+    except (TypeError, ValueError):
+        joint_dist_0 = model.joint_distribution(tf.convert_to_tensor([0.0]))
+        joint_dist_1 = model.joint_distribution(tf.convert_to_tensor([1.0]))
+        marginal_dist_0 = model.marginal_distribution(tf.convert_to_tensor([0.0]))
+        marginal_dist_1 = model.marginal_distribution(tf.convert_to_tensor([1.0]))
+        p_y_0 = joint_dist_0.prob(grid).numpy()
+        p_y_1 = joint_dist_1.prob(grid).numpy()
+        p_y = (p_y_0 + p_y_1) / 2
+        p_z1_0 = marginal_dist_0.prob(grid).numpy()
+        p_z1_1 = marginal_dist_1.prob(grid).numpy()
+        p_z1 = (p_z1_0 + p_z1_1) / 2
+
+    c = p_y / p_z1
+    c = np.where(p_z1 < 1e-4, 0, c)  # for numerical stability
+
+    fig = plt.figure(figsize=plt.figaspect(0.32))
+    ax = fig.add_subplot(131, projection="3d")
+    ax.plot_surface(
+        xx,
+        yy,
+        p_y.reshape(-1, n),
+        cmap="plasma",
+        linewidth=0,
+        antialiased=False,
+        alpha=0.5,
+    )
+    ax.set_title("Joint Density")
+    ax.set_zlabel("$f_Y(\mathbf{y}|x)$")
+    ax.set_xlabel("$y_1$")
+    ax.set_ylabel("$y_2$")
+    ax = fig.add_subplot(132, projection="3d")
+    ax.plot_surface(
+        xx,
+        yy,
+        p_z1.reshape(-1, n),
+        cmap="plasma",
+        linewidth=0,
+        antialiased=False,
+        alpha=0.5,
+    )
+    ax.set_title("Marginal Density")
+    ax.set_zlabel("$F_Y(\mathbf{y}|x)$???")
+    ax.set_xlabel("$y_1$")
+    ax.set_ylabel("$y_2$")
+    ax = fig.add_subplot(133, projection="3d")
+    ax.plot_surface(
+        xx,
+        yy,
+        c.reshape(-1, n),
+        cmap="plasma",
+        linewidth=0,
+        antialiased=False,
+        alpha=0.5,
+    )
+    ax.set_title("Copula Density")
+    ax.set_zlabel("$c_U(\mathbf{u}|x)$???")
+    ax.set_xlabel("$y_1$")
+    ax.set_ylabel("$y_2$")
+
+    fig.tight_layout()
+
+    return fig
 
 
 def evaluate(
@@ -94,15 +231,15 @@ def evaluate(
     figure_path = os.path.join(results_path, "eval_figures")
     os.makedirs(figure_path, exist_ok=True)
 
-    fig_ext = "pdf"
+    figure_format = "pdf"
 
     data, dims = get_dataset(dataset_name, **dataset_kwargs)
 
-    # def preprocess_dataset(data, model) -> dict:
-    #     return {
-    #         "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype),
-    #         "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
-    #     }
+    def preprocess_dataset(data, model) -> dict:
+        return {
+            "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype),
+            "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
+        }
 
     if "marginal_bijectors" in model_kwargs.keys():
         get_model = HybridDensityRegressionModel
@@ -112,11 +249,52 @@ def evaluate(
     model = get_model(dims=dims, **model_kwargs)
     model.load_weights(os.path.join(results_path, "model_checkpoint.weights.h5"))
 
+    preprocessed = preprocess_dataset(data, model)
+    x, y = preprocessed.values()
     if which("latex"):
         __LOGGER__.info("Using latex backend for plotting")
         setup_latex(fontsize=10)
 
-    pdf_contour_plot(model, figure_path, fig_ext)
+    fig = pdf_contour_plot(model)
+    fig.savefig(
+        os.path.join(figure_path, f"contour.{figure_format}"),
+        bbox_inches="tight",
+        transparent=True,
+    )
+
+    joint_fig, marginal_fig = plot_and_log_samples(model, x=x, data=y)
+    joint_fig.savefig(
+        os.path.join(figure_path, f"joint_samples.{figure_format}"),
+        bbox_inches="tight",
+        transparent=True,
+    )
+    if marginal_fig is not None:
+        marginal_fig.savefig(
+            os.path.join(figure_path, f"marginal_samples.{figure_format}"),
+            bbox_inches="tight",
+            transparent=True,
+        )
+
+    if isinstance(model, HybridDensityRegressionModel):
+        data_fig, z1_fig, z2_fig, pit_fig = plot_hybrid_model(model, x, y)
+        data_fig.savefig(
+            os.path.join(figure_path, f"data.{figure_format}"), bbox_inches="tight"
+        )
+        z1_fig.savefig(
+            os.path.join(figure_path, f"z1.{figure_format}"), bbox_inches="tight"
+        )
+        z2_fig.savefig(
+            os.path.join(figure_path, f"z2.{figure_format}"), bbox_inches="tight"
+        )
+        pit_fig.savefig(
+            os.path.join(figure_path, f"pit.{figure_format}"), bbox_inches="tight"
+        )
+
+        fig = plot_density_3d(model)
+        fig.figure.savefig(
+            os.path.join(figure_path, f"densities_3d.{figure_format}"),
+            bbox_inches="tight",
+        )
 
 
 # %% if main ###################################################################
