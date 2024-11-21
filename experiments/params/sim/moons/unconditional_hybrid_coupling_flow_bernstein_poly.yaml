@@ -38,16 +38,7 @@ model_kwargs:
     parameters_fn: parameter_vector
     parameters_fn_kwargs:
       dtype: float32
-      parameter_shape: [&dims 2, 100]
-  - bijector: Shift
-    invert: true
-    parameters_fn: bernstein_polynomial
-    parameters_fn_kwargs:
-      conditional_event_shape: 1
-      dtype: float
-      extrapolation: true
-      parameter_shape: [*dims]
-      polynomial_order: 6
+      parameter_shape: [&dims 2, 300]
   joint_bijectors:
   - bijector: RealNVP
     bijector_kwargs:
@@ -56,7 +47,7 @@ model_kwargs:
       bijector: BernsteinPolynomial
       invert: true
       bijector_kwargs:
-        domain: [-8, 8]
+        domain: [-5, 5]
         extrapolation: false
       parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
       parameters_constraint_fn_kwargs:
@@ -65,15 +56,6 @@ model_kwargs:
         high: 5
         low: -5
       parametrized_by_parent: true
-    # parameters_fn: bernstein_polynomial
-    # parameters_fn_kwargs:
-    #   conditional_event_shape: 1
-    #   dtype: float
-    #   extrapolation: true
-    #   parameter_shape: [1, 100]
-    #   polynomial_order: 300
-    #   conditional: false
-    #   domain: [-5, 5]
     parameters_fn: fully_connected_network
     parameters_fn_kwargs:
       activation: relu
@@ -86,5 +68,3 @@ model_kwargs:
       dtype: float32
       input_shape: [1]
       parameter_shape: [1, 512]
-      conditional: true
-      conditional_event_shape: 1

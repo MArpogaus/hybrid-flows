@@ -53,38 +53,26 @@ model_kwargs:
     bijector_kwargs:
       num_masked: 1
     nested_bijector:
-      bijector: BernsteinPolynomial
-      invert: true
+      bijector: RationalQuadraticSpline
       bijector_kwargs:
-        domain: [-8, 8]
-        extrapolation: false
-      parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+        range_min: -6
       parameters_constraint_fn_kwargs:
-        allow_flexible_bounds: true
-        bounds: linear
-        high: 5
-        low: -5
+        interval_width: 12
+        min_slope: 0.001
+        min_bin_width: 0.001
+        nbins: 32
       parametrized_by_parent: true
-    # parameters_fn: bernstein_polynomial
-    # parameters_fn_kwargs:
-    #   conditional_event_shape: 1
-    #   dtype: float
-    #   extrapolation: true
-    #   parameter_shape: [1, 100]
-    #   polynomial_order: 300
-    #   conditional: false
-    #   domain: [-5, 5]
     parameters_fn: fully_connected_network
     parameters_fn_kwargs:
       activation: relu
       batch_norm: false
       dropout: false
       hidden_units:
-      - 512
-      - 512
-      - 512
+      - 128
+      - 128
+      - 128
       dtype: float32
       input_shape: [1]
-      parameter_shape: [1, 512]
+      parameter_shape: [1, 95] # 32 * 3 - 1
       conditional: true
       conditional_event_shape: 1
