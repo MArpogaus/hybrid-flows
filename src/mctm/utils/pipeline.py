@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-29 13:22:38 (Marcel Arpogaus)
-# changed : 2024-11-18 14:46:43 (Marcel Arpogaus)
+# changed : 2024-11-21 10:17:25 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -23,6 +23,7 @@ from typing import Any, Dict, Protocol, Tuple, Union
 import dvc.api
 import mlflow
 import numpy as np
+import tensorflow as tf
 import yaml
 from matplotlib.pyplot import Figure
 
@@ -184,16 +185,7 @@ def pipeline(
         A tuple containing the training history, model, and preprocessed dataset.
 
     """
-    learning_rate, lr_scheduler = get_learning_rate(fit_kwargs)
-    fit_kwargs.update(learning_rate=learning_rate)
-    call_args = filter_recursive(
-        lambda x: not callable(x) and not isinstance(x, type),
-        deepcopy(vars()),
-    )
-
-    # Drop Callback functions from MLFlow logging
-    call_args["fit_kwargs"].pop("callbacks", None)
-
+    call_args = deepcopy(vars())
     set_seed(seed)
     data, dims = get_dataset_fn(**dataset_kwargs)
     model = get_model_fn(dims=dims, **model_kwargs)
@@ -202,18 +194,21 @@ def pipeline(
         mlflow.set_experiment(experiment_name)
         __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
 
-    common_kwargs = dict(
-        call_args=call_args,
-        data=data,
-        results_path=results_path,
-        preprocess_dataset=preprocess_dataset,
-        model=model,
-        seed=seed,
-        compile_kwargs=compile_kwargs,
-    )
-
     if two_stage_training:
         assert get_model_fn == HybridDensityRegressionModel
+
+        common_kwargs = dict(
+            data=data,
+            results_path=results_path,
+            preprocess_dataset=preprocess_dataset,
+            model=model,
+            seed=seed,
+            compile_kwargs=compile_kwargs,
+            # These kwargs are just passed for logging
+            model_kwargs=model_kwargs,
+            dataset_kwargs=dataset_kwargs,
+        )
+
         with start_run_with_exception_logging(run_name=run_name):
             log_call_args(call_args)
             plot_and_log_data(plot_data, data, results_path)
@@ -257,7 +252,6 @@ def pipeline(
 def fit_distribution_with_logging(
     seed: int,
     run_name: str,
-    call_args: Dict[str, Any],
     data: Any,
     preprocess_dataset: DoPreprocessDataset,
     model: DensityRegressionBaseModel,
@@ -266,6 +260,7 @@ def fit_distribution_with_logging(
     results_path: str,
     plot_data: DoPlotData,
     after_fit_hook: DoAfterFit,
+    **kwargs: Dict[str, Any],
 ) -> Tuple[Dict[str, Any], Any, Dict[str, Any]]:
     """Fit a distribution model, and log the parameters, train progress, model results.
 
@@ -274,9 +269,7 @@ def fit_distribution_with_logging(
     seed : int
         Seed for random operations to ensure reproducibility.
     run_name : str
-        Name of the MLflow run.
-    call_args : Dict[str, Any],
-        Call arguments passed to `pipeline`.
+        Name of the MLFlow run.
     results_path : str
         Path for storing results and artifacts.
     data : Any
@@ -293,6 +286,8 @@ def fit_distribution_with_logging(
         Callback function for data plotting.
     after_fit_hook : DoAfterFit
         Callback function executed after model fitting.
+    kwargs : Dict[str, Any],
+        Extra arguments to log with MLFlow.
 
     Returns
     -------
@@ -300,11 +295,13 @@ def fit_distribution_with_logging(
         A tuple containing the training history, model, and preprocessed dataset.
 
     """
+    call_args = deepcopy(vars())
+    call_args.update(call_args.pop("kwargs"))
+    call_args.pop("data")
     with start_run_with_exception_logging(run_name=run_name):
+        log_call_args(call_args)
         mlflow.autolog()
         mlflow.tensorflow.autolog(checkpoint_save_weights_only=True)
-
-        log_call_args(call_args)
 
         plot_and_log_data(plot_data, data, results_path)
 
@@ -314,6 +311,9 @@ def fit_distribution_with_logging(
             else {"x": data[0], "y": data[1]}
         )
         fit_kwargs.update(preprocessed)
+
+        learning_rate, lr_scheduler = get_learning_rate(fit_kwargs)
+        fit_kwargs.update(learning_rate=learning_rate)
 
         hist = fit_distribution(
             model=model,
@@ -365,7 +365,11 @@ def plot_and_log_data(plot_data, data, results_path):
         fig.savefig(os.path.join(results_path, "dataset.pdf"))
 
 
-def log_call_args(call_args):
+def log_call_args(vars):
     """Log the call arguments to MLFlow."""
+    call_args = filter_recursive(
+        lambda x: not callable(x) and not isinstance(x, (type, np.ndarray, tf.Tensor)),
+        deepcopy(vars),
+    )
     mlflow.log_dict(call_args, "params.yaml")
     log_cfg(call_args)

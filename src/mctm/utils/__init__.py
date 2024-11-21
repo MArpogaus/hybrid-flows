@@ -46,10 +46,10 @@ def flatten_dict(d: Mapping[str, Any], parent_key: str = "", sep: str = ".") -> 
         new_key = sep.join((parent_key, str(key))) if parent_key else str(key)
         if isinstance(value, Mapping) and len(value):
             items.extend(flatten_dict(value, new_key, sep=sep).items())
-        elif isinstance(value, MutableSequence):
+        elif isinstance(value, (tuple, MutableSequence)):
             for i, v in enumerate(value):
                 new_key_indexed = sep.join((new_key, str(i)))
-                if isinstance(value, Mapping) and len(value):
+                if isinstance(v, Mapping) and len(value):
                     items.extend(flatten_dict(v, new_key_indexed, sep=sep).items())
                 else:
                     items.append((new_key_indexed, v))
