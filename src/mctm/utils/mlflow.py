@@ -18,10 +18,13 @@ import os
 import tempfile
 import traceback
 from contextlib import contextmanager
+from copy import deepcopy
 
 import mlflow
+import numpy as np
+import tensorflow as tf
 
-from mctm.utils import flatten_dict
+from mctm.utils import filter_recursive, flatten_dict
 
 
 # PUBLIC FUNCTIONS ############################################################
@@ -31,7 +34,12 @@ def log_cfg(cfg: dict):
     :param dict cfg: Flattened dictionary of parameters and values to be logged.
     :return: None
     """
-    flat_dict = flatten_dict(cfg)
+    filterd_dict = filter_recursive(
+        lambda x: not callable(x) and not isinstance(x, (type, np.ndarray, tf.Tensor)),
+        deepcopy(cfg),
+    )
+    mlflow.log_dict(filterd_dict, "params.yaml")
+    flat_dict = flatten_dict(filterd_dict)
     flat_dict = dict(filter(lambda xy: len(str(xy[1])) < 500, flat_dict.items()))
     mlflow.log_params(flat_dict)
 

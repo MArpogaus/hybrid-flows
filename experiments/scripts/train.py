@@ -426,14 +426,22 @@ def run(
     if test_mode:
         __LOGGER__.info("Running in test-mode")
         run_name += "_test"
-        fit_kwargs.update(epochs=2)
+        if isinstance(fit_kwargs, dict):
+            fit_kwargs.update(epochs=2)
+        elif isinstance(fit_kwargs, list):
+            for fkw in fit_kwargs:
+                fkw.update(epochs=2)
 
     if which("latex"):
         __LOGGER__.info("Using latex backend for plotting")
         setup_latex(fontsize=10)
 
     if os.environ.get("CI", False):
-        fit_kwargs.update(verbose=2)
+        if isinstance(fit_kwargs, dict):
+            fit_kwargs.update(verbose=2)
+        elif isinstance(fit_kwargs, list):
+            for fkw in fit_kwargs:
+                fkw.update(verbose=2)
 
     return pipeline(
         experiment_name=experiment_name,

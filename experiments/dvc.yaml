@@ -55,6 +55,8 @@ stages:
       python scripts/evaluate_sim.py
       --log-level ${log-level}
       --log-file train.log
+      --experiment-name ${item.dataset.type}-${item.dataset.name}-evaluation
+      --run-name ${item.model}_${item.dataset.name}_evaluation
       --stage-name train-sim@${key}
       --dataset-type ${item.dataset.type}
       --dataset-name ${item.dataset.name}
@@ -86,7 +88,7 @@ stages:
     - ../src/mctm/distributions.py
     - results/${item.dataset.type}/${item.dataset.name}/${item.model}/model_checkpoint.weights.h5
     outs:
-    - results/${item.dataset.type}/${item.dataset.name}/${item.model}/eval_figures/contour.pdf
+    - results/${item.dataset.type}/${item.dataset.name}/${item.model}/eval_figures/
 
   train-benchmark:
     matrix:

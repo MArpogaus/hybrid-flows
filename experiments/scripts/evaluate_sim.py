@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2024-11-21 14:46:50 (Marcel Arpogaus)
+# changed : 2024-11-26 14:09:03 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -15,9 +15,11 @@
 import argparse
 import logging
 import os
+from copy import deepcopy
 from shutil import which
 
 import matplotlib.pyplot as plt
+import mlflow
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -27,9 +29,11 @@ from tensorflow_probability import distributions as tfd
 
 from mctm.data.sklearn_datasets import get_dataset
 from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
+from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
 from mctm.utils.pipeline import prepare_pipeline
 from mctm.utils.visualisation import plot_samples, setup_latex
 
+# %% globals ###################################################################
 __LOGGER__ = logging.getLogger(__name__)
 
 
@@ -74,11 +78,11 @@ def plot_and_log_samples(model, x, *args, **kwargs):
 
 
 def plot_hybrid_model(model, x, y):
-    # HACK: Sample dist dos not support cdf
     joint_dist = model.joint_distribution(x)
     marginal_dist = model.marginal_distribution(x)
-    z1 = marginal_dist.bijector.inverse(y)
-    z2 = joint_dist.bijector.inverse(y)
+    w = marginal_dist.bijector.inverse(y)
+    z = joint_dist.bijector.inverse(y)
+    # HACK: Sample dist dos not support cdf
     marginal_dist2 = tfd.TransformedDistribution(
         distribution=marginal_dist.distribution.distribution.distribution,
         bijector=marginal_dist.bijector,
@@ -89,15 +93,15 @@ def plot_hybrid_model(model, x, y):
         columns=[
             "$y1$",
             "$y2$",
-            "$z_{1,1}$",
-            "$z_{1,2}$",
-            "$z_{2,1}$",
-            "$z_{2,2}$",
+            "$w_{1}$",
+            "$w_{2}$",
+            "$z_{1}$",
+            "$z_{2}$",
             "$F_1(y_1)$",
             "$F_2(y_2)$",
             "$x$",
         ],
-        data=np.concatenate([y, z1, z2, pit, x], -1),
+        data=np.concatenate([y, w, z, pit, x], -1),
     )
 
     # %% data
@@ -107,22 +111,22 @@ def plot_hybrid_model(model, x, y):
     data_fig = g.figure
 
     # %% normalized data
-    g = sns.JointGrid(data=df, x="$z_{1,1}$", y="$z_{1,2}$", height=2)
+    g = sns.JointGrid(data=df, x="$w_{1}$", y="$w_{2}$", height=2)
     g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
     g.plot_marginals(sns.histplot)
-    z1_fig = g.figure
+    w_fig = g.figure
 
     # %% decorrelated data
-    g = sns.JointGrid(data=df, x="$z_{2,1}$", y="$z_{2,2}$", height=2)
+    g = sns.JointGrid(data=df, x="$z_{1}$", y="$z_{2}$", height=2)
     g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
     g.plot_marginals(sns.histplot)
-    z2_fig = g.figure
+    z_fig = g.figure
 
     # %% PIT
     g = sns.jointplot(df, x="$F_1(y_1)$", y="$F_2(y_2)$", height=2, s=4, alpha=0.5)
     pit_fig = g.figure
 
-    return data_fig, z1_fig, z2_fig, pit_fig
+    return data_fig, w_fig, z_fig, pit_fig
 
 
 def plot_density_3d(model, n=200):
@@ -190,17 +194,27 @@ def plot_density_3d(model, n=200):
     )
     ax.set_title("Copula Density")
     ax.set_zlabel("$c_U(\mathbf{u}|x)$???")
-    ax.set_xlabel("$y_1$")
-    ax.set_ylabel("$y_2$")
+    ax.set_xlabel("$u_1$")
+    ax.set_ylabel("$u_2$")
 
     fig.tight_layout()
 
     return fig
 
 
+def log_and_save_figure(figure, figure_path, file_name, file_format, **kwargs):
+    figure.savefig(
+        os.path.join(figure_path, f"{file_name}.{file_format}"),
+        **kwargs,
+    )
+    mlflow.log_figure(figure, f"{file_name}.svg")
+
+
 def evaluate(
     dataset_name: str,
     dataset_type: str,
+    experiment_name: str,
+    run_name: str,
     results_path: str,
     params: dict,
 ) -> tuple:
@@ -212,6 +226,10 @@ def evaluate(
         Name of the dataset.
     dataset_type : str
         Type of the dataset.
+    experiment_name : str
+        Name of the MLFlow experiment.
+    run_name : str
+        Name of the MLFlow run.
     results_path : str
         Destination for model checkpoints and logs.
     params : dict
@@ -223,6 +241,9 @@ def evaluate(
         Experiment results: history, model, and preprocessed data.
 
     """
+    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
+    mlflow.set_experiment(experiment_name)
+
     __LOGGER__.info(f"{tf.__version__=}\n{tfp.__version__=}")
     tf.config.set_visible_devices([], "GPU")
 
@@ -246,55 +267,95 @@ def evaluate(
     else:
         get_model = DensityRegressionModel
 
-    model = get_model(dims=dims, **model_kwargs)
-    model.load_weights(os.path.join(results_path, "model_checkpoint.weights.h5"))
+    with start_run_with_exception_logging(run_name=run_name):
+        log_cfg(
+            dict(
+                dataset_name=dataset_name, dataset_type=dataset_type, **deepcopy(params)
+            )
+        )
 
-    preprocessed = preprocess_dataset(data, model)
-    x, y = preprocessed.values()
-    if which("latex"):
-        __LOGGER__.info("Using latex backend for plotting")
-        setup_latex(fontsize=10)
+        model = get_model(dims=dims, **model_kwargs)
+        model.load_weights(os.path.join(results_path, "model_checkpoint.weights.h5"))
 
-    fig = pdf_contour_plot(model)
-    fig.savefig(
-        os.path.join(figure_path, f"contour.{figure_format}"),
-        bbox_inches="tight",
-        transparent=True,
-    )
+        preprocessed = preprocess_dataset(data, model)
+        x, y = preprocessed.values()
+        if which("latex"):
+            __LOGGER__.info("Using latex backend for plotting")
+            setup_latex(fontsize=10)
 
-    joint_fig, marginal_fig = plot_and_log_samples(model, x=x, data=y)
-    joint_fig.savefig(
-        os.path.join(figure_path, f"joint_samples.{figure_format}"),
-        bbox_inches="tight",
-        transparent=True,
-    )
-    if marginal_fig is not None:
-        marginal_fig.savefig(
-            os.path.join(figure_path, f"marginal_samples.{figure_format}"),
+        fig = pdf_contour_plot(model)
+        log_and_save_figure(
+            figure=fig,
+            figure_path=figure_path,
+            file_name="contour",
+            file_format=figure_format,
             bbox_inches="tight",
             transparent=True,
         )
 
-    if isinstance(model, HybridDensityRegressionModel):
-        data_fig, z1_fig, z2_fig, pit_fig = plot_hybrid_model(model, x, y)
-        data_fig.savefig(
-            os.path.join(figure_path, f"data.{figure_format}"), bbox_inches="tight"
-        )
-        z1_fig.savefig(
-            os.path.join(figure_path, f"z1.{figure_format}"), bbox_inches="tight"
-        )
-        z2_fig.savefig(
-            os.path.join(figure_path, f"z2.{figure_format}"), bbox_inches="tight"
-        )
-        pit_fig.savefig(
-            os.path.join(figure_path, f"pit.{figure_format}"), bbox_inches="tight"
-        )
-
-        fig = plot_density_3d(model)
-        fig.figure.savefig(
-            os.path.join(figure_path, f"densities_3d.{figure_format}"),
+        joint_fig, marginal_fig = plot_and_log_samples(model, x=x, data=y)
+        log_and_save_figure(
+            figure=joint_fig,
+            figure_path=figure_path,
+            file_name="joint_samples",
+            file_format=figure_format,
             bbox_inches="tight",
+            transparent=True,
         )
+        if marginal_fig is not None:
+            log_and_save_figure(
+                figure=marginal_fig,
+                figure_path=figure_path,
+                file_name="marginal_samples",
+                file_format=figure_format,
+                bbox_inches="tight",
+                transparent=True,
+            )
+
+        if isinstance(model, HybridDensityRegressionModel):
+            data_fig, w_fig, z_fig, pit_fig = plot_hybrid_model(model, x, y)
+            log_and_save_figure(
+                figure=data_fig,
+                figure_path=figure_path,
+                file_name=dataset_name,
+                file_format=figure_format,
+                bbox_inches="tight",
+                transparent=True,
+            )
+            log_and_save_figure(
+                figure=w_fig,
+                figure_path=figure_path,
+                file_name=dataset_name + "_w",
+                file_format=figure_format,
+                bbox_inches="tight",
+                transparent=True,
+            )
+            log_and_save_figure(
+                figure=z_fig,
+                figure_path=figure_path,
+                file_name=dataset_name + "_z",
+                file_format=figure_format,
+                bbox_inches="tight",
+                transparent=True,
+            )
+            log_and_save_figure(
+                figure=pit_fig,
+                figure_path=figure_path,
+                file_name=dataset_name + "_pit",
+                file_format=figure_format,
+                bbox_inches="tight",
+                transparent=True,
+            )
+
+            fig = plot_density_3d(model)
+            log_and_save_figure(
+                figure=pit_fig,
+                figure_path=figure_path,
+                file_name=dataset_name + "_densities_3d",
+                file_format=figure_format,
+                bbox_inches="tight",
+                transparent=True,
+            )
 
 
 # %% if main ###################################################################
@@ -310,6 +371,18 @@ if __name__ == "__main__":
         type=str,
         default="INFO",
         help="logging severity level",
+    )
+    parser.add_argument(
+        "--experiment-name",
+        type=str,
+        help="MLFlow experiment name",
+        required=True,
+    )
+    parser.add_argument(
+        "--run-name",
+        type=str,
+        help="MLFlow run name",
+        required=True,
     )
     parser.add_argument(
         "--stage-name",
@@ -349,6 +422,8 @@ if __name__ == "__main__":
     evaluate(
         dataset_name=args.dataset_name,
         dataset_type=args.dataset_type,
+        experiment_name=args.experiment_name,
+        run_name=args.run_name,
         results_path=args.results_path,
         params=params,
     )

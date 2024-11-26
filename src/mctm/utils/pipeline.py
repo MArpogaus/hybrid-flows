@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-29 13:22:38 (Marcel Arpogaus)
-# changed : 2024-11-21 10:17:25 (Marcel Arpogaus)
+# changed : 2024-11-26 13:56:10 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -23,12 +23,10 @@ from typing import Any, Dict, Protocol, Tuple, Union
 import dvc.api
 import mlflow
 import numpy as np
-import tensorflow as tf
 import yaml
 from matplotlib.pyplot import Figure
 
 from mctm.models import DensityRegressionBaseModel, HybridDensityRegressionModel
-from mctm.utils import filter_recursive
 from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
 from mctm.utils.tensorflow import fit_distribution, get_learning_rate, set_seed
 
@@ -194,23 +192,23 @@ def pipeline(
         mlflow.set_experiment(experiment_name)
         __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
 
+    common_kwargs = dict(
+        data=data,
+        results_path=results_path,
+        preprocess_dataset=preprocess_dataset,
+        model=model,
+        seed=seed,
+        compile_kwargs=compile_kwargs,
+        # These kwargs are just passed for logging
+        model_kwargs=model_kwargs,
+        dataset_kwargs=dataset_kwargs,
+    )
+
     if two_stage_training:
         assert get_model_fn == HybridDensityRegressionModel
 
-        common_kwargs = dict(
-            data=data,
-            results_path=results_path,
-            preprocess_dataset=preprocess_dataset,
-            model=model,
-            seed=seed,
-            compile_kwargs=compile_kwargs,
-            # These kwargs are just passed for logging
-            model_kwargs=model_kwargs,
-            dataset_kwargs=dataset_kwargs,
-        )
-
         with start_run_with_exception_logging(run_name=run_name):
-            log_call_args(call_args)
+            log_cfg(call_args)
             plot_and_log_data(plot_data, data, results_path)
             model.marginals_trainable = True
             model.joint_trainable = False
@@ -299,7 +297,7 @@ def fit_distribution_with_logging(
     call_args.update(call_args.pop("kwargs"))
     call_args.pop("data")
     with start_run_with_exception_logging(run_name=run_name):
-        log_call_args(call_args)
+        log_cfg(call_args)
         mlflow.autolog()
         mlflow.tensorflow.autolog(checkpoint_save_weights_only=True)
 
@@ -363,13 +361,3 @@ def plot_and_log_data(plot_data, data, results_path):
         fig = plot_data(*data)
         mlflow.log_figure(fig, "dataset.svg")
         fig.savefig(os.path.join(results_path, "dataset.pdf"))
-
-
-def log_call_args(vars):
-    """Log the call arguments to MLFlow."""
-    call_args = filter_recursive(
-        lambda x: not callable(x) and not isinstance(x, (type, np.ndarray, tf.Tensor)),
-        deepcopy(vars),
-    )
-    mlflow.log_dict(call_args, "params.yaml")
-    log_cfg(call_args)
