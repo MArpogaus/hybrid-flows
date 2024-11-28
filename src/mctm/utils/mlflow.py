@@ -81,3 +81,11 @@ def start_run_with_exception_logging(**kwds):
         mlflow.end_run(status="FAILED")
     finally:
         mlflow.end_run(status="FINISHED")
+
+
+def log_and_save_figure(figure, figure_path, file_name, file_format, **kwargs):
+    figure.savefig(
+        os.path.join(figure_path, f"{file_name}.{file_format}"),
+        **kwargs,
+    )
+    mlflow.log_figure(figure, f"{file_name}.svg")

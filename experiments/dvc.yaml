@@ -61,31 +61,8 @@ stages:
       --dataset-type ${item.dataset.type}
       --dataset-name ${item.dataset.name}
       --results-path results/${item.dataset.type}/${item.dataset.name}/${item.model}
-    params:
-    - seed
-    - textwidth
-    - params/${item.dataset.type}/dataset.yaml:
-      - dataset_kwargs.${item.dataset.name}*
-    - params/${item.dataset.type}/${item.dataset.name}/${item.model}.yaml:
     deps:
     - scripts/evaluate_sim.py
-    - ../pyproject.toml
-    - ../src/mctm/data/__init__.py
-    - ../src/mctm/data/sklearn_datasets.py
-    - ../src/mctm/utils/__init__.py
-    - ../src/mctm/utils/mlflow.py
-    - ../src/mctm/utils/tensorflow.py
-    - ../src/mctm/utils/visualisation.py
-    - ../src/mctm/utils/decorators.py
-    - ../src/mctm/utils/pipeline.py
-    - ../src/mctm/__init__.py
-    - ../src/mctm/preprocessing.py
-    - ../src/mctm/scheduler.py
-    - ../src/mctm/activations.py
-    - ../src/mctm/models.py
-    - ../src/mctm/nn.py
-    - ../src/mctm/parameters.py
-    - ../src/mctm/distributions.py
     - results/${item.dataset.type}/${item.dataset.name}/${item.model}/model_checkpoint.weights.h5
     outs:
     - results/${item.dataset.type}/${item.dataset.name}/${item.model}/eval_figures/
@@ -185,3 +162,22 @@ stages:
       - results/malnutrition/${item}/train.log
       - results/malnutrition/${item}/dataset.pdf
       - results/malnutrition/${item}/samples.pdf
+
+  eval-malnutrition:
+    foreach: ${malnutrition_models}
+    do:
+      cmd: >-
+        python scripts/evaluate_malnutrition.py
+        --log-level ${log-level}
+        --log-file train.log
+        --experiment-name malnutrition_evaluation
+        --run-name ${item}_evaluation
+        --stage-name train-malnutrition@${item}
+        --dataset-type malnutrition
+        --dataset-name india
+        --results-path results/malnutrition/${item}
+      deps:
+      - scripts/evaluate_malnutrition.py
+      - results/malnutrition/${item}/model_checkpoint.weights.h5
+      outs:
+      - results/malnutrition/${item}/eval_figures/

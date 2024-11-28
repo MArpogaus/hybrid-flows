@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2024-11-26 14:09:03 (Marcel Arpogaus)
+# changed : 2024-11-28 17:04:40 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -29,7 +29,11 @@ from tensorflow_probability import distributions as tfd
 
 from mctm.data.sklearn_datasets import get_dataset
 from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
-from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
+from mctm.utils.mlflow import (
+    log_and_save_figure,
+    log_cfg,
+    start_run_with_exception_logging,
+)
 from mctm.utils.pipeline import prepare_pipeline
 from mctm.utils.visualisation import plot_samples, setup_latex
 
@@ -202,14 +206,6 @@ def plot_density_3d(model, n=200):
     return fig
 
 
-def log_and_save_figure(figure, figure_path, file_name, file_format, **kwargs):
-    figure.savefig(
-        os.path.join(figure_path, f"{file_name}.{file_format}"),
-        **kwargs,
-    )
-    mlflow.log_figure(figure, f"{file_name}.svg")
-
-
 def evaluate(
     dataset_name: str,
     dataset_type: str,
@@ -347,9 +343,9 @@ def evaluate(
                 transparent=True,
             )
 
-            fig = plot_density_3d(model)
+            density_fig = plot_density_3d(model)
             log_and_save_figure(
-                figure=pit_fig,
+                figure=density_fig,
                 figure_path=figure_path,
                 file_name=dataset_name + "_densities_3d",
                 file_format=figure_format,
