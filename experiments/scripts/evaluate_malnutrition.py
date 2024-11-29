@@ -4,10 +4,12 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2024-11-28 17:46:04 (Marcel Arpogaus)
+# changed : 2024-11-29 17:55:05 (Marcel Arpogaus)
+
+import seaborn as sns
+from tensorflow_probability import distributions as tfd
 
 # %% License ###################################################################
-
 # %% Description ###############################################################
 """Train multivariate density estimation models on different datasets."""
 
@@ -19,9 +21,10 @@ from copy import deepcopy
 from shutil import which
 
 import mlflow
+import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
-
+from matplotlib import pyplot as plt
 from mctm.data.malnutrion import get_dataset
 from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
 from mctm.utils.mlflow import (
@@ -42,6 +45,111 @@ __LOGGER__ = logging.getLogger(__name__)
 
 
 # %% functions #################################################################
+def plot_params(model, x, targets, **kwargs):
+    t = np.linspace(min(x), max(x), 200, dtype="float32")
+    pv = (
+        model.marginal_transformation_parameters_fn(t[..., None])[1][-1]["parameters"]
+        .numpy()
+        .squeeze()
+    )
+    fig, axs = plt.subplots(1, len(targets), sharex=True, sharey=True, **kwargs)
+    for (i, c), label in zip(enumerate(targets), targets):
+        axs[i].plot(t, pv[:, i])
+        axs[i].set_xlabel("cage")
+        axs[i].set_title(label)
+    axs[0].set_xticks((t.min(), t.max()))
+    fig.tight_layout(w_pad=-0.1)
+    return fig
+
+
+def plot_rank_corr(model, x, targets, **kwargs):
+    # %% rank correlation
+    ages = np.unique(x)
+    ages = np.sort(ages)
+    joint_dist = model(tf.convert_to_tensor(ages, dtype=model.dtype)[..., None])
+
+    lambdas = joint_dist.bijector.bijectors[-1].bijector.parameters["scale"].to_dense()
+
+    # cov = joint_dist.distribution.covariance().numpy()
+    cov = tf.linalg.inv(lambdas) @ tf.linalg.inv(tf.transpose(lambdas, perm=[0, 2, 1]))
+    std = np.sqrt(tf.linalg.diag_part(cov))
+    cor = cov / tf.matmul(std[..., None], std[..., None], transpose_b=True)
+
+    fig, axs = plt.subplots(1, len(targets), **kwargs)
+
+    for ax, (a, b) in zip(
+        axs.T,
+        zip(
+            ["stunting", "stunting", "wasting"],
+            ["wasting", "underweight", "underweight"],
+        ),
+    ):
+        i, j = targets.index(a), targets.index(b)
+        # ax.set_aspect(1)
+        rho = cor[:, i, j]
+        rho_s = 6 / np.pi * np.arcsin(rho / 2)
+        ax.plot(ages, rho_s)
+        ax.set_title(f"$\\rho^S_{{{a},{b}}}$")
+        ax.set_box_aspect(1)
+        ax.set_xticks(ages[0:-1:8])
+
+    fig.tight_layout()
+    return fig
+
+
+def plot_marginal_distribution(model, ages, targets, palette="mako_r", **kwargs):
+    # %% marginal cdf and pdf
+    # palette = "icefire"
+    # palette = "rocket_r"
+    # palette = "mako_r"
+    # ages = unscaled_train_data_df.cage.unique()
+    colors = sns.color_palette(palette, as_cmap=True)(
+        np.linspace(0, 1, len(ages))
+    ).tolist()
+    joint_dist = model(tf.convert_to_tensor(ages, dtype=model.dtype)[..., None])
+    marginal_dist = model.marginal_distribution(
+        tf.convert_to_tensor(ages, dtype=model.dtype)[..., None]
+    )
+    marginal_dist = tfd.TransformedDistribution(
+        distribution=marginal_dist.distribution.distribution.distribution,
+        bijector=marginal_dist.bijector
+    )
+
+    y = np.linspace(-4, 4, 100)[..., None, None]
+
+    cdf = marginal_dist.cdf(y).numpy()
+    pdf = marginal_dist.prob(y).numpy()
+    fig, axs = plt.subplots(
+        2,
+        len(targets),
+        sharey="row",
+        sharex=True,
+        **kwargs
+    )
+
+    for i, c in enumerate(targets):
+        axs[0, i].set_prop_cycle("color", colors)
+        axs[0, i].plot(y.flatten(), cdf[..., i], label=ages, lw=0.5)
+        axs[1, i].set_prop_cycle("color", colors)
+        axs[1, i].plot(y.flatten(), pdf[..., i], label=ages, lw=0.5)
+        axs[1, i].set_xlabel(f"y={c}")
+        if i == 0:
+            axs[0, i].legend(
+                ages,
+                title="Age",
+                # bbox_to_anchor=(1.05, 1),
+                loc="right",
+                fontsize=8,
+                frameon=False,
+            )
+
+    axs[0, 0].set_ylabel(r"$F(y|\text{age})$")
+    axs[1, 0].set_ylabel(r"$f(y|\text{age})$")
+
+    fig.tight_layout(w_pad=0)
+    return fig
+
+
 def evaluate(
     dataset_name: str,
     dataset_type: str,
@@ -113,7 +221,7 @@ def evaluate(
             covariates=dataset_kwargs["covariates"],
             hue=dataset_kwargs["covariates"][0],
             seed=params["seed"],
-            frac=0.8,
+            frac=1,
             height=fig_height / 3,
         )
         log_and_save_figure(
@@ -143,7 +251,59 @@ def evaluate(
         )
 
         if isinstance(model, HybridDensityRegressionModel):
-            pass
+            marginal_bijectors = model_kwargs["marginal_bijectors"]
+            joint_bijectors = model_kwargs["joint_bijectors"]
+            if (
+                len(marginal_bijectors) == 1
+                and marginal_bijectors[-1]["bijector"] == "Shift"
+            ):
+                fig = plot_params(
+                    model=model,
+                    x=validation_data[0],
+                    targets=dataset_kwargs["targets"],
+                    figsize=figsize,
+                )
+                log_and_save_figure(
+                    figure=fig,
+                    figure_path=figure_path,
+                    file_name="params",
+                    file_format=figure_format,
+                    bbox_inches="tight",
+                    transparent=True,
+                )
+            if (
+                len(joint_bijectors) == 1
+                and joint_bijectors[0]["bijector"] == "ScaleMatvecLinearOperator"
+            ):
+                fig = plot_rank_corr(
+                    model=model,
+                    x=validation_data[0],
+                    targets=dataset_kwargs["targets"],
+                    figsize=figsize,
+                )
+                log_and_save_figure(
+                    figure=fig,
+                    figure_path=figure_path,
+                    file_name="rank_corr",
+                    file_format=figure_format,
+                    bbox_inches="tight",
+                    transparent=True,
+                )
+
+            fig = plot_marginal_distribution(
+                model=model,
+                ages=[1, 3, 6, 9, 12, 24],
+                targets=dataset_kwargs["targets"],
+                figsize=figsize,
+            )
+            log_and_save_figure(
+                figure=fig,
+                figure_path=figure_path,
+                file_name="distribution",
+                file_format=figure_format,
+                bbox_inches="tight",
+                transparent=True,
+            )
 
 
 # %% if main ###################################################################

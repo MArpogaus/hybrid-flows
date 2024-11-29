@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 12:12:12 (Marcel Arpogaus)
-# changed : 2024-08-22 13:53:13 (Marcel Arpogaus)
+# changed : 2024-11-28 17:51:37 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -89,6 +89,7 @@ def _plot_grid(data: pd.DataFrame, **kwargs: Any) -> Figure:
     """
     sns.set_theme(style="white")
     g = sns.PairGrid(data, diag_sharey=False, **kwargs)
+    g.set(xlim=(-5, 5), ylim=(-5, 5))
     g.map_upper(sns.scatterplot, s=10, alpha=0.5)
     g.map_lower(sns.kdeplot)
     g.map_diag(sns.kdeplot, lw=2)
