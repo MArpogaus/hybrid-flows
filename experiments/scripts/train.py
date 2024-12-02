@@ -360,9 +360,9 @@ def run(
         #     return -dist.log_prob(y) - marginal_dist.log_prob(y)
 
         # fit_kwargs.update(loss=my_loss)
-        compile_kwargs.update(
-            metrics=[MeanNegativeLogLikelihood(name="nll")],
-        )
+        # compile_kwargs.update(
+        #     metrics=[MeanNegativeLogLikelihood(name="nll")],
+        # )
 
         def mk_ds(data):
             return tf.data.Dataset.from_tensor_slices((data[0], data[1])).batch(
