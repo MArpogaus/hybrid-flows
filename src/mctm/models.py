@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-03 15:57:47 (Marcel Arpogaus)
-# changed : 2024-11-12 19:21:52 (Marcel Arpogaus)
+# changed : 2024-12-02 17:48:09 (Marcel Arpogaus)
 
 # %% License ###################################################################
 # %% Description ###############################################################
@@ -142,28 +142,36 @@ class HybridDensityRegressionModel(DensityRegressionBaseModel):
 
     def __init__(
         self,
+        dims: int,
         marginal_bijectors: List[Dict[str, Any]],
         joint_bijectors: List[Dict[str, Any]],
         marginals_trainable: bool = True,
         joint_trainable: bool = True,
         predict_marginals: bool = False,
+        joint_flow_type: str = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         """Initialize HybridDensityRegressionModel.
 
         Parameters
         ----------
-        marginal_bijectors: List[Dict[str, Any]]
+        dims : int
+            The dimension of the distribution.
+        marginal_bijectors : List[Dict[str, Any]]
             Bijector definitions for element-wise marginal transformations.
-        joint_bijectors: List[Dict[str, Any]]
+        joint_bijectors : List[Dict[str, Any]]
             Bijector definitions for multi-dimensional transformations used to
             de-correlate the data.
-        marginals_trainable: bool, optional
+        marginals_trainable : bool, optional
             Train marginal flow variables if True. Default is `True`.
-        joint_trainable: bool, optional
+        joint_trainable : bool, optional
             Train joint flow variables if True. Default is `True`.
-        predict_marginals: bool, optional
+        predict_marginals : bool, optional
             If `True` predict marginal else joint distribution. Default is `False`.
+        joint_flow_type : str, optional
+            Allows to specify special types of flows in a more compact notation.
+            May be either "coupling_flow", "masked_autoregressive_flow" or
+            "masked_autoregressive_flow_first_dim_masked". Default is `None`.
         **kwargs : Dict[str, Any]
             Additional keyword arguments for
            `distributions._get_transformed_distribution_fn`.
@@ -186,6 +194,10 @@ class HybridDensityRegressionModel(DensityRegressionBaseModel):
             inverse_flow=False,
             variables_name="marginal",
         )
+        if joint_flow_type is not None:
+            joint_bijectors = getattr(
+                distributions, f"_get_{joint_flow_type}_bijector_def"
+            )(dims=dims, **joint_bijectors)
         (
             self.joint_transformation_parameters_fn,
             self.joint_transformation_parametrization_fn,
@@ -199,10 +211,10 @@ class HybridDensityRegressionModel(DensityRegressionBaseModel):
         )
 
         self.distribuition_fn = distributions._get_transformed_distribution_fn(
-            self.get_flow_parametrization_fn(), **kwargs
+            self.get_flow_parametrization_fn(), dims=dims, **kwargs
         )
         self.marginal_distribuition_fn = distributions._get_transformed_distribution_fn(
-            self.marginal_transformation_parametrization_fn, **kwargs
+            self.marginal_transformation_parametrization_fn, dims=dims, **kwargs
         )
 
         self.marginals_trainable = marginals_trainable
