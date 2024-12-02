@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2024-11-11 18:06:20 (Marcel Arpogaus)
+# changed : 2024-12-02 17:35:22 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions for probability distributions.
@@ -151,7 +151,7 @@ def _get_trainable_distribution(
 
 
 def _get_base_distribution(
-    dims: int = 0,
+    dims: int,
     distribution_name: str = "normal",
     **kwargs: Any,
 ) -> tfd.Distribution:
@@ -723,6 +723,26 @@ def _get_num_masked(dims: int, layer: int) -> int:
     return num_masked
 
 
+@recurse_on_key(__NESTED_BIJECTOR_KEY__)
+@skip_no_dict
+def _validate_bijector_definition(dict):
+    """Check if Bijector definition contains all required and no unknonw keys.
+
+    Parameters
+    ----------
+    dict : Dict[str, Any]
+        Bijector definition
+
+
+    """
+    bj_err = f"Bijector definition invalid:\n{pformat(dict)}\n"
+    assert __BIJECTOR_NAME_KEY__ in dict, (
+        bj_err + f"Key '{__BIJECTOR_NAME_KEY__}' is required."
+    )
+    for k in dict:
+        assert k in __ALL_KEYS__, bj_err + f"Unknown key: '{k}'"
+
+
 def _get_layer_overwrites(
     layer_overwrites: Dict[Union[int, str], Dict[str, Any]], layer: int, num_layers: int
 ) -> Dict[str, Any]:
@@ -741,97 +761,249 @@ def _get_nested_bijector_def(num_layers, layer_overwrites, layer, **kwargs):
     )
 
 
-@recurse_on_key(__NESTED_BIJECTOR_KEY__)
-@skip_no_dict
-def validate_bijector_definition(dict):
-    """Check if Bijector definition contains all required and no unknonw keys.
+def _get_masked_autoregressive_flow_bijector_def(
+    dims: int,
+    num_layers: int,
+    num_parameters: int,
+    layer_overwrites: Dict[Union[int, str], Dict[str, Any]] = {},
+    parameters_fn: Callable[
+        ..., Any
+    ] = parameters_lib.get_masked_autoregressive_network_fn,
+    parameters_fn_kwargs: Dict[str, Any] = {},
+    maf_kwargs: Dict[str, Any] = {},
+    nested_bijectors: Union[List[Union[Dict[str, Any], tfb.Bijector]], None] = None,
+    **kwargs: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    """Get bijector definition to parametrize a Masked Autoregressive Flow (MAF).
 
     Parameters
     ----------
-    dict : Dict[str, Any]
-        Bijector definition
+    dims : int
+        The dimension of the distribution.
+    num_layers : int
+        The number of layers in the flow.
+    num_parameters : int
+        The number of parameters in each layer.
+    layer_overwrites : Dict[Union[int, str], Dict[str, Any]], optional
+        Layer specific overwrites for bijectors, by default {}.
+    parameters_fn : Callable[..., Any], optional
+        A function to get the parameter lambda,
+        by default parameters_lib.get_masked_autoregressive_network_fn
+    parameters_fn_kwargs : Dict[str, Any], optional
+        Additional keyword arguments passed to `parameters_fn`,
+        by default {}.
+    maf_kwargs : Dict[str, Any]
+        Additional keyword arguments added to the MAF bijector definition,
+        by default {}.
+    nested_bijectors: Union[List[Union[Dict, tfb.Bijector]], None] = None, optional
+        In addition to provide nested bijector definition as kwargs, this
+        argument can be used to provide multiple nested bijectors in a list.
+    **kwargs : Dict[str, Any]
+        Additional keyword arguments added to the nested bijector definition.
 
-
-    """
-    bj_err = f"Bijector definition invalid:\n{pformat(dict)}\n"
-    assert __BIJECTOR_NAME_KEY__ in dict, (
-        bj_err + f"Key '{__BIJECTOR_NAME_KEY__}' is required."
-    )
-    for k in dict:
-        assert k in __ALL_KEYS__, bj_err + f"Unknown key: '{k}'"
-
-
-# %% public functions ##########################################################
-def get_normalizing_flow(
-    bijectors: List[Dict[str, Any]],
-    reverse_flow: bool = False,
-    inverse_flow: bool = False,
-    get_base_distribution: Callable[..., tfd.Distribution] = _get_base_distribution,
-    variables_name: str = None,
-    **kwargs,
-) -> Tuple[
-    Callable[[tf.Tensor], tfd.TransformedDistribution],
-    Callable[[tf.Tensor], Union[list, Tuple[list, Any]]],
-    List[tf.Variable],
-    List[tf.Variable],
-]:
-    """Get functions and variables to parametrize transformed distributions.
-
-    Parameters
-    ----------
-    bijectors : List[Dict[str, Any]]
-        List of dictionaries describing bijective transformations.
-    reverse_flow : bool, optional
-        Reverse chain of bijectors, by default False.
-    inverse_flow : bool, optional
-        Invert flow to transform from the data to the base distribution,
-        by default False.
-    get_base_distribution : Callable, optional
-        The base distribution lambda,
-        by default `parameters_lib._get_base_distribution`.
-    variables_name: str, optional
-        A optional prefix, given to all initialized variables. Used to avoid
-        duplicate names, when initializing multiple flows. By default: None
-
-    **kwargs : Any
-        Additional optional keyword arguments passed
-        to `parameters_lib._get_transformed_distribution_fn`.
 
     Returns
     -------
-    Tuple[Callable, Callable, List[tf.Variable], List[tf.Variable]]
-        The parametrization function of the transformed distribution,
-        the parameter function, a list of trainable parameters
-        and a list of non-trainable parameters.
+    bijectors : List[Dict[str, Any]]
+        List containing bijector definitions, see `_init_bijector_from_dict`
+        for details.
 
     """
-    # check if bijector configuration is valid
-    list(map(validate_bijector_definition, bijectors))
+    bijectors = []
 
-    (
-        parameter_fn,
-        flow_parametrization_fn,
-        trainable_variables,
-        non_trainable_variables,
-    ) = _get_flow_parametrization_fn(
-        bijectors=bijectors,
-        inverse_flow=inverse_flow,
-        reverse_flow=reverse_flow,
-        variables_name=variables_name,
-    )
+    for layer in range(num_layers):
+        # The nested bijector config is abstracted from the user.
+        # In order took keep the overwrite mechanism intuitive we add it after the
+        # overwrites have been applied.
 
-    distribution_fn = _get_transformed_distribution_fn(
-        flow_parametrization_fn,
-        get_base_distribution=get_base_distribution,
+        if nested_bijectors is None:
+            nested_bijector_def = _get_nested_bijector_def(
+                num_layers, layer_overwrites, layer, **kwargs
+            )
+        else:
+            nested_bijector_def = [
+                _get_nested_bijector_def(num_layers, layer_overwrites, layer, **d)
+                for d in nested_bijectors
+            ]
+
+        bijector_def = {
+            __BIJECTOR_NAME_KEY__: "MaskedAutoregressiveFlow",
+            __NESTED_BIJECTOR_KEY__: nested_bijector_def,
+            __PARAMETERS_FN_KEY__: parameters_fn,
+            __PARAMETERS_FN_KWARGS_KEY__: {
+                "parameter_shape": (dims, num_parameters),
+                **parameters_fn_kwargs,
+                "name": f"maf_layer_{layer}",
+            },
+            **maf_kwargs.copy(),
+        }
+        bijectors.append(bijector_def)
+
+    __LOGGER__.info(pformat(bijectors))
+
+    return bijectors
+
+
+def _get_coupling_flow_bijector_def(
+    dims,
+    num_layers,
+    num_parameters,
+    num_masked,
+    layer_overwrites,
+    parameters_fn,
+    parameters_fn_kwargs,
+    nested_bijectors,
+    **kwargs,
+):
+    """Get bijector definition to parametrize a Coupling Flow.
+
+    Parameters
+    ----------
+    dims : int
+        The dimension of the distribution.
+    num_layers : int
+        The number of layers in the flow.
+    num_parameters : int
+        The number of parameters in each layer.
+    num_masked : Union[int, None], optional
+        Number of dimensions to mask, by default None.
+    layer_overwrites : Dict[Union[int, str], Dict[str, Any]], optional
+        Layer specific overwrites for bijectors, by default {}.
+    parameters_fn : Callable[..., Any], optional
+        A function to get the parameter lambda,
+        by default parameters_lib.get_fully_connected_network_fn.
+    parameters_fn_kwargs : Dict[str, Any], optional
+        Additional keyword arguments passed to `parameter_fn`,
+        by default {}.
+    nested_bijectors: Union[List[Union[Dict, tfb.Bijector]], None] = None, optional
+        In addition to provide nested bijector definition as kwargs, this
+        argument can be used to provide multiple nested bijectors in a list.
+    **kwargs : Dict[str, Any]
+        Additional keyword arguments added to the nested bijector definition.
+
+    Returns
+    -------
+    bijectors : List[Dict[str, Any]]
+        List containing bijector definitions, see `_init_bijector_from_dict`
+        for details.
+
+    """
+    bijectors = []
+
+    for layer in range(num_layers):
+        nm = num_masked if num_masked is not None else _get_num_masked(dims, layer)
+
+        # RealNVP's nested bijector config is abstracted from the user.
+        # In order took keep the overwrite mechanism intuitive we add it after the
+        # overwrites have been applied.
+        if nested_bijectors is None:
+            nested_bijector_def = _get_nested_bijector_def(
+                num_layers, layer_overwrites, layer, **kwargs
+            )
+        else:
+            nested_bijector_def = [
+                _get_nested_bijector_def(num_layers, layer_overwrites, layer, **d)
+                for d in nested_bijectors
+            ]
+        realnvp_bijector_def = {
+            __BIJECTOR_NAME_KEY__: "RealNVP",
+            __BIJECTOR_KWARGS_KEY__: {
+                "num_masked": nm,
+            },
+            __NESTED_BIJECTOR_KEY__: nested_bijector_def,
+            __PARAMETERS_FN_KEY__: parameters_fn,
+            __PARAMETERS_FN_KWARGS_KEY__: {
+                "input_shape": (nm,),
+                "parameter_shape": (dims - nm, num_parameters),
+                "name": f"coupling_layer_{layer}",
+                **parameters_fn_kwargs,
+            },
+        }
+        bijectors.append(realnvp_bijector_def)
+
+        permutation = list(range(nm, dims)) + list(range(nm))
+        if num_layers % 2 != 0 and layer == (num_layers - 1):
+            __LOGGER__.info(
+                "uneven number of coupling layers -> skipping last permutation"
+            )
+        else:
+            bijectors.append(tfb.Permute(permutation=permutation))
+    return bijectors
+
+
+def _get_masked_autoregressive_flow_first_dim_masked_bijector_def(
+    dims: int,
+    num_parameters: int,
+    x0_parameters_fn: Callable[
+        ..., Any
+    ] = parameters_lib.get_fully_connected_network_fn,
+    x0_parameters_fn_kwargs: Dict[str, Any] = {},
+    maf_parameters_fn: Callable[
+        ..., Any
+    ] = parameters_lib.get_masked_autoregressive_network_fn,
+    maf_parameters_fn_kwargs: Dict[str, Any] = {},
+    **kwargs: Dict[str, Any],
+) -> Tuple[
+    Callable[[tf.Tensor], tfd.Distribution],
+    Callable[[tf.Tensor], tf.Variable],
+    List[tf.Variable],
+    List[tf.Variable],
+]:
+    """Get bijector definition to parametrize a MAF with the first dimension masked.
+
+    Parameters
+    ----------
+    dims : int
+        The dimension of the distribution.
+    num_parameters : int
+        The number of parameters in each layer.
+    x0_parameters_fn : Callable[..., Any], optional
+        A function to get the parameter lambda of the encapsulating RealNVP bjector,
+        by default parameters_lib.get_fully_connected_network_fn.
+    x0_parameters_fn_kwargs : Dict[str, Any], optional
+        Additional keyword arguments passed to `x0_parameters_fn`,
+        by default {}.
+    maf_parameters_fn : Callable[..., Any], optional
+        A function to get the parameter lambda of the MAF bjectors,
+        by default parameters_lib.get_fully_connected_network_fn.
+    maf_parameters_fn_kwargs : Dict[str, Any], optional
+        Additional keyword arguments passed to `maf_parameters_fn`,
+        by default {}.
+    **kwargs : Dict[str, Any]
+        Additional keyword arguments passed to
+        `_get_masked_autoregressive_flow_bijector_def`.
+
+    Returns
+    -------
+    bijectors : List[Dict[str, Any]]
+        List containing bijector definitions, see `_init_bijector_from_dict`
+        for details.
+
+    """
+    nested_bijector_def = _get_masked_autoregressive_flow_bijector_def(
+        dims=dims - 1,
+        num_parameters=num_parameters,
+        parameters_fn=maf_parameters_fn,
+        parameters_fn_kwargs=maf_parameters_fn_kwargs,
+        maf_kwargs={__PARAMETERIZED_BY_PARENT_KEY__: True},
         **kwargs,
     )
-
-    return (
-        distribution_fn,
-        parameter_fn,
-        trainable_variables,
-        non_trainable_variables,
-    )
+    bijector_def = [
+        {
+            __BIJECTOR_NAME_KEY__: "RealNVP",
+            __BIJECTOR_KWARGS_KEY__: {
+                "num_masked": 1,
+            },
+            __NESTED_BIJECTOR_KEY__: nested_bijector_def,
+            __PARAMETERS_FN_KEY__: x0_parameters_fn,
+            __PARAMETERS_FN_KWARGS_KEY__: {
+                "input_shape": (1,),
+                "parameter_shape": (dims - 1, num_parameters),
+                **x0_parameters_fn_kwargs,
+            },
+        }
+    ]
+    return bijector_def
 
 
 def _get_flow_parametrization_fn(bijectors, inverse_flow, reverse_flow, variables_name):
@@ -879,17 +1051,83 @@ def _get_flow_parametrization_fn(bijectors, inverse_flow, reverse_flow, variable
     )
 
 
+# %% public functions ##########################################################
+def get_normalizing_flow(
+    bijectors: List[Dict[str, Any]],
+    reverse_flow: bool = False,
+    inverse_flow: bool = False,
+    get_base_distribution: Callable[..., tfd.Distribution] = _get_base_distribution,
+    variables_name: str = None,
+    **kwargs,
+) -> Tuple[
+    Callable[[tf.Tensor], tfd.TransformedDistribution],
+    Callable[[tf.Tensor], Union[list, Tuple[list, Any]]],
+    List[tf.Variable],
+    List[tf.Variable],
+]:
+    """Get functions and variables to parametrize transformed distributions.
+
+    Parameters
+    ----------
+    bijectors : List[Dict[str, Any]]
+        List of dictionaries describing bijective transformations.
+    reverse_flow : bool, optional
+        Reverse chain of bijectors, by default False.
+    inverse_flow : bool, optional
+        Invert flow to transform from the data to the base distribution,
+        by default False.
+    get_base_distribution : Callable, optional
+        The base distribution lambda,
+        by default `parameters_lib._get_base_distribution`.
+    variables_name: str, optional
+        A optional prefix, given to all initialized variables. Used to avoid
+        duplicate names, when initializing multiple flows. By default: None
+
+    **kwargs : Any
+        Additional optional keyword arguments passed
+        to `parameters_lib._get_transformed_distribution_fn`.
+
+    Returns
+    -------
+    Tuple[Callable, Callable, List[tf.Variable], List[tf.Variable]]
+        The parametrization function of the transformed distribution,
+        the parameter function, a list of trainable parameters
+        and a list of non-trainable parameters.
+
+    """
+    # check if bijector configuration is valid
+    list(map(_validate_bijector_definition, bijectors))
+
+    (
+        parameter_fn,
+        flow_parametrization_fn,
+        trainable_variables,
+        non_trainable_variables,
+    ) = _get_flow_parametrization_fn(
+        bijectors=bijectors,
+        inverse_flow=inverse_flow,
+        reverse_flow=reverse_flow,
+        variables_name=variables_name,
+    )
+
+    distribution_fn = _get_transformed_distribution_fn(
+        flow_parametrization_fn,
+        get_base_distribution=get_base_distribution,
+        **kwargs,
+    )
+
+    return (
+        distribution_fn,
+        parameter_fn,
+        trainable_variables,
+        non_trainable_variables,
+    )
+
+
 def get_coupling_flow(
     dims: int,
-    num_layers: int,
-    num_parameters: int,
-    num_masked: Union[int, None] = None,
-    layer_overwrites: Dict[Union[int, str], Dict[str, Any]] = {},
-    parameters_fn: Callable[..., Any] = parameters_lib.get_fully_connected_network_fn,
-    parameters_fn_kwargs: Dict[str, Any] = {},
     get_base_distribution: Callable[..., tfd.Distribution] = _get_base_distribution,
     base_distribution_kwargs: Dict[str, Any] = {},
-    nested_bijectors: Union[List[Union[Dict[str, Any], tfb.Bijector]], None] = None,
     **kwargs: Dict[str, Any],
 ) -> Tuple[
     Callable[[tf.Tensor], tfd.Distribution],
@@ -903,28 +1141,11 @@ def get_coupling_flow(
     ----------
     dims : int
         The dimension of the distribution.
-    num_layers : int
-        The number of layers in the flow.
-    num_parameters : int
-        The number of parameters in each layer.
-    num_masked : Union[int, None], optional
-        Number of dimensions to mask, by default None.
-    layer_overwrites : Dict[Union[int, str], Dict[str, Any]], optional
-        Layer specific overwrites for bijectors, by default {}.
-    parameters_fn : Callable[..., Any], optional
-        A function to get the parameter lambda,
-        by default parameters_lib.get_fully_connected_network_fn.
-    parameters_fn_kwargs : Dict[str, Any], optional
-        Additional keyword arguments passed to `parameter_fn`,
-        by default {}.
     get_base_distribution : Callable, optional
         The base distribution lambda,
         by default parameters_lib._get_base_distribution.
     base_distribution_kwargs : Dict[str, Any], optional
         Keyword arguments for the base distribution, by default {}.
-    nested_bijectors: Union[List[Union[Dict, tfb.Bijector]], None] = None, optional
-        In addition to provide nested bijector definition as kwargs, this
-        argument can be used to provide multiple nested bijectors in a list.
     **kwargs : Dict[str, Any]
         Additional keyword arguments added to the nested bijector definition.
 
@@ -940,46 +1161,7 @@ def get_coupling_flow(
         A list of non-trainable parameters.
 
     """
-    bijectors = []
-
-    for layer in range(num_layers):
-        nm = num_masked if num_masked is not None else _get_num_masked(dims, layer)
-
-        # RealNVP's nested bijector config is abstracted from the user.
-        # In order took keep the overwrite mechanism intuitive we add it after the
-        # overwrites have been applied.
-        if nested_bijectors is None:
-            nested_bijector_def = _get_nested_bijector_def(
-                num_layers, layer_overwrites, layer, **kwargs
-            )
-        else:
-            nested_bijector_def = [
-                _get_nested_bijector_def(num_layers, layer_overwrites, layer, **d)
-                for d in nested_bijectors
-            ]
-        realnvp_bijector_def = {
-            __BIJECTOR_NAME_KEY__: "RealNVP",
-            __BIJECTOR_KWARGS_KEY__: {
-                "num_masked": nm,
-            },
-            __NESTED_BIJECTOR_KEY__: nested_bijector_def,
-            __PARAMETERS_FN_KEY__: parameters_fn,
-            __PARAMETERS_FN_KWARGS_KEY__: {
-                "input_shape": (nm,),
-                "parameter_shape": (dims - nm, num_parameters),
-                "name": f"coupling_layer_{layer}",
-                **parameters_fn_kwargs,
-            },
-        }
-        bijectors.append(realnvp_bijector_def)
-
-        permutation = list(range(nm, dims)) + list(range(nm))
-        if num_layers % 2 != 0 and layer == (num_layers - 1):
-            __LOGGER__.info(
-                "uneven number of coupling layers -> skipping last permutation"
-            )
-        else:
-            bijectors.append(tfb.Permute(permutation=permutation))
+    bijectors = _get_coupling_flow_bijector_def(dims, **kwargs)
 
     __LOGGER__.info(pformat(bijectors))
     return get_normalizing_flow(
@@ -990,94 +1172,6 @@ def get_coupling_flow(
         get_base_distribution=get_base_distribution,
         **base_distribution_kwargs,
     )
-
-
-def _get_masked_autoregressive_flow_bijector_def(
-    dims: int,
-    num_layers: int,
-    num_parameters: int,
-    layer_overwrites: Dict[Union[int, str], Dict[str, Any]] = {},
-    parameters_fn: Callable[
-        ..., Any
-    ] = parameters_lib.get_masked_autoregressive_network_fn,
-    parameters_fn_kwargs: Dict[str, Any] = {},
-    maf_kwargs: Dict[str, Any] = {},
-    nested_bijectors: Union[List[Union[Dict[str, Any], tfb.Bijector]], None] = None,
-    **kwargs: Dict[str, Any],
-) -> Dict[str, Any]:
-    """Get functions and variables to parametrize a Masked Autoregressive Flow (MAF).
-
-    Parameters
-    ----------
-    dims : int
-        The dimension of the distribution.
-    num_layers : int
-        The number of layers in the flow.
-    num_parameters : int
-        The number of parameters in each layer.
-    layer_overwrites : Dict[Union[int, str], Dict[str, Any]], optional
-        Layer specific overwrites for bijectors, by default {}.
-    parameters_fn : Callable[..., Any], optional
-        A function to get the parameter lambda,
-        by default parameters_lib.get_masked_autoregressive_network_fn
-    parameters_fn_kwargs : Dict[str, Any], optional
-        Additional keyword arguments passed to `parameters_fn`,
-        by default {}.
-    maf_kwargs : Dict[str, Any]
-        Additional keyword arguments added to the MAF bijector definition,
-        by default {}.
-    nested_bijectors: Union[List[Union[Dict, tfb.Bijector]], None] = None, optional
-        In addition to provide nested bijector definition as kwargs, this
-        argument can be used to provide multiple nested bijectors in a list.
-    **kwargs : Dict[str, Any]
-        Additional keyword arguments added to the nested bijector definition.
-
-
-    Returns
-    -------
-    distribution_fn : Callable[[tf.Tensor], tfd.Distribution]
-        A function to parametrize the distribution
-    parameter_fn : Callable[[tf.Tensor], tf.Variable]
-        A callable for parameter networks
-    trainable_parameters : List[tf.Variable]
-        A list of trainable parameters.
-    non_trainable_parameters : List[tf.Variable]
-        A list of non-trainable parameters.
-
-    """
-    bijectors = []
-
-    for layer in range(num_layers):
-        # The nested bijector config is abstracted from the user.
-        # In order took keep the overwrite mechanism intuitive we add it after the
-        # overwrites have been applied.
-
-        if nested_bijectors is None:
-            nested_bijector_def = _get_nested_bijector_def(
-                num_layers, layer_overwrites, layer, **kwargs
-            )
-        else:
-            nested_bijector_def = [
-                _get_nested_bijector_def(num_layers, layer_overwrites, layer, **d)
-                for d in nested_bijectors
-            ]
-
-        bijector_def = {
-            __BIJECTOR_NAME_KEY__: "MaskedAutoregressiveFlow",
-            __NESTED_BIJECTOR_KEY__: nested_bijector_def,
-            __PARAMETERS_FN_KEY__: parameters_fn,
-            __PARAMETERS_FN_KWARGS_KEY__: {
-                "parameter_shape": (dims, num_parameters),
-                **parameters_fn_kwargs,
-                "name": f"maf_layer_{layer}",
-            },
-            **maf_kwargs.copy(),
-        }
-        bijectors.append(bijector_def)
-
-    __LOGGER__.info(pformat(bijectors))
-
-    return bijectors
 
 
 def get_masked_autoregressive_flow(
@@ -1132,15 +1226,6 @@ def get_masked_autoregressive_flow(
 
 def get_masked_autoregressive_flow_first_dim_masked(
     dims: int,
-    num_parameters: int,
-    x0_parameters_fn: Callable[
-        ..., Any
-    ] = parameters_lib.get_fully_connected_network_fn,
-    x0_parameters_fn_kwargs: Dict[str, Any] = {},
-    maf_parameters_fn: Callable[
-        ..., Any
-    ] = parameters_lib.get_masked_autoregressive_network_fn,
-    maf_parameters_fn_kwargs: Dict[str, Any] = {},
     get_base_distribution: Callable[..., tfd.Distribution] = _get_base_distribution,
     base_distribution_kwargs: Dict[str, Any] = {},
     **kwargs: Dict[str, Any],
@@ -1156,20 +1241,6 @@ def get_masked_autoregressive_flow_first_dim_masked(
     ----------
     dims : int
         The dimension of the distribution.
-    num_parameters : int
-        The number of parameters in each layer.
-    x0_parameters_fn : Callable[..., Any], optional
-        A function to get the parameter lambda of the encapsulating RealNVP bjector,
-        by default parameters_lib.get_fully_connected_network_fn.
-    x0_parameters_fn_kwargs : Dict[str, Any], optional
-        Additional keyword arguments passed to `x0_parameters_fn`,
-        by default {}.
-    maf_parameters_fn : Callable[..., Any], optional
-        A function to get the parameter lambda of the MAF bjectors,
-        by default parameters_lib.get_fully_connected_network_fn.
-    maf_parameters_fn_kwargs : Dict[str, Any], optional
-        Additional keyword arguments passed to `maf_parameters_fn`,
-        by default {}.
     get_base_distribution : Callable, optional
         The base distribution lambda,
         by default parameters_lib._get_base_distribution.
@@ -1192,30 +1263,12 @@ def get_masked_autoregressive_flow_first_dim_masked(
         A list of non-trainable parameters.
 
     """
-    nested_bijector_def = _get_masked_autoregressive_flow_bijector_def(
-        dims=dims - 1,
-        num_parameters=num_parameters,
-        parameters_fn=maf_parameters_fn,
-        parameters_fn_kwargs=maf_parameters_fn_kwargs,
-        maf_kwargs={__PARAMETERIZED_BY_PARENT_KEY__: True},
-        **kwargs,
+    bijector_def = _get_masked_autoregressive_flow_first_dim_masked_bijector_def(
+        dims, **kwargs
     )
-    bijector_def = {
-        __BIJECTOR_NAME_KEY__: "RealNVP",
-        __BIJECTOR_KWARGS_KEY__: {
-            "num_masked": 1,
-        },
-        __NESTED_BIJECTOR_KEY__: nested_bijector_def,
-        __PARAMETERS_FN_KEY__: x0_parameters_fn,
-        __PARAMETERS_FN_KWARGS_KEY__: {
-            "input_shape": (1,),
-            "parameter_shape": (dims - 1, num_parameters),
-            **x0_parameters_fn_kwargs,
-        },
-    }
     return get_normalizing_flow(
         dims=dims,
-        bijectors=[bijector_def],
+        bijectors=bijector_def,
         reverse_flow=False,
         inverse_flow=False,
         get_base_distribution=get_base_distribution,
