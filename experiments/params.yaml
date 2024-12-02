@@ -58,6 +58,8 @@ benchmark_models:
 
 malnutrition_models:
 - conditional_multivariate_transformation_model
+- conditional_hybrid_masked_autoregressive_flow_bernstein_poly
+- conditional_hybrid_masked_autoregressive_flow_quadratic_spline
 
 malnutrition_kwargs:
   data_path: datasets/malnutrition/india.raw

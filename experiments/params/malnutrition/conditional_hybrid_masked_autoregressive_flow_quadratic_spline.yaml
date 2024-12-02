@@ -35,20 +35,41 @@ model_kwargs:
     parameters_fn: bernstein_polynomial
     parameters_fn_kwargs:
       conditional_event_shape: 1
-      domain: &x_domain [0, 35]
+      domain: [0, 35]
       dtype: float
       extrapolation: true
       parameter_shape: [*dims]
       polynomial_order: 6
+  joint_flow_type: masked_autoregressive_flow_first_dim_masked
   joint_bijectors:
-  - bijector: ScaleMatvecLinearOperator
-    invert: true
-    parameters_fn: bernstein_polynomial
-    parameters_fn_kwargs:
+    num_layers: 1
+    num_parameters: 47 # 16 * 3 - 1
+    bijector: RationalQuadraticSpline
+    bijector_kwargs:
+      range_min: -6
+    parameters_constraint_fn_kwargs:
+      interval_width: 12
+      min_slope: 0.001
+      min_bin_width: 0.001
+      nbins: 32
+    # invert: True
+    maf_parameters_fn_kwargs:
+      activation: relu
+      hidden_units:
+      - 512
+      - 512
+      - 512
+      dtype: float32
+      conditional: true
       conditional_event_shape: 1
-      domain: *x_domain
-      dtype: float
-      extrapolation: true
-      parameter_shape: [3]
-      polynomial_order: 3
-    parameters_constraint_fn: mctm.activations.lambda_parameters_constraint_fn
+    x0_parameters_fn_kwargs:
+      activation: relu
+      batch_norm: false
+      dropout: false
+      hidden_units:
+      - 512
+      - 512
+      - 512
+      dtype: float32
+      conditional: true
+      conditional_event_shape: 1
