@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2024-11-29 17:55:05 (Marcel Arpogaus)
+# changed : 2024-12-02 16:13:45 (Marcel Arpogaus)
 
 import seaborn as sns
 from tensorflow_probability import distributions as tfd
@@ -22,9 +22,11 @@ from shutil import which
 
 import mlflow
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import tensorflow_probability as tfp
 from matplotlib import pyplot as plt
+
 from mctm.data.malnutrion import get_dataset
 from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
 from mctm.utils.mlflow import (
@@ -34,6 +36,7 @@ from mctm.utils.mlflow import (
 )
 from mctm.utils.pipeline import prepare_pipeline
 from mctm.utils.visualisation import (
+    _get_malnutrition_samples_df,
     get_figsize,
     plot_malnutrition_data,
     plot_malnutrition_samples,
@@ -106,26 +109,19 @@ def plot_marginal_distribution(model, ages, targets, palette="mako_r", **kwargs)
     colors = sns.color_palette(palette, as_cmap=True)(
         np.linspace(0, 1, len(ages))
     ).tolist()
-    joint_dist = model(tf.convert_to_tensor(ages, dtype=model.dtype)[..., None])
     marginal_dist = model.marginal_distribution(
         tf.convert_to_tensor(ages, dtype=model.dtype)[..., None]
     )
     marginal_dist = tfd.TransformedDistribution(
         distribution=marginal_dist.distribution.distribution.distribution,
-        bijector=marginal_dist.bijector
+        bijector=marginal_dist.bijector,
     )
 
     y = np.linspace(-4, 4, 100)[..., None, None]
 
     cdf = marginal_dist.cdf(y).numpy()
     pdf = marginal_dist.prob(y).numpy()
-    fig, axs = plt.subplots(
-        2,
-        len(targets),
-        sharey="row",
-        sharex=True,
-        **kwargs
-    )
+    fig, axs = plt.subplots(2, len(targets), sharey="row", sharex=True, **kwargs)
 
     for i, c in enumerate(targets):
         axs[0, i].set_prop_cycle("color", colors)
@@ -147,6 +143,141 @@ def plot_marginal_distribution(model, ages, targets, palette="mako_r", **kwargs)
     axs[1, 0].set_ylabel(r"$f(y|\text{age})$")
 
     fig.tight_layout(w_pad=0)
+    return fig
+
+
+def ecdf(samples, x):
+    ss = np.sort(samples)  # [..., None]
+    cdf = np.searchsorted(ss, x, side="right") / float(ss.size)
+    return cdf.astype(x.dtype)
+
+
+def plot_reliability_diagram(model, dims, x, y, targets, **kwargs):
+    reliability_df = _get_malnutrition_samples_df(model, x, y, 1, targets).pivot(
+        columns="source"
+    )
+    reliability_df.columns = reliability_df.columns.map("{0[1]}_{0[0]}".format)
+    reliability_df = reliability_df.drop(columns="model_cage").rename(
+        columns={"data_cage": "cage"}
+    )
+
+    def apply_cdf(df):
+        data_cols = ["data_" + c for c in targets]
+        model_cols = ["model_" + c for c in targets]
+        measurements = df.loc[:, data_cols].values
+        samples = df.loc[:, model_cols].values
+        marginal_dist = model.marginal_distribution(df.cage.unique()[..., None])
+        marginal_dist = tfd.TransformedDistribution(
+            distribution=marginal_dist.distribution.distribution,
+            bijector=marginal_dist.bijector,
+        )
+        model_cdf = marginal_dist.cdf(measurements).numpy()
+        data_ecdf = np.stack(list(map(lambda x: ecdf(x, x), measurements.T)), 1)
+        samples_ecdf = np.stack(list(map(lambda x: ecdf(x, x), samples.T)), 1)
+        cdf_columns = ["cdf_" + c for c in targets]
+        data_ecdf_columns = ["ecdf_data_" + c for c in targets]
+        samples_ecdf_columns = ["ecdf_model_" + c for c in targets]
+        df.loc[:, cdf_columns] = model_cdf
+        df.loc[:, data_ecdf_columns] = data_ecdf
+        df.loc[:, samples_ecdf_columns] = samples_ecdf
+        return df
+
+    reliability_df = (
+        reliability_df.groupby("cage")
+        .apply(apply_cdf, include_groups=True)
+        .reset_index(drop=True)
+    )
+
+    # Binning the predicted probabilities
+    # Create bins for the predicted probabilities
+    bins = np.linspace(0, 1, num=11)  # 10 equally spaced bins from 0 to 1
+    for column in targets:
+        reliability_df.loc[:, "cdf_binned_" + column] = reliability_df.loc[
+            :, "cdf_" + column
+        ].apply(pd.cut, by_row=False, bins=bins, include_lowest=True)
+    for column in targets:
+        reliability_df.loc[:, "ecdf_binned_" + column] = reliability_df.loc[
+            :, "ecdf_model_" + column
+        ].apply(pd.cut, by_row=False, bins=bins, include_lowest=True)
+
+    fig, axs = plt.subplots(
+        2,
+        dims,
+        sharey="row",
+        sharex=True,
+    )
+
+    common_errorbar_kwargs = dict(
+        markersize=0.2,
+        marker="o",
+        # capsize=1,
+        color="C0",
+        linewidth=0.5,
+    )
+
+    # Iterate over groups for different kinds
+    for i, column in enumerate(targets):
+        # Extract categories and corresponding mean ECDF values
+        cdf_bin_col = "cdf_binned_" + column
+        ecdf_bin_col = "ecdf_binned_" + column
+        ecdf_data_col = "ecdf_data_" + column
+        ecdf_model_col = "ecdf_model_" + column
+        predicted_bins = reliability_df[cdf_bin_col].cat.categories.astype(str)
+        grpd_data = reliability_df.groupby(cdf_bin_col)[ecdf_data_col]
+        observed_freqs = grpd_data.mean()
+
+        quantiles = grpd_data.quantile([0.25, 0.975]).unstack()
+
+        pi = (quantiles - observed_freqs.values[..., None]).T.abs()
+
+        axs[0][i].errorbar(
+            predicted_bins, observed_freqs, yerr=pi, **common_errorbar_kwargs
+        )
+        axs[0][i].set_box_aspect(1)
+
+        grpd_data = reliability_df.groupby(ecdf_bin_col)[ecdf_model_col]
+        observed_freqs = grpd_data.mean()
+
+        quantiles = grpd_data.quantile([0.25, 0.975]).unstack()
+
+        pi = (quantiles - observed_freqs.values[..., None]).T.abs()
+
+        axs[1][i].errorbar(
+            predicted_bins, observed_freqs, yerr=pi, **common_errorbar_kwargs
+        )
+        axs[1][i].set_box_aspect(1)
+
+        xticks = [0, len(predicted_bins) - 1]
+        axs[1][i].set_xticks(xticks, predicted_bins[xticks])
+
+        # Set labels and titles
+        axs[0][i].set_title(
+            f"{column.upper()}",
+        )
+        if i == 0:
+            axs[0][i].set_ylabel("Observed relative\nfrequencies (marginal)")
+            axs[1][i].set_ylabel("Observed relative\nfrequencies (joint)")
+        axs[1][i].set_xlabel("Predicted probabilities\n(binned)")
+
+        # Add diagonal line
+        axs[0][i].plot(
+            [predicted_bins[0], predicted_bins[-1]],
+            [0, 1],
+            linestyle=":",
+            linewidth=0.5,
+            color="gray",
+        )
+        axs[1][i].plot(
+            [predicted_bins[0], predicted_bins[-1]],
+            [0, 1],
+            linestyle=":",
+            linewidth=0.5,
+            color="gray",
+        )
+
+    # Final adjustments
+    sns.despine()
+
     return fig
 
 
@@ -227,7 +358,7 @@ def evaluate(
         log_and_save_figure(
             figure=fig,
             figure_path=figure_path,
-            file_name="data",
+            file_name="_".join((dataset_type, "data")),
             file_format=figure_format,
             bbox_inches="tight",
             transparent=True,
@@ -244,7 +375,7 @@ def evaluate(
         log_and_save_figure(
             figure=fig,
             figure_path=figure_path,
-            file_name="samples",
+            file_name="_".join((dataset_type, "samples")),
             file_format=figure_format,
             bbox_inches="tight",
             transparent=True,
@@ -254,7 +385,7 @@ def evaluate(
             marginal_bijectors = model_kwargs["marginal_bijectors"]
             joint_bijectors = model_kwargs["joint_bijectors"]
             if (
-                len(marginal_bijectors) == 1
+                len(marginal_bijectors) == 2
                 and marginal_bijectors[-1]["bijector"] == "Shift"
             ):
                 fig = plot_params(
@@ -266,7 +397,7 @@ def evaluate(
                 log_and_save_figure(
                     figure=fig,
                     figure_path=figure_path,
-                    file_name="params",
+                    file_name="_".join((dataset_type, "params")),
                     file_format=figure_format,
                     bbox_inches="tight",
                     transparent=True,
@@ -284,7 +415,7 @@ def evaluate(
                 log_and_save_figure(
                     figure=fig,
                     figure_path=figure_path,
-                    file_name="rank_corr",
+                    file_name="_".join((dataset_type, "rank_corr")),
                     file_format=figure_format,
                     bbox_inches="tight",
                     transparent=True,
@@ -299,7 +430,23 @@ def evaluate(
             log_and_save_figure(
                 figure=fig,
                 figure_path=figure_path,
-                file_name="distribution",
+                file_name="_".join((dataset_type, "distribution")),
+                file_format=figure_format,
+                bbox_inches="tight",
+                transparent=True,
+            )
+            fig = plot_reliability_diagram(
+                model=model,
+                dims=dims,
+                x=validation_data[0],
+                y=validation_data[1],
+                targets=dataset_kwargs["targets"],
+                figsize=figsize,
+            )
+            log_and_save_figure(
+                figure=fig,
+                figure_path=figure_path,
+                file_name="_".join((dataset_type, "reliability_diagram")),
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,
