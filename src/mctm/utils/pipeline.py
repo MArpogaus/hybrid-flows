@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-29 13:22:38 (Marcel Arpogaus)
-# changed : 2024-11-26 13:56:10 (Marcel Arpogaus)
+# changed : 2024-12-02 14:08:48 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -293,7 +293,7 @@ def fit_distribution_with_logging(
         A tuple containing the training history, model, and preprocessed dataset.
 
     """
-    call_args = deepcopy(vars())
+    call_args = vars()
     call_args.update(call_args.pop("kwargs"))
     call_args.pop("data")
     with start_run_with_exception_logging(run_name=run_name):

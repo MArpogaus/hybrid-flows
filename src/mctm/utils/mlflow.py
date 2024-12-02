@@ -18,7 +18,6 @@ import os
 import tempfile
 import traceback
 from contextlib import contextmanager
-from copy import deepcopy
 
 import mlflow
 import numpy as np
@@ -34,12 +33,16 @@ def log_cfg(cfg: dict):
     :param dict cfg: Flattened dictionary of parameters and values to be logged.
     :return: None
     """
-    filterd_dict = filter_recursive(
-        lambda x: not callable(x) and not isinstance(x, (type, np.ndarray, tf.Tensor)),
-        deepcopy(cfg),
+    filtered_dict = filter_recursive(
+        lambda x: not callable(x)
+        and not isinstance(
+            x,
+            (type, np.ndarray, tf.Tensor, tf.data.Dataset, tf.keras.callbacks.Callback),
+        ),
+        cfg,
     )
-    mlflow.log_dict(filterd_dict, "params.yaml")
-    flat_dict = flatten_dict(filterd_dict)
+    mlflow.log_dict(filtered_dict, "params.yaml")
+    flat_dict = flatten_dict(filtered_dict)
     flat_dict = dict(filter(lambda xy: len(str(xy[1])) < 500, flat_dict.items()))
     mlflow.log_params(flat_dict)
 
@@ -84,6 +87,7 @@ def start_run_with_exception_logging(**kwds):
 
 
 def log_and_save_figure(figure, figure_path, file_name, file_format, **kwargs):
+    """Save figure to disk and log it with mlflow."""
     figure.savefig(
         os.path.join(figure_path, f"{file_name}.{file_format}"),
         **kwargs,
