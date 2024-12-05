@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2024-12-02 17:35:22 (Marcel Arpogaus)
+# changed : 2024-12-03 10:32:20 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions for probability distributions.
@@ -845,15 +845,15 @@ def _get_masked_autoregressive_flow_bijector_def(
 
 
 def _get_coupling_flow_bijector_def(
-    dims,
-    num_layers,
-    num_parameters,
-    num_masked,
-    layer_overwrites,
-    parameters_fn,
-    parameters_fn_kwargs,
-    nested_bijectors,
-    **kwargs,
+    dims: int,
+    num_layers: int,
+    num_parameters: int,
+    num_masked: Union[int, None] = None,
+    layer_overwrites: Dict[Union[int, str], Dict[str, Any]] = {},
+    parameters_fn: Callable[..., Any] = parameters_lib.get_fully_connected_network_fn,
+    parameters_fn_kwargs: Dict[str, Any] = {},
+    nested_bijectors: Union[List[Union[Dict[str, Any], tfb.Bijector]], None] = None,
+    **kwargs: Dict[str, Any],
 ):
     """Get bijector definition to parametrize a Coupling Flow.
 
