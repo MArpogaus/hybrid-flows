@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-03 15:57:47 (Marcel Arpogaus)
-# changed : 2024-12-02 17:48:09 (Marcel Arpogaus)
+# changed : 2024-12-03 10:29:39 (Marcel Arpogaus)
 
 # %% License ###################################################################
 # %% Description ###############################################################
@@ -180,8 +180,10 @@ class HybridDensityRegressionModel(DensityRegressionBaseModel):
         super().__init__()
         self._config = deepcopy(kwargs)
         self._config.update(
+            dims=dims,
             marginal_bijectors=deepcopy(marginal_bijectors),
             joint_bijectors=deepcopy(joint_bijectors),
+            joint_flow_type=joint_flow_type,
         )
         (
             self.marginal_transformation_parameters_fn,
