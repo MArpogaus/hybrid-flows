@@ -387,10 +387,10 @@ def get_bernstein_polynomial_fn(
 
 def get_test_parameters_fn(input_shape, param_shape):
     """Test parameter function."""
-    return lambda x: tf.ones([*input_shape, *param_shape]) * x, None
+    return lambda x: tf.ones([*input_shape, *param_shape]) * x[..., None], None
 
 
 def get_test_parameters_nested_fn(input_shape, param_shape):
     """Test parameter function."""
     parameter_fn, vars = get_test_parameters_fn(input_shape, param_shape)
-    return lambda x: lambda xx: x * parameter_fn(xx[..., None]), vars
+    return lambda x: lambda xx: x * parameter_fn(xx), vars

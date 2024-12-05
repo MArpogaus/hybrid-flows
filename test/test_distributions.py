@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-31 13:56:39 (Marcel Arpogaus)
-# changed : 2024-11-11 17:56:03 (Marcel Arpogaus)
+# changed : 2024-12-05 11:54:13 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -116,6 +116,7 @@ def mock_deeply_nested_bijectors(dims):
                     __BIJECTOR_NAME_KEY__: "Shift",
                     __PARAMETERS_KEY__: 1.0,
                     __PARAMETERIZED_BY_PARENT_KEY__: True,
+                    __PARAMETERS_CONSTRAINT_FN_KEY__: lambda x: x[..., 0],
                 },
                 {
                     __BIJECTOR_NAME_KEY__: "RealNVP",
@@ -144,7 +145,7 @@ def mock_deeply_nested_bijectors(dims):
             ],
             __PARAMETERS_FN_KEY__: "test_parameters_nested",
             __PARAMETERS_FN_KWARGS_KEY__: {
-                "input_shape": [1],
+                "input_shape": [1, 1],  # [B, nm]
                 "param_shape": [1],
             },
         },
@@ -467,14 +468,22 @@ def mock_parameters_nested_fn():
     return get_test_parameters_nested_fn
 
 
-@pytest.fixture
-def mock_base_distribution_data():
+@pytest.fixture(
+    params=[
+        {
+            "get_base_distribution": (
+                lambda dims: tfp.distributions.MultivariateNormalDiag(
+                    loc=tf.zeros(dims)
+                )
+            )
+        },
+        {"distribution_name": "logistic"},
+        {},
+    ]
+)
+def mock_base_distribution_data(request):
     """Mock data for base distribution."""
-    return {
-        "get_base_distribution": lambda: tfp.distributions.MultivariateNormalDiag(
-            loc=tf.zeros(3)
-        ),
-    }
+    return request.param
 
 
 # %% functions #################################################################
@@ -662,7 +671,11 @@ def test_get_normalizing_flow(
         trainable_variables,
         non_trainable_variables,
     ) = get_normalizing_flow(
-        bijectors=mock_bijector_data, dims=dims, inverse_flow=True, reverse_flow=True
+        bijectors=mock_bijector_data,
+        dims=dims,
+        inverse_flow=True,
+        reverse_flow=True,
+        **mock_base_distribution_data,
     )
 
     assert callable(distribution_fn)
@@ -712,7 +725,11 @@ def test_get_normalizing_flow(
 
 
 def test_get_normalizing_flow_deeply_nested(
-    num_samples, mock_deeply_nested_bijectors, mock_base_distribution_data, dims
+    num_samples,
+    mock_deeply_nested_bijectors,
+    mock_base_distribution_data,
+    dims,
+    batch_size,
 ):
     """Test get_normalizing_flow with deeply nested bijectors."""
     (
@@ -724,6 +741,7 @@ def test_get_normalizing_flow_deeply_nested(
         bijectors=mock_deeply_nested_bijectors,
         inverse_flow=True,
         reverse_flow=False,
+        dims=dims,
         **mock_base_distribution_data,
     )
 
@@ -740,8 +758,12 @@ def test_get_normalizing_flow_deeply_nested(
     assert len(non_trainable_variables) == 0
     assert len(set(map(id, non_trainable_variables))) == len(non_trainable_variables)
 
-    test_input1 = 12
-    test_input2 = tf.range(32.0)[..., None]
+    test_input1 = 2
+    test_input = tf.reshape(
+        tf.range(batch_size * dims, dtype=tf.float32), [batch_size, dims]
+    )
+    test_input2 = test_input[:, :1]
+    test_input3 = test_input[:, 2:]
     output_shape = sum(
         mock_deeply_nested_bijectors[0][__PARAMETERS_FN_KWARGS_KEY__].values(), []
     )
@@ -763,15 +785,13 @@ def test_get_normalizing_flow_deeply_nested(
     flow = dist.bijector
     assert isinstance(flow, tfp.python.bijectors.invert._Invert)
 
-    assert_flow_shapes(32, dims, flow)
+    assert_flow_shapes(batch_size, dims, flow)
 
     realnvp_bijector = flow.bijector
     assert isinstance(realnvp_bijector, tfb.RealNVP)
     assert realnvp_bijector._num_masked == 1
     assert isinstance(realnvp_bijector._bijector_fn, Callable)
 
-    test_input2 = tf.ones([5, 1])
-    test_result = test_input1 * test_input2
     nested_flow_1 = realnvp_bijector._bijector_fn(test_input2)
     assert isinstance(nested_flow_1, tfp.python.bijectors.chain._Chain)
     assert len(nested_flow_1.bijectors) == len(
@@ -784,26 +804,36 @@ def test_get_normalizing_flow_deeply_nested(
 
     shift_bijector = nested_flow_1.bijectors[1]
     assert isinstance(shift_bijector, tfb.Shift)
-    assert tf.reduce_all(shift_bijector.shift == test_result + 1)
+    assert tf.reduce_all(shift_bijector.shift == test_result[..., 0] + 1)
 
     realnvp_bijector = nested_flow_1.bijectors[2]
     assert isinstance(realnvp_bijector, tfb.RealNVP)
     assert realnvp_bijector._num_masked == 1
     assert isinstance(realnvp_bijector._bijector_fn, Callable)
 
-    test_input3 = tf.ones([5, 1]) * 0.75
-    test_result2 = test_result + test_input1 * test_input3
+    output_shape = sum(
+        mock_deeply_nested_bijectors[0][__NESTED_BIJECTOR_KEY__][-1][
+            __PARAMETERS_FN_KWARGS_KEY__
+        ].values(),
+        [],
+    )
+    test_result2 = (
+        test_input1 * (tf.ones(output_shape) * test_input3[..., None]) + test_result
+    )
+
     nested_flow_2 = realnvp_bijector._bijector_fn(test_input3)
     assert isinstance(nested_flow_2, tfb.Chain)
     assert len(nested_flow_2.bijectors) == 2
 
     assert isinstance(nested_flow_2.bijectors[0], tfb.Scale)
-    assert tf.reduce_all(nested_flow_2.bijectors[0].scale == test_result2)
+    assert tf.reduce_all(
+        nested_flow_2.bijectors[0].scale == tf.math.softplus(test_result2[..., 0])
+    )
     assert isinstance(nested_flow_2.bijectors[1], tfb.Shift)
-    assert tf.reduce_all(nested_flow_2.bijectors[1].shift == 3 + test_result2)
+    assert tf.reduce_all(nested_flow_2.bijectors[1].shift == 3 + test_result2[..., 1])
 
     # Test flow forward and inverse transformations
-    assert_sample_shapes(dist, num_samples, False, None, dims)
+    assert_sample_shapes(dist, num_samples, False, batch_size, dims)
 
 
 def test_get_normalizing_flow_maf(mock_maf_bijectors, dims):
