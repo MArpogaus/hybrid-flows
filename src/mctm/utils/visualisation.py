@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 12:12:12 (Marcel Arpogaus)
-# changed : 2024-11-28 17:51:37 (Marcel Arpogaus)
+# changed : 2024-12-05 16:23:32 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -504,6 +504,7 @@ def plot_malnutrition_samples(
     y: np.ndarray,
     seed: int,
     targets: List[str],
+    frac: float,
     **kwargs: Any,
 ) -> Figure:
     """Generate and plot samples from a malnutrition model.
@@ -520,6 +521,8 @@ def plot_malnutrition_samples(
         Random seed for sampling.
     targets : list
         List of target variable names.
+    frac : float
+        Fraction of data to sample.
     **kwargs
         Additional plotting arguments passed to `_plot_grid`.
 
@@ -533,7 +536,7 @@ def plot_malnutrition_samples(
     fig = _plot_grid(
         df.loc[df.source == "model"]
         .groupby("cage")
-        .sample(frac=0.2, random_state=seed),
+        .sample(frac=frac, random_state=seed),
         vars=targets,
         hue="cage",
         **kwargs,

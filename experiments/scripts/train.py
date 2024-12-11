@@ -218,7 +218,9 @@ def malnutrition_after_fit_hook(
 
     """
     x, y = validation_data._input_dataset._tensors
-    fig = plot_malnutrition_samples(model, x, y, seed, targets, **plot_samples_kwargs)
+    fig = plot_malnutrition_samples(
+        model, x, y, seed, targets, frac=0.5, **plot_samples_kwargs
+    )
     fig.savefig(os.path.join(results_path, "samples.pdf"), bbox_inches="tight")
 
     # fig = plot_marginal_cdf_and_pdf(
