@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 13:16:19 (Marcel Arpogaus)
-# changed : 2024-11-12 13:11:22 (Marcel Arpogaus)
+# changed : 2024-12-11 15:28:19 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions defining ANNs.
@@ -18,7 +18,7 @@ vectors, and autoregressive parameter networks.
 """
 
 # %% imports ###################################################################
-from typing import Any, Callable, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 import tensorflow as tf
 import tensorflow.keras as K
@@ -71,7 +71,7 @@ def get_fully_connected_network_fn(
     input_shape: Tuple[int, ...],
     conditional: bool = False,
     conditional_event_shape: Union[Tuple[int, ...], None] = None,
-    **kwargs: Any,
+    **kwargs: Dict[str, Any],
 ) -> Tuple[Callable[..., tf.Tensor], List[tf.Variable]]:
     """Create a simple fully connected parameter network.
 
@@ -125,7 +125,7 @@ def get_fully_connected_network_fn(
 
 
 def get_parameter_vector_or_simple_network_fn(
-    parameter_shape: Tuple[int, ...], conditional: bool, **kwargs: Any
+    parameter_shape: Tuple[int, ...], conditional: bool, **kwargs: Dict[str, Any]
 ) -> Union[
     Tuple[K.Model, List[tf.Variable]],
     Tuple[Callable[..., tf.Variable], tf.Variable],
@@ -166,7 +166,7 @@ def get_fully_connected_res_net_fn(
     conditional_event_shape: Union[Tuple[int, ...], None] = None,
     name: str = "res_net",
     dtype: tf.dtypes.DType = tf.float32,
-    **kwargs: Any,
+    **kwargs: Dict[str, Any],
 ) -> Tuple[Callable[..., K.Model], List[tf.Variable]]:
     """Generate a fully connected ResNet model.
 
@@ -227,7 +227,9 @@ def get_fully_connected_res_net_fn(
 
 
 def get_masked_autoregressive_network_fn(
-    parameter_shape: Tuple[int, ...], conditional: bool = False, **kwargs: Any
+    parameter_shape: Tuple[int, ...],
+    conditional: bool = False,
+    **kwargs: Dict[str, Any],
 ) -> Tuple[Callable[..., Callable[..., tf.Tensor]], List[tf.Variable]]:
     """Create an autoregressive parameter network.
 
@@ -274,7 +276,7 @@ def get_fully_connected_autoregressive_network_fn(
     conditional_event_shape: Union[Tuple[int, ...], None] = None,
     name: str = "autoregressive_res_net",
     dtype: tf.dtypes.DType = tf.float32,
-    **kwargs: Any,
+    **kwargs: Dict[str, Any],
 ) -> Tuple[Callable[..., K.Model], List[tf.Variable]]:
     """Generate a fully connected autoregressive ResNet model.
 
@@ -341,7 +343,7 @@ def get_bernstein_polynomial_fn(
     dtype: tf.dtypes.DType,
     initializer: Callable[[Tuple[int, ...], ...], tf.Tensor] = tf.random.normal,
     thetas_constrain_fn: Callable[[tf.Tensor], tf.Tensor] = tf.identity,
-    **kwargs: Any,
+    **kwargs: Dict[str, Any],
 ) -> Tuple[Callable[[tf.Tensor], tf.Tensor], List[tf.Variable]]:
     """Create a Bernstein polynomial parameter lambda.
 
@@ -377,10 +379,10 @@ def get_bernstein_polynomial_fn(
         initializer=initializer,
     )
 
-    def get_parameter_fn(conditional_input=None, **_):
+    def get_parameter_fn(conditional_input, **_):
         b_poly = BernsteinPolynomial(thetas_constrain_fn(parameter_vector), **kwargs)
-        y = b_poly(conditional_input[..., None])
-        return tf.reduce_sum(y, 1)
+        p = b_poly(conditional_input[..., None])
+        return tf.reduce_sum(p, 1)
 
     return get_parameter_fn, parameter_vector
 
