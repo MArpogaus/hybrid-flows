@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-12-12 09:45:44 (Marcel Arpogaus)
-# changed : 2024-12-12 09:53:32 (Marcel Arpogaus)
+# changed : 2024-12-12 10:27:37 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -402,7 +402,7 @@ def run(
         after_fit_hook = partial(
             malnutrition_after_fit_hook,
             seed=params["seed"],
-            results_path=args.results_path,
+            results_path=results_path,
             targets=dataset_kwargs["targets"],
             plot_samples_kwargs=dict(height=fig_height / 3),
             plot_marginals_kwargs=dict(figsize=figsize),
