@@ -69,13 +69,13 @@ dvc_repro_parallel(){
 dvc_repro_parallel train-sim -j16
 
 # reproduce experiments for benchmark data
-#dvc_repro_parallel train-benchmark -j4
+dvc_repro_parallel train-malnutrition -j3
 
 # reproduce experiments for benchmark data
-dvc_repro_parallel train-malnutrition -j2
+dvc_repro_parallel train-benchmark -j2
 
 # Ensure pipeline has been fully reproduced
-# dvc repro
+dvc repro
 
 # Push all changes to the remote cache
 dvc push -r local
