@@ -4,15 +4,17 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 12:12:12 (Marcel Arpogaus)
-# changed : 2024-12-05 16:23:32 (Marcel Arpogaus)
+# changed : 2024-12-12 09:34:08 (Marcel Arpogaus)
+
 
 # %% License ###################################################################
-
 # %% Description ###############################################################
 """Visualization utils."""
 
 # %% imports ###################################################################
+import logging
 import time
+from shutil import which
 from typing import Any, List, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -25,6 +27,9 @@ from matplotlib.figure import Figure
 from tensorflow_probability import distributions as tfd
 
 from mctm.models import DensityRegressionModel
+
+# %% globals
+__LOGGER__ = logging.getLogger(__name__)
 
 
 # %% private functions #########################################################
@@ -193,7 +198,7 @@ def setup_latex(fontsize: int = 10) -> None:
     tex_fonts = {
         # Use LaTeX to write all text
         # https://stackoverflow.com/questions/43295837/latex-was-not-able-to-process-the-following-string-blp
-        "text.usetex": False,
+        "text.usetex": True,
         "font.family": "serif",
         # for the align enivironment
         "text.latex.preamble": r"\usepackage{amsmath}",
@@ -206,7 +211,9 @@ def setup_latex(fontsize: int = 10) -> None:
         "ytick.labelsize": int(0.8 * fontsize),
     }
 
-    plt.rcParams.update(tex_fonts)
+    if which("latex"):
+        __LOGGER__.info("Using latex backend for plotting")
+        plt.rcParams.update(tex_fonts)
 
 
 def plot_2d_data(
