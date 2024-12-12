@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2024-12-12 12:16:27 (Marcel Arpogaus)
+# changed : 2024-12-12 19:06:54 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -250,7 +250,7 @@ def evaluate(
 
     model_kwargs = params["model_kwargs"]
     dataset_kwargs = params["dataset_kwargs"][dataset_name]
-    figure_path = os.path.join(results_path, "eval_figures")
+    figure_path = os.path.join(results_path, "eval_figures/")
     os.makedirs(figure_path, exist_ok=True)
 
     data, dims = get_dataset(dataset_name, **dataset_kwargs)
@@ -285,7 +285,7 @@ def evaluate(
         log_and_save_figure(
             figure=fig,
             figure_path=figure_path,
-            file_name="contour",
+            file_name="_".join((dataset_name, model_name, "contour")),
             file_format=figure_format,
             bbox_inches="tight",
             transparent=True,
@@ -296,7 +296,7 @@ def evaluate(
         log_and_save_figure(
             figure=joint_fig,
             figure_path=figure_path,
-            file_name="joint_samples",
+            file_name="_".join((dataset_name, model_name, "joint_samples")),
             file_format=figure_format,
             bbox_inches="tight",
             transparent=True,
@@ -305,7 +305,7 @@ def evaluate(
             log_and_save_figure(
                 figure=marginal_fig,
                 figure_path=figure_path,
-                file_name="marginal_samples",
+                file_name="_".join((dataset_name, model_name, "marginal_samples")),
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,
@@ -325,7 +325,7 @@ def evaluate(
             log_and_save_figure(
                 figure=w_fig,
                 figure_path=figure_path,
-                file_name="_".join((figure_path, model_name, "_w")),
+                file_name="_".join((dataset_name, model_name, "w")),
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,
@@ -333,7 +333,7 @@ def evaluate(
             log_and_save_figure(
                 figure=z_fig,
                 figure_path=figure_path,
-                file_name="_".join((figure_path, model_name, "_z")),
+                file_name="_".join((dataset_name, model_name, "z")),
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,
@@ -341,7 +341,7 @@ def evaluate(
             log_and_save_figure(
                 figure=pit_fig,
                 figure_path=figure_path,
-                file_name="_".join((figure_path, model_name, "_pit")),
+                file_name="_".join((dataset_name, model_name, "pit")),
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,
@@ -352,7 +352,7 @@ def evaluate(
             log_and_save_figure(
                 figure=density_fig,
                 figure_path=figure_path,
-                file_name="_".join((figure_path, model_name, "_densities_3d")),
+                file_name="_".join((dataset_name, model_name, "densities_3d")),
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,

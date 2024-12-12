@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2024-12-12 09:59:08 (Marcel Arpogaus)
+# changed : 2024-12-12 19:01:30 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -371,7 +371,7 @@ def evaluate(
     fig_height = figsize[0]
     model_kwargs = params["model_kwargs"]
     dataset_kwargs = params["dataset_kwargs"][dataset_name]
-    figure_path = os.path.join(results_path, "eval_figures")
+    figure_path = os.path.join(results_path, "eval_figures/")
     os.makedirs(figure_path, exist_ok=True)
 
     (train_data, validation_data, _), dims = get_dataset(**dataset_kwargs)
