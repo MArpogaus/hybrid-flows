@@ -24,8 +24,8 @@ model_kwargs:
     parameters_constraint_fn_kwargs:
       allow_flexible_bounds: false
       bounds: linear
-      high: 5
       low: -5
+      high: 5
     parameters_fn: parameter_vector
     parameters_fn_kwargs:
       dtype: float32
@@ -51,7 +51,7 @@ model_kwargs:
       interval_width: 12
       min_slope: 0.001
       min_bin_width: 0.001
-      nbins: 32
+      nbins: 16
     # invert: True
     maf_parameters_fn_kwargs:
       activation: relu
