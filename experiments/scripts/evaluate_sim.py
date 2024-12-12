@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2024-11-28 17:04:40 (Marcel Arpogaus)
+# changed : 2024-12-12 10:06:30 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -16,7 +16,6 @@ import argparse
 import logging
 import os
 from copy import deepcopy
-from shutil import which
 
 import matplotlib.pyplot as plt
 import mlflow
@@ -43,6 +42,7 @@ __LOGGER__ = logging.getLogger(__name__)
 
 # %% functions #################################################################
 def pdf_contour_plot(model, n=200):
+    """Plot density as contour plot."""
     ls = np.linspace(0, 1, n, dtype=np.float32)
     xx, yy = np.meshgrid(ls[..., None], ls[..., None])
     grid = np.stack([xx.flatten(), yy.flatten()], -1)
@@ -68,7 +68,8 @@ def pdf_contour_plot(model, n=200):
     return fig
 
 
-def plot_and_log_samples(model, x, *args, **kwargs):
+def plot_joint_and_marginal_samples(model, x, *args, **kwargs):
+    """Plot samples from model."""
     joint_dist = model(x)
 
     marginal_fig = None
@@ -82,6 +83,7 @@ def plot_and_log_samples(model, x, *args, **kwargs):
 
 
 def plot_hybrid_model(model, x, y):
+    """Plot transformed samples of hybrid models."""
     joint_dist = model.joint_distribution(x)
     marginal_dist = model.marginal_distribution(x)
     w = marginal_dist.bijector.inverse(y)
@@ -134,6 +136,7 @@ def plot_hybrid_model(model, x, y):
 
 
 def plot_density_3d(model, n=200):
+    """Plot marginal, joint an copula density."""
     ls = np.linspace(0, 1, n, dtype=np.float32)
     xx, yy = np.meshgrid(ls[..., None], ls[..., None])
     grid = np.stack([xx.flatten(), yy.flatten()], -1)
@@ -209,10 +212,10 @@ def plot_density_3d(model, n=200):
 def evaluate(
     dataset_name: str,
     dataset_type: str,
-    experiment_name: str,
-    run_name: str,
+    model_name: str,
     results_path: str,
     params: dict,
+    figure_format: str = "pdf",
 ) -> tuple:
     """Execute experiment.
 
@@ -222,14 +225,14 @@ def evaluate(
         Name of the dataset.
     dataset_type : str
         Type of the dataset.
-    experiment_name : str
-        Name of the MLFlow experiment.
-    run_name : str
-        Name of the MLFlow run.
+    model_name : str
+        Name of the modle to evaluate.
     results_path : str
         Destination for model checkpoints and logs.
     params : dict
         Dictionary containing experiment parameters.
+    figure_format: str
+        Data format to save figures to.
 
     Returns
     -------
@@ -237,8 +240,10 @@ def evaluate(
         Experiment results: history, model, and preprocessed data.
 
     """
-    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
-    mlflow.set_experiment(experiment_name)
+    experiment_name = os.environ.get(
+        "MLFLOW_EXPERIMENT_NAME", "_".join((dataset_type, "evaluation"))
+    )
+    run_name = "_".join((model_name, dataset_name, "evaluation"))
 
     __LOGGER__.info(f"{tf.__version__=}\n{tfp.__version__=}")
     tf.config.set_visible_devices([], "GPU")
@@ -247,8 +252,6 @@ def evaluate(
     dataset_kwargs = params["dataset_kwargs"][dataset_name]
     figure_path = os.path.join(results_path, "eval_figures")
     os.makedirs(figure_path, exist_ok=True)
-
-    figure_format = "pdf"
 
     data, dims = get_dataset(dataset_name, **dataset_kwargs)
 
@@ -263,6 +266,7 @@ def evaluate(
     else:
         get_model = DensityRegressionModel
 
+    mlflow.set_experiment(experiment_name)
     with start_run_with_exception_logging(run_name=run_name):
         log_cfg(
             dict(
@@ -275,10 +279,8 @@ def evaluate(
 
         preprocessed = preprocess_dataset(data, model)
         x, y = preprocessed.values()
-        if which("latex"):
-            __LOGGER__.info("Using latex backend for plotting")
-            setup_latex(fontsize=10)
 
+        setup_latex(fontsize=10)
         fig = pdf_contour_plot(model)
         log_and_save_figure(
             figure=fig,
@@ -289,7 +291,8 @@ def evaluate(
             transparent=True,
         )
 
-        joint_fig, marginal_fig = plot_and_log_samples(model, x=x, data=y)
+        setup_latex(fontsize=10)
+        joint_fig, marginal_fig = plot_joint_and_marginal_samples(model, x=x, data=y)
         log_and_save_figure(
             figure=joint_fig,
             figure_path=figure_path,
@@ -309,6 +312,7 @@ def evaluate(
             )
 
         if isinstance(model, HybridDensityRegressionModel):
+            setup_latex(fontsize=10)
             data_fig, w_fig, z_fig, pit_fig = plot_hybrid_model(model, x, y)
             log_and_save_figure(
                 figure=data_fig,
@@ -321,7 +325,7 @@ def evaluate(
             log_and_save_figure(
                 figure=w_fig,
                 figure_path=figure_path,
-                file_name=dataset_name + "_w",
+                file_name="_".join((figure_path, model_name, "_w")),
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,
@@ -329,7 +333,7 @@ def evaluate(
             log_and_save_figure(
                 figure=z_fig,
                 figure_path=figure_path,
-                file_name=dataset_name + "_z",
+                file_name="_".join((figure_path, model_name, "_z")),
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,
@@ -337,17 +341,18 @@ def evaluate(
             log_and_save_figure(
                 figure=pit_fig,
                 figure_path=figure_path,
-                file_name=dataset_name + "_pit",
+                file_name="_".join((figure_path, model_name, "_pit")),
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,
             )
 
+            setup_latex(fontsize=10)
             density_fig = plot_density_3d(model)
             log_and_save_figure(
                 figure=density_fig,
                 figure_path=figure_path,
-                file_name=dataset_name + "_densities_3d",
+                file_name="_".join((figure_path, model_name, "_densities_3d")),
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,
@@ -369,15 +374,9 @@ if __name__ == "__main__":
         help="logging severity level",
     )
     parser.add_argument(
-        "--experiment-name",
+        "--model-name",
         type=str,
-        help="MLFlow experiment name",
-        required=True,
-    )
-    parser.add_argument(
-        "--run-name",
-        type=str,
-        help="MLFlow run name",
+        help="Name of model to evaluate.",
         required=True,
     )
     parser.add_argument(
@@ -408,8 +407,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
     __LOGGER__.info("CLI arguments: %s", vars(args))
 
+    results_path = os.path.join(
+        args.results_path, args.dataset_type, args.dataset_name, args.model_name
+    )
+
     params = prepare_pipeline(
-        results_path=args.results_path,
+        results_path=results_path,
         log_file=args.log_file,
         log_level=args.log_level,
         stage_name_or_params_file_path=args.stage_name,

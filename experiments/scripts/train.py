@@ -1,10 +1,21 @@
+# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
+# %% Author ####################################################################
+# file    : train.py
+# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
+#
+# created : 2024-12-12 09:45:44 (Marcel Arpogaus)
+# changed : 2024-12-12 09:53:32 (Marcel Arpogaus)
+
+# %% License ###################################################################
+
+# %% Description ###############################################################
 """Train multivariate density estimation models on different datasets."""
 
+# %% imports ###################################################################
 import argparse
 import logging
 import os
 from functools import partial
-from shutil import which
 from typing import Any, Dict
 
 import numpy as np
@@ -29,9 +40,11 @@ from mctm.utils.visualisation import (
     setup_latex,
 )
 
+# %% globals ###################################################################
 __LOGGER__ = logging.getLogger(__name__)
 
 
+# %% functions #################################################################
 def plot_trafos(joint_dist: tfd.Distribution, x: np.ndarray, y: np.ndarray) -> tuple:
     """Plot transformations of the joint distribution.
 
@@ -274,8 +287,7 @@ class MeanNegativeLogLikelihood(K.metrics.Mean):
 def run(
     dataset_name: str,
     dataset_type: str,
-    experiment_name: str,
-    run_name: str,
+    model_name: str,
     log_file: str,
     log_level: str,
     results_path: str,
@@ -290,10 +302,8 @@ def run(
         Name of the dataset.
     dataset_type : str
         Type of the dataset.
-    experiment_name : str
-        Name of the MLFlow experiment.
-    run_name : str
-        Name of the MLFlow run.
+    model_name : str
+        Name of the model to train.
     log_file : str
         Path for log file.
     log_level : str
@@ -423,7 +433,10 @@ def run(
     else:
         raise ValueError(f"Invalid dataset type: {dataset_type}")
 
-    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", experiment_name)
+    experiment_name = os.environ.get(
+        "MLFLOW_EXPERIMENT_NAME", "_".join((dataset_type, "train"))
+    )
+    run_name = "_".join((model_name, dataset_name, "train"))
 
     if test_mode:
         __LOGGER__.info("Running in test-mode")
@@ -434,9 +447,7 @@ def run(
             for fkw in fit_kwargs:
                 fkw.update(epochs=2)
 
-    if which("latex"):
-        __LOGGER__.info("Using latex backend for plotting")
-        setup_latex(fontsize=10)
+    setup_latex(fontsize=10)
 
     if os.environ.get("CI", False):
         if isinstance(fit_kwargs, dict):
@@ -464,6 +475,7 @@ def run(
     )
 
 
+# %% main ######################################################################
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a model")
     parser.add_argument(
@@ -484,15 +496,9 @@ if __name__ == "__main__":
         help="activate test-mode",
     )
     parser.add_argument(
-        "--experiment-name",
+        "--model-name",
         type=str,
         help="MLFlow experiment name",
-        required=True,
-    )
-    parser.add_argument(
-        "--run-name",
-        type=str,
-        help="MLFlow run name",
         required=True,
     )
     parser.add_argument(
@@ -523,8 +529,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
     __LOGGER__.info("CLI arguments: %s", vars(args))
 
+    results_path = os.path.join(
+        args.results_path, args.dataset_type, args.dataset_name, args.model_name
+    )
+
     params = prepare_pipeline(
-        results_path=args.results_path,
+        results_path=results_path,
         log_file=args.log_file,
         log_level=args.log_level,
         stage_name_or_params_file_path=args.stage_name,
@@ -533,11 +543,10 @@ if __name__ == "__main__":
     run(
         dataset_name=args.dataset_name,
         dataset_type=args.dataset_type,
-        experiment_name=args.experiment_name,
-        run_name=args.run_name,
+        model_name=args.model_name,
         log_file=args.log_file,
         log_level=args.log_level,
-        results_path=args.results_path,
+        results_path=results_path,
         test_mode=args.test_mode,
         params=params,
     )
