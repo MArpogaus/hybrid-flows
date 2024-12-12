@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2024-12-12 10:06:30 (Marcel Arpogaus)
+# changed : 2024-12-12 12:16:27 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -421,8 +421,7 @@ if __name__ == "__main__":
     evaluate(
         dataset_name=args.dataset_name,
         dataset_type=args.dataset_type,
-        experiment_name=args.experiment_name,
-        run_name=args.run_name,
-        results_path=args.results_path,
+        model_name=args.model_name,
+        results_path=results_path,
         params=params,
     )
