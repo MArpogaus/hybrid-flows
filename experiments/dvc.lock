@@ -10560,12 +10560,12 @@ stages:
       size: 2432984
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 15e000956fa58f7b3139a5133dcd4262.dir
+      md5: cb868e95dc96af492193d7588cbe2e35.dir
       size: 838493
       nfiles: 2
   eval-sim@dataset0-conditional_coupling_flow_quadratic_spline:
@@ -10580,12 +10580,12 @@ stages:
       size: 2228400
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: dd92429487b8a0760488c7c4a7d22f4d.dir
+      md5: b3d5d0daae95de59b1756972d3148180.dir
       size: 850146
       nfiles: 2
   eval-sim@dataset0-conditional_masked_autoregressive_flow_bernstein_poly:
@@ -10600,13 +10600,13 @@ stages:
       size: 52336
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 849cc244915e3592b4ea06ebb91a4ad2.dir
+      md5: 937920ec1a868d71e8057bf26358b5a7.dir
       size: 846058
       nfiles: 2
   eval-sim@dataset0-conditional_masked_autoregressive_flow_quadratic_spline:
@@ -10621,13 +10621,13 @@ stages:
       size: 116472
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 2a2d9af322aa9527898cf758c4c37d07.dir
+      md5: ff83a3c0558a959b8478695464ff278b.dir
       size: 817300
       nfiles: 2
   eval-sim@dataset0-conditional_multivariate_normal:
@@ -10641,12 +10641,12 @@ stages:
       size: 55560
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/moons/conditional_multivariate_normal/eval_figures/
       hash: md5
-      md5: 2b8dc51e51327d595f32c18534e2b8fa.dir
+      md5: 78cb238d7f07d8c785eca927577a8998.dir
       size: 806280
       nfiles: 2
   eval-sim@dataset0-conditional_multivariate_transformation_model:
@@ -10661,14 +10661,14 @@ stages:
       size: 11544
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/moons/conditional_multivariate_transformation_model/eval_figures/
       hash: md5
-      md5: b236ef24f3c287330678f91ad4aeefb9.dir
-      size: 1952720
-      nfiles: 4
+      md5: 339f6e42f1178c1627a337cd44e11f89.dir
+      size: 4364206
+      nfiles: 8
   eval-sim@dataset0-conditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
       conditional_hybrid_coupling_flow_bernstein_poly --stage-name train-sim@dataset0-conditional_hybrid_coupling_flow_bernstein_poly
@@ -10681,14 +10681,14 @@ stages:
       size: 18963088
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: d260444324ff02397926181fcfe23c99.dir
-      size: 1945070
-      nfiles: 4
+      md5: 4a5cacdcc97e50aa5ac162cc7c225d96.dir
+      size: 4335215
+      nfiles: 8
   eval-sim@dataset0-conditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
       conditional_hybrid_coupling_flow_quadratic_spline --stage-name train-sim@dataset0-conditional_hybrid_coupling_flow_quadratic_spline
@@ -10701,15 +10701,15 @@ stages:
       size: 1120648
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 309f5318abb7835412e9f1c30ac0b24a.dir
-      size: 1938220
-      nfiles: 4
+      md5: f32037bca1ddff8256c215f9a5f711a7.dir
+      size: 4314143
+      nfiles: 8
   eval-sim@dataset0-unconditional_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
       unconditional_coupling_flow_bernstein_poly --stage-name train-sim@dataset0-unconditional_coupling_flow_bernstein_poly
@@ -10722,12 +10722,12 @@ stages:
       size: 1221320
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/moons/unconditional_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: bc1ba57b0e0e000b16ab31d47d8f2304.dir
+      md5: 98b04b71b7444ce7eddd3c22b6b4ee5d.dir
       size: 834187
       nfiles: 2
   eval-sim@dataset0-unconditional_coupling_flow_quadratic_spline:
@@ -10742,12 +10742,12 @@ stages:
       size: 1119168
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/moons/unconditional_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 62fc73c454f14c4ffb3f5d4a636f0a25.dir
+      md5: f197cd50080b6c29cf1b11bf6cb433e2.dir
       size: 818519
       nfiles: 2
   eval-sim@dataset0-unconditional_masked_autoregressive_flow_bernstein_poly:
@@ -10762,13 +10762,13 @@ stages:
       size: 52336
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 1a45bc1f9dfa7ce29508173435d08a31.dir
+      md5: 88460208da35cafa8d16e3942a0d7390.dir
       size: 846058
       nfiles: 2
   eval-sim@dataset0-unconditional_masked_autoregressive_flow_quadratic_spline:
@@ -10783,13 +10783,13 @@ stages:
       size: 116472
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 6a1fa6525c589922afe23abce814a0e2.dir
+      md5: 4d7f694b6fda0877c0b6fe09359a7fcb.dir
       size: 817300
       nfiles: 2
   eval-sim@dataset0-unconditional_multivariate_normal:
@@ -10803,12 +10803,12 @@ stages:
       size: 11000
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/moons/unconditional_multivariate_normal/eval_figures/
       hash: md5
-      md5: e9922282a46c6f684e9794b9e0072252.dir
+      md5: 11d10b7590fe033a6708351ab1dcb1e4.dir
       size: 796871
       nfiles: 2
   eval-sim@dataset0-unconditional_multivariate_transformation_model:
@@ -10823,14 +10823,14 @@ stages:
       size: 11272
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/moons/unconditional_multivariate_transformation_model/eval_figures/
       hash: md5
-      md5: 6c3e42ab664d8103c01ce91900b7c2c8.dir
-      size: 1969591
-      nfiles: 4
+      md5: 047476bebae3d2083a75abd244eb7396.dir
+      size: 4375159
+      nfiles: 8
   eval-sim@dataset0-unconditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
       unconditional_hybrid_coupling_flow_bernstein_poly --stage-name train-sim@dataset0-unconditional_hybrid_coupling_flow_bernstein_poly
@@ -10843,15 +10843,15 @@ stages:
       size: 9489072
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 8bfd7a7ef85d4462b739a21c4e575587.dir
-      size: 1985760
-      nfiles: 4
+      md5: 3faf1d2774f6c7a9d5a4e9b8bf7be17f.dir
+      size: 4399339
+      nfiles: 8
   eval-sim@dataset0-unconditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
       unconditional_hybrid_coupling_flow_quadratic_spline --stage-name train-sim@dataset0-unconditional_hybrid_coupling_flow_quadratic_spline
@@ -10864,15 +10864,15 @@ stages:
       size: 565208
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 5547756b2bbd0d472e2540cd645043fb.dir
-      size: 2028241
-      nfiles: 4
+      md5: ad92b5a03d2156dfd1ef6a62bd9423e8.dir
+      size: 4439116
+      nfiles: 8
   eval-sim@dataset1-conditional_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
       conditional_coupling_flow_bernstein_poly --stage-name train-sim@dataset1-conditional_coupling_flow_bernstein_poly
@@ -10885,12 +10885,12 @@ stages:
       size: 2432984
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/circles/conditional_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: eb535b2346809cf142372719fd566b6c.dir
+      md5: 0c87d5a715d651d0a26fef7b6fed17cf.dir
       size: 860621
       nfiles: 2
   eval-sim@dataset1-conditional_coupling_flow_quadratic_spline:
@@ -10905,12 +10905,12 @@ stages:
       size: 2228400
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/circles/conditional_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 011ffb52dedabf4878841e3fe9701fcd.dir
+      md5: 59efb8d73a1ee8ee41576225b1649827.dir
       size: 818813
       nfiles: 2
   eval-sim@dataset1-conditional_masked_autoregressive_flow_bernstein_poly:
@@ -10925,13 +10925,13 @@ stages:
       size: 52336
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 46295c8d8396b35b98c869b76033412b.dir
+      md5: 119d29726fd06ee0a2b71a77d56eb519.dir
       size: 877936
       nfiles: 2
   eval-sim@dataset1-conditional_masked_autoregressive_flow_quadratic_spline:
@@ -10946,13 +10946,13 @@ stages:
       size: 116472
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 50b968e0bb4ca4065ddae796a1c1980d.dir
+      md5: d5a74a0719f30ada55e64e09f7c4b43a.dir
       size: 829097
       nfiles: 2
   eval-sim@dataset1-conditional_multivariate_normal:
@@ -10966,12 +10966,12 @@ stages:
       size: 55560
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/circles/conditional_multivariate_normal/eval_figures/
       hash: md5
-      md5: d5b77bd3efe77c60aba46a001d749ac9.dir
+      md5: 11fe865928de73b7022ddceae28e1d1a.dir
       size: 793841
       nfiles: 2
   eval-sim@dataset1-conditional_multivariate_transformation_model:
@@ -10986,14 +10986,14 @@ stages:
       size: 11544
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/circles/conditional_multivariate_transformation_model/eval_figures/
       hash: md5
-      md5: 5251bf69bc580e6a936ec4cf2ea4e298.dir
-      size: 2011433
-      nfiles: 4
+      md5: 2be526528bfc350ba7d66f7cb483287c.dir
+      size: 4456692
+      nfiles: 8
   eval-sim@dataset1-conditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
       conditional_hybrid_coupling_flow_bernstein_poly --stage-name train-sim@dataset1-conditional_hybrid_coupling_flow_bernstein_poly
@@ -11006,15 +11006,15 @@ stages:
       size: 18965632
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: cdc2817987bdff2d88d14ade18836a7e.dir
-      size: 2009435
-      nfiles: 4
+      md5: 3f23c3ec5476c575fdca792dc07c280d.dir
+      size: 4399740
+      nfiles: 8
   eval-sim@dataset1-conditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
       conditional_hybrid_coupling_flow_quadratic_spline --stage-name train-sim@dataset1-conditional_hybrid_coupling_flow_quadratic_spline
@@ -11027,15 +11027,15 @@ stages:
       size: 15012384
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 1d6408a953d081f7e5b0ca1cb3b540a4.dir
-      size: 1970650
-      nfiles: 4
+      md5: baef0f00f110d8f384ce7cfdb8784648.dir
+      size: 4272248
+      nfiles: 8
   eval-sim@dataset1-unconditional_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
       unconditional_coupling_flow_bernstein_poly --stage-name train-sim@dataset1-unconditional_coupling_flow_bernstein_poly
@@ -11048,12 +11048,12 @@ stages:
       size: 1221320
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/circles/unconditional_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 2800d927c9e7dbf5f411d9a6a2cd5296.dir
+      md5: 5bca1be3ac5be78c9399de6526000a54.dir
       size: 825121
       nfiles: 2
   eval-sim@dataset1-unconditional_coupling_flow_quadratic_spline:
@@ -11068,12 +11068,12 @@ stages:
       size: 1119168
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/circles/unconditional_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: f3a7cef202217e190747daa09af5ccc0.dir
+      md5: 512b31327a8aac224fef505236969831.dir
       size: 787978
       nfiles: 2
   eval-sim@dataset1-unconditional_masked_autoregressive_flow_bernstein_poly:
@@ -11088,13 +11088,13 @@ stages:
       size: 52336
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 07226c4187e69d8de6c836876236a0e1.dir
+      md5: 0e2fbb0ca4b7aa10ae83d92a70f34b74.dir
       size: 896633
       nfiles: 2
   eval-malnutrition@conditional_multivariate_transformation_model:
@@ -11109,8 +11109,8 @@ stages:
       size: 11544
     - path: scripts/evaluate_malnutrition.py
       hash: md5
-      md5: 53c502d3b85f5b8760459b6439221f36
-      size: 20909
+      md5: a614589962e186e5f8c12ad3cf80e6c5
+      size: 20910
     params:
       params.yaml:
         seed: 1
@@ -11195,7 +11195,7 @@ stages:
     - path:
         results/malnutrition/india/conditional_multivariate_transformation_model/eval_figures/
       hash: md5
-      md5: a8dbbc16b2da2b47fb2f717223694ca8.dir
+      md5: 2564538d6136cea0ddd27e3ff4a65a7b.dir
       size: 6130598
       nfiles: 9
   eval-sim@dataset1-unconditional_masked_autoregressive_flow_quadratic_spline:
@@ -11210,13 +11210,13 @@ stages:
       size: 116472
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: b2b3892a1232ac39f3f477226d387827.dir
+      md5: a3c5ab359dc959831ff975cdda1d0b61.dir
       size: 829097
       nfiles: 2
   eval-sim@dataset1-unconditional_multivariate_normal:
@@ -11231,12 +11231,12 @@ stages:
       size: 11000
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path: results/sim/circles/unconditional_multivariate_normal/eval_figures/
       hash: md5
-      md5: fd3ab68ce9f422d2d87af66a3b8a2888.dir
+      md5: 3c82e98a1c73739425b7522a731c8097.dir
       size: 807372
       nfiles: 2
   eval-sim@dataset1-unconditional_multivariate_transformation_model:
@@ -11251,15 +11251,15 @@ stages:
       size: 11272
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/circles/unconditional_multivariate_transformation_model/eval_figures/
       hash: md5
-      md5: db59e6f0d7eb692df57fb1da68b31df9.dir
-      size: 2026422
-      nfiles: 4
+      md5: b84d83230d8c56c12bfb9ab20578ca4a.dir
+      size: 4473620
+      nfiles: 8
   eval-sim@dataset1-unconditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
       unconditional_hybrid_coupling_flow_bernstein_poly --stage-name train-sim@dataset1-unconditional_hybrid_coupling_flow_bernstein_poly
@@ -11272,15 +11272,15 @@ stages:
       size: 9489072
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 0d51af9854d6c7e7ac6ff74b8cb8f331.dir
-      size: 2034024
-      nfiles: 4
+      md5: 40fb67b0aeced1f7a1bce449094b230b.dir
+      size: 4492493
+      nfiles: 8
   eval-sim@dataset1-unconditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
       unconditional_hybrid_coupling_flow_quadratic_spline --stage-name train-sim@dataset1-unconditional_hybrid_coupling_flow_quadratic_spline
@@ -11293,15 +11293,15 @@ stages:
       size: 565208
     - path: scripts/evaluate_sim.py
       hash: md5
-      md5: 639657e4d6b75908e80e8a6e19cae6a6
-      size: 13197
+      md5: 46b87fabb677e84f09915e9e0f69ecdf
+      size: 13312
     outs:
     - path:
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: f2373e76e599d98f5561bc38167cf9c5.dir
-      size: 2084337
-      nfiles: 4
+      md5: 8df28f55396818d30ca2e32b7629265c.dir
+      size: 4546642
+      nfiles: 8
   train-malnutrition@conditional_hybrid_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_hybrid_masked_autoregressive_flow_quadratic_spline --stage-name
@@ -11520,8 +11520,8 @@ stages:
       size: 20725752
     - path: scripts/evaluate_malnutrition.py
       hash: md5
-      md5: 53c502d3b85f5b8760459b6439221f36
-      size: 20909
+      md5: a614589962e186e5f8c12ad3cf80e6c5
+      size: 20910
     params:
       params.yaml:
         seed: 1
@@ -11625,7 +11625,7 @@ stages:
     - path:
         results/malnutrition/india/conditional_hybrid_masked_autoregressive_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: cfefb6918f1bab952899acb0ec6742ca.dir
+      md5: b912f9845ef8731709f316cbceed8209.dir
       size: 5936847
       nfiles: 8
   train-malnutrition@conditional_hybrid_masked_autoregressive_flow_bernstein_poly:
@@ -11848,8 +11848,8 @@ stages:
       size: 19580920
     - path: scripts/evaluate_malnutrition.py
       hash: md5
-      md5: 53c502d3b85f5b8760459b6439221f36
-      size: 20909
+      md5: a614589962e186e5f8c12ad3cf80e6c5
+      size: 20910
     params:
       params.yaml:
         seed: 1
@@ -11957,6 +11957,6 @@ stages:
     - path:
         results/malnutrition/india/conditional_hybrid_masked_autoregressive_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 4833b24a50b57536a143538909227963.dir
+      md5: e9e2eee5d8a83248daa2d7fabc4a1593.dir
       size: 6008721
       nfiles: 8
