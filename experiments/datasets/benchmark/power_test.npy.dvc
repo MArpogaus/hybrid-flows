@@ -1,0 +1,5 @@
+outs:
+- md5: 0b21ded54f9d31633fe63fe7d5eaf13d
+  size: 4918400
+  hash: md5
+  path: power_test.npy

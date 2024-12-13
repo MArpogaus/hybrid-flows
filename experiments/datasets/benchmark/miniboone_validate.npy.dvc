@@ -1,0 +1,5 @@
+outs:
+- md5: 081b95e805cef3dcad8c9e4df84aab7a
+  size: 564976
+  hash: md5
+  path: miniboone_validate.npy

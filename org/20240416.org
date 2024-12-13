@@ -1,0 +1,175 @@
+#+TITLE: Interpretierbarkeit auf den Marginals
+#+OPTIONS: tex:t
+#+STARTUP: latexpreview indent
+
+* Structural Assumptions
+
+Use flexible, strictly monotone and differentiable transformation functions $h(y|\theta(x))$ with and covariate dependent parameters $\theta(x)$ to map the conditional distribution to a reference distribution, here $\mathcal{N}_{0,1}$:
+
+$F(Y\leq y|x)=\mathcal{N}_{0,1}(h(y|\theta(x))) \leftrightarrow f(y|x)=\mathcal{N}_{0,1}(h(y|\theta(x)))\left|\det{(\nabla{h(y|\theta(x))})}\right|$
+
+- The conditioning parameter functions $\theta_i(\mathbf{x})$ can incooperate domain knowlage to model covariate effects.
+- Additional affine transformations can be used to alter location and scale of the learned distribution: $T(y)=f_1 \circ f_2 \circ f_3=Be(a(x) \cdot y + b(x))$
+
+** Klein et al. 2019: Marginal conditional transformation function
+
+$\tilde{h}_j(y_j|\mathbf{x})=\mathbf{c}_j(y_j|\mathbf{x})^T\vartheta_j$
+
+The basis functions $\mathbf{c}_j(y_j|\mathbf{x})$ generally depend on both $y_j$ of the response and the covariates $\mathbf{x}$.
+
+Different structural assumptions can be made
+
+*** Composition of basis functions $\mathbf{a}_j(y_j)$ and $\mathbf{b}_j(\mathbf{x})$
+
+- Additive combination :: $\mathbf{c}_j=(\mathbf{a}_j^T|\mathbf{b}_j^T)^T$
+- Multiplicative combination :: $\mathbf{c}_j=(\mathbf{a}_j^T\otimes\mathbf{b}_j^T)^T$ (tensor product)
+- linear transformation ::  $\mathbf{c}_j(y_j,\mathbf{x})^T\mathbf{\vartheta}_j=\mathbf{a}_j(y_j)^T\mathbf{\vartheta}_{j,1}\otime-\mathbf{x}^T\mathbf{\beta}_j$
+  - restricts the impact of covariates to a linear shift
+  - the regression coefficient $\mathbf{\beta}_j$ can be interpreted as marginal log-odds ratios or log-hazard ratios
+* Example 1: Bimodal distribution, linear scale and shift
+*** Data
+
+[[file:gfx/1d_sim_data.png]]
+*** Model
+
+[[file:gfx/1d_affine_flow.png]]
+
+$T(y)=f_1 \circ f_2 \circ f_3=Be(a(x) \cdot y + b(x))$
+*** Parameters
+
+[[file:gfx/1d_bimodal_affine_parameters.png]]
+*** Samples
+
+[[file:gfx/1d_bimodal_affine_samples.png]]
+*** Distribution
+
+[[file:gfx/1d_bimodal_affine_dist.png]]
+* Example 2: Linear effect on Bernstein coefficients
+
+** Data
+
+[[file:gfx/moons.png]]
+** Parameters
+
+\begin{equation*}
+F_1(y_1|\mathbf{x}),\ldots,F_d_{}(y_d|\mathbf{x}) = \mathcal{N}_{0,1}\left(h(y_1|\theta_1(\mathbf{x})),\ldots,h(y_d|\theta_d(\mathbf{x}))\right)
+\end{equation*}
+
+ * unconstrained Parameters :: $\hat \theta_{i} = \left(\hat\vartheta_{i,0},\ldots,\hat\vartheta_{i,M - 1}\right)^T;\;  \hat\vartheta_{i,j}=\hat\vartheta_{0,j} + \beta_{i,j} \cdot x;\text{ with } i \in {0,\ldots,d-1}$
+ * constrained Parameters :: $\vartheta_{i,0} = -4;\;\vartheta_{i,j>0}=\vartheta_{i,j-1} + 8\cdot\text{softmax}\left(\hat\vartheta_{i,j-1}\right)$
+
+
+[[file:gfx/moons_interpret_params.png]]
+** Transformation
+
+[[file:gfx/moons_interpret_bijector.png]]
+** Distribution
+
+[[file:gfx/moons_interpret_dist.png]]
+* Example 3: Malnutrition Data
+** Data
+
+[[file:gfx/malnutrition_data.png]]
+
+[[file:gfx/malnutrition_ecdf.png]]
+** model specification and Parametrization
+
+\begin{equation*}
+F_1(y_1|x),\ldots,F_d_{}(y_d|x) = \mathcal{N}_{0,1}\left(h(y_1|\theta_1(x)),\ldots,h(y_d|\theta_d(x))\right) \\
+
+\text{with } y \in \left\{\text{stunting}, \text{wasting}, \text{underweight}\right\} \text{ and } x = \text{age}
+\end{equation*}
+
+ * unconstrained Parameters :: $\hat \theta_{i} = \left(\hat\vartheta_{i,0},\ldots,\hat\vartheta_{i,M - 1}\right)^T;\;  \hat\vartheta_{i,j}=\hat\vartheta_{i,0} + \alpha_{i,j} \cdot x^3 + \beta_{i,j}\cdot x^2 + \gamma_{i,j} \cdot x;\text{ with } i \in \{0,\ldots,d-1\}\text{ and } j \in \{0,\ldots,M-1\}$
+ * constrained Parameters :: $\vartheta_{i,0} = -4;\;\vartheta_{i,j>0}=\vartheta_{i,j-1} + 8\cdot\text{softmax}\left(\hat\vartheta_{i,j-1}\right)$
+
+ [[file:gfx/malnutrition_params.png]]
+** Marginal CDF
+
+[[file:gfx/malnutrition_cdf.png]]
+* Relation to Copulas
+** Sklars Theorem
+
+Let $F(y_1, y_2, ..., y_d)$ be a joint cumulative distribution function (CDF) with marginal CDFs $F_1(y_1), F_2(y_2), ..., F_d(y_d)$. Then, according to Sklar's Theorem, there exists a copula function $C(u_1, u_2, ..., u_d)$ such that:
+
+\[F(y_1, y_2, ..., y_d) = C(F_1(y_1), F_2(y_2), ..., F_d(y_d))\]
+
+where $u_i = F_i(y_i)$ are the uniform marginal CDFs, hence the copula function $C$ itself is a distribution on $[0,1]^d$:
+
+$C(u_1,\ldots,u_d):[0,1]^d\mapsto[0,1]$
+
+The density of the multivariate distribution $P$ is given by:
+
+\[f(y_1, y_2, ..., y_d) = c(F_1(y_1), F_2(y_2), ..., F_d(y_d))f_1(y_1)\cdots f_d(y_d)\]
+
+** Conditional Transformation Models
+
+Use flexible, strictly monotone and differentiable transformation functions $h(y|\theta(x))$ with and covariate dependent parameters $\theta(x)$ to map the conditional distribution to a reference distribution, here $\mathcal{N}_{0,1}$:
+
+$F(Y\leq y|x)=\mathcal{N}_{0,1}(h(y|\theta(x))) \leftrightarrow f(y|x)=\mathcal{N}_{0,1}(h(y|\theta(x)))\left|\det{(\nabla{h(y|\theta(x))})}\right|$
+
+** Modeling the Marginals
+
+We use an element-wise transformation model
+
+\begin{equation*}
+T_1(\mathbf{y}) = \left(h(y_1|\theta_1(\mathbf{x})),\ldots,h(y_d|\theta_d(\mathbf{x}))\right) = \left(z_{1,1}, \dots,z_{1,d}\right)\sim\mathcal{N}_{0,1}
+\end{equation*}
+
+to model conditional marginal distributions
+
+\begin{equation*}
+F_1(y_1|\mathbf{x}),\ldots,F_d_{}(y_d|\mathbf{x}) = \mathcal{N}_{0,1}\left(h(y_1|\theta_1(\mathbf{x})),\ldots,h(y_d|\theta_d(\mathbf{x}))\right)=\mathcal{N}_{0,1}(z_{1,1},\dots,z_{1,d})=u_1,\ldots,u_d\sim\mathcal{U}(0,1)
+\end{equation*}
+
+*Notation in Ordnung?*
+*** Example: Moons
+
+**** Data
+
+[[file:gfx/moons.png]]
+**** Normalized Data
+
+[[file:gfx/moons_T1.png]]
+**** PIT
+
+[[file:gfx/moons_pit.png]]
+
+** Modeling the Dependency Structure
+
+Triangular map to decorrelate the data:
+
+\begin{equation*}
+   T_2(\mathbf{y})=\left(y_1, h(y_{2}|\phi_2(y_{1},\mathbf{x})), \ldots, h(y_d|\phi_d(\mathbf{y}_{m,<d},\mathbf{x}))\right) = \left(z_{1,1}, \dots,z_{1,d}\right)
+\end{equation*}
+
+We apply an autoregressive flow to model the joint density $F$.
+
+\begin{align*}
+F(y_1,\dots,y_d|\mathbf{x})
+&= F_1(y_1|\mathbf{x}) F_2(y_2|y_1, \mathbf{x}) \cdots F_d(y_d|\mathbf{y}_{m,<D},\mathbf{x}) \\
+&= F_1 \left(h(y_1|\phi(\mathbf{x}))\right) F_2 \left(h(y_{2}|\phi_2(y_{1},\mathbf{x}))\right) \cdots, F_d \left(h(yd_{}|\phi_d(\mathbf{y}_{<d},\mathbf{x}))\right)
+\end{align*}
+*** Example: Moons
+
+**** Decorrelated Data (Only T_2)
+
+[[file:gfx/moons_T2.png]]
+**** Normalized and Decorelated Data (T_2 \circ T_1)
+
+[[file:gfx/moons_T2T1.png]]
+** Modeling the Dependency structure (MAF as Copula function)
+
+Autoregressive Flow (Triangular map) to learn the copula function $C$:
+
+$F_y=C(u_1,\ldots,u_d)=MAF^{-1}(u_1,\dots,u_d);\; u_i\sim\mathcal{U}_{0,1}$
+
+- Zum Sampeln werden Randverteilungen $F_i$ nicht benötigt
+
+\begin{equation*}
+T_2(\mathbf{y})=\left(h(u_1, \phi(\mathbf{x})), h(u_{2}|\phi_2(u_{1},\mathbf{x})), \ldots, h(u_d|\phi_d(\mathbf{u}_{m<d},\mathbf{x}))\right)=\text{MAF}(\mathbf{u}|\mathbf{x})\sim\mathcal{U}_{0,1}
+\end{equation*}
+
+\begin{equation*}
+F(y_1,\dots,y_d|\mathbf{x}) = \mathcal{U}_{0,1}\left(h(u_1|\phi_1(\mathbf{x})), h(u_{2}|\phi_2(u_{1},\mathbf{x})), \ldots, h(u_{D}|\phi_D(\mathbf{y}_{m,<D},\mathbf{x}))\right)
+\end{equation*}

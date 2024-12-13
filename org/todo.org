@@ -1,0 +1,7 @@
+* TODO [#B] Interpretirbarkeit auf Covariaten (sim-moons, TS, malnutrition)
+* PROJ [#B] Vergleich mit MCTM, Gaussin Copula
+* TODO ResMADE
+* TODO Unconstrained Monotonic Neural Networks (UMNN) [cite:@Wehenkel2021]
+* TODO HPO für stacked Flows auf benchmark Daten
+* TODO FlowTorch vs tfp MAF auf moons
+* TODO fix parameter networks

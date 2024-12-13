@@ -1,0 +1,5 @@
+outs:
+- md5: 1b72ae87752c55a3762d4ff4bfcb5746
+  size: 63000128
+  hash: md5
+  path: bsds300_test.npy

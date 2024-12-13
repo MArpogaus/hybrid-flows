@@ -1,0 +1,56 @@
+stages:
+- train
+- report
+
+prepare-job:
+  stage: .pre
+  tags:
+  - ai-cli
+  script:
+  # Configure git user
+  - git config --global --replace-all user.email "${GITLAB_USER_EMAIL}"
+  - git config --global --replace-all user.name "${GITLAB_USER_NAME}"
+
+  # Ensure conda env is recreated
+  - export MLFLOW_ENV=mlflow-$(sha1sum conda_env.yaml | cut -d " " -f1)
+  - mamba env remove -n $MLFLOW_ENV
+
+train-job:
+  stage: train
+  tags:
+  - ai-cli
+  script:
+  # run MLProject
+  - export MLFLOW_TRACKING_URI=http://server:5000
+  - export MLFLOW_EXPERIMENT_NAME="CI $CI_PROJECT_NAME ($CI_COMMIT_REF_NAME)"
+  - mlflow run .
+  artifacts:
+    paths:
+    - ./experiments/dvc.lock
+    - ./experiments/results/
+    expire_in: 1 week
+
+report-job:
+  stage: report
+  tags:
+  - ai-cli
+  script:
+  # DVC Metrics
+  - cd ./experiments/
+  - echo '# Train Run' > report.md
+  - echo '## Metrics ' >> report.md
+  - dvc metrics show --show-md >> report.md
+
+  # Post CML report as a comment in GitLab
+  - cml comment create report.md
+
+# push-job:
+#   stage: .post
+#   tags:
+#   - ai-cli
+#   script:
+#   # Push local changes
+#   - git add dvc.lock
+#   - git commit -m "updates dvc.lock from cml runner"
+#   - git remote set-url --push origin git@gitlab:${CI_PROJECT_PATH}
+#   - git push --follow-tags origin HEAD:${CI_COMMIT_REF_NAME}

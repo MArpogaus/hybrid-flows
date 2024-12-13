@@ -1,0 +1,5 @@
+outs:
+- md5: 21ee7ef1ffaf9ca5739b135de79b50eb
+  size: 26470460
+  hash: md5
+  path: hepmass_train.npy
