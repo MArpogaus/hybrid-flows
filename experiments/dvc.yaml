@@ -74,7 +74,7 @@ stages:
       --log-level ${log-level}
       --log-file train.log
       --model-name ${item.model}
-      --stage-name train-sim@${key}
+      --stage-name train-benchmark@${key}
       --dataset-type ${item.dataset.type}
       --dataset-name ${item.dataset.name}
       --results-path results/
