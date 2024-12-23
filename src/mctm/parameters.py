@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 13:16:19 (Marcel Arpogaus)
-# changed : 2024-12-11 15:28:19 (Marcel Arpogaus)
+# changed : 2024-12-23 13:04:51 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions defining ANNs.
@@ -63,7 +63,7 @@ def get_parameter_vector_fn(
     parameter_vector = tf.Variable(
         initializer(parameter_shape, dtype=dtype), trainable=True
     )
-    return lambda *_, **__: parameter_vector, [parameter_vector]
+    return lambda *_, **__: parameter_vector, [parameter_vector], []
 
 
 def get_fully_connected_network_fn(
@@ -121,7 +121,7 @@ def get_fully_connected_network_fn(
         def parameter_network_fn(*_, **kwargs):
             return lambda x: parameter_network(x, **kwargs)
 
-    return parameter_network_fn, parameter_network.trainable_variables
+    return parameter_network_fn, parameter_network.trainable_variables, []
 
 
 def get_parameter_vector_or_simple_network_fn(
@@ -154,7 +154,7 @@ def get_parameter_vector_or_simple_network_fn(
             output_shape=parameter_shape, input_shape=input_shape, **kwargs
         )
         parameter_network.build(input_shape=input_shape)
-        return parameter_network, parameter_network.trainable_variables
+        return parameter_network, parameter_network.trainable_variables, []
     else:
         return get_parameter_vector_fn(parameter_shape=parameter_shape, **kwargs)
 
@@ -223,7 +223,7 @@ def get_fully_connected_res_net_fn(
         def parameter_network_fn(*_, **kwargs):
             return lambda x: parameter_network(x, **kwargs)
 
-    return parameter_network_fn, parameter_network.trainable_variables
+    return parameter_network_fn, parameter_network.trainable_variables, []
 
 
 def get_masked_autoregressive_network_fn(
@@ -267,7 +267,7 @@ def get_masked_autoregressive_network_fn(
         def parameter_network_fn(*_, **kwargs):
             return lambda x: parameter_network(x, **kwargs)
 
-    return parameter_network_fn, parameter_network.trainable_variables
+    return parameter_network_fn, parameter_network.trainable_variables, []
 
 
 def get_fully_connected_autoregressive_network_fn(
@@ -333,7 +333,7 @@ def get_fully_connected_autoregressive_network_fn(
         def parameter_network_fn(*_, **kwargs):
             return lambda x: parameter_network(x, **kwargs)
 
-    return parameter_network_fn, parameter_network.trainable_variables
+    return parameter_network_fn, parameter_network.trainable_variables, []
 
 
 def get_bernstein_polynomial_fn(
@@ -373,7 +373,7 @@ def get_bernstein_polynomial_fn(
     parameter_shape = (
         [conditional_event_shape] + parameter_shape + [polynomial_order + 1]
     )
-    _, parameter_vector = get_parameter_vector_fn(
+    _, parameter_vector, _ = get_parameter_vector_fn(
         parameter_shape=parameter_shape,
         dtype=dtype,
         initializer=initializer,
@@ -384,15 +384,35 @@ def get_bernstein_polynomial_fn(
         p = b_poly(conditional_input[..., None])
         return tf.reduce_sum(p, 1)
 
-    return get_parameter_fn, parameter_vector
+    return get_parameter_fn, parameter_vector, []
 
 
 def get_test_parameters_fn(input_shape, param_shape):
     """Test parameter function."""
-    return lambda x: tf.ones([*input_shape, *param_shape]) * x[..., None], None
+    return lambda x: tf.ones([*input_shape, *param_shape]) * x[..., None], [], []
 
 
 def get_test_parameters_nested_fn(input_shape, param_shape):
     """Test parameter function."""
-    parameter_fn, vars = get_test_parameters_fn(input_shape, param_shape)
-    return lambda x: lambda xx: x * parameter_fn(xx), vars
+    parameter_fn, vars, _ = get_test_parameters_fn(input_shape, param_shape)
+    return lambda x: lambda xx: x * parameter_fn(xx), vars, []
+
+
+def get_lu_parameters_fn(event_size, seed=None, dtype=tf.float32):
+    event_size = tf.convert_to_tensor(
+        event_size, dtype_hint=tf.int32, name="event_size"
+    )
+    random_matrix = tf.random.uniform(
+        shape=[event_size, event_size], dtype=dtype, seed=seed
+    )
+    random_orthonormal = tf.linalg.qr(random_matrix)[0]
+    lower_upper, permutation = tf.linalg.lu(random_orthonormal)
+    lower_upper = tf.Variable(
+        initial_value=lower_upper, trainable=True, name="lower_upper"
+    )
+    # Initialize a non-trainable variable for the permutation indices so
+    # that its value isn't re-sampled from run-to-run.
+    permutation = tf.Variable(
+        initial_value=permutation, trainable=False, name="permutation"
+    )
+    return lambda *_, **__: [lower_upper, permutation], [lower_upper], [permutation]

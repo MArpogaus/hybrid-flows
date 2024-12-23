@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2024-12-03 10:32:20 (Marcel Arpogaus)
+# changed : 2024-12-23 15:17:29 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions for probability distributions.
@@ -144,10 +144,10 @@ def _get_trainable_distribution(
     distribution_fn, parameters_shape = get_distribution_fn(
         dims=dims, **distribution_kwargs
     )
-    parameter_fn, trainable_variables = parameters_fn(
+    parameter_fn, trainable_variables, non_trainable_variables = parameters_fn(
         parameters_shape, **parameters_fn_kwargs
     )
-    return distribution_fn, parameter_fn, trainable_variables, []
+    return distribution_fn, parameter_fn, trainable_variables, non_trainable_variables
 
 
 def _get_base_distribution(
@@ -250,8 +250,8 @@ def _get_parameters_constraint_fn(
 def _init_parameters_fn(
     bijectors: List[Dict[str, Any]], variables_name: str
 ) -> Tuple[List[Optional[Callable[..., Any]]], List[tf.Variable], List[tf.Variable]]:
-    trainable_variables: List[tf.Variable] = []
-    non_trainable_variables: List[tf.Variable] = []
+    all_trainable_variables: List[tf.Variable] = []
+    all_non_trainable_variables: List[tf.Variable] = []
 
     bj_count = 0
 
@@ -320,7 +320,8 @@ def _init_parameters_fn(
                 __PARAMETERS_FN_KEY__,
             )
 
-        variables: List[tf.Variable] = []
+        trainable_variables: List[tf.Variable] = []
+        non_trainable_variables: List[tf.Variable] = []
 
         # get parameter fn
         with tf.variable_creator_scope(variable_renamer):
@@ -333,7 +334,7 @@ def _init_parameters_fn(
                 def parameters_fn(*_, **__):
                     return parameters
 
-                variables = [parameters]
+                trainable_variables = [parameters]
             elif parameters_fn is not None:
                 if callable(parameters_fn):
                     __LOGGER__.debug("Using provided callable as parameter function")
@@ -345,23 +346,31 @@ def _init_parameters_fn(
                     )
 
                 __LOGGER__.debug("Initializing parametrization function")
-                parameters_fn, variables = get_parameters_fn(
-                    **parameters_fn_kwargs,
+                parameters_fn, trainable_variables, non_trainable_variables = (
+                    get_parameters_fn(
+                        **parameters_fn_kwargs,
+                    )
                 )
             else:
                 parameters_fn = None
 
-        if variables:
+        if trainable_variables:
             if trainable:
-                trainable_variables.extend(variables)
+                all_trainable_variables.extend(trainable_variables)
             else:
-                non_trainable_variables.extend(variables)
+                all_non_trainable_variables.extend(trainable_variables)
+        if non_trainable_variables:
+            all_non_trainable_variables.extend(non_trainable_variables)
 
         return parameters_fn
 
     bijectors_parameters_fns = list(map(process, bijectors))
 
-    return bijectors_parameters_fns, trainable_variables, non_trainable_variables
+    return (
+        bijectors_parameters_fns,
+        all_trainable_variables,
+        all_non_trainable_variables,
+    )
 
 
 def _get_eval_parameter_fn(conditional_input, **kwargs):
@@ -772,6 +781,8 @@ def _get_masked_autoregressive_flow_bijector_def(
     parameters_fn_kwargs: Dict[str, Any] = {},
     maf_kwargs: Dict[str, Any] = {},
     nested_bijectors: Union[List[Union[Dict[str, Any], tfb.Bijector]], None] = None,
+    permutation: str = "1x1conv",
+    random_permutation_seed: int = 1,
     **kwargs: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
     """Get bijector definition to parametrize a Masked Autoregressive Flow (MAF).
@@ -832,12 +843,26 @@ def _get_masked_autoregressive_flow_bijector_def(
             __PARAMETERS_FN_KEY__: parameters_fn,
             __PARAMETERS_FN_KWARGS_KEY__: {
                 "parameter_shape": (dims, num_parameters),
-                **parameters_fn_kwargs,
                 "name": f"maf_layer_{layer}",
+                **parameters_fn_kwargs,
             },
             **maf_kwargs.copy(),
         }
         bijectors.append(bijector_def)
+        if permutation == "1x1conv":
+            __LOGGER__.info("Adding 1x1 convolution")
+            bijectors.append(
+                {
+                    __BIJECTOR_NAME_KEY__: "ScaleMatvecLU",
+                    __PARAMETERS_FN_KEY__: parameters_lib.get_lu_parameters_fn,
+                    __PARAMETERS_FN_KWARGS_KEY__: {
+                        "event_size": dims,
+                        "seed": random_permutation_seed + layer,
+                    },
+                }
+            )
+        else:
+            __LOGGER__.info("No Permutation")
 
     __LOGGER__.info(pformat(bijectors))
 
@@ -853,6 +878,8 @@ def _get_coupling_flow_bijector_def(
     parameters_fn: Callable[..., Any] = parameters_lib.get_fully_connected_network_fn,
     parameters_fn_kwargs: Dict[str, Any] = {},
     nested_bijectors: Union[List[Union[Dict[str, Any], tfb.Bijector]], None] = None,
+    permutation: str = "masked",
+    random_permutation_seed: int = 1,
     **kwargs: Dict[str, Any],
 ):
     """Get bijector definition to parametrize a Coupling Flow.
@@ -921,13 +948,32 @@ def _get_coupling_flow_bijector_def(
         }
         bijectors.append(realnvp_bijector_def)
 
-        permutation = list(range(nm, dims)) + list(range(nm))
-        if num_layers % 2 != 0 and layer == (num_layers - 1):
-            __LOGGER__.info(
-                "uneven number of coupling layers -> skipping last permutation"
+        if permutation == "masked":
+            __LOGGER__.info("Permuting masked dimensions")
+            permutation = list(range(nm, dims)) + list(range(nm))
+            if num_layers % 2 != 0 and layer == (num_layers - 1):
+                __LOGGER__.info(
+                    "uneven number of coupling layers -> skipping last permutation"
+                )
+            else:
+                bijectors.append(
+                    tfb.Permute(permutation=list(range(nm, dims)) + list(range(nm)))
+                )
+        elif permutation == "1x1conv":
+            __LOGGER__.info("Adding 1x1 convolution")
+            bijectors.append(
+                {
+                    __BIJECTOR_NAME_KEY__: "ScaleMatvecLU",
+                    __PARAMETERS_FN_KEY__: parameters_lib.get_lu_parameters_fn,
+                    __PARAMETERS_FN_KWARGS_KEY__: {
+                        "event_size": dims,
+                        "seed": random_permutation_seed + layer,
+                    },
+                }
             )
         else:
-            bijectors.append(tfb.Permute(permutation=permutation))
+            raise ValueError(f"{permutation=} unknown.")
+
     return bijectors
 
 
