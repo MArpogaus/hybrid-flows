@@ -1,0 +1,109 @@
+# the NN which computes the parameters of the elementwise transformations is a residual network
+# with pre-activation residual blocks [19].
+# For autoregressive transformations, we use the ResMADE architecture.
+
+# ResMADE usese ReLU
+
+# We fix the tail bound B = 3
+# We fix the number of bins K = 8
+
+# We implement all invertible linear transformations using the LU-decomposition,
+# where the permutation matrix P is fixed at the beginning of training, and the
+# product LU is initialized to the identity.
+# we define a flow ‘step’ as the composition of an invertible linear transformation
+# with either a coupling or autoregressive transform, and we use 10 steps per flow
+# All flows use a standard-normal noise distribution.
+# We use the Adam optimizer [27], and anneal the learning rate according to a cosine schedule
+# In some cases, we find applying dropout [53] in the residual blocks beneficial for regularization.
+
+# Code is available online at https://github.com/bayesiains/nsf
+
+# Table 4: Hyperparameters for density-estimation results using coupling layers in section 5.1
+# |                   |     POWER |     GAS | HEPMASS | MINIBOONE |   BSDS300 |
+# |-------------------+-----------+---------+---------+-----------+-----------|
+# | Dimension         |         6 |       8 |      21 |        43 |        63 |
+# | Train data points | 1,615,917 | 852,174 | 315,123 |    29,556 | 1,000,000 |
+# | Batch size        |       512 |     512 |     256 |       128 |       512 |
+# | Training steps    |   400,000 | 400,000 | 400,000 |   200,000 |   400,000 |
+# | Learning rate     |    0.0005 |  0.0005 |  0.0005 |    0.0003 |    0.0005 |
+# | Flow steps        |        10 |      10 |      20 |        10 |        20 |
+# | Residual blocks   |         2 |       2 |       2 |         1 |         1 |
+# | Hidden features   |       256 |     256 |     128 |        32 |       128 |
+# | Bins              |         8 |       8 |       8 |         4 |         8 |
+# | Dropout           |       0.0 |     0.1 |     0.2 |       0.2 |       0.2 |
+
+# Table 5: Hyperparameters for density-estimation results using autoregressive layers in section 5.1
+# |                   |     POWER |     GAS | HEPMASS | MINIBOONE |   BSDS300 |
+# |-------------------+-----------+---------+---------+-----------+-----------|
+# | Dimension         |         6 |       8 |      21 |        43 |        63 |
+# | Train data points | 1,615,917 | 852,174 | 315,123 |    29,556 | 1,000,000 |
+# | Batch size        |       512 |     512 |      64 |       128 |       512 |
+# | Training steps    |   400,000 | 400,000 | 400,000 |   250,000 |   400,000 |
+# | Learning rate     |    0.0005 |  0.0005 |  0.0005 |    0.0003 |    0.0005 |
+# | Flow steps        |        10 |      10 |      10 |        10 |        10 |
+# | Residual blocks   |         2 |       2 |       2 |         1 |         2 |
+# | Hidden features   |       256 |     256 |      64 |        64 |       512 |
+# | Bins              |         8 |       8 |       8 |         4 |         8 |
+# | Dropout           |       0.0 |     0.1 |     0.2 |       0.2 |       0.2 |
+
+compile_kwargs: {}
+#   jit_compile: true
+two_stage_training: true
+fit_kwargs:
+  batch_size: 512
+  epochs: &epochs 200
+  learning_rate:
+    scheduler_kwargs:
+      decay_steps: *epochs
+      initial_learning_rate: 0.0005
+    scheduler_name: cosine_decay
+  monitor: val_loss
+  reduce_lr_on_plateau: false
+  early_stopping: false
+  verbose: true
+model_kwargs:
+  marginal_bijectors:
+  - bijector: BernsteinPolynomial
+    invert: true
+    bijector_kwargs:
+      domain: [-1, 1]
+      extrapolation: false
+    parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+    parameters_constraint_fn_kwargs:
+      allow_flexible_bounds: false
+      bounds: linear
+      high: 3
+      low: -3
+    parameters_fn: parameter_vector
+    parameters_fn_kwargs:
+      dtype: float32
+      parameter_shape: [&dims 63, 300]
+  joint_flow_type: masked_autoregressive_flow_first_dim_masked
+  joint_bijectors:
+    num_layers: 10
+    permutation: 1x1conv
+    random_permutation_seed: 1
+    bijector: RationalQuadraticSpline
+    bijector_kwargs:
+      range_min: -3
+    parameters_constraint_fn_kwargs:
+      interval_width: 6
+      min_slope: 0.001
+      min_bin_width: 0.001
+      nbins: 8
+    num_parameters: 23 # nbins * 3 - 1
+    maf_parameters_fn_kwargs:
+      activation: relu
+      # dropout: 0.2
+      hidden_units:
+      - 512
+      - 512
+      dtype: float32
+    x0_parameters_fn_kwargs:
+      activation: relu
+      batch_norm: false
+      dropout: false
+      hidden_units:
+      - 512
+      - 512
+      dtype: float32
