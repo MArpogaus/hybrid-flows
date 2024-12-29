@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-12-12 09:45:44 (Marcel Arpogaus)
-# changed : 2024-12-12 10:27:37 (Marcel Arpogaus)
+# changed : 2024-12-29 15:13:37 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -293,6 +293,8 @@ def run(
     results_path: str,
     test_mode: bool,
     params: dict,
+    experiment_name: str = None,
+    run_name: str = None,
 ) -> tuple:
     """Execute experiment.
 
@@ -314,6 +316,10 @@ def run(
         Flag to activate test-mode.
     params : dict
         Dictionary containing experiment parameters.
+    experiment_name : str, optional
+        Name of the MLFlow experiment.
+    run_name : str, optional
+        Name of the MLFlow run.
 
     Returns
     -------
@@ -337,15 +343,17 @@ def run(
             "dataset_name": dataset_name,
             "test_mode": test_mode,
         }
+        batch_size = fit_kwargs.pop("batch_size")
+
+        def mk_ds(data):
+            return tf.data.Dataset.from_tensor_slices((tf.ones_like(data), data)).batch(
+                batch_size, drop_remainder=True
+            )
 
         def preprocess_dataset(data, model) -> dict:
             return {
-                "x": tf.ones_like(data[0], dtype=model.dtype),
-                "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
-                "validation_data": (
-                    tf.ones_like(data[1], dtype=model.dtype),
-                    tf.convert_to_tensor(data[1], dtype=model.dtype),
-                ),
+                "x": mk_ds(data[0]),
+                "validation_data": mk_ds(data[1]),
             }
 
         plot_data = None
@@ -433,10 +441,12 @@ def run(
     else:
         raise ValueError(f"Invalid dataset type: {dataset_type}")
 
-    experiment_name = os.environ.get(
-        "MLFLOW_EXPERIMENT_NAME", "_".join((dataset_type, "train"))
-    )
-    run_name = "_".join((model_name, dataset_name, "train"))
+    if experiment_name is None:
+        experiment_name = os.environ.get(
+            "MLFLOW_EXPERIMENT_NAME", "_".join((dataset_type, "train"))
+        )
+    if run_name is None:
+        run_name = "_".join((model_name, dataset_name, "train"))
 
     if test_mode:
         __LOGGER__.info("Running in test-mode")
