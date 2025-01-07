@@ -81,7 +81,7 @@ model_kwargs:
   joint_flow_type: masked_autoregressive_flow_first_dim_masked
   joint_bijectors:
     num_layers: 10
-    permutation: 1x1conv
+    use_invertible_linear_transformations: true
     random_permutation_seed: 1
     bijector: RationalQuadraticSpline
     bijector_kwargs:

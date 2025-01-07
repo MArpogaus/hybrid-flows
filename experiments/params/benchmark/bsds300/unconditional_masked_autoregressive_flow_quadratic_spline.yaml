@@ -63,7 +63,7 @@ fit_kwargs:
 model_kwargs:
   distribution: masked_autoregressive_flow
   num_layers: 10
-  permutation: 1x1conv
+  use_invertible_linear_transformations: true
   random_permutation_seed: 1
   bijector: RationalQuadraticSpline
   bijector_kwargs:
