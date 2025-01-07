@@ -18,7 +18,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 def get_dataset(dataset_name, n_samples, scale, test_mode=False, **kwds):
     """Load data."""
-    n_samples = 1000 if test_mode else n_samples
+    n_samples = 2**12 if test_mode else n_samples
     X, Y = getattr(datasets, f"make_{dataset_name}")(n_samples=n_samples, **kwds)
     if scale:
         X = MinMaxScaler(feature_range=tuple(scale)).fit_transform(X)
