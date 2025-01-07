@@ -4,7 +4,8 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2024-12-23 15:17:29 (Marcel Arpogaus)
+# changed : 2025-01-07 14:57:42 (Marcel Arpogaus)
+
 
 # %% Description ###############################################################
 """Functions for probability distributions.
@@ -781,7 +782,7 @@ def _get_masked_autoregressive_flow_bijector_def(
     parameters_fn_kwargs: Dict[str, Any] = {},
     maf_kwargs: Dict[str, Any] = {},
     nested_bijectors: Union[List[Union[Dict[str, Any], tfb.Bijector]], None] = None,
-    permutation: str = "1x1conv",
+    use_invertible_linear_transformations: bool = True,
     random_permutation_seed: int = 1,
     **kwargs: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
@@ -809,6 +810,13 @@ def _get_masked_autoregressive_flow_bijector_def(
     nested_bijectors: Union[List[Union[Dict, tfb.Bijector]], None] = None, optional
         In addition to provide nested bijector definition as kwargs, this
         argument can be used to provide multiple nested bijectors in a list.
+    use_invertible_linear_transformations: bool, optional
+        Apply invertible linear transformations aka. as 1x1 Convolutions after every
+        MAF layer.
+    random_permutation_seed: int = 1,
+        Seed used for the random initialization of the LU-decomposed permutation
+        and scale matrices used in the invertible linear transformations, by default 1.
+
     **kwargs : Dict[str, Any]
         Additional keyword arguments added to the nested bijector definition.
 
@@ -849,8 +857,10 @@ def _get_masked_autoregressive_flow_bijector_def(
             **maf_kwargs.copy(),
         }
         bijectors.append(bijector_def)
-        if permutation == "1x1conv":
-            __LOGGER__.info("Adding 1x1 convolution")
+        if num_layers > 1 and use_invertible_linear_transformations:
+            __LOGGER__.info(
+                "Adding 1x1 convolution (invertible linear transformations)"
+            )
             bijectors.append(
                 {
                     __BIJECTOR_NAME_KEY__: "ScaleMatvecLU",
@@ -878,7 +888,7 @@ def _get_coupling_flow_bijector_def(
     parameters_fn: Callable[..., Any] = parameters_lib.get_fully_connected_network_fn,
     parameters_fn_kwargs: Dict[str, Any] = {},
     nested_bijectors: Union[List[Union[Dict[str, Any], tfb.Bijector]], None] = None,
-    permutation: str = "masked",
+    permutation: Union[str, list, tuple] = "masked",
     random_permutation_seed: int = 1,
     **kwargs: Dict[str, Any],
 ):
@@ -902,9 +912,21 @@ def _get_coupling_flow_bijector_def(
     parameters_fn_kwargs : Dict[str, Any], optional
         Additional keyword arguments passed to `parameter_fn`,
         by default {}.
-    nested_bijectors: Union[List[Union[Dict, tfb.Bijector]], None] = None, optional
+    nested_bijectors : Union[List[Union[Dict, tfb.Bijector]], None] = None, optional
         In addition to provide nested bijector definition as kwargs, this
         argument can be used to provide multiple nested bijectors in a list.
+    permutation : Union[str,list,tuple], optional:
+        Define the kind of permutations to use.
+        If the value is equal to `masked`, the masked and unmasked part of the input
+        are flipped after each transformation, except the last if an uneven number of
+        coupling layers is used (Default).
+        If the value is equal to `1x1conv`, invertible linear transformations aka. as
+        1x1 Convolutions are applied after every coupling layer.
+        Any the value is evaluated as `False` permutations are disabled.
+        Permutations are not used for single coupling layers (num_layers == 1).
+    random_permutation_seed : int, optional
+        Seed used for the random initialization of the LU-decomposed permutation
+        and scale matrices used in the invertible linear transformations, by default 1.
     **kwargs : Dict[str, Any]
         Additional keyword arguments added to the nested bijector definition.
 
@@ -948,31 +970,32 @@ def _get_coupling_flow_bijector_def(
         }
         bijectors.append(realnvp_bijector_def)
 
-        if permutation == "masked":
-            __LOGGER__.info("Permuting masked dimensions")
-            permutation = list(range(nm, dims)) + list(range(nm))
-            if num_layers % 2 != 0 and layer == (num_layers - 1):
-                __LOGGER__.info(
-                    "uneven number of coupling layers -> skipping last permutation"
+        if num_layers > 1 and permutation:
+            if permutation == "masked":
+                if num_layers % 2 != 0 and layer == (num_layers - 1):
+                    __LOGGER__.info(
+                        "uneven number of layers -> skipping last permutation"
+                    )
+                else:
+                    pm = list(range(nm, dims)) + list(range(nm))
+                    __LOGGER__.info("Applying permutation: %s", pm)
+                    bijectors.append(tfb.Permute(permutation=pm))
+            elif permutation == "1x1conv":
+                __LOGGER__.info("Adding 1x1 convolution")
+                bijectors.append(
+                    {
+                        __BIJECTOR_NAME_KEY__: "ScaleMatvecLU",
+                        __PARAMETERS_FN_KEY__: parameters_lib.get_lu_parameters_fn,
+                        __PARAMETERS_FN_KWARGS_KEY__: {
+                            "event_size": dims,
+                            "seed": random_permutation_seed + layer,
+                        },
+                    }
                 )
             else:
-                bijectors.append(
-                    tfb.Permute(permutation=list(range(nm, dims)) + list(range(nm)))
-                )
-        elif permutation == "1x1conv":
-            __LOGGER__.info("Adding 1x1 convolution")
-            bijectors.append(
-                {
-                    __BIJECTOR_NAME_KEY__: "ScaleMatvecLU",
-                    __PARAMETERS_FN_KEY__: parameters_lib.get_lu_parameters_fn,
-                    __PARAMETERS_FN_KWARGS_KEY__: {
-                        "event_size": dims,
-                        "seed": random_permutation_seed + layer,
-                    },
-                }
-            )
+                raise ValueError(f"{permutation=} unknown.")
         else:
-            raise ValueError(f"{permutation=} unknown.")
+            __LOGGER__.info("Not using any permutation")
 
     return bijectors
 
