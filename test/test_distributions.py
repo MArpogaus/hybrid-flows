@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-31 13:56:39 (Marcel Arpogaus)
-# changed : 2024-12-05 11:54:13 (Marcel Arpogaus)
+# changed : 2025-01-07 14:18:47 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -487,6 +487,22 @@ def mock_base_distribution_data(request):
 
 
 # %% functions #################################################################
+def get_num_made_variables(masked_autoregressive_flow_kwargs):
+    """Get number of trainable variables of all made networks of MAF."""
+    return (
+        (
+            len(
+                masked_autoregressive_flow_kwargs["parameters_fn_kwargs"][
+                    "hidden_units"
+                ]
+            )
+            + 1
+        )
+        * masked_autoregressive_flow_kwargs["num_layers"]
+        * 2
+    )
+
+
 def assert_all_parameter_have_unique_id(all_parameters):
     """Check that all parameters or parameter functions are unique."""
 
@@ -1295,25 +1311,15 @@ def test_get_masked_autoregressive_bernstein_flow(
     assert callable(parameter_fn)
     assert isinstance(trainable_variables, list)
 
-    assert (
-        len(trainable_variables)
-        == (
-            len(
-                masked_autoregressive_bernstein_flow_kwargs["parameters_fn_kwargs"][
-                    "hidden_units"
-                ]
-            )
-            + 1
-        )
-        * masked_autoregressive_bernstein_flow_kwargs["num_layers"]
-        * 2
-    )
+    made_variables = get_num_made_variables(masked_autoregressive_bernstein_flow_kwargs)
+    lu_variables = masked_autoregressive_bernstein_flow_kwargs["num_layers"]
+    assert len(trainable_variables) == made_variables + lu_variables
     assert len(set(map(id, trainable_variables))) == len(trainable_variables)
     for v in trainable_variables:
         assert isinstance(v, tf.Variable)
         assert v.trainable
     assert isinstance(non_trainable_variables, list)
-    assert len(non_trainable_variables) == 0
+    assert len(non_trainable_variables) == lu_variables
 
     if is_conditional:
         test_input1 = tf.ones(
@@ -1330,13 +1336,14 @@ def test_get_masked_autoregressive_bernstein_flow(
 
     assert_all_parameter_have_unique_id(all_parameters)
     assert (
-        len(all_parameters) == masked_autoregressive_bernstein_flow_kwargs["num_layers"]
+        len(all_parameters)
+        == masked_autoregressive_bernstein_flow_kwargs["num_layers"] * 2
     )
     for i, p in enumerate(all_parameters):
-        if isinstance(p, dict):
+        if isinstance(p, dict) and i % 2 == 0:
             check_maf_params_fn(
                 p,
-                i,
+                i // 2,
                 batch_size,
                 dims,
                 masked_autoregressive_bernstein_flow_kwargs,
@@ -1354,33 +1361,36 @@ def test_get_masked_autoregressive_bernstein_flow(
     assert_flow_shapes(batch_size, dims, flow)
 
     for i, (b) in enumerate(dist.bijector.bijectors):
-        test_input2 = i * tf.ones((batch_size, dims))
-        assert isinstance(b, tfb.MaskedAutoregressiveFlow)
-        assert isinstance(b._bijector_fn, Callable)
+        if i % 2 == 0:
+            test_input2 = i * tf.ones((batch_size, dims))
+            assert isinstance(b, tfb.MaskedAutoregressiveFlow)
+            assert isinstance(b._bijector_fn, Callable)
 
-        nested_flow = b._bijector_fn(test_input2)
+            nested_flow = b._bijector_fn(test_input2)
 
-        assert isinstance(nested_flow, tfp.python.bijectors.invert._Invert)
-        assert isinstance(nested_flow.bijector, BernsteinPolynomial)
-        bpoly_bijector = nested_flow.bijector
-        assert tf.reduce_all(
-            tf.abs(
-                bpoly_bijector.thetas[..., 0]
-                - masked_autoregressive_bernstein_flow_kwargs[
-                    __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__
-                ]["low"]
+            assert isinstance(nested_flow, tfp.python.bijectors.invert._Invert)
+            assert isinstance(nested_flow.bijector, BernsteinPolynomial)
+            bpoly_bijector = nested_flow.bijector
+            assert tf.reduce_all(
+                tf.abs(
+                    bpoly_bijector.thetas[..., 0]
+                    - masked_autoregressive_bernstein_flow_kwargs[
+                        __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__
+                    ]["low"]
+                )
+                < 1e-5
             )
-            < 1e-5
-        )
-        assert tf.reduce_all(
-            tf.abs(
-                bpoly_bijector.thetas[..., -1]
-                - masked_autoregressive_bernstein_flow_kwargs[
-                    __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__
-                ]["high"]
+            assert tf.reduce_all(
+                tf.abs(
+                    bpoly_bijector.thetas[..., -1]
+                    - masked_autoregressive_bernstein_flow_kwargs[
+                        __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__
+                    ]["high"]
+                )
+                < 1e-5
             )
-            < 1e-5
-        )
+        else:
+            assert isinstance(b, tfb.ScaleMatvecLU)
 
     # Test flow forward and inverse transformations
     assert_sample_shapes(dist, num_samples, is_conditional, batch_size, dims)
@@ -1406,25 +1416,15 @@ def test_get_masked_autoregressive_spline_flow(
     assert callable(parameter_fn)
     assert isinstance(trainable_variables, list)
 
-    assert (
-        len(trainable_variables)
-        == (
-            len(
-                masked_autoregressive_spline_flow_kwargs["parameters_fn_kwargs"][
-                    "hidden_units"
-                ]
-            )
-            + 1
-        )
-        * masked_autoregressive_spline_flow_kwargs["num_layers"]
-        * 2
-    )
+    made_variables = get_num_made_variables(masked_autoregressive_spline_flow_kwargs)
+    lu_variables = masked_autoregressive_spline_flow_kwargs["num_layers"]
+    assert len(trainable_variables) == made_variables + lu_variables
     assert len(set(map(id, trainable_variables))) == len(trainable_variables)
     for v in trainable_variables:
         assert isinstance(v, tf.Variable)
         assert v.trainable
     assert isinstance(non_trainable_variables, list)
-    assert len(non_trainable_variables) == 0
+    assert len(non_trainable_variables) == lu_variables
 
     if is_conditional:
         test_input1 = tf.ones(
@@ -1440,12 +1440,15 @@ def test_get_masked_autoregressive_spline_flow(
     assert isinstance(all_parameters, list)
 
     assert_all_parameter_have_unique_id(all_parameters)
-    assert len(all_parameters) == masked_autoregressive_spline_flow_kwargs["num_layers"]
+    assert (
+        len(all_parameters)
+        == masked_autoregressive_spline_flow_kwargs["num_layers"] * 2
+    )
     for i, p in enumerate(all_parameters):
-        if isinstance(p, dict):
+        if isinstance(p, dict) and i % 2 == 0:
             check_maf_params_fn(
                 p,
-                i,
+                i // 2,
                 batch_size,
                 dims,
                 masked_autoregressive_spline_flow_kwargs,
@@ -1463,13 +1466,16 @@ def test_get_masked_autoregressive_spline_flow(
     assert_flow_shapes(batch_size, dims, flow)
 
     for i, (b) in enumerate(dist.bijector.bijectors):
-        test_input2 = i * tf.ones((batch_size, dims))
-        assert isinstance(b, tfb.MaskedAutoregressiveFlow)
-        assert isinstance(b._bijector_fn, Callable)
+        if i % 2 == 0:
+            test_input2 = i * tf.ones((batch_size, dims))
+            assert isinstance(b, tfb.MaskedAutoregressiveFlow)
+            assert isinstance(b._bijector_fn, Callable)
 
-        nested_flow = b._bijector_fn(test_input2)
+            nested_flow = b._bijector_fn(test_input2)
 
-        assert isinstance(nested_flow, tfb.RationalQuadraticSpline)
+            assert isinstance(nested_flow, tfb.RationalQuadraticSpline)
+        else:
+            assert isinstance(b, tfb.ScaleMatvecLU)
 
     # Test flow forward and inverse transformations
     assert_sample_shapes(dist, num_samples, is_conditional, batch_size, dims)
@@ -1518,7 +1524,7 @@ def test_get_masked_autoregressive_flow_first_dim_masked(
             else 1
         )
     )
-    expected_maf_lenght = (
+    expected_made_variables = (
         (
             len(
                 masked_autoregressive_flow_first_dim_masked_kwargs[
@@ -1530,13 +1536,21 @@ def test_get_masked_autoregressive_flow_first_dim_masked(
         * masked_autoregressive_flow_first_dim_masked_kwargs["num_layers"]
         * 2
     )
-    assert len(trainable_variables) == (expected_x0_lenght + expected_maf_lenght)
+    expected_lu_variables = masked_autoregressive_flow_first_dim_masked_kwargs[
+        "num_layers"
+    ]
+    if expected_lu_variables == 1:
+        # we skip permutations if there is just one MAF layer
+        expected_lu_variables = 0
+    assert len(trainable_variables) == (
+        expected_x0_lenght + expected_made_variables + expected_lu_variables
+    )
     assert len(set(map(id, trainable_variables))) == len(trainable_variables)
     for v in trainable_variables:
         assert isinstance(v, tf.Variable)
         assert v.trainable
     assert isinstance(non_trainable_variables, list)
-    assert len(non_trainable_variables) == 0
+    assert len(non_trainable_variables) == expected_lu_variables
 
     if is_conditional:
         test_input1 = tf.ones(
@@ -1562,6 +1576,7 @@ def test_get_masked_autoregressive_flow_first_dim_masked(
     assert (
         len(all_parameters[0][__NESTED_BIJECTOR_KEY__])
         == masked_autoregressive_flow_first_dim_masked_kwargs["num_layers"]
+        + expected_lu_variables
     )
 
     realnvp_test_input2 = tf.ones((batch_size, 1))
@@ -1575,10 +1590,10 @@ def test_get_masked_autoregressive_flow_first_dim_masked(
 
     all_nested_parameters = all_parameters[0][__NESTED_BIJECTOR_KEY__]
     for i, p in enumerate(all_nested_parameters):
-        if isinstance(p, dict):
+        if isinstance(p, dict) and i % 2 == 0:
             check_maf_params_fn(
                 p,
-                i,
+                i // 2,
                 batch_size,
                 dims - 1,
                 masked_autoregressive_flow_first_dim_masked_kwargs,
@@ -1608,38 +1623,41 @@ def test_get_masked_autoregressive_flow_first_dim_masked(
         nested_bijectors = [nested_flow]
 
     for i, (b) in enumerate(nested_bijectors):
-        test_input2 = i * tf.ones((batch_size, dims - 1))
-        output_shape = [
-            batch_size,
-            dims - 1,
-            masked_autoregressive_flow_first_dim_masked_kwargs["num_parameters"],
-        ]
-        assert isinstance(b, tfb.MaskedAutoregressiveFlow)
-        assert isinstance(b._bijector_fn, Callable)
+        if i % 2 == 0:
+            test_input2 = i * tf.ones((batch_size, dims - 1))
+            output_shape = [
+                batch_size,
+                dims - 1,
+                masked_autoregressive_flow_first_dim_masked_kwargs["num_parameters"],
+            ]
+            assert isinstance(b, tfb.MaskedAutoregressiveFlow)
+            assert isinstance(b._bijector_fn, Callable)
 
-        nested_flow = b._bijector_fn(test_input2)
+            nested_flow = b._bijector_fn(test_input2)
 
-        assert isinstance(nested_flow, tfp.python.bijectors.invert._Invert)
-        assert isinstance(nested_flow.bijector, BernsteinPolynomial)
-        bpoly_bijector = nested_flow.bijector
-        assert tf.reduce_all(
-            tf.abs(
-                bpoly_bijector.thetas[..., 0]
-                - masked_autoregressive_flow_first_dim_masked_kwargs[
-                    __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__
-                ]["low"]
+            assert isinstance(nested_flow, tfp.python.bijectors.invert._Invert)
+            assert isinstance(nested_flow.bijector, BernsteinPolynomial)
+            bpoly_bijector = nested_flow.bijector
+            assert tf.reduce_all(
+                tf.abs(
+                    bpoly_bijector.thetas[..., 0]
+                    - masked_autoregressive_flow_first_dim_masked_kwargs[
+                        __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__
+                    ]["low"]
+                )
+                < 1e-5
             )
-            < 1e-5
-        )
-        assert tf.reduce_all(
-            tf.abs(
-                bpoly_bijector.thetas[..., -1]
-                - masked_autoregressive_flow_first_dim_masked_kwargs[
-                    __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__
-                ]["high"]
+            assert tf.reduce_all(
+                tf.abs(
+                    bpoly_bijector.thetas[..., -1]
+                    - masked_autoregressive_flow_first_dim_masked_kwargs[
+                        __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__
+                    ]["high"]
+                )
+                < 1e-5
             )
-            < 1e-5
-        )
+        else:
+            assert isinstance(b, tfb.ScaleMatvecLU)
 
     # Test flow forward and inverse transformations
     assert_sample_shapes(dist, num_samples, is_conditional, batch_size, dims)
