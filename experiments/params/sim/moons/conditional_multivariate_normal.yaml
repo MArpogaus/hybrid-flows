@@ -1,5 +1,5 @@
 compile_kwargs:
-  jit_compile: false
+  jit_compile: true
 fit_kwargs:
   batch_size: 256
   early_stopping: false

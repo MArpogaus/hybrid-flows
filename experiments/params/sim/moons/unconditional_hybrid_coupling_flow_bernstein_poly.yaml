@@ -1,16 +1,16 @@
-compile_kwargs: {}
-  # jit_compile: true
+compile_kwargs:
+  jit_compile: true
 two_stage_training: false
 fit_kwargs:
-# - epochs: &epochs 100
-#   batch_size: 512
-#   learning_rate: 0.01
-#   reduce_lr_on_plateau: false
-#   early_stopping: 15
-#   monitor: val_loss
-#   verbose: true
-#   validation_split: 0.25
-  epochs: &epochs 200
+- epochs: 100
+  batch_size: 512
+  learning_rate: 0.01
+  reduce_lr_on_plateau: false
+  early_stopping: 15
+  monitor: val_loss
+  verbose: true
+  validation_split: 0.25
+- epochs: &epochs 200
   batch_size: 512
   learning_rate:
     scheduler_kwargs:
