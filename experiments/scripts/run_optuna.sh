@@ -28,6 +28,7 @@ while getopts "htvdp" option; do
 		;;
 	t)
 		EXTRA_ARGS+="--test-mode=true "
+		STUDY_NAME+=test_
 		;;
 	v)
 		EXTRA_ARGS+="--log-level debug "
@@ -36,7 +37,7 @@ while getopts "htvdp" option; do
 		EXTRA_ARGS+="--use-pruning=true "
 		;;
 	d)
-		STUDY_NAME=$(date -I)_
+		STUDY_NAME+=$(date -I)_
 		;;
 	*)
 		echo "Error: Invalid option -$OPTARG"
@@ -75,6 +76,7 @@ run_optuna_script() {
 	python scripts/optuna_new.py \
 		--experiment-name ${EXPERIMENT_NAME} \
 		--parameter_file_path ${PARAMETER_FILE_PATH} \
+		--model_name ${MODEL} \
 		--dataset_type ${DATASET_TYPE} \
 		--dataset_name ${DATASET_NAME} \
 		--results_path ${RESULTS_PATH} \
@@ -88,7 +90,7 @@ run_optuna_script() {
 
 for ((seed = 1; seed <= $JOBS; seed++)); do
 	run_optuna_script $seed &
-	sleep 1
+	sleep 5
 done
 
 wait # Wait for all the background jobs to finish

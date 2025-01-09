@@ -7,22 +7,20 @@ import logging
 import os
 import pickle
 from copy import deepcopy
+from pprint import pformat
 
 import mlflow
 import numpy as np
-import yaml
-
 import optuna
-from mctm.utils import str2bool
-from mctm.utils.mlflow import log_cfg
-from mctm.utils.pipeline import (
-    prepare_pipeline,
-    start_run_with_exception_logging,
-)
+import yaml
 from optuna.integration import TFKerasPruningCallback
 from optuna.pruners import SuccessiveHalvingPruner
 from optuna.samplers import TPESampler
 from optuna.trial import TrialState
+
+from mctm.utils import str2bool
+from mctm.utils.mlflow import log_cfg
+from mctm.utils.pipeline import prepare_pipeline, start_run_with_exception_logging
 
 # %% global objects
 __LOGGER__ = logging.getLogger(__name__)
@@ -59,16 +57,14 @@ def suggest_new_params(
     """
     __LOGGER__.debug(f"{trial}: {use_pruning=}")
     params: dict = deepcopy(initial_params)
+    __LOGGER__.info("initial params: %s", pformat(initial_params))
 
     for d in parameter_space_definition:
         p: dict = params
         keys: list = d["name"].split(".")
         for k in keys[:-1]:
-            if k not in p.keys():
-                __LOGGER__.warning(
-                    "key '%s' not defined in initial parameters. Typo?", {d["name"]}
-                )
-                p[k] = {}
+            if k.isdigit():
+                k = int(k)
             p = p[k]
 
         key = int(keys[-1]) if keys[-1].isdigit() else keys[-1]
@@ -76,7 +72,9 @@ def suggest_new_params(
 
         if d["type"] == "choose_from_list":
             options = d["list"]
-            v = options[trial.suggest_int(d["name"], low=0, high=len(options) - 1)]
+            v = deepcopy(
+                options[trial.suggest_int(d["name"], low=0, high=len(options) - 1)]
+            )
         else:
             v = getattr(trial, f'suggest_{d["type"]}')(d["name"], **d["kwargs"])
         p[key] = v
@@ -86,7 +84,7 @@ def suggest_new_params(
             TFKerasPruningCallback(trial, __EVALUATION_METRIC__)
         ]
 
-    __LOGGER__.info("suggesting new params: %s", params)
+    __LOGGER__.info("suggesting new params: %s", pformat(params))
 
     return params
 
@@ -156,11 +154,8 @@ def get_objective(
             mlflow.set_experiment(experiment_name)
             __LOGGER__.info("Logging to MLFlow Experiment: %s", experiment_name)
         with start_run_with_exception_logging(run_name=run_name):
-            # Auto log all MLflow entities
-
-            mlflow.autolog(log_models=False)
-            mlflow.log_dict(params, "params.yaml")
             log_cfg(params)
+            mlflow.set_tag("trial", trial.number)
 
             history, _, _ = run(
                 dataset_name=dataset_name,
@@ -173,11 +168,19 @@ def get_objective(
                 test_mode=test_mode,
                 params=params,
             )
+            if isinstance(history, tuple):
+                history = history[1]
 
-        min_idx = np.argmin(history.history[__EVALUATION_METRIC__])
-        val_loss = history.history[__EVALUATION_METRIC__][min_idx]
+            min_idx = np.argmin(history.history[__EVALUATION_METRIC__])
+            min_loss = history.history[__EVALUATION_METRIC__][min_idx]
 
-        return val_loss
+            __LOGGER__.info("Minimum loss reached after %s epochs.", min_idx)
+            __LOGGER__.info("Best trial loss: %s", min_loss)
+
+            mlflow.log_metric("best_epoch", min_idx)
+            mlflow.log_metric("min_trial_loss", min_loss)
+
+        return min_loss
 
     return objective
 
@@ -258,6 +261,7 @@ def run_study(
     results_path: str,
     log_file: str,
     log_level: str,
+    model_name: str,
     dataset_name: str,
     dataset_type: str,
     initial_params: dict,
@@ -284,6 +288,8 @@ def run_study(
         The path for the log file.
     log_level : str
         The logging severity level.
+    model_name : str, optional
+        Name of the model to optimize.
     dataset_name : str
         The name of the dataset.
     dataset_type : str
@@ -355,7 +361,7 @@ def run_study(
         sub_run_name = "_".join(
             (
                 run_name,
-                initial_params["model_kwargs"]["distribution"],
+                model_name,
                 dataset_name,
             )
         )
@@ -368,7 +374,7 @@ def run_study(
             log_level=log_level,
             dataset_name=dataset_name,
             dataset_type=dataset_type,
-            initial_params=deepcopy(initial_params),
+            initial_params=initial_params,
             parameter_space_definition=deepcopy(parameter_space_definition),
             test_mode=test_mode,
             use_pruning=use_pruning,
@@ -460,6 +466,12 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
+        "--model_name",
+        type=str,
+        help="name of model",
+        required=True,
+    )
+    parser.add_argument(
         "--dataset_name",
         type=str,
         help="name of dataset",
@@ -517,6 +529,7 @@ if __name__ == "__main__":
         results_path=args.results_path,
         log_file=args.log_file,
         log_level=args.log_level,
+        model_name=args.model_name,
         dataset_name=args.dataset_name,
         dataset_type=args.dataset_type,
         initial_params=initial_params,

@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-12-12 09:45:44 (Marcel Arpogaus)
-# changed : 2024-12-29 15:13:37 (Marcel Arpogaus)
+# changed : 2025-01-07 16:04:11 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -287,12 +287,12 @@ class MeanNegativeLogLikelihood(K.metrics.Mean):
 def run(
     dataset_name: str,
     dataset_type: str,
-    model_name: str,
     log_file: str,
     log_level: str,
     results_path: str,
     test_mode: bool,
     params: dict,
+    model_name: str = None,
     experiment_name: str = None,
     run_name: str = None,
 ) -> tuple:
@@ -304,8 +304,6 @@ def run(
         Name of the dataset.
     dataset_type : str
         Type of the dataset.
-    model_name : str
-        Name of the model to train.
     log_file : str
         Path for log file.
     log_level : str
@@ -316,6 +314,8 @@ def run(
         Flag to activate test-mode.
     params : dict
         Dictionary containing experiment parameters.
+    model_name : str, optional
+        Name of the model to train.
     experiment_name : str, optional
         Name of the MLFlow experiment.
     run_name : str, optional
