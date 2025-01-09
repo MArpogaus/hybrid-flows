@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2024-12-12 19:01:30 (Marcel Arpogaus)
+# changed : 2024-12-13 13:45:18 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -39,8 +39,6 @@ from mctm.utils.pipeline import prepare_pipeline
 from mctm.utils.visualisation import (
     _get_malnutrition_samples_df,
     get_figsize,
-    plot_malnutrition_data,
-    plot_malnutrition_samples,
     setup_latex,
 )
 
@@ -61,7 +59,7 @@ def plot_params(model, x, targets, **kwargs):
     for (i, c), label in zip(enumerate(targets), targets):
         axs[i].plot(t, pv[:, i])
         axs[i].set_xlabel("cage")
-        axs[i].set_title(label)
+        axs[i].set_title(label.upper())
     axs[0].set_xticks((t.min(), t.max()))
     fig.tight_layout(w_pad=-0.1)
     return fig
@@ -97,6 +95,7 @@ def plot_rank_corr(model, x, targets, **kwargs):
         rho_s = 6 / np.pi * np.arcsin(rho / 2)
         ax.plot(ages, rho_s)
         ax.set_title(f"$\\rho^S_{{{a},{b}}}$")
+        ax.set_xlabel("cage")
         ax.set_box_aspect(1)
         ax.set_xticks(ages[0:-1:8])
 
@@ -143,8 +142,8 @@ def plot_marginal_distribution(model, ages, targets, palette="mako_r", **kwargs)
                 frameon=False,
             )
 
-    axs[0, 0].set_ylabel(r"$F(y|\text{age})$")
-    axs[1, 0].set_ylabel(r"$f(y|\text{age})$")
+    axs[0, 0].set_ylabel(r"$F(y|\text{cage})$")
+    axs[1, 0].set_ylabel(r"$f(y|\text{cage})$")
 
     fig.tight_layout(w_pad=0)
     return fig
@@ -179,13 +178,10 @@ def plot_reliability_diagram(model, dims, x, y, targets, **kwargs):
         )
         model_cdf = marginal_dist.cdf(measurements).numpy()
         data_ecdf = np.stack(list(map(lambda x: ecdf(x, x), measurements.T)), 1)
-        samples_ecdf = np.stack(list(map(lambda x: ecdf(x, x), samples.T)), 1)
         cdf_columns = ["cdf_" + c for c in targets]
         data_ecdf_columns = ["ecdf_data_" + c for c in targets]
-        samples_ecdf_columns = ["ecdf_model_" + c for c in targets]
         df.loc[:, cdf_columns] = model_cdf
         df.loc[:, data_ecdf_columns] = data_ecdf
-        df.loc[:, samples_ecdf_columns] = samples_ecdf
         return df
 
     reliability_df = (
@@ -201,17 +197,8 @@ def plot_reliability_diagram(model, dims, x, y, targets, **kwargs):
         reliability_df.loc[:, "cdf_binned_" + column] = reliability_df.loc[
             :, "cdf_" + column
         ].apply(pd.cut, by_row=False, bins=bins, include_lowest=True)
-    for column in targets:
-        reliability_df.loc[:, "ecdf_binned_" + column] = reliability_df.loc[
-            :, "ecdf_model_" + column
-        ].apply(pd.cut, by_row=False, bins=bins, include_lowest=True)
 
-    fig, axs = plt.subplots(
-        2,
-        dims,
-        sharey="row",
-        sharex=True,
-    )
+    fig, axs = plt.subplots(1, dims, sharey="row", sharex=True, **kwargs)
 
     common_errorbar_kwargs = dict(
         markersize=0.2,
@@ -225,9 +212,7 @@ def plot_reliability_diagram(model, dims, x, y, targets, **kwargs):
     for i, column in enumerate(targets):
         # Extract categories and corresponding mean ECDF values
         cdf_bin_col = "cdf_binned_" + column
-        ecdf_bin_col = "ecdf_binned_" + column
         ecdf_data_col = "ecdf_data_" + column
-        ecdf_model_col = "ecdf_model_" + column
         predicted_bins = reliability_df[cdf_bin_col].cat.categories.astype(str)
         grpd_data = reliability_df.groupby(cdf_bin_col)[ecdf_data_col]
         observed_freqs = grpd_data.mean()
@@ -236,44 +221,22 @@ def plot_reliability_diagram(model, dims, x, y, targets, **kwargs):
 
         pi = (quantiles - observed_freqs.values[..., None]).T.abs()
 
-        axs[0][i].errorbar(
+        axs[i].errorbar(
             predicted_bins, observed_freqs, yerr=pi, **common_errorbar_kwargs
         )
-        axs[0][i].set_box_aspect(1)
-
-        grpd_data = reliability_df.groupby(ecdf_bin_col)[ecdf_model_col]
-        observed_freqs = grpd_data.mean()
-
-        quantiles = grpd_data.quantile([0.25, 0.975]).unstack()
-
-        pi = (quantiles - observed_freqs.values[..., None]).T.abs()
-
-        axs[1][i].errorbar(
-            predicted_bins, observed_freqs, yerr=pi, **common_errorbar_kwargs
-        )
-        axs[1][i].set_box_aspect(1)
+        axs[i].set_box_aspect(1)
 
         xticks = [0, len(predicted_bins) - 1]
-        axs[1][i].set_xticks(xticks, predicted_bins[xticks])
+        axs[i].set_xticks(xticks, predicted_bins[xticks])
+        axs[i].set_xlabel("Predicted probabilities\n(binned)")
 
         # Set labels and titles
-        axs[0][i].set_title(
-            f"{column.upper()}",
-        )
+        axs[i].set_title(column.upper())
         if i == 0:
-            axs[0][i].set_ylabel("Observed relative\nfrequencies (marginal)")
-            axs[1][i].set_ylabel("Observed relative\nfrequencies (joint)")
-            axs[1][i].set_xlabel("Predicted probabilities\n(binned)")
+            axs[i].set_ylabel("Observed relative\nfrequencies (marginal)")
 
         # Add diagonal line
-        axs[0][i].plot(
-            [predicted_bins[0], predicted_bins[-1]],
-            [0, 1],
-            linestyle=":",
-            linewidth=0.5,
-            color="gray",
-        )
-        axs[1][i].plot(
+        axs[i].plot(
             [predicted_bins[0], predicted_bins[-1]],
             [0, 1],
             linestyle=":",
@@ -282,6 +245,7 @@ def plot_reliability_diagram(model, dims, x, y, targets, **kwargs):
         )
 
     # Final adjustments
+    fig.tight_layout()
     sns.despine()
 
     return fig
@@ -316,7 +280,7 @@ def qq_plot(
         ax.plot(xlim, ylim, "k:", linewidth=1)
         ax.plot(x_quantiles, y_quantiles)
 
-        ax.set_title(targets[i])
+        ax.set_title(targets[i].upper())
         ax.set_xlabel(xlabel)
         ax.set_aspect("equal")
         ax.set(xlim=xlim, ylim=ylim)
@@ -368,7 +332,7 @@ def evaluate(
     tf.config.set_visible_devices([], "GPU")
 
     figsize = get_figsize(params["textwidth"])
-    fig_height = figsize[0]
+    figsize_half = get_figsize(params["textwidth"], fraction=0.7)
     model_kwargs = params["model_kwargs"]
     dataset_kwargs = params["dataset_kwargs"][dataset_name]
     figure_path = os.path.join(results_path, "eval_figures/")
@@ -393,41 +357,41 @@ def evaluate(
         model.load_weights(os.path.join(results_path, "model_checkpoint.weights.h5"))
 
         setup_latex(fontsize=10)
-        fig = plot_malnutrition_data(
-            validation_data,
-            targets=dataset_kwargs["targets"],
-            covariates=dataset_kwargs["covariates"],
-            hue=dataset_kwargs["covariates"][0],
-            seed=params["seed"],
-            frac=0.8,
-            height=fig_height / 3,
-        )
-        log_and_save_figure(
-            figure=fig,
-            figure_path=figure_path,
-            file_name="_".join((dataset_type, model_name, "data")),
-            file_format=figure_format,
-            bbox_inches="tight",
-            transparent=True,
-        )
+        # fig = plot_malnutrition_data(
+        #     validation_data,
+        #     targets=dataset_kwargs["targets"],
+        #     covariates=dataset_kwargs["covariates"],
+        #     hue=dataset_kwargs["covariates"][0],
+        #     seed=params["seed"],
+        #     frac=0.8,
+        #     height=fig_height / 3,
+        # )
+        # log_and_save_figure(
+        #     figure=fig,
+        #     figure_path=figure_path,
+        #     file_name="_".join((dataset_type, model_name, "data")),
+        #     file_format=figure_format,
+        #     bbox_inches="tight",
+        #     transparent=True,
+        # )
 
-        fig = plot_malnutrition_samples(
-            model=model,
-            x=validation_data[0],
-            y=validation_data[1],
-            seed=params["seed"],
-            targets=dataset_kwargs["targets"],
-            height=fig_height / 3,
-            frac=0.8,
-        )
-        log_and_save_figure(
-            figure=fig,
-            figure_path=figure_path,
-            file_name="_".join((dataset_type, model_name, "samples")),
-            file_format=figure_format,
-            bbox_inches="tight",
-            transparent=True,
-        )
+        # fig = plot_malnutrition_samples(
+        #     model=model,
+        #     x=validation_data[0],
+        #     y=validation_data[1],
+        #     seed=params["seed"],
+        #     targets=dataset_kwargs["targets"],
+        #     height=fig_height / 3,
+        #     frac=0.8,
+        # )
+        # log_and_save_figure(
+        #     figure=fig,
+        #     figure_path=figure_path,
+        #     file_name="_".join((dataset_type, model_name, "samples")),
+        #     file_format=figure_format,
+        #     bbox_inches="tight",
+        #     transparent=True,
+        # )
 
         if isinstance(model, HybridDensityRegressionModel):
             marginal_bijectors = model_kwargs["marginal_bijectors"]
@@ -441,7 +405,7 @@ def evaluate(
                     model=model,
                     x=validation_data[0],
                     targets=dataset_kwargs["targets"],
-                    figsize=figsize,
+                    figsize=figsize_half,
                 )
                 log_and_save_figure(
                     figure=fig,
@@ -460,7 +424,7 @@ def evaluate(
                     model=model,
                     x=validation_data[0],
                     targets=dataset_kwargs["targets"],
-                    figsize=figsize,
+                    figsize=figsize_half,
                 )
                 log_and_save_figure(
                     figure=fig,
@@ -493,7 +457,7 @@ def evaluate(
                 x=validation_data[0],
                 y=validation_data[1],
                 targets=dataset_kwargs["targets"],
-                figsize=figsize,
+                figsize=figsize_half,
             )
             log_and_save_figure(
                 figure=fig,
@@ -519,6 +483,7 @@ def evaluate(
                 targets=dataset_kwargs["targets"],
                 xlabel="$W$ Quantile",
                 ylabel="Normal Quantile",
+                figsize=figsize_half,
             )
             log_and_save_figure(
                 figure=fig,
@@ -543,6 +508,7 @@ def evaluate(
                 targets=dataset_kwargs["targets"],
                 xlabel="$Z$ Quantile",
                 ylabel="Normal Quantile",
+                figsize=figsize_half,
             )
             log_and_save_figure(
                 figure=fig,
@@ -567,6 +533,7 @@ def evaluate(
                 targets=dataset_kwargs["targets"],
                 xlabel="$W$ Quantile",
                 ylabel="$Z$ Quantile",
+                figsize=figsize_half,
             )
             log_and_save_figure(
                 figure=fig,
