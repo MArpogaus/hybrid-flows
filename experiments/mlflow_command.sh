@@ -65,17 +65,21 @@ dvc_repro_parallel(){
     dvc exp rm --rev HEAD
 }
 
+# Clear queue and remove experiments
+dvc queue remove --all
+dvc exp rm --rev HEAD
+
 # reproduce experiments for simulation data
-dvc_repro_parallel train-sim -j16
+dvc_repro_parallel eval-sim -j4
 
 # reproduce experiments for benchmark data
-dvc_repro_parallel train-malnutrition -j3
+# dvc_repro_parallel train-malnutrition -j3
 
 # reproduce experiments for benchmark data
-dvc_repro_parallel train-benchmark -j2
+# dvc_repro_parallel train-benchmark -j2
 
 # Ensure pipeline has been fully reproduced
-dvc repro
+# dvc repro
 
 # Push all changes to the remote cache
 dvc push -r local

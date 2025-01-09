@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-12 11:44:56 (Marcel Arpogaus)
-# changed : 2024-11-12 11:44:56 (Marcel Arpogaus)
+# changed : 2025-01-09 09:36:20 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -108,6 +108,35 @@ def batch_size(request):
                     "hidden_units": [16] * 2,
                     "batch_norm": False,
                     "dropout": 0,
+                    "conditional": False,
+                    "conditional_event_shape": DATA_DIMS,
+                },
+                __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__: {
+                    "allow_flexible_bounds": False,
+                    "bounds": "linear",
+                    "high": 1,
+                    "low": 0,
+                },
+                "dims": DATA_DIMS,
+                "num_layers": 3,
+                "num_parameters": 16,
+                "permutation": "1x1conv",
+            },
+        ),
+        (
+            "coupling_flow",
+            {
+                __BIJECTOR_NAME_KEY__: "BernsteinPolynomial",
+                __BIJECTOR_KWARGS_KEY__: {
+                    "domain": [0, 1],
+                    "extrapolation": False,
+                },
+                __INVERT_BIJECTOR_KEY__: True,
+                __PARAMETERS_FN_KWARGS_KEY__: {
+                    "activation": "relu",
+                    "hidden_units": [16] * 2,
+                    "batch_norm": False,
+                    "dropout": 0,
                     "conditional": True,
                     "conditional_event_shape": DATA_DIMS,
                 },
@@ -194,6 +223,7 @@ def batch_size(request):
                 "dims": DATA_DIMS,
                 "num_layers": 2,
                 "num_parameters": 8,
+                "use_invertible_linear_transformations": False,
                 __PARAMETERS_FN_KWARGS_KEY__: {
                     "hidden_units": [16] * 4,
                     "activation": "relu",
