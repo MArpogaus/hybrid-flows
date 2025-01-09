@@ -59,6 +59,13 @@ stages:
       --dataset-type ${item.dataset.type}
       --dataset-name ${item.dataset.name}
       --results-path results/
+    params:
+    - seed
+    - textwidth
+    - testmode
+    - params/${item.dataset.type}/dataset.yaml:
+      - dataset_kwargs.${item.dataset.name}*
+    - params/${item.dataset.type}/${item.dataset.name}/${item.model}.yaml:
     deps:
     - scripts/train.py
     - scripts/evaluate_sim.py
