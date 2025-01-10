@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-12-12 09:45:44 (Marcel Arpogaus)
-# changed : 2025-01-07 16:04:11 (Marcel Arpogaus)
+# changed : 2025-01-10 10:49:11 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -15,6 +15,7 @@
 import argparse
 import logging
 import os
+from contextlib import nullcontext
 from functools import partial
 from typing import Any, Dict
 
@@ -466,23 +467,33 @@ def run(
             for fkw in fit_kwargs:
                 fkw.update(verbose=2)
 
-    return pipeline(
-        experiment_name=experiment_name,
-        run_name=run_name,
-        results_path=results_path,
-        log_file=log_file,
-        seed=params["seed"],
-        get_dataset_fn=get_dataset_fn,
-        dataset_kwargs=get_dataset_kwargs,
-        get_model_fn=get_model,
-        model_kwargs=model_kwargs,
-        preprocess_dataset=preprocess_dataset,
-        fit_kwargs=fit_kwargs,
-        compile_kwargs=compile_kwargs,
-        plot_data=plot_data,
-        after_fit_hook=after_fit_hook,
-        two_stage_training=params.get("two_stage_training", False),
-    )
+    p_gpus = tf.config.list_physical_devices("GPU")
+    for gpu in p_gpus:
+        tf.config.experimental.set_memory_growth(gpu, True)
+    l_gpus = tf.config.list_logical_devices("GPU")
+    if len(l_gpus) > 0:
+        strategy_scope = tf.distribute.MirroredStrategy(l_gpus).scope()
+    else:
+        strategy_scope = nullcontext()
+
+    with strategy_scope:
+        return pipeline(
+            experiment_name=experiment_name,
+            run_name=run_name,
+            results_path=results_path,
+            log_file=log_file,
+            seed=params["seed"],
+            get_dataset_fn=get_dataset_fn,
+            dataset_kwargs=get_dataset_kwargs,
+            get_model_fn=get_model,
+            model_kwargs=model_kwargs,
+            preprocess_dataset=preprocess_dataset,
+            fit_kwargs=fit_kwargs,
+            compile_kwargs=compile_kwargs,
+            plot_data=plot_data,
+            after_fit_hook=after_fit_hook,
+            two_stage_training=params.get("two_stage_training", False),
+        )
 
 
 # %% main ######################################################################
