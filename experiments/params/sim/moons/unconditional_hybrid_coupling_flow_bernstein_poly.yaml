@@ -1,6 +1,6 @@
 compile_kwargs:
   jit_compile: true
-two_stage_training: false
+two_stage_training: true
 fit_kwargs:
 - epochs: 100
   batch_size: 512
