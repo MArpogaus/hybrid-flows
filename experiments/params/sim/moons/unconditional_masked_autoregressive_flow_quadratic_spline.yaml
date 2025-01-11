@@ -7,7 +7,7 @@ fit_kwargs:
   learning_rate:
     scheduler_kwargs:
       decay_steps: 200
-      initial_learning_rate: 0.001
+      initial_learning_rate: 0.01
     scheduler_name: cosine_decay
   monitor: val_loss
   reduce_lr_on_plateau: false
