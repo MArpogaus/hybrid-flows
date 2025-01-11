@@ -4,9 +4,9 @@ two_stage_training: true
 fit_kwargs:
 - epochs: 100
   batch_size: 512
-  learning_rate: 0.01
+  learning_rate: 0.001
   reduce_lr_on_plateau: false
-  early_stopping: 15
+  early_stopping: 30
   monitor: val_loss
   verbose: true
   validation_split: 0.25

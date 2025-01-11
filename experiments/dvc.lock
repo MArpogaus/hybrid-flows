@@ -2693,9 +2693,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -2770,25 +2770,25 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: b986f8e89537f1380c0dc360263d3f9e
+      md5: 8ccef79b51f139906213f80adedae517
       size: 319803
     - path: results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: b3887ce8109edaf8afcce94685960cbe
-      size: 56
+      md5: 370a4bb467920223eced8f9fd97ce54a
+      size: 26
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 6529fb348b8872beab4bc38d194b45e1
+      md5: daa13dffd245ab168ada115098f14bbc
       size: 9489072
     - path: results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: c42ac81a75cabc04a99e03e8ab23000e
-      size: 304420
+      md5: bda92652cf186c93df1fc09ccca051e1
+      size: 262796
     - path: results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: 2783423c23b2050e8b4f44e3f935a9b3
-      size: 10760
+      md5: 4f1cb1e7d8d8f143a4a38430f348d6ca
+      size: 10728
   train-sim@dataset0-conditional_coupling_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_coupling_flow_bernstein_poly --stage-name train-sim@dataset0-conditional_coupling_flow_bernstein_poly
@@ -2884,12 +2884,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: 15
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.0005
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -2933,25 +2933,25 @@ stages:
     outs:
     - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: ef2bb3985447bf4da5e29a2e9e2d0ba4
+      md5: 02d9b92cb1c9c839c8f6299b0cc0666d
       size: 319803
     - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 8bb6ce8dca2712fb95ce685ad0d7392f
+      md5: dba9e7fd2153955d789b413af0f8bf35
       size: 55
     - path: 
         results/sim/moons/conditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 5165f453d5d8567d08fe0228f6a6597e
+      md5: 6af0761f99ede033b67053d75968e811
       size: 2432984
     - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 5aaf66a40b2b0a3c7c75e6289121cc88
-      size: 299665
+      md5: 86b9e1388c2643aa27c8c738d1daa322
+      size: 294779
     - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: a603774fa7030f50df9ef68dbfb97be6
-      size: 9191
+      md5: df1001d54c372929e9f229f49570cbde
+      size: 9189
   train-sim@dataset1-unconditional_elementwise_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-circles --run-name unconditional_elementwise_flow_bernstein_poly_circles
@@ -3121,13 +3121,13 @@ stages:
         compile_kwargs:
           jit_compile: false
         fit_kwargs:
-          batch_size: 256
-          early_stopping: false
+          batch_size: 512
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -3150,25 +3150,25 @@ stages:
     outs:
     - path: results/sim/circles/unconditional_multivariate_normal/dataset.pdf
       hash: md5
-      md5: e5b91a97de8bf6a2deb2dc175a5cce99
+      md5: 83198cd902d8b508502cae25da91318e
       size: 320937
     - path: results/sim/circles/unconditional_multivariate_normal/metrics.yaml
       hash: md5
-      md5: 1abd810be65de9b261bf76893669c34f
-      size: 58
+      md5: 3596bfbd53646314187784be827655d2
+      size: 53
     - path: 
         results/sim/circles/unconditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: 862599f62de5bde18957647fd8afccab
+      md5: b0bb3bc9f0154b74280c93de0d8ab0bd
       size: 11000
     - path: results/sim/circles/unconditional_multivariate_normal/samples.pdf
       hash: md5
-      md5: 847425a1dc767bac9d367a33c4e20841
-      size: 274136
+      md5: 42ab738e8fa81ebdc209e6838a32979d
+      size: 289751
     - path: results/sim/circles/unconditional_multivariate_normal/train.log
       hash: md5
-      md5: be1a2a830c472cffde9f0dd79092826d
-      size: 4235
+      md5: 292d92ed99dba3aa41ed96358b7a9ba4
+      size: 4030
   train-sim@dataset0-unconditional_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       unconditional_coupling_flow_quadratic_spline --stage-name train-sim@dataset0-unconditional_coupling_flow_quadratic_spline
@@ -3264,12 +3264,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -3298,25 +3298,25 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 781629e602fbd43031981c18c4a4ade8
+      md5: 7767d7afd3b78931436bccb3881c0519
       size: 319803
     - path: results/sim/moons/unconditional_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: caa579ef110384cc3c5db7130f34c89b
+      md5: e0501e8f8500fd1422bb4d36ded344d2
       size: 55
     - path: 
         results/sim/moons/unconditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: cf057356df278eb9132fac623f6cf804
+      md5: d3931fe076791e031765f5e0f697eed3
       size: 1119168
     - path: results/sim/moons/unconditional_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: c815aaf11e14b3e6efa74250f7185cfa
-      size: 283032
+      md5: ae460311e739fed1e09af0e2616de240
+      size: 276621
     - path: results/sim/moons/unconditional_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: a555761a1c5cb6544583711ba0febac6
-      size: 8232
+      md5: 6a2d2804c7cd82cfe75c5de5ba1c2c90
+      size: 8231
   train-sim@dataset1-conditional_multivariate_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-circles --run-name conditional_multivariate_flow_bernstein_poly_circles
@@ -3758,13 +3758,13 @@ stages:
         compile_kwargs:
           jit_compile: false
         fit_kwargs:
-          batch_size: 256
-          early_stopping: false
+          batch_size: 512
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -3778,24 +3778,24 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_multivariate_normal/dataset.pdf
       hash: md5
-      md5: fcd599ccec00b0175b404e06b739ebe4
+      md5: 4328df911af704f37f4f9a203bdff717
       size: 319803
     - path: results/sim/moons/unconditional_multivariate_normal/metrics.yaml
       hash: md5
-      md5: 70c68f35e455968bb1814383754cbafb
-      size: 57
+      md5: 0bd19d58b58637e3075715a5e8bb7bed
+      size: 53
     - path: results/sim/moons/unconditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: 6dda64f9fd4ec2cbcdda8fa9b4cf6443
+      md5: 595505c85971525e1fe7ed9a522aa2ea
       size: 11000
     - path: results/sim/moons/unconditional_multivariate_normal/samples.pdf
       hash: md5
-      md5: b17861fc8e1d4a7060f23f73eec9da82
-      size: 303295
+      md5: 578277b5e1102f4448fc4871195afce2
+      size: 288075
     - path: results/sim/moons/unconditional_multivariate_normal/train.log
       hash: md5
-      md5: f93c4e089739ab1b4b17af2875c04ad5
-      size: 4179
+      md5: f0ce243c74cdb21aad67e2b56943aada
+      size: 3975
   train-sim@dataset1-conditional_masked_autoregressive_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_masked_autoregressive_flow_bernstein_poly --stage-name train-sim@dataset1-conditional_masked_autoregressive_flow_bernstein_poly
@@ -3883,12 +3883,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -3937,27 +3937,27 @@ stages:
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: ee3919eacc676590aa0bfcff9207bb76
+      md5: e5bd69eb047d3831aaf85167827f80a8
       size: 320937
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: e539dd17eab1f48d966670f8b9909d47
+      md5: 108b853369b0d1449a3cd3ce1e88799b
       size: 56
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 534ebecdfa003a1426588e9af307ae58
+      md5: 6e33e63f5ce0419c0f11738a0147ab27
       size: 55456
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 11b86e887cbd46730a14c23ea8d26480
-      size: 297688
+      md5: 523bbf6d59bede710b3bf611911870bc
+      size: 302151
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly/train.log
       hash: md5
-      md5: c981f2fe9eb6f1ea9864a84306563007
+      md5: 76ef518dd4749765aafb81042c2ed08f
       size: 7660
   train-sim@dataset0-conditional_elementwise_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
@@ -4138,12 +4138,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: 15
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.0005
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -4196,25 +4196,25 @@ stages:
     outs:
     - path: results/sim/circles/conditional_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: befd8e777bebba9dd7346c476f33a694
+      md5: aff55993283708eb7e76f7075b24df0d
       size: 320937
     - path: results/sim/circles/conditional_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: cdd68eacc997e798eec39b2fc37c6732
+      md5: f2d406067784797e0a1f29b9b5b34687
       size: 56
     - path: 
         results/sim/circles/conditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: c1418023f160eb2a24cbf433cc5d81bd
+      md5: 9b4d2f7a01f4a54322f3e9ada8b0d6ad
       size: 2432984
     - path: results/sim/circles/conditional_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: cf37f0f991ec7739b30fa1ac61b35022
-      size: 296632
+      md5: 307bc3987eb195fbcecce7158e9c81fb
+      size: 296508
     - path: results/sim/circles/conditional_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: c6319414d9bc9daac8ea404de6973eff
-      size: 9247
+      md5: 3bd598286b1028783b4a2108c4628427
+      size: 9245
   train-sim@dataset0-unconditional_coupling_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       unconditional_coupling_flow_bernstein_poly --stage-name train-sim@dataset0-unconditional_coupling_flow_bernstein_poly
@@ -4310,12 +4310,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: 15
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.0005
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -4357,25 +4357,25 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 66964ef5333e4f59b41792c618f99646
+      md5: 4994b024aa2cf1c1b00e520eb07e621d
       size: 319803
     - path: results/sim/moons/unconditional_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 343073f4f1733f98650fd91cd7c04e00
+      md5: 7ab303546175f9c27313b62b6cdfcd23
       size: 55
     - path: 
         results/sim/moons/unconditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: b5e6c2f4312e2db5557efece39574568
+      md5: 38072ffab6b80050055e43e676b3bb23
       size: 1221320
     - path: results/sim/moons/unconditional_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 4c00da5bb7ca05baf2988d4fb03fb3ac
-      size: 302244
+      md5: 078bc82cb3564678e0df76620828cdd8
+      size: 303391
     - path: results/sim/moons/unconditional_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: 9443b6a4381d7482ca576941e5bc9bdc
-      size: 8844
+      md5: 23be20b42503a4eb2871bb9090300363
+      size: 8842
   train-sim@dataset0-conditional_multivariate_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name conditional_multivariate_flow_bernstein_poly_moons --stage-name
@@ -4670,9 +4670,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -4757,27 +4757,27 @@ stages:
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 8698cb8e7f14fbf065a72371f8e00e65
+      md5: 6b19ddbeff8e7cadbcb044fa4c205115
       size: 320937
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 3ed47e6c72d62eec9b4983a907842ab6
-      size: 56
+      md5: 370a4bb467920223eced8f9fd97ce54a
+      size: 26
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 5ee9747b3865f38e18636232709218a8
+      md5: c575aa7ef01b5752a743f1ff15dc3bfc
       size: 9489072
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 10bc23ad2744721c4fa60cb9c78eafd8
-      size: 301838
+      md5: f301b92f32a860bc9acb9cde3cd58bbf
+      size: 255932
     - path: results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: f5a5c0c44c4fb57b6c68f46373e29686
-      size: 10813
+      md5: beb2baaee2434042d27ca9d5442c72c8
+      size: 10784
   train-sim@dataset0-conditional_multivariate_normal:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_multivariate_normal --stage-name train-sim@dataset0-conditional_multivariate_normal
@@ -4872,13 +4872,13 @@ stages:
         compile_kwargs:
           jit_compile: false
         fit_kwargs:
-          batch_size: 256
-          early_stopping: false
+          batch_size: 512
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -4898,24 +4898,24 @@ stages:
     outs:
     - path: results/sim/moons/conditional_multivariate_normal/dataset.pdf
       hash: md5
-      md5: a5b6063c366c0487d226598501c7e718
+      md5: 25abd220fdbc8c35d19337c8a6c2afee
       size: 319803
     - path: results/sim/moons/conditional_multivariate_normal/metrics.yaml
       hash: md5
-      md5: 5ab508fdf2281cf2e1f9fb70462ea730
+      md5: 9d6e591c1a6e094e3e6bb441ffa54c80
       size: 56
     - path: results/sim/moons/conditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: 4551a004f8d0302a5b100fc888a2e17d
+      md5: e8b749574d3800b9a8270982c816123c
       size: 55560
     - path: results/sim/moons/conditional_multivariate_normal/samples.pdf
       hash: md5
-      md5: 34161cb312d99eae84ab98e553eb399c
-      size: 278364
+      md5: e3afe504c7f077605a88ed584835004c
+      size: 278415
     - path: results/sim/moons/conditional_multivariate_normal/train.log
       hash: md5
-      md5: 4117518c96f670823d957e36cb82f8de
-      size: 4443
+      md5: 824d90fa5a3c218cef5bbcde8ff25a72
+      size: 4442
   train-sim@dataset1-unconditional_coupling_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       unconditional_coupling_flow_bernstein_poly --stage-name train-sim@dataset1-unconditional_coupling_flow_bernstein_poly
@@ -5003,12 +5003,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: 15
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.0005
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -5059,25 +5059,25 @@ stages:
     outs:
     - path: results/sim/circles/unconditional_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 3b5cde749c0f187fdb1cc62a5166a6c9
+      md5: 4ef4f3664845f498a6e051e7a58180ea
       size: 320937
     - path: results/sim/circles/unconditional_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: ed1a96c40cb9ba8b60a59eb7a792f54d
+      md5: 5c56152de52122c2cee0401ab3659688
       size: 56
     - path: 
         results/sim/circles/unconditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: cc5c917bda22ea81f452f3656a6f3e27
+      md5: 944a620c4fb90d6b9239397bac31af73
       size: 1221320
     - path: results/sim/circles/unconditional_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 8f9511e8042680e85ba6fc2b10a46682
-      size: 284820
+      md5: d7e45883295a1e920266fa91c1a16912
+      size: 290758
     - path: results/sim/circles/unconditional_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: 26ebf83f8caadc625b0a9ffda9c5db57
-      size: 8900
+      md5: 366a10dbc4fb67baa3713de4f20b710c
+      size: 8899
   train-sim@dataset0-conditional_masked_autoregressive_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_masked_autoregressive_flow_bernstein_poly --stage-name train-sim@dataset0-conditional_masked_autoregressive_flow_bernstein_poly
@@ -5173,12 +5173,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -5218,28 +5218,28 @@ stages:
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 2436cf3ff8f381eacc82a08f7dafae6d
+      md5: 5aedabc03f5a2387f6e85ee5ed70ba22
       size: 319803
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: c3d372a453f74fd5d18c1df5d1d93f6b
-      size: 55
+      md5: f3acf907f715624b02443ae8af76b51d
+      size: 56
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 40f4972061a9945c11c9dcfc8cf3bba0
+      md5: 6ecec9163c55bc4f4858e69c44b01a4a
       size: 55456
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 9f1150d93d9105c851a7588267cf523d
-      size: 248159
+      md5: 71fd029d64fbd00f5552270397f5cba3
+      size: 297713
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/train.log
       hash: md5
-      md5: 3d185dc22ac95a1d59dc6d6bba17ff30
-      size: 7604
+      md5: 04669417543c48278da2effd3b45f671
+      size: 7605
   train-sim@dataset1-conditional_multivariate_normal:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_multivariate_normal --stage-name train-sim@dataset1-conditional_multivariate_normal
@@ -5326,13 +5326,13 @@ stages:
         compile_kwargs:
           jit_compile: false
         fit_kwargs:
-          batch_size: 256
-          early_stopping: false
+          batch_size: 512
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -5361,24 +5361,24 @@ stages:
     outs:
     - path: results/sim/circles/conditional_multivariate_normal/dataset.pdf
       hash: md5
-      md5: 31e555628919a35a6ba5aec1a0c92695
+      md5: 90aecc94cd9e6fb26fdea2d744c7893b
       size: 320937
     - path: results/sim/circles/conditional_multivariate_normal/metrics.yaml
       hash: md5
-      md5: 5236fa3979d8c10f22890fb0f3500382
-      size: 57
+      md5: 681d597c28f907ef518fe86c30cf4447
+      size: 54
     - path: results/sim/circles/conditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: 383b916253b43b7827c625f4c36ce499
+      md5: 06df7c85829843d1e1852efb42a14cc6
       size: 55560
     - path: results/sim/circles/conditional_multivariate_normal/samples.pdf
       hash: md5
-      md5: 7a4353099bb6d3fc173ece89ad6759bd
-      size: 300871
+      md5: 04610c0048d118f5aeb984b8923b48c8
+      size: 288404
     - path: results/sim/circles/conditional_multivariate_normal/train.log
       hash: md5
-      md5: 85515622dbf93d9f49b865cba90539ca
-      size: 4499
+      md5: 3efc616363a955c5eba9e7defcf96354
+      size: 4294
   train-sim@dataset0-unconditional_hybrid_masked_autoregressive_flow_bernstein_poly_first_dim_masked:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       sim-moons --run-name 
@@ -5667,12 +5667,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -5719,27 +5719,27 @@ stages:
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: eb8e69a4901df4af1e82797c4938d4b5
+      md5: 0bc892e0dce72485146396150e2df32c
       size: 320937
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: e539dd17eab1f48d966670f8b9909d47
+      md5: 108b853369b0d1449a3cd3ce1e88799b
       size: 56
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 534ebecdfa003a1426588e9af307ae58
+      md5: 6e33e63f5ce0419c0f11738a0147ab27
       size: 55456
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 4ec0c6074e2d724c2eea01b7f6c86e3b
-      size: 297688
+      md5: 48b3521e9aa5eb7f17d21e98b2c5504c
+      size: 302151
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/train.log
       hash: md5
-      md5: bbd583f0436383002ac222ff68ee4c37
+      md5: 452560acbb7046585c6e50ca05f95829
       size: 7313
   train-sim@dataset0-unconditional_masked_autoregressive_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
@@ -5836,12 +5836,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -5879,28 +5879,28 @@ stages:
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: bcaa5ab5758e11f0b4908feda56590d5
+      md5: a81af71721361129cbe3de8e48d4d32d
       size: 319803
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: c3d372a453f74fd5d18c1df5d1d93f6b
-      size: 55
+      md5: f3acf907f715624b02443ae8af76b51d
+      size: 56
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 40f4972061a9945c11c9dcfc8cf3bba0
+      md5: 6ecec9163c55bc4f4858e69c44b01a4a
       size: 55456
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: fff2cf9476aae2a0209ccfc77f2943e0
-      size: 248159
+      md5: 8c1cb7f0c19560038546a7eb39841203
+      size: 297713
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/train.log
       hash: md5
-      md5: 5084c5fa300437c9c43abf913c3120f2
-      size: 7257
+      md5: 4daf292701e7bba038f4f9a7352a326e
+      size: 7258
   train-malnutrition@mctm:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       malnutrition --run-name mctm --stage-name train-malnutrition@mctm --dataset-type
@@ -6112,12 +6112,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -6148,24 +6148,24 @@ stages:
     outs:
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 6155531d4cfa1e4f5cf1e1b3a148a68e
+      md5: 0fd8e9859284d5b2474961da689f4da8
       size: 319803
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 7c4ff5d98b2eac3f12a24d9a403db00b
-      size: 54
+      md5: 852b834df10a3c27f91ca840840a7fcf
+      size: 55
     - path: 
         results/sim/moons/conditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 86ad353d4f5cfb54db9faa9dad209adb
+      md5: a3d8d2524c164cae0aadb7c55d1b5386
       size: 2228400
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 516ca719acc56edde362468129b61c52
-      size: 293996
+      md5: dce4a944f090f31941dc16d3d082c93c
+      size: 290823
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: 79b2e5bf7d7d3689d70192e1c9727bcf
+      md5: 49259a575a8ef5bda643415c1c91075e
       size: 8578
   train-sim@dataset0-conditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
@@ -6262,12 +6262,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -6297,27 +6297,27 @@ stages:
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: b12bf6d7a59544f2dd8f77499cfab643
+      md5: 86105365ee275b71f94e3a56e2bd57f9
       size: 319803
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 4638b045b693bb9ea9088a9abe1ae969
-      size: 55
+      md5: 18fddf40925f8897b661be2a54f3d53c
+      size: 56
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 1028423c572ef40801e4f0e69ce03f72
+      md5: 357cbd7e6f22f0ff10bf596fe624a359
       size: 120528
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 266d46e9d7a66ee8524a77cf85accd91
-      size: 307701
+      md5: 33f24bb6a2ac0d30fc31ca2f96d5a311
+      size: 283065
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: 935ae4f7fa0bde96c4d3729f97ccf3f4
+      md5: 7361dd38793fdc22377b67683a3ddd79
       size: 7165
   train-sim@dataset0-unconditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
@@ -6414,12 +6414,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -6447,27 +6447,27 @@ stages:
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 24703b81ea31ee07b04135b455b711d0
+      md5: b2fc6273e9baeebabfdd5176b9998673
       size: 319803
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 4638b045b693bb9ea9088a9abe1ae969
-      size: 55
+      md5: 18fddf40925f8897b661be2a54f3d53c
+      size: 56
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 1028423c572ef40801e4f0e69ce03f72
+      md5: 357cbd7e6f22f0ff10bf596fe624a359
       size: 120528
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 71d1a5f54bd87064408c2c166f2cd308
-      size: 307701
+      md5: 4e1cff94bd998f7b59d777ea863b43c7
+      size: 283065
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: 032f0631e72a3249222f7c06e3ea3a2a
+      md5: 226535274db5953abf237ad2cc95c3e6
       size: 6818
   train-sim@dataset1-unconditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
@@ -6556,12 +6556,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -6598,28 +6598,28 @@ stages:
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 6fdd81f59f718fd22e0cdadafb7594ad
+      md5: 95fc0bbc879ac746b5289f101c4f53ec
       size: 320937
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: fa5b26fcbb98ae2411b2e1324d7f321f
-      size: 56
+      md5: 83049614f0d6453341f1720e3e4cc0a5
+      size: 54
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 3c58109d98eeea91faacdd68cb59354a
+      md5: 82f455d282f406641019a4006552df3d
       size: 120528
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: b66f6a67b26d68070ec77bbbb788eb60
-      size: 307117
+      md5: b96fe826d4b1bae4a67a9fea8c83dd68
+      size: 274055
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: 4848b89b66307d5d22505001016a3acc
-      size: 6874
+      md5: 8da6cc85ac7f0d394b3f67b32b4b10ac
+      size: 6871
   train-sim@dataset1-conditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_masked_autoregressive_flow_quadratic_spline --stage-name train-sim@dataset1-conditional_masked_autoregressive_flow_quadratic_spline
@@ -6707,12 +6707,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -6751,28 +6751,28 @@ stages:
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 16e82e2c6c37b2d69201e8f34673b233
+      md5: 660abe643c85b40fd6f56c0f3d3ddb0e
       size: 320937
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: fa5b26fcbb98ae2411b2e1324d7f321f
-      size: 56
+      md5: 83049614f0d6453341f1720e3e4cc0a5
+      size: 54
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 3c58109d98eeea91faacdd68cb59354a
+      md5: 82f455d282f406641019a4006552df3d
       size: 120528
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: c40c17faaf38f6287ecc6ee0881d1e88
-      size: 307117
+      md5: a730174d7892d504764bcd62cb4b3aeb
+      size: 274055
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: ff288f8cbfe4480bb85694e5a8754aac
-      size: 7221
+      md5: 4b047fc4d5e30879ae2cf69e46b1491b
+      size: 7218
   train-sim@dataset1-unconditional_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       unconditional_coupling_flow_quadratic_spline --stage-name train-sim@dataset1-unconditional_coupling_flow_quadratic_spline
@@ -6860,12 +6860,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -6903,25 +6903,25 @@ stages:
     outs:
     - path: results/sim/circles/unconditional_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: d4e96323ed22c10b8f12dc1afc0b0277
+      md5: cdbf810f11d679d3bb4f2f578cb78be3
       size: 320937
     - path: results/sim/circles/unconditional_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 8be7825b8c4e109e78399aef6fe113c5
-      size: 54
+      md5: 2c6662c5ffc7934985d22b8129a72dd7
+      size: 55
     - path: 
         results/sim/circles/unconditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 736db3511aed96045bd1f78d8f04c652
+      md5: f684161b30e50dbfad45d85203619cc4
       size: 1119168
     - path: results/sim/circles/unconditional_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 958569638442dfcb63bd883c52775e72
-      size: 297142
+      md5: 98a108892dc02e5ee16dc3ed91c917c4
+      size: 273621
     - path: results/sim/circles/unconditional_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: 112703467beed309dbd427a23f548a38
-      size: 8286
+      md5: aac49c2d6ed3eb06b68a8422e937f017
+      size: 8284
   train-sim@dataset1-conditional_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_coupling_flow_quadratic_spline --stage-name train-sim@dataset1-conditional_coupling_flow_quadratic_spline
@@ -7009,12 +7009,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -7054,25 +7054,25 @@ stages:
     outs:
     - path: results/sim/circles/conditional_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 7fc136057b0aee47c3aa3497b2685da2
+      md5: d0dfa8d18a7045d7f7bef093a3d541fc
       size: 320937
     - path: results/sim/circles/conditional_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 5ddb90c3e38725a0573c87360d7cddf6
-      size: 56
+      md5: a80032b58972c168bb07fb544e1f5cf0
+      size: 53
     - path: 
         results/sim/circles/conditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 15414fa0d0b540e456ec9b1f1d3e3d97
+      md5: 695fcfc378327f91ad5930fe5a51dad8
       size: 2228400
     - path: results/sim/circles/conditional_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: a03caed9850b991264c6ad3145135b00
-      size: 291571
+      md5: ec9cf55e5b360e901bf0cbf56b2e4762
+      size: 283032
     - path: results/sim/circles/conditional_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: 1ddced54de2505f61a29d3a2cc35959d
-      size: 8635
+      md5: 327eb775a4b712ff36b07b0d00be8701
+      size: 8630
   train-benchmark@dataset0-unconditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       benchmark-bsds300 --run-name unconditional_masked_autoregressive_flow_quadratic_spline_bsds300
@@ -8615,10 +8615,10 @@ stages:
           learning_rate:
             scheduler_kwargs:
               decay_steps: 100
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           reduce_lr_on_plateau: false
-          early_stopping: false
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -8669,24 +8669,24 @@ stages:
     outs:
     - path: results/sim/moons/conditional_multivariate_transformation_model/dataset.pdf
       hash: md5
-      md5: bf811795a723250eab40649ecee9934c
+      md5: 474d28aeaea068dfc53441cf491ffce7
       size: 319803
     - path: results/sim/moons/conditional_multivariate_transformation_model/metrics.yaml
       hash: md5
-      md5: 0a82877f1bdfedc3dda45a9355f7a7d0
+      md5: 20d2e017ee62e43167cffdc2b3d8b367
       size: 56
     - path: 
         results/sim/moons/conditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: 03fd79dfca55709398431bd260e3970a
+      md5: 160b7cfad936ab5171792101a4c04ce9
       size: 11544
     - path: results/sim/moons/conditional_multivariate_transformation_model/samples.pdf
       hash: md5
-      md5: 3d471da1f20c4260de194867d09758c7
-      size: 283686
+      md5: 32a13d64c6f68f824a51a8facd6fa854
+      size: 284333
     - path: results/sim/moons/conditional_multivariate_transformation_model/train.log
       hash: md5
-      md5: 447db4a77390480b1f865146ed9e5820
+      md5: f1a1198e1903020861ba4ea590116710
       size: 8190
   train-sim@dataset0-unconditional_multivariate_transformation_model:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
@@ -8786,10 +8786,10 @@ stages:
           learning_rate:
             scheduler_kwargs:
               decay_steps: 100
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           reduce_lr_on_plateau: false
-          early_stopping: false
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -8828,25 +8828,25 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_multivariate_transformation_model/dataset.pdf
       hash: md5
-      md5: 4058e1f232ba9c1787f928460aad448f
+      md5: 3ba975e22d8190a9cc2ad5ccff26f5a0
       size: 319803
     - path: results/sim/moons/unconditional_multivariate_transformation_model/metrics.yaml
       hash: md5
-      md5: 18e46831a474c03ff7a77a68129a2d3f
-      size: 53
+      md5: 66a7569a9e5c042574de521867da2644
+      size: 57
     - path: 
         results/sim/moons/unconditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: 28b6313655a0630c53570c1cd713a322
+      md5: f2b7df5fad9d369a02c042ac1f4f5963
       size: 11272
     - path: results/sim/moons/unconditional_multivariate_transformation_model/samples.pdf
       hash: md5
-      md5: c6fe0fc8b12f8d060e445240f06ad93d
-      size: 296480
+      md5: ed86c308f8a2c546e3b8d7c64cb59ed2
+      size: 288472
     - path: results/sim/moons/unconditional_multivariate_transformation_model/train.log
       hash: md5
-      md5: 41beaa2444c54b8cf7959aa8327394a7
-      size: 6346
+      md5: 01a35e413d152f3396b25c5def7d47e2
+      size: 6548
   train-sim@dataset1-conditional_multivariate_transformation_model:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_multivariate_transformation_model --stage-name train-sim@dataset1-conditional_multivariate_transformation_model
@@ -8937,10 +8937,10 @@ stages:
           learning_rate:
             scheduler_kwargs:
               decay_steps: 100
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           reduce_lr_on_plateau: false
-          early_stopping: false
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -9000,25 +9000,25 @@ stages:
     outs:
     - path: results/sim/circles/conditional_multivariate_transformation_model/dataset.pdf
       hash: md5
-      md5: bb1e1b0e18321bee0bd52368a4394922
+      md5: 7ff8c29a87737bc5ef5c88cda01ba96d
       size: 320937
     - path: results/sim/circles/conditional_multivariate_transformation_model/metrics.yaml
       hash: md5
-      md5: 8e3063f3a19e532c7848be17a21ab8ee
-      size: 56
+      md5: cf0bfa95a463da4fa67577f0aab606e6
+      size: 58
     - path: 
         results/sim/circles/conditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: 3e556145f62a5ba20440b886f609a373
+      md5: bf94555199c2837ff2b38de891a46b3b
       size: 11544
     - path: results/sim/circles/conditional_multivariate_transformation_model/samples.pdf
       hash: md5
-      md5: e5191d4ab15b17450fd0a75f899d878a
-      size: 289087
+      md5: d02151c53fa4ca3e950613eb1cc32ae8
+      size: 281956
     - path: results/sim/circles/conditional_multivariate_transformation_model/train.log
       hash: md5
-      md5: 13e8760ba0d37b16b24a19d968dc98ce
-      size: 8246
+      md5: 8e8697e9b078d97dc4a9a47ab28b2621
+      size: 8247
   train-sim@dataset1-unconditional_multivariate_transformation_model:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       unconditional_multivariate_transformation_model --stage-name train-sim@dataset1-unconditional_multivariate_transformation_model
@@ -9109,10 +9109,10 @@ stages:
           learning_rate:
             scheduler_kwargs:
               decay_steps: 100
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           reduce_lr_on_plateau: false
-          early_stopping: false
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -9160,25 +9160,25 @@ stages:
     outs:
     - path: results/sim/circles/unconditional_multivariate_transformation_model/dataset.pdf
       hash: md5
-      md5: 52c157d6fd72246f05aecb2780924f48
+      md5: 46690e8c6ef42479ebf5993c92189935
       size: 320937
     - path: results/sim/circles/unconditional_multivariate_transformation_model/metrics.yaml
       hash: md5
-      md5: 543e1fe343e8f112fd8abcf65c91f4c0
-      size: 57
+      md5: faa9f295011191de86dbefaeb795a072
+      size: 56
     - path: 
         results/sim/circles/unconditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: b45590a2e96342fa48d56526b3f4d084
+      md5: ab228a7ac5c364bdc0b96c1e01114be6
       size: 11272
     - path: results/sim/circles/unconditional_multivariate_transformation_model/samples.pdf
       hash: md5
-      md5: 770937dbbdf81530291adfbcb7b7b0dd
-      size: 290759
+      md5: 509754741e4a2d1dce4fa13a571ed567
+      size: 283010
     - path: results/sim/circles/unconditional_multivariate_transformation_model/train.log
       hash: md5
-      md5: df290d226d006133eca2443730ca35d0
-      size: 6605
+      md5: b49553af299a1c289dd97b70a37a7df8
+      size: 6603
   train-malnutrition@conditional_multivariate_transformation_model:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_multivariate_transformation_model --stage-name train-malnutrition@conditional_multivariate_transformation_model
@@ -9459,9 +9459,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -9548,25 +9548,25 @@ stages:
     outs:
     - path: results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 22ae9d3d3063702954f3cc073137d5e5
+      md5: b583dfd7662edac627a863f8a0ff77e4
       size: 319803
     - path: results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: a1f5cf177fd055ea5f25a1c3ae6da1ef
-      size: 56
+      md5: 370a4bb467920223eced8f9fd97ce54a
+      size: 26
     - path: 
         results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: cde1fc3d886d464bf35bd66203c4ff08
+      md5: eebba43b40ddffc120fcceaf1753a438
       size: 18963088
     - path: results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 51a4fa976439729a6821dfcc4dda8679
-      size: 289296
+      md5: 5458501bd69098927ffbf95d1d5b69ee
+      size: 260329
     - path: results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: 0bbfcae29954e124806fcd0a1efca620
-      size: 11595
+      md5: 4720d8f7829a0cb88622ce1755e254bb
+      size: 11567
   train-sim@dataset0-conditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_hybrid_coupling_flow_quadratic_spline --stage-name train-sim@dataset0-conditional_hybrid_coupling_flow_quadratic_spline
@@ -9663,9 +9663,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -9747,25 +9747,25 @@ stages:
     outs:
     - path: results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 520e995bff858520f0c1381cfb0024ac
+      md5: e5a6dd7f2683ca75b89a1b3446f2d041
       size: 319803
     - path: results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 9790b0a8de9501bae59e8bdaa2bc9353
+      md5: c1f501134c72c42d421f5725a7dc6683
       size: 56
     - path: 
         results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: e4f4788e82d07c776147e6e044f9cc36
+      md5: 2c82d387a9eab153fe4a3cbaa7065464
       size: 1120648
     - path: results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 8b1b82e0e4d3120108f5e30d98f08a5d
-      size: 291733
+      md5: 797b140867143692bb6e50c8b24cb495
+      size: 291410
     - path: results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: 741aa893feb842f3e516c8c3ddc8be00
-      size: 11204
+      md5: b886f3857f5d98897f0688ec773d2ee8
+      size: 11209
   train-sim@dataset0-unconditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       unconditional_hybrid_coupling_flow_quadratic_spline --stage-name train-sim@dataset0-unconditional_hybrid_coupling_flow_quadratic_spline
@@ -9862,9 +9862,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -9935,27 +9935,27 @@ stages:
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 4265c7866df68ea85bec949030cd82f7
+      md5: 9e1f1ef2f7bfef38ba46d6f8841edd92
       size: 319803
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: dbce0cac29283aed910b58e0fbeb1e3c
-      size: 55
+      md5: 68489a044fbffa09bdcbb07e5f3bbea8
+      size: 56
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 592dc9abc41bd8a5088a32d8efdd2052
+      md5: e806203e348a7e2836b901c8ff82bb89
       size: 565208
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 84d47895fe42cc1a659a22845e7eb450
-      size: 306791
+      md5: 2f9bb48b9a450b01b4191635961593ee
+      size: 304385
     - path: results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: 2d27680ad1eb7ac060aa4b032e1070f5
-      size: 10366
+      md5: ddcfca7377aeb44a85036b952959159f
+      size: 10369
   train-sim@dataset1-conditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_hybrid_coupling_flow_bernstein_poly --stage-name train-sim@dataset1-conditional_hybrid_coupling_flow_bernstein_poly
@@ -10044,9 +10044,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -10142,25 +10142,25 @@ stages:
     outs:
     - path: results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: c60f0b85dcc2e259edde06e61d4360a1
+      md5: cbf3486d0ce4b9d36134408533fbe33e
       size: 320937
     - path: results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 28cf21c37a00f5d3a53d3126a07e0091
-      size: 55
+      md5: d0d274219874f651173dd67de60232d6
+      size: 56
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: af68b46ad4efa9837f147ec75816cb71
+      md5: 0370f258edbc456254588b99c579d7fb
       size: 18965632
     - path: results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 7e863bce47b0539435c4fcd29582c088
-      size: 306205
+      md5: 937582df1ae3970a5bf7002899f78815
+      size: 306067
     - path: results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: da44ae7778fd00ef37449f95f52a7172
-      size: 11653
+      md5: 463084a53ef845d17e80af976d6f827a
+      size: 11656
   train-sim@dataset1-conditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_hybrid_coupling_flow_quadratic_spline --stage-name train-sim@dataset1-conditional_hybrid_coupling_flow_quadratic_spline
@@ -10249,9 +10249,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -10343,27 +10343,27 @@ stages:
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: b30e0cd49f0475529788a06f67487401
+      md5: 550ad2aa17105b87eb37f2ba92658b78
       size: 320937
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: c743c099251a0057b03fd1c66d39058b
-      size: 56
+      md5: 04d429611ba206fd32353fcb03416a6a
+      size: 55
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 2e77e7ca981b5a9f6f30f544562e3c11
+      md5: 3648c2d77a59865900490a9615fa4d6b
       size: 15012384
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: da54defbd51a6464d0c554c6df690ea2
-      size: 309560
+      md5: ee5d2954c1b738eab96eef894a95e552
+      size: 308631
     - path: results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: 3ac53121d0715e6ba7b4c93f53271529
-      size: 11263
+      md5: 940cd8d95bd152a73faafd8d4cda05e4
+      size: 11265
   train-sim@dataset1-unconditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       unconditional_hybrid_coupling_flow_quadratic_spline --stage-name train-sim@dataset1-unconditional_hybrid_coupling_flow_quadratic_spline
@@ -10452,9 +10452,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -10534,28 +10534,28 @@ stages:
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: df1c7035e6d4938e09e1aefa906537cf
+      md5: b1e09b03dfe2570fca3f17c0befaea80
       size: 320937
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 9546f339b1b9856f84c584d1a8ca5bfe
-      size: 56
+      md5: 75847d2ee0acfd8d4b558ff2615a2372
+      size: 55
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 94ae422a9707b3707acb7bc198690a49
+      md5: 951c041074d44cffd55e8bd93d944980
       size: 565208
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 702fe77039d78156932abddcb7049253
-      size: 314923
+      md5: 2a42891fdc940362e84785513340c324
+      size: 310110
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: 6e42700550a2de89378f02d8d6cbafa9
-      size: 10423
+      md5: 6227ff4fdcf9c5f2c1d54a0072d7b479
+      size: 10425
   eval-sim@dataset0-conditional_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
       conditional_coupling_flow_bernstein_poly --stage-name train-sim@dataset0-conditional_coupling_flow_bernstein_poly
@@ -10632,7 +10632,7 @@ stages:
     - path: 
         results/sim/moons/conditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 5165f453d5d8567d08fe0228f6a6597e
+      md5: 6af0761f99ede033b67053d75968e811
       size: 2432984
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -10660,12 +10660,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: 15
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.0005
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -10709,8 +10709,8 @@ stages:
     outs:
     - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 90e2342bd55ebf3f49fcedf4e7695915.dir
-      size: 838269
+      md5: 29c748056dad8bcba0bb4afd68ed1b1e.dir
+      size: 806516
       nfiles: 2
   eval-sim@dataset0-conditional_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -10788,7 +10788,7 @@ stages:
     - path: 
         results/sim/moons/conditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 86ad353d4f5cfb54db9faa9dad209adb
+      md5: a3d8d2524c164cae0aadb7c55d1b5386
       size: 2228400
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -10816,12 +10816,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -10852,8 +10852,8 @@ stages:
     outs:
     - path: results/sim/moons/conditional_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 6a3d4eafaa4b5fa766897aa660bb704c.dir
-      size: 863654
+      md5: ca400190bf844adf9531f1cf5df9b84a.dir
+      size: 816425
       nfiles: 2
   eval-sim@dataset0-conditional_masked_autoregressive_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -10931,7 +10931,7 @@ stages:
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 40f4972061a9945c11c9dcfc8cf3bba0
+      md5: 6ecec9163c55bc4f4858e69c44b01a4a
       size: 55456
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -10959,12 +10959,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -11004,8 +11004,8 @@ stages:
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 6e840173a3dfdaf42e6d5ba21804dbea.dir
-      size: 785979
+      md5: 35549ad8e0b51f7431be7b85d73673cb.dir
+      size: 766496
       nfiles: 2
   eval-sim@dataset0-conditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -11083,7 +11083,7 @@ stages:
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 1028423c572ef40801e4f0e69ce03f72
+      md5: 357cbd7e6f22f0ff10bf596fe624a359
       size: 120528
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -11111,12 +11111,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -11146,8 +11146,8 @@ stages:
     - path: 
         results/sim/moons/conditional_masked_autoregressive_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: aed0edfd2bd536316efb417ec503db27.dir
-      size: 842605
+      md5: ecb5d394c930d3d10d1317b7cf38bf60.dir
+      size: 783264
       nfiles: 2
   eval-sim@dataset0-conditional_multivariate_normal:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -11224,7 +11224,7 @@ stages:
       size: 17342
     - path: results/sim/moons/conditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: 4551a004f8d0302a5b100fc888a2e17d
+      md5: e8b749574d3800b9a8270982c816123c
       size: 55560
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -11251,13 +11251,13 @@ stages:
         compile_kwargs:
           jit_compile: false
         fit_kwargs:
-          batch_size: 256
-          early_stopping: false
+          batch_size: 512
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -11277,8 +11277,8 @@ stages:
     outs:
     - path: results/sim/moons/conditional_multivariate_normal/eval_figures/
       hash: md5
-      md5: cf1a67ff7ad66aed0e9ca84472f2b480.dir
-      size: 806293
+      md5: 9bc15ad3d59f8864fad514ad7b05457f.dir
+      size: 807800
       nfiles: 2
   eval-sim@dataset0-conditional_multivariate_transformation_model:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -11356,7 +11356,7 @@ stages:
     - path: 
         results/sim/moons/conditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: 03fd79dfca55709398431bd260e3970a
+      md5: 160b7cfad936ab5171792101a4c04ce9
       size: 11544
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -11387,10 +11387,10 @@ stages:
           learning_rate:
             scheduler_kwargs:
               decay_steps: 100
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           reduce_lr_on_plateau: false
-          early_stopping: false
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -11441,8 +11441,8 @@ stages:
     outs:
     - path: results/sim/moons/conditional_multivariate_transformation_model/eval_figures/
       hash: md5
-      md5: 95b301dadacea08a55aaf56b8bd825ae.dir
-      size: 4363959
+      md5: d7be9392c85afc31b0754dc6b7fbbac0.dir
+      size: 4338383
       nfiles: 8
   eval-sim@dataset0-conditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -11520,7 +11520,7 @@ stages:
     - path: 
         results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: cde1fc3d886d464bf35bd66203c4ff08
+      md5: eebba43b40ddffc120fcceaf1753a438
       size: 18963088
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -11549,9 +11549,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -11638,8 +11638,8 @@ stages:
     outs:
     - path: results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: d3aa37138ddf4d2b67708253eedcfa54.dir
-      size: 4328372
+      md5: dee55455a8098f30a3343cc26cd72e59.dir
+      size: 4342001
       nfiles: 8
   eval-sim@dataset0-conditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -11717,7 +11717,7 @@ stages:
     - path: 
         results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: e4f4788e82d07c776147e6e044f9cc36
+      md5: 2c82d387a9eab153fe4a3cbaa7065464
       size: 1120648
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -11746,9 +11746,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -11831,8 +11831,8 @@ stages:
     - path: 
         results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 95f1a4812288b71b767fcf36658b6601.dir
-      size: 4323695
+      md5: eda1fd0a801f04b93797fb19a77cbfaa.dir
+      size: 4293450
       nfiles: 8
   eval-sim@dataset0-unconditional_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -11910,7 +11910,7 @@ stages:
     - path: 
         results/sim/moons/unconditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: b5e6c2f4312e2db5557efece39574568
+      md5: 38072ffab6b80050055e43e676b3bb23
       size: 1221320
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -11938,12 +11938,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: 15
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.0005
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -11985,8 +11985,8 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: d6d35572dc18f019199a749934b7ce7e.dir
-      size: 819897
+      md5: 92064a28a85d39a99feb22f5e5b6c1d4.dir
+      size: 817178
       nfiles: 2
   eval-sim@dataset0-unconditional_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -12064,7 +12064,7 @@ stages:
     - path: 
         results/sim/moons/unconditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: cf057356df278eb9132fac623f6cf804
+      md5: d3931fe076791e031765f5e0f697eed3
       size: 1119168
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -12092,12 +12092,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -12126,8 +12126,8 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 5c0ea294338ffd29ed7e758d321176b7.dir
-      size: 819353
+      md5: 3fd8cd52d0676684eaaa04365f1870ad.dir
+      size: 819864
       nfiles: 2
   eval-sim@dataset0-unconditional_masked_autoregressive_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -12205,7 +12205,7 @@ stages:
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 40f4972061a9945c11c9dcfc8cf3bba0
+      md5: 6ecec9163c55bc4f4858e69c44b01a4a
       size: 55456
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -12233,12 +12233,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -12276,8 +12276,8 @@ stages:
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 63dcee1639b8c326cea170fee29df0b3.dir
-      size: 785979
+      md5: a97552918d1e70265126336299eba437.dir
+      size: 766496
       nfiles: 2
   eval-sim@dataset0-unconditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -12355,7 +12355,7 @@ stages:
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 1028423c572ef40801e4f0e69ce03f72
+      md5: 357cbd7e6f22f0ff10bf596fe624a359
       size: 120528
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -12383,12 +12383,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -12416,8 +12416,8 @@ stages:
     - path: 
         results/sim/moons/unconditional_masked_autoregressive_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 5e6ad333a8621841a772d2edbd0ea72c.dir
-      size: 842605
+      md5: c514180423028cdc291f80341f81464b.dir
+      size: 783264
       nfiles: 2
   eval-sim@dataset0-unconditional_multivariate_normal:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -12494,7 +12494,7 @@ stages:
       size: 17342
     - path: results/sim/moons/unconditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: 6dda64f9fd4ec2cbcdda8fa9b4cf6443
+      md5: 595505c85971525e1fe7ed9a522aa2ea
       size: 11000
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -12521,13 +12521,13 @@ stages:
         compile_kwargs:
           jit_compile: false
         fit_kwargs:
-          batch_size: 256
-          early_stopping: false
+          batch_size: 512
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -12541,8 +12541,8 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_multivariate_normal/eval_figures/
       hash: md5
-      md5: 234899562cfe699d1c67ec7e57cac962.dir
-      size: 796896
+      md5: 15070cbd23527a175dd45c7548ca3671.dir
+      size: 771244
       nfiles: 2
   eval-sim@dataset0-unconditional_multivariate_transformation_model:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -12620,7 +12620,7 @@ stages:
     - path: 
         results/sim/moons/unconditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: 28b6313655a0630c53570c1cd713a322
+      md5: f2b7df5fad9d369a02c042ac1f4f5963
       size: 11272
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -12651,10 +12651,10 @@ stages:
           learning_rate:
             scheduler_kwargs:
               decay_steps: 100
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           reduce_lr_on_plateau: false
-          early_stopping: false
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -12693,8 +12693,8 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_multivariate_transformation_model/eval_figures/
       hash: md5
-      md5: 648e6632e46a1242985bdfe2b607c000.dir
-      size: 4374987
+      md5: e3b5c5669a46fd90315b8dfd52ec668c.dir
+      size: 4350649
       nfiles: 8
   eval-sim@dataset0-unconditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -12772,7 +12772,7 @@ stages:
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 6529fb348b8872beab4bc38d194b45e1
+      md5: daa13dffd245ab168ada115098f14bbc
       size: 9489072
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -12801,9 +12801,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -12879,8 +12879,8 @@ stages:
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: a7e785768ac6b8b3a27471bd29c17dce.dir
-      size: 4413228
+      md5: d70d353eae6255c5366b18a7c1b828c6.dir
+      size: 4376445
       nfiles: 8
   eval-sim@dataset0-unconditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -12958,7 +12958,7 @@ stages:
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 592dc9abc41bd8a5088a32d8efdd2052
+      md5: e806203e348a7e2836b901c8ff82bb89
       size: 565208
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -12987,9 +12987,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -13060,8 +13060,8 @@ stages:
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: a3d233bd458c096a215aed93e6eae695.dir
-      size: 4447503
+      md5: 1be6b6ef06f71ace19cf60a55229cf4f.dir
+      size: 4387915
       nfiles: 8
   eval-sim@dataset1-conditional_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -13139,7 +13139,7 @@ stages:
     - path: 
         results/sim/circles/conditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: c1418023f160eb2a24cbf433cc5d81bd
+      md5: 9b4d2f7a01f4a54322f3e9ada8b0d6ad
       size: 2432984
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -13159,12 +13159,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: 15
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.0005
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -13217,8 +13217,8 @@ stages:
     outs:
     - path: results/sim/circles/conditional_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: cc6661501da4a07729f04892ae2693d8.dir
-      size: 860994
+      md5: 58fe9056732c192d53d33d35d32598f3.dir
+      size: 843034
       nfiles: 2
   eval-sim@dataset1-conditional_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -13296,7 +13296,7 @@ stages:
     - path: 
         results/sim/circles/conditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 15414fa0d0b540e456ec9b1f1d3e3d97
+      md5: 695fcfc378327f91ad5930fe5a51dad8
       size: 2228400
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -13316,12 +13316,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -13361,8 +13361,8 @@ stages:
     outs:
     - path: results/sim/circles/conditional_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 8b7f864a12941687f6c61dddddf94340.dir
-      size: 822026
+      md5: 7a4e6f8766cce748316363603d644bf9.dir
+      size: 872517
       nfiles: 2
   eval-sim@dataset1-conditional_masked_autoregressive_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -13440,7 +13440,7 @@ stages:
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 534ebecdfa003a1426588e9af307ae58
+      md5: 6e33e63f5ce0419c0f11738a0147ab27
       size: 55456
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -13460,12 +13460,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -13514,8 +13514,8 @@ stages:
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 3fd9b1dfa6ffa948bafd3682f8a208fa.dir
-      size: 803393
+      md5: 221d251b14e8327da51fded7fd5b1889.dir
+      size: 859725
       nfiles: 2
   eval-sim@dataset1-conditional_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -13593,7 +13593,7 @@ stages:
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 3c58109d98eeea91faacdd68cb59354a
+      md5: 82f455d282f406641019a4006552df3d
       size: 120528
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -13613,12 +13613,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -13657,8 +13657,8 @@ stages:
     - path: 
         results/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 6da7b9d02bee8452fa9370eeae871364.dir
-      size: 862515
+      md5: 543e05df5bf86e18c0890bc9e0d4a708.dir
+      size: 818087
       nfiles: 2
   eval-sim@dataset1-conditional_multivariate_normal:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -13735,7 +13735,7 @@ stages:
       size: 17342
     - path: results/sim/circles/conditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: 383b916253b43b7827c625f4c36ce499
+      md5: 06df7c85829843d1e1852efb42a14cc6
       size: 55560
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -13754,13 +13754,13 @@ stages:
         compile_kwargs:
           jit_compile: false
         fit_kwargs:
-          batch_size: 256
-          early_stopping: false
+          batch_size: 512
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -13789,8 +13789,8 @@ stages:
     outs:
     - path: results/sim/circles/conditional_multivariate_normal/eval_figures/
       hash: md5
-      md5: 5b2f2b43da0b9633943ce1ae10b1dc99.dir
-      size: 794176
+      md5: f760622968b58cd9b9c725e7db869417.dir
+      size: 749568
       nfiles: 2
   eval-sim@dataset1-conditional_multivariate_transformation_model:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -13868,7 +13868,7 @@ stages:
     - path: 
         results/sim/circles/conditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: 3e556145f62a5ba20440b886f609a373
+      md5: bf94555199c2837ff2b38de891a46b3b
       size: 11544
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -13891,10 +13891,10 @@ stages:
           learning_rate:
             scheduler_kwargs:
               decay_steps: 100
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           reduce_lr_on_plateau: false
-          early_stopping: false
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -13954,8 +13954,8 @@ stages:
     outs:
     - path: results/sim/circles/conditional_multivariate_transformation_model/eval_figures/
       hash: md5
-      md5: 68acbc8ec7f67c6aa77669ca28847cc4.dir
-      size: 4456898
+      md5: 1cbee39272d51424d78cd4c6c3a0c767.dir
+      size: 4385012
       nfiles: 8
   eval-sim@dataset1-conditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -14033,7 +14033,7 @@ stages:
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: af68b46ad4efa9837f147ec75816cb71
+      md5: 0370f258edbc456254588b99c579d7fb
       size: 18965632
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -14054,9 +14054,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -14153,8 +14153,8 @@ stages:
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 93165432301fa068274f78fa588fcead.dir
-      size: 4405020
+      md5: a753ccf9a30108142235355af9102298.dir
+      size: 4354939
       nfiles: 8
   eval-sim@dataset1-conditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -14232,7 +14232,7 @@ stages:
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 2e77e7ca981b5a9f6f30f544562e3c11
+      md5: 3648c2d77a59865900490a9615fa4d6b
       size: 15012384
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -14253,9 +14253,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -14347,8 +14347,8 @@ stages:
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 47ae4800d51473342bd64e81bc569a4a.dir
-      size: 4279439
+      md5: 9eca3501cc4f5eeee49b2a39631c4b7d.dir
+      size: 4281665
       nfiles: 8
   eval-sim@dataset1-unconditional_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -14426,7 +14426,7 @@ stages:
     - path: 
         results/sim/circles/unconditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: cc5c917bda22ea81f452f3656a6f3e27
+      md5: 944a620c4fb90d6b9239397bac31af73
       size: 1221320
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -14446,12 +14446,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: 15
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.0005
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -14502,8 +14502,8 @@ stages:
     outs:
     - path: results/sim/circles/unconditional_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 5695b717dfea71f2beec2dba2982149f.dir
-      size: 806517
+      md5: b916d5d539b4efc31ec3bc515b7f11f0.dir
+      size: 843961
       nfiles: 2
   eval-sim@dataset1-unconditional_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -14581,7 +14581,7 @@ stages:
     - path: 
         results/sim/circles/unconditional_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 736db3511aed96045bd1f78d8f04c652
+      md5: f684161b30e50dbfad45d85203619cc4
       size: 1119168
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -14601,12 +14601,12 @@ stages:
           jit_compile: true
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -14644,8 +14644,8 @@ stages:
     outs:
     - path: results/sim/circles/unconditional_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 97419b1ad849cf1308b14e13207982d7.dir
-      size: 840762
+      md5: fdea5c4f80af58be4d288a339588be4f.dir
+      size: 811400
       nfiles: 2
   eval-sim@dataset1-unconditional_masked_autoregressive_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -14723,7 +14723,7 @@ stages:
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 534ebecdfa003a1426588e9af307ae58
+      md5: 6e33e63f5ce0419c0f11738a0147ab27
       size: 55456
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -14743,12 +14743,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -14795,8 +14795,8 @@ stages:
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 031b0bcbc316cc81b033274af68e170b.dir
-      size: 803393
+      md5: 0da98a9e91201d8f01bf0d556d034c2c.dir
+      size: 859725
       nfiles: 2
   eval-malnutrition@conditional_multivariate_transformation_model:
     cmd: python scripts/evaluate_malnutrition.py --log-level info --log-file train.log
@@ -14975,7 +14975,7 @@ stages:
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 3c58109d98eeea91faacdd68cb59354a
+      md5: 82f455d282f406641019a4006552df3d
       size: 120528
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -14995,12 +14995,12 @@ stages:
           jit_compile: false
         fit_kwargs:
           batch_size: 512
-          early_stopping: false
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -15037,8 +15037,8 @@ stages:
     - path: 
         results/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 85118add7e261ba819cf990356ebf9df.dir
-      size: 862515
+      md5: f6c8d187d4be9c59cc257665f3a4e960.dir
+      size: 818087
       nfiles: 2
   eval-sim@dataset1-unconditional_multivariate_normal:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -15116,7 +15116,7 @@ stages:
     - path: 
         results/sim/circles/unconditional_multivariate_normal/model_checkpoint.weights.h5
       hash: md5
-      md5: 862599f62de5bde18957647fd8afccab
+      md5: b0bb3bc9f0154b74280c93de0d8ab0bd
       size: 11000
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -15135,13 +15135,13 @@ stages:
         compile_kwargs:
           jit_compile: false
         fit_kwargs:
-          batch_size: 256
-          early_stopping: false
+          batch_size: 512
+          early_stopping: 30
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
@@ -15164,8 +15164,8 @@ stages:
     outs:
     - path: results/sim/circles/unconditional_multivariate_normal/eval_figures/
       hash: md5
-      md5: 74942c0f527331772b0b0948b832c17c.dir
-      size: 807185
+      md5: 832571b3e355ca7a981009ec22f40f3f.dir
+      size: 785920
       nfiles: 2
   eval-sim@dataset1-unconditional_multivariate_transformation_model:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -15243,7 +15243,7 @@ stages:
     - path: 
         results/sim/circles/unconditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: b45590a2e96342fa48d56526b3f4d084
+      md5: ab228a7ac5c364bdc0b96c1e01114be6
       size: 11272
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -15266,10 +15266,10 @@ stages:
           learning_rate:
             scheduler_kwargs:
               decay_steps: 100
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           reduce_lr_on_plateau: false
-          early_stopping: false
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -15318,8 +15318,8 @@ stages:
     - path: 
         results/sim/circles/unconditional_multivariate_transformation_model/eval_figures/
       hash: md5
-      md5: b9afcfcf78b6c5e1b39f1b4d925b242b.dir
-      size: 4474787
+      md5: 179122c6dd671b7753a00d7d49dfdfd2.dir
+      size: 4376202
       nfiles: 8
   eval-sim@dataset1-unconditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -15397,7 +15397,7 @@ stages:
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 5ee9747b3865f38e18636232709218a8
+      md5: c575aa7ef01b5752a743f1ff15dc3bfc
       size: 9489072
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -15418,9 +15418,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -15505,8 +15505,8 @@ stages:
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: e7a23535790ced4ec9c6626fd1d7726e.dir
-      size: 4492092
+      md5: f474a220e7fbecd057d2474dd024ead5.dir
+      size: 4476132
       nfiles: 8
   eval-sim@dataset1-unconditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -15584,7 +15584,7 @@ stages:
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 94ae422a9707b3707acb7bc198690a49
+      md5: 951c041074d44cffd55e8bd93d944980
       size: 565208
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -15605,9 +15605,9 @@ stages:
         fit_kwargs:
         - epochs: 100
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.001
           reduce_lr_on_plateau: false
-          early_stopping: 15
+          early_stopping: 30
           monitor: val_loss
           verbose: true
           validation_split: 0.25
@@ -15687,8 +15687,8 @@ stages:
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 9937f1c30744e575ff80391810579b06.dir
-      size: 4544337
+      md5: 415eb9888877a6293f93965124268539.dir
+      size: 4505041
       nfiles: 8
   train-malnutrition@conditional_hybrid_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
