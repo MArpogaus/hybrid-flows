@@ -1,12 +1,12 @@
 compile_kwargs:
   jit_compile: false
 fit_kwargs:
-  batch_size: 512
-  early_stopping: 50
-  epochs: 400
+  batch_size: 256
+  early_stopping: false
+  epochs: 200
   learning_rate:
     scheduler_kwargs:
-      decay_steps: 400
+      decay_steps: 200
       initial_learning_rate: 0.01
     scheduler_name: cosine_decay
   monitor: val_loss
