@@ -2,15 +2,15 @@ compile_kwargs: {}
   # jit_compile: true
 two_stage_training: true
 fit_kwargs:
-  epochs: &epochs 100
+  epochs: 400
   batch_size: 512
   learning_rate:
     scheduler_kwargs:
-      decay_steps: *epochs
+      decay_steps: 400
       initial_learning_rate: 0.01
     scheduler_name: cosine_decay
   reduce_lr_on_plateau: false
-  early_stopping: 30
+  early_stopping: 50
   monitor: val_loss
   verbose: true
   validation_split: 0.25
