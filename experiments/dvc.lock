@@ -2722,7 +2722,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -2746,7 +2746,7 @@ stages:
                 extrapolation: false
               parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
               parameters_constraint_fn_kwargs:
-                allow_flexible_bounds: true
+                allow_flexible_bounds: false
                 bounds: linear
                 high: 5
                 low: -5
@@ -2770,24 +2770,24 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: b986f8e89537f1380c0dc360263d3f9e
+      md5: 58ca6acfb389e1d2339758ddf6273ca7
       size: 319803
     - path: results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: b3887ce8109edaf8afcce94685960cbe
+      md5: fdbc31a0dee7dca640754bfd4cdf3a7a
       size: 56
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 6529fb348b8872beab4bc38d194b45e1
+      md5: 96d364c5b9d4c566ddf7b87e9d1e8ecc
       size: 9489072
     - path: results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: c42ac81a75cabc04a99e03e8ab23000e
-      size: 304420
+      md5: f6d60343dc2ab25d4f35c0fd65676508
+      size: 305996
     - path: results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: 2783423c23b2050e8b4f44e3f935a9b3
+      md5: 6ee88bdfb46ca30f9325dcf089e66810
       size: 10760
   train-sim@dataset0-conditional_coupling_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
@@ -4699,7 +4699,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -4723,7 +4723,7 @@ stages:
                 extrapolation: false
               parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
               parameters_constraint_fn_kwargs:
-                allow_flexible_bounds: true
+                allow_flexible_bounds: false
                 bounds: linear
                 high: 5
                 low: -5
@@ -4757,27 +4757,27 @@ stages:
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 8698cb8e7f14fbf065a72371f8e00e65
+      md5: 5794890249c09b69f09fb79a8ccdd61f
       size: 320937
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: 3ed47e6c72d62eec9b4983a907842ab6
-      size: 56
+      md5: 370a4bb467920223eced8f9fd97ce54a
+      size: 26
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 5ee9747b3865f38e18636232709218a8
+      md5: ccf11d1904acf38c584e7480c3da5dea
       size: 9489072
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 10bc23ad2744721c4fa60cb9c78eafd8
-      size: 301838
+      md5: 2fb788ef5799b3289b39bd615fbe78e7
+      size: 256341
     - path: results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: f5a5c0c44c4fb57b6c68f46373e29686
-      size: 10813
+      md5: 687ff82dd61540f2a709c02d40f5d4fe
+      size: 10783
   train-sim@dataset0-conditional_multivariate_normal:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_multivariate_normal --stage-name train-sim@dataset0-conditional_multivariate_normal
@@ -8633,7 +8633,7 @@ stages:
               extrapolation: true
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: smooth
               high: 4
               low: -4
@@ -8669,24 +8669,24 @@ stages:
     outs:
     - path: results/sim/moons/conditional_multivariate_transformation_model/dataset.pdf
       hash: md5
-      md5: bf811795a723250eab40649ecee9934c
+      md5: 566a7025b5750e9a2723c776a558194b
       size: 319803
     - path: results/sim/moons/conditional_multivariate_transformation_model/metrics.yaml
       hash: md5
-      md5: 0a82877f1bdfedc3dda45a9355f7a7d0
-      size: 56
+      md5: a6368b4ec0da3c99da66409f864a40aa
+      size: 55
     - path: 
         results/sim/moons/conditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: 03fd79dfca55709398431bd260e3970a
+      md5: d64ab960e97e96961a1b00d70458e13b
       size: 11544
     - path: results/sim/moons/conditional_multivariate_transformation_model/samples.pdf
       hash: md5
-      md5: 3d471da1f20c4260de194867d09758c7
-      size: 283686
+      md5: 5aba9922f0dd456f2869a4444c276fa3
+      size: 264338
     - path: results/sim/moons/conditional_multivariate_transformation_model/train.log
       hash: md5
-      md5: 447db4a77390480b1f865146ed9e5820
+      md5: 22de021df52c8d7cf86b41f75b7414af
       size: 8190
   train-sim@dataset0-unconditional_multivariate_transformation_model:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
@@ -8804,7 +8804,7 @@ stages:
               extrapolation: true
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: smooth
               high: 4
               low: -4
@@ -8828,25 +8828,25 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_multivariate_transformation_model/dataset.pdf
       hash: md5
-      md5: 4058e1f232ba9c1787f928460aad448f
+      md5: 60b8a53f7f54a56aa4852a088f3b6373
       size: 319803
     - path: results/sim/moons/unconditional_multivariate_transformation_model/metrics.yaml
       hash: md5
-      md5: 18e46831a474c03ff7a77a68129a2d3f
-      size: 53
+      md5: 56ac0e70e7896f6f6729d3bb14ed985a
+      size: 56
     - path: 
         results/sim/moons/unconditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: 28b6313655a0630c53570c1cd713a322
+      md5: 8c070da11ed5ca6cafe44f09be86089e
       size: 11272
     - path: results/sim/moons/unconditional_multivariate_transformation_model/samples.pdf
       hash: md5
-      md5: c6fe0fc8b12f8d060e445240f06ad93d
-      size: 296480
+      md5: ed2de4cb05b300a886c3d998b50616dd
+      size: 295412
     - path: results/sim/moons/unconditional_multivariate_transformation_model/train.log
       hash: md5
-      md5: 41beaa2444c54b8cf7959aa8327394a7
-      size: 6346
+      md5: 0e55d6aafcc3071e089a3f0a0a41a6e7
+      size: 6549
   train-sim@dataset1-conditional_multivariate_transformation_model:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_multivariate_transformation_model --stage-name train-sim@dataset1-conditional_multivariate_transformation_model
@@ -8955,7 +8955,7 @@ stages:
               extrapolation: true
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: smooth
               high: 4
               low: -4
@@ -9000,25 +9000,25 @@ stages:
     outs:
     - path: results/sim/circles/conditional_multivariate_transformation_model/dataset.pdf
       hash: md5
-      md5: dd6f35edbb7ca3eb2d2cd2b831a3b22e
+      md5: aa3f1aac86be392e764db35b967350de
       size: 320937
     - path: results/sim/circles/conditional_multivariate_transformation_model/metrics.yaml
       hash: md5
-      md5: 1722b10267832b074ece65cfb6c89fe8
-      size: 56
+      md5: 7af9161cbf39efbdc891abf532433791
+      size: 55
     - path: 
         results/sim/circles/conditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: a07e18d1a1249f6c64ecd51c96fafb2f
+      md5: e71a14f6de4906a8f5f5b4159c8d9e0d
       size: 11544
     - path: results/sim/circles/conditional_multivariate_transformation_model/samples.pdf
       hash: md5
-      md5: 97886d4dc1397bca6a686e21a31f6750
-      size: 289089
+      md5: 5ecd535a42badfcac8fd38f6e541bdbf
+      size: 286263
     - path: results/sim/circles/conditional_multivariate_transformation_model/train.log
       hash: md5
-      md5: 313f6391f554cd40eb77d868d2227f26
-      size: 8241
+      md5: 0968138e5011f87c8c0779cd20f12ee0
+      size: 8242
   train-sim@dataset1-unconditional_multivariate_transformation_model:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       unconditional_multivariate_transformation_model --stage-name train-sim@dataset1-unconditional_multivariate_transformation_model
@@ -9127,7 +9127,7 @@ stages:
               extrapolation: true
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: smooth
               high: 4
               low: -4
@@ -9160,25 +9160,25 @@ stages:
     outs:
     - path: results/sim/circles/unconditional_multivariate_transformation_model/dataset.pdf
       hash: md5
-      md5: 52c157d6fd72246f05aecb2780924f48
+      md5: db6d5ca7491d87a42f2b0e9ce086cc3a
       size: 320937
     - path: results/sim/circles/unconditional_multivariate_transformation_model/metrics.yaml
       hash: md5
-      md5: 543e1fe343e8f112fd8abcf65c91f4c0
-      size: 57
+      md5: e85d6b0e11f17a6d5dc330b49b2bfb7d
+      size: 56
     - path: 
         results/sim/circles/unconditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: b45590a2e96342fa48d56526b3f4d084
+      md5: 819576963936f095bfa5f8feb5ab7a3e
       size: 11272
     - path: results/sim/circles/unconditional_multivariate_transformation_model/samples.pdf
       hash: md5
-      md5: 770937dbbdf81530291adfbcb7b7b0dd
-      size: 290759
+      md5: 370cada04f9c125416aaf954df93d034
+      size: 289957
     - path: results/sim/circles/unconditional_multivariate_transformation_model/train.log
       hash: md5
-      md5: df290d226d006133eca2443730ca35d0
-      size: 6605
+      md5: 9272622da8202e615bf239c878f458ff
+      size: 5837
   train-malnutrition@conditional_multivariate_transformation_model:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_multivariate_transformation_model --stage-name train-malnutrition@conditional_multivariate_transformation_model
@@ -9488,7 +9488,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -9517,12 +9517,12 @@ stages:
               invert: true
               bijector_kwargs:
                 domain:
-                - -8
-                - 8
+                - -5
+                - 5
                 extrapolation: false
               parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
               parameters_constraint_fn_kwargs:
-                allow_flexible_bounds: true
+                allow_flexible_bounds: false
                 bounds: linear
                 high: 5
                 low: -5
@@ -9548,25 +9548,25 @@ stages:
     outs:
     - path: results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: 22ae9d3d3063702954f3cc073137d5e5
+      md5: d8d893bf04bad447da8e766aca78d3e4
       size: 319803
     - path: results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: a1f5cf177fd055ea5f25a1c3ae6da1ef
-      size: 56
+      md5: 56ba18bc11fdf3192d4d48883895d01c
+      size: 55
     - path: 
         results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: cde1fc3d886d464bf35bd66203c4ff08
+      md5: 41db179a808bad25e8366a05f1471cbe
       size: 18963088
     - path: results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: 51a4fa976439729a6821dfcc4dda8679
-      size: 289296
+      md5: 8b4b49bfad3d3f42ed7d23981e6d475b
+      size: 290209
     - path: results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: 0bbfcae29954e124806fcd0a1efca620
-      size: 11595
+      md5: a3bb4b2afad344b18bc8c8e4276fa7e4
+      size: 11599
   train-sim@dataset0-conditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_hybrid_coupling_flow_quadratic_spline --stage-name train-sim@dataset0-conditional_hybrid_coupling_flow_quadratic_spline
@@ -9692,7 +9692,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -9747,25 +9747,25 @@ stages:
     outs:
     - path: results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: dea357e442c942eebdcba03bcae2817f
+      md5: 35b1d4ec9b6ce12609a84084aa091e9a
       size: 319803
     - path: results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: e23ca2e0417240de1689f87db8108ddd
-      size: 56
+      md5: b3c9eb846a58aeef4883f1dc183b009a
+      size: 55
     - path: 
         results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 3f9dada9ac427ef9c64b017c81f96ea4
+      md5: a8aa57f2e47e4350a85b522978f51061
       size: 1120648
     - path: results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 5bf64dfe235a295ef5f47132c8371d34
-      size: 289397
+      md5: 552aee8c4b1a300c2a4b3f3cdc4475b1
+      size: 286859
     - path: results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: 796fede3d1bafd1d449b7f889ff51e64
-      size: 11202
+      md5: d4e0d18a486d031bd70cd3bd99fabd9c
+      size: 11204
   train-sim@dataset0-unconditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       unconditional_hybrid_coupling_flow_quadratic_spline --stage-name train-sim@dataset0-unconditional_hybrid_coupling_flow_quadratic_spline
@@ -9891,7 +9891,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -9935,27 +9935,27 @@ stages:
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 07d05bb8bdf18c6a49e4768027dff1de
+      md5: 14e81a77714260df061f16d7a3401dd6
       size: 319803
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 55b540b096077d6111668948b41792a6
-      size: 56
+      md5: 69614a92de1f1871e309d4421fc39a54
+      size: 55
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: cf841eac50d91604a054ce1746f9c04c
+      md5: 5121e66f68d4d09dfa83ce9f5a19d3cd
       size: 565208
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: 4f43fbbbc34f6e554463cd5db5daacce
-      size: 307823
+      md5: 6ced0fdf117e45a3c7920d243963c189
+      size: 307740
     - path: results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: a3fe6b74467635eb455b0739e812b139
-      size: 10365
+      md5: 28d64a44b58339fdfcc93a848a29f8d2
+      size: 10366
   train-sim@dataset1-conditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_hybrid_coupling_flow_bernstein_poly --stage-name train-sim@dataset1-conditional_hybrid_coupling_flow_bernstein_poly
@@ -10042,9 +10042,9 @@ stages:
         compile_kwargs:
           jit_compile: true
         fit_kwargs:
-        - epochs: 100
+        - epochs: 200
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.005
           reduce_lr_on_plateau: false
           early_stopping: 30
           monitor: val_loss
@@ -10055,7 +10055,7 @@ stages:
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.005
             scheduler_name: cosine_decay
           reduce_lr_on_plateau: false
           early_stopping: 30
@@ -10073,7 +10073,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -10082,9 +10082,9 @@ stages:
               dtype: float32
               parameter_shape:
               - 2
-              - 300
-          - bijector: Shift
-            invert: true
+              - 500
+          - bijector: Scale
+            parameters_constraint_fn: tf.math.softplus
             parameters_fn: bernstein_polynomial
             parameters_fn_kwargs:
               conditional_event_shape: 1
@@ -10092,7 +10092,7 @@ stages:
               extrapolation: true
               parameter_shape:
               - 2
-              polynomial_order: 6
+              polynomial_order: 1
           joint_bijectors:
           - bijector: RealNVP
             bijector_kwargs:
@@ -10102,16 +10102,17 @@ stages:
               invert: true
               bijector_kwargs:
                 domain:
-                - -8
-                - 8
+                - -5
+                - 5
                 extrapolation: false
               parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
               parameters_constraint_fn_kwargs:
-                allow_flexible_bounds: true
+                allow_flexible_bounds: false
                 bounds: linear
                 high: 5
                 low: -5
               parametrized_by_parent: true
+              parameters_slice_size: 300
             parameters_fn: fully_connected_network
             parameters_fn_kwargs:
               activation: relu
@@ -10126,9 +10127,7 @@ stages:
               - 1
               parameter_shape:
               - 1
-              - 512
-              conditional: true
-              conditional_event_shape: 1
+              - 300
         two_stage_training: true
       params/sim/dataset.yaml:
         dataset_kwargs.circles*:
@@ -10142,25 +10141,25 @@ stages:
     outs:
     - path: results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/dataset.pdf
       hash: md5
-      md5: d2e79fad5956d178d983fa322181002b
+      md5: e64019d7785b5eda027c86bac37de286
       size: 320937
     - path: results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/metrics.yaml
       hash: md5
-      md5: b6403f8e9f331a8c854589aa1c66966c
-      size: 54
+      md5: 7d55f3457cb90b36bbfbf8de54777b09
+      size: 56
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 887c9536246e9089cf2636de97546cac
-      size: 18965632
+      md5: e00879f8578091e56e3cb0630d4b5573
+      size: 8184400
     - path: results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/samples.pdf
       hash: md5
-      md5: e1a1906187261e35848b782508009d91
-      size: 305160
+      md5: bad32ca8095022dc7293d86e5e7aee5c
+      size: 301654
     - path: results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/train.log
       hash: md5
-      md5: 652d488f469196eff34f2e053c4f84bb
-      size: 11650
+      md5: 17850d272b0cf941ea43fe31c40544e0
+      size: 6614
   train-sim@dataset1-conditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_hybrid_coupling_flow_quadratic_spline --stage-name train-sim@dataset1-conditional_hybrid_coupling_flow_quadratic_spline
@@ -10278,7 +10277,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -10343,27 +10342,27 @@ stages:
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: b30e0cd49f0475529788a06f67487401
+      md5: fa84a4d6ac207a312caac46e32e745ac
       size: 320937
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: c743c099251a0057b03fd1c66d39058b
-      size: 56
+      md5: 6568664f02035c40e433762b14528ee3
+      size: 53
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 2e77e7ca981b5a9f6f30f544562e3c11
+      md5: 52079bfca2618f1ba7829234f459b380
       size: 15012384
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: da54defbd51a6464d0c554c6df690ea2
-      size: 309560
+      md5: c99f2320a3cc96d0e6f92da7c6e365c2
+      size: 308624
     - path: results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: 3ac53121d0715e6ba7b4c93f53271529
-      size: 11263
+      md5: 8625f0e2642b374059086ac840acd0f7
+      size: 11260
   train-sim@dataset1-unconditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       unconditional_hybrid_coupling_flow_quadratic_spline --stage-name train-sim@dataset1-unconditional_hybrid_coupling_flow_quadratic_spline
@@ -10481,7 +10480,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -10534,28 +10533,28 @@ stages:
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/dataset.pdf
       hash: md5
-      md5: 27b47442ea6efa3d2274f3b62fbd4065
+      md5: 4cdb39651521670f663321438f0e6ba7
       size: 320937
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 9f7ddf5e28a2190bf0664739ad125803
+      md5: 5a919000c713d9d500b78b4fe3de5920
       size: 55
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 7f5dfc6ad19ad2fc5b07894d02852f6e
+      md5: 3cec64792c084c6b282f229bc4763ae9
       size: 565208
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/samples.pdf
       hash: md5
-      md5: b34661547a1bfec6112b888380c6b8e8
-      size: 313713
+      md5: 5a54302db2a04a9e6a4ea5488f607f82
+      size: 312542
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/train.log
       hash: md5
-      md5: eb56e3938502396e0aa9fa6c714f212b
-      size: 10420
+      md5: f50ce5085c7ce1808de2e173417793ac
+      size: 10372
   eval-sim@dataset0-conditional_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
       conditional_coupling_flow_bernstein_poly --stage-name train-sim@dataset0-conditional_coupling_flow_bernstein_poly
@@ -11356,7 +11355,7 @@ stages:
     - path: 
         results/sim/moons/conditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: 03fd79dfca55709398431bd260e3970a
+      md5: d64ab960e97e96961a1b00d70458e13b
       size: 11544
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -11405,7 +11404,7 @@ stages:
               extrapolation: true
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: smooth
               high: 4
               low: -4
@@ -11441,8 +11440,8 @@ stages:
     outs:
     - path: results/sim/moons/conditional_multivariate_transformation_model/eval_figures/
       hash: md5
-      md5: 95b301dadacea08a55aaf56b8bd825ae.dir
-      size: 4363959
+      md5: f2edd80623d5dcd13632e2dc8182326a.dir
+      size: 4269219
       nfiles: 8
   eval-sim@dataset0-conditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -11520,7 +11519,7 @@ stages:
     - path: 
         results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: cde1fc3d886d464bf35bd66203c4ff08
+      md5: 41db179a808bad25e8366a05f1471cbe
       size: 18963088
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -11578,7 +11577,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -11607,12 +11606,12 @@ stages:
               invert: true
               bijector_kwargs:
                 domain:
-                - -8
-                - 8
+                - -5
+                - 5
                 extrapolation: false
               parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
               parameters_constraint_fn_kwargs:
-                allow_flexible_bounds: true
+                allow_flexible_bounds: false
                 bounds: linear
                 high: 5
                 low: -5
@@ -11638,8 +11637,8 @@ stages:
     outs:
     - path: results/sim/moons/conditional_hybrid_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: d3aa37138ddf4d2b67708253eedcfa54.dir
-      size: 4328372
+      md5: f7c5016a667074d3681fac5f2414e1d5.dir
+      size: 4320267
       nfiles: 8
   eval-sim@dataset0-conditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -11717,7 +11716,7 @@ stages:
     - path: 
         results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 3f9dada9ac427ef9c64b017c81f96ea4
+      md5: a8aa57f2e47e4350a85b522978f51061
       size: 1120648
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -11775,7 +11774,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -11831,8 +11830,8 @@ stages:
     - path: 
         results/sim/moons/conditional_hybrid_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 2fb834963a7316915005d1fc2f70e624.dir
-      size: 4317853
+      md5: 8bdb15d7a0ff450cb65b5ad8c9ac701f.dir
+      size: 4302239
       nfiles: 8
   eval-sim@dataset0-unconditional_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -12620,7 +12619,7 @@ stages:
     - path: 
         results/sim/moons/unconditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: 28b6313655a0630c53570c1cd713a322
+      md5: 8c070da11ed5ca6cafe44f09be86089e
       size: 11272
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -12669,7 +12668,7 @@ stages:
               extrapolation: true
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: smooth
               high: 4
               low: -4
@@ -12693,8 +12692,8 @@ stages:
     outs:
     - path: results/sim/moons/unconditional_multivariate_transformation_model/eval_figures/
       hash: md5
-      md5: 648e6632e46a1242985bdfe2b607c000.dir
-      size: 4374987
+      md5: ee51f631ea2888bf2da996ee2cd37e59.dir
+      size: 4366683
       nfiles: 8
   eval-sim@dataset0-unconditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -12772,7 +12771,7 @@ stages:
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 6529fb348b8872beab4bc38d194b45e1
+      md5: 96d364c5b9d4c566ddf7b87e9d1e8ecc
       size: 9489072
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -12830,7 +12829,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -12854,7 +12853,7 @@ stages:
                 extrapolation: false
               parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
               parameters_constraint_fn_kwargs:
-                allow_flexible_bounds: true
+                allow_flexible_bounds: false
                 bounds: linear
                 high: 5
                 low: -5
@@ -12879,8 +12878,8 @@ stages:
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: a7e785768ac6b8b3a27471bd29c17dce.dir
-      size: 4413228
+      md5: c7d45fda167d1cc403001f22f0b43bad.dir
+      size: 4418715
       nfiles: 8
   eval-sim@dataset0-unconditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -12958,7 +12957,7 @@ stages:
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: cf841eac50d91604a054ce1746f9c04c
+      md5: 5121e66f68d4d09dfa83ce9f5a19d3cd
       size: 565208
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -13016,7 +13015,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -13060,8 +13059,8 @@ stages:
     - path: 
         results/sim/moons/unconditional_hybrid_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 78d36e46bd539a5d9d03d5f73f2567ba.dir
-      size: 4430762
+      md5: 44388f4130a3ae4ece0301a9fd056daa.dir
+      size: 4433809
       nfiles: 8
   eval-sim@dataset1-conditional_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -13868,7 +13867,7 @@ stages:
     - path: 
         results/sim/circles/conditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: a07e18d1a1249f6c64ecd51c96fafb2f
+      md5: e71a14f6de4906a8f5f5b4159c8d9e0d
       size: 11544
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -13909,7 +13908,7 @@ stages:
               extrapolation: true
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: smooth
               high: 4
               low: -4
@@ -13954,8 +13953,8 @@ stages:
     outs:
     - path: results/sim/circles/conditional_multivariate_transformation_model/eval_figures/
       hash: md5
-      md5: 23eb4e0345bc8634c590df32ca174367.dir
-      size: 4453860
+      md5: b802f239caaeb8bb5bf7924e5ecf1ff9.dir
+      size: 4441410
       nfiles: 8
   eval-sim@dataset1-conditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -14033,8 +14032,8 @@ stages:
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 887c9536246e9089cf2636de97546cac
-      size: 18965632
+      md5: e00879f8578091e56e3cb0630d4b5573
+      size: 8184400
     - path: scripts/evaluate_sim.py
       hash: md5
       md5: 46b87fabb677e84f09915e9e0f69ecdf
@@ -14052,9 +14051,9 @@ stages:
         compile_kwargs:
           jit_compile: true
         fit_kwargs:
-        - epochs: 100
+        - epochs: 200
           batch_size: 512
-          learning_rate: 0.01
+          learning_rate: 0.005
           reduce_lr_on_plateau: false
           early_stopping: 30
           monitor: val_loss
@@ -14065,7 +14064,7 @@ stages:
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.01
+              initial_learning_rate: 0.005
             scheduler_name: cosine_decay
           reduce_lr_on_plateau: false
           early_stopping: 30
@@ -14083,7 +14082,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -14092,9 +14091,9 @@ stages:
               dtype: float32
               parameter_shape:
               - 2
-              - 300
-          - bijector: Shift
-            invert: true
+              - 500
+          - bijector: Scale
+            parameters_constraint_fn: tf.math.softplus
             parameters_fn: bernstein_polynomial
             parameters_fn_kwargs:
               conditional_event_shape: 1
@@ -14102,7 +14101,7 @@ stages:
               extrapolation: true
               parameter_shape:
               - 2
-              polynomial_order: 6
+              polynomial_order: 1
           joint_bijectors:
           - bijector: RealNVP
             bijector_kwargs:
@@ -14112,16 +14111,17 @@ stages:
               invert: true
               bijector_kwargs:
                 domain:
-                - -8
-                - 8
+                - -5
+                - 5
                 extrapolation: false
               parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
               parameters_constraint_fn_kwargs:
-                allow_flexible_bounds: true
+                allow_flexible_bounds: false
                 bounds: linear
                 high: 5
                 low: -5
               parametrized_by_parent: true
+              parameters_slice_size: 300
             parameters_fn: fully_connected_network
             parameters_fn_kwargs:
               activation: relu
@@ -14136,9 +14136,7 @@ stages:
               - 1
               parameter_shape:
               - 1
-              - 512
-              conditional: true
-              conditional_event_shape: 1
+              - 300
         two_stage_training: true
       params/sim/dataset.yaml:
         dataset_kwargs.circles*:
@@ -14153,8 +14151,8 @@ stages:
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: 6f00925d5378b5a0967efed9fd90cfff.dir
-      size: 4415462
+      md5: e8cc7db3f25f7fe7a08181081d8b1fb3.dir
+      size: 4441320
       nfiles: 8
   eval-sim@dataset1-conditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -14232,7 +14230,7 @@ stages:
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 2e77e7ca981b5a9f6f30f544562e3c11
+      md5: 52079bfca2618f1ba7829234f459b380
       size: 15012384
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -14282,7 +14280,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -14347,8 +14345,8 @@ stages:
     - path: 
         results/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 47ae4800d51473342bd64e81bc569a4a.dir
-      size: 4279439
+      md5: 8a2edea38a451e289bb27c3641992d12.dir
+      size: 4345778
       nfiles: 8
   eval-sim@dataset1-unconditional_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -15243,7 +15241,7 @@ stages:
     - path: 
         results/sim/circles/unconditional_multivariate_transformation_model/model_checkpoint.weights.h5
       hash: md5
-      md5: b45590a2e96342fa48d56526b3f4d084
+      md5: 819576963936f095bfa5f8feb5ab7a3e
       size: 11272
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -15284,7 +15282,7 @@ stages:
               extrapolation: true
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: smooth
               high: 4
               low: -4
@@ -15318,8 +15316,8 @@ stages:
     - path: 
         results/sim/circles/unconditional_multivariate_transformation_model/eval_figures/
       hash: md5
-      md5: b9afcfcf78b6c5e1b39f1b4d925b242b.dir
-      size: 4474787
+      md5: ce81326fb7ac7ade2b01df63962b43fb.dir
+      size: 4463043
       nfiles: 8
   eval-sim@dataset1-unconditional_hybrid_coupling_flow_bernstein_poly:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -15397,7 +15395,7 @@ stages:
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
       hash: md5
-      md5: 5ee9747b3865f38e18636232709218a8
+      md5: ccf11d1904acf38c584e7480c3da5dea
       size: 9489072
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -15447,7 +15445,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -15471,7 +15469,7 @@ stages:
                 extrapolation: false
               parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
               parameters_constraint_fn_kwargs:
-                allow_flexible_bounds: true
+                allow_flexible_bounds: false
                 bounds: linear
                 high: 5
                 low: -5
@@ -15505,8 +15503,8 @@ stages:
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly/eval_figures/
       hash: md5
-      md5: e7a23535790ced4ec9c6626fd1d7726e.dir
-      size: 4492092
+      md5: 9e6b5698c6fd9b9e4b534a1e7fcc18f9.dir
+      size: 4500358
       nfiles: 8
   eval-sim@dataset1-unconditional_hybrid_coupling_flow_quadratic_spline:
     cmd: python scripts/evaluate_sim.py --log-level info --log-file train.log --model-name
@@ -15584,7 +15582,7 @@ stages:
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 7f5dfc6ad19ad2fc5b07894d02852f6e
+      md5: 3cec64792c084c6b282f229bc4763ae9
       size: 565208
     - path: scripts/evaluate_sim.py
       hash: md5
@@ -15634,7 +15632,7 @@ stages:
               extrapolation: false
             parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
             parameters_constraint_fn_kwargs:
-              allow_flexible_bounds: true
+              allow_flexible_bounds: false
               bounds: linear
               high: 5
               low: -5
@@ -15687,8 +15685,8 @@ stages:
     - path: 
         results/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline/eval_figures/
       hash: md5
-      md5: 0292f738b7ac3b651d3aa569401274aa.dir
-      size: 4541505
+      md5: aae3f2d582cd4403838d71713fa21d39.dir
+      size: 4507956
       nfiles: 8
   train-malnutrition@conditional_hybrid_masked_autoregressive_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name

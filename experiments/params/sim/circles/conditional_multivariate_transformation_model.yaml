@@ -23,7 +23,7 @@ model_kwargs:
       extrapolation: true
     parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
     parameters_constraint_fn_kwargs:
-      allow_flexible_bounds: true
+      allow_flexible_bounds: false
       bounds: smooth
       high: 4
       low: -4
