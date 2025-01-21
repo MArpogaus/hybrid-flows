@@ -50,6 +50,10 @@ train = [
   'dvc[ssh]==3.*',
   'mlflow==2.*'
 ]
+cuda = [
+  'mctm[train]',
+  'tensorflow[and-cuda]'
+]
 
 [tool.commitizen]
 major_version_zero = true
