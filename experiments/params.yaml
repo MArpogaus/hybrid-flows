@@ -53,7 +53,7 @@ benchmark_models:
 # - unconditional_masked_autoregressive_flow_bernstein_poly
 # - unconditional_multivariate_flow_bernstein_poly
 # - unconditional_multivariate_normal
-- unconditional_coupling_flow_quadratic_spline
+# - unconditional_coupling_flow_quadratic_spline
 - unconditional_masked_autoregressive_flow_quadratic_spline
 - unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
 

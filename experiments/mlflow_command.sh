@@ -1,85 +1,46 @@
 #!/bin/bash
-set -ux
+set -euxo pipefail
 
 cd "$(dirname $0)" || exit 1
 
-CURRENT_BRANCH=${CI_COMMIT_REF_NAME:--}
+DVC_LOCAL_PATH=/data/mctm/
+DELAY=30
+NPROC=${NPROC:-8}
 
 # Configure remote, pull and check out cache
-dvc remote add --force --local local /data/mctm/
-dvc pull -r local --force --allow-missing
+[ -e $DVC_LOCAL_PATH ] && {
+    dvc remote add --force --local local /data/mctm/
+    dvc pull -r local --force --allow-missing
+}
 
 # Helper functions
-dvc_queue_exp_for_stage(){
-    for s in $(dvc status | grep "$1" | tr -d :);
-    do
-        echo "Queuing experiment for stage $s"
-        dvc exp run --queue "$s" -n "$s"
+nvidia_smi_while_proc_is_running(){
+    echo "PROCESS IS RUNNING"
+    while kill -0 "$1" >/dev/null 2>&1; do
+        nvidia-smi
+        sleep 1
     done
-}
-dvc_merge_all_exps(){
-    git checkout -b dvc-exp-merge
-    for s in $(dvc exp ls --sha-only);
-    do
-        echo "Merging experiment '$s' onto separate branch"
-        git merge -X theirs --no-edit "$s"
-    done
-    echo "Merging all experiments into workspace"
-    git checkout "$CURRENT_BRANCH"
-    git merge --no-edit --no-ff dvc-exp-merge
-    git branch -D dvc-exp-merge
-    dvc checkout --force
-}
-wait_for_queue() {
-    while : ; do
-        # Check if there are any queued or running experiments
-        queue_status=$(dvc queue status | tail -n +2 | grep -P '(Queued|Running)')
-
-        if [[ -z "$queue_status" ]]; then
-            echo "All experiments have been processed."
-            break
-        fi
-
-        echo "Still having $(wc -l <<< "$queue_status") experiments in the queue..."
-        sleep 10  # Wait for 10 seconds before checking again
-    done
+    echo "PROCESS TERMINATED"
 }
 dvc_repro_parallel(){
-    # Queue all matching stages as experiments for parallel executions
-    dvc_queue_exp_for_stage "$1"
-
-    # Start parallel execution of experiments
-    dvc queue start "$2"
-
-    # wait until dvc queue has been processed
-    wait_for_queue
-
-    # print queue
-    dvc queue status
-
-    # Apply all experiments to the workspace
-    dvc_merge_all_exps
-
-    # Clear queue and remove experiments
-    dvc queue remove --all
-    dvc exp rm --rev HEAD
+    dvc status $1 | grep @$3 | tr -d : | parallel --ungroup --delay $DELAY $2 dvc repro > dvc_repro_parallel_$1.log 2> dvc_repro_parallel_$1.err.log &
+    nvidia_smi_while_proc_is_running $!
 }
 
-# Clear queue and remove experiments
-dvc queue remove --all
-dvc exp rm --rev HEAD
-
 # reproduce experiments for simulation data
-dvc_repro_parallel eval-sim -j4
+# dvc_repro_parallel eval-sim -j$NPROC
 
 # reproduce experiments for benchmark data
-# dvc_repro_parallel train-malnutrition -j3
+# dvc_repro_parallel train-malnutrition -j4
 
 # reproduce experiments for benchmark data
-# dvc_repro_parallel train-benchmark -j2
+dvc_repro_parallel train-benchmark -j6 '.*hybrid'
 
 # Ensure pipeline has been fully reproduced
-# dvc repro
+# dvc repro eval-sim
+# dvc repro train-benchmark
 
 # Push all changes to the remote cache
-dvc push -r local
+[ -e $DVC_LOCAL_PATH ] && {
+    dvc push -r local
+}

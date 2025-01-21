@@ -49,16 +49,16 @@
 compile_kwargs: {}
 #   jit_compile: true
 fit_kwargs:
-  batch_size: 64
+  batch_size: 4096
   epochs: &epochs 200
   learning_rate:
     scheduler_kwargs:
       decay_steps: *epochs
-      initial_learning_rate: 0.0005
+      initial_learning_rate: 0.001
     scheduler_name: cosine_decay
   monitor: val_loss
   reduce_lr_on_plateau: false
-  early_stopping: false
+  early_stopping: 30
   verbose: true
 model_kwargs:
   distribution: masked_autoregressive_flow
