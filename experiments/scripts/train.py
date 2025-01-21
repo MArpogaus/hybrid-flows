@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-12-12 09:45:44 (Marcel Arpogaus)
-# changed : 2025-01-10 10:49:11 (Marcel Arpogaus)
+# changed : 2025-01-21 13:57:10 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -46,79 +46,6 @@ __LOGGER__ = logging.getLogger(__name__)
 
 
 # %% functions #################################################################
-def plot_trafos(joint_dist: tfd.Distribution, x: np.ndarray, y: np.ndarray) -> tuple:
-    """Plot transformations of the joint distribution.
-
-    Parameters
-    ----------
-    joint_dist : tfp.Distribution
-        Joint distribution to be plotted.
-    x : np.ndarray
-        Input data.
-    y : np.ndarray
-        True values.
-
-    Returns
-    -------
-    tuple
-        A tuple of figures.
-
-    """
-    marginal_dist = joint_dist.distribution.distribution
-    z2 = joint_dist.bijector.inverse(y)
-    z1 = marginal_dist.bijector.inverse(y)
-    z = marginal_dist.bijector.inverse(z2)
-    pit = marginal_dist.cdf(y)
-
-    df = pd.DataFrame(
-        columns=[
-            "$y1$",
-            "$y2$",
-            "$z_{2,1}$",
-            "$z_{2,2}$",
-            "$z_{1,1}$",
-            "$z_{1,2}$",
-            "$z_{1}$",
-            "$z_{2}$",
-            "$F_1(y_1)$",
-            "$F_2(y_2)$",
-            "$x$",
-        ],
-        data=np.concatenate([y, z2, z1, z, pit, x], -1),
-    )
-
-    g = sns.JointGrid(data=df, x="$y1$", y="$y2$", height=2)
-    g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
-    g.plot_marginals(sns.kdeplot)
-    data_figure = g.figure
-
-    g = sns.JointGrid(data=df, x="$z_{1,1}$", y="$z_{1,2}$", height=2)
-    g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
-    g.plot_marginals(sns.kdeplot)
-    normalized_data_figure = g.figure
-
-    g = sns.jointplot(df, x="$F_1(y_1)$", y="$F_2(y_2)$", height=2, s=4, alpha=0.5)
-    pit_figure = g.figure
-
-    g = sns.JointGrid(data=df, x="$z_{2,1}$", y="$z_{2,2}$", height=2)
-    g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
-    g.plot_marginals(sns.kdeplot)
-    decorelated_data_figure = g.figure
-
-    g = sns.JointGrid(data=df, x="$z_{1}$", y="$z_{2}$", height=2)
-    g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
-    g.plot_marginals(sns.kdeplot)
-    latent_dist_figure = g.figure
-
-    return (
-        data_figure,
-        normalized_data_figure,
-        pit_figure,
-        decorelated_data_figure,
-        latent_dist_figure,
-    )
-
-
 def sim_after_fit_hook(
     model: object,
     x: tf.Tensor,
@@ -157,42 +84,6 @@ def sim_after_fit_hook(
 
     fig = plot_samples(model(x), y, seed=1, **kwargs)
     fig.savefig(os.path.join(results_path, "samples.pdf"), bbox_inches="tight")
-
-    # if is_hybrid:
-    #     fig1, fig2, fig3 = plot_flow(model(x), x, y, seed=1, **kwargs)
-    #     fig1.savefig(os.path.join(results_path, "data.pdf"), bbox_inches="tight")
-    #     fig2.savefig(os.path.join(results_path, "z1.pdf"), bbox_inches="tight")
-    #     fig3.savefig(os.path.join(results_path, "z2.pdf"), bbox_inches="tight")
-
-    #     c_fig = plot_copula_function(model(x), y, "contour", -0.1, 1.1, 200)
-    #     c_fig.savefig(
-    #         os.path.join(results_path, "copula_contour.pdf"), bbox_inches="tight"
-    #     )
-
-    #     c_fig = plot_copula_function(model(x), y, "surface", -0.1, 1.1, 200)
-    #     c_fig.savefig(
-    #         os.path.join(results_path, "copula_surface.pdf"), bbox_inches="tight"
-    #     )
-
-    #     (
-    #         data_figure,
-    #         normalized_data_figure,
-    #         pit_figure,
-    #         decorelated_data_figure,
-    #         latent_dist_figure,
-    #     ) = plot_trafos(model(x), x, y)
-
-    #     data_figure.savefig(os.path.join(results_path, "data_scatter.pdf"))
-    #     normalized_data_figure.savefig(
-    #         os.path.join(results_path, "normalized_data.pdf"), bbox_inches="tight"
-    #     )
-    #     pit_figure.savefig(os.path.join(results_path, "pit.pdf"))
-    #     decorelated_data_figure.savefig(
-    #         os.path.join(results_path, "decorelated_data.pdf"), bbox_inches="tight"
-    #     )
-    #     latent_dist_figure.savefig(
-    #         os.path.join(results_path, "latent_distribution.pdf"), bbox_inches="tight"
-    #     )
 
 
 def malnutrition_after_fit_hook(
@@ -237,15 +128,6 @@ def malnutrition_after_fit_hook(
     )
     fig.savefig(os.path.join(results_path, "samples.pdf"), bbox_inches="tight")
 
-    # fig = plot_marginal_cdf_and_pdf(
-    #     model=model,
-    #     covariates=[1, 3, 6, 9, 12, 24],
-    #     target_names=targets,
-    #     **plot_marginals_kwargs,
-    # )
-    # fig.savefig(
-    #     os.path.join(results_path, "malnutrition_dist.pdf"), bbox_inches="tight"
-    # )
 
 
 class MeanNegativeLogLikelihood(K.metrics.Mean):
@@ -284,6 +166,8 @@ class MeanNegativeLogLikelihood(K.metrics.Mean):
         log_probs = -dist.log_prob(y_true)
         super().update_state(log_probs, sample_weight)
 
+def make_dataset(ds, batch_size):
+    return ds.shuffle(10000).batch(batch_size, drop_remainder=True).cache().prefetch(tf.data.AUTOTUNE)
 
 def run(
     dataset_name: str,
@@ -342,19 +226,29 @@ def run(
         get_dataset_fn = get_benchmark_dataset
         get_dataset_kwargs = {
             "dataset_name": dataset_name,
-            "test_mode": test_mode,
+            # "test_mode": test_mode,
         }
-        batch_size = fit_kwargs.pop("batch_size")
+        if isinstance(fit_kwargs, dict):
+            batch_size = fit_kwargs.pop("batch_size")
+        elif isinstance(fit_kwargs, list):
+            batch_size = []
+            for fkw in fit_kwargs:
+                batch_size.append(fkw.pop("batch_size"))
 
-        def mk_ds(data):
-            return tf.data.Dataset.from_tensor_slices((tf.ones_like(data), data)).batch(
-                batch_size, drop_remainder=True
+        def mk_ds(data, batch_size):
+            return make_dataset(
+                tf.data.Dataset.from_tensor_slices((tf.ones_like(data), data)),
+                batch_size, 
             )
 
         def preprocess_dataset(data, model) -> dict:
+            if isinstance(fit_kwargs, dict):
+                bs = batch_size
+            else:
+                bs = batch_size[1] if model.joint_trainable else batch_size[0]
             return {
-                "x": mk_ds(data[0]),
-                "validation_data": mk_ds(data[1]),
+                "x": mk_ds(data[0], bs),
+                "validation_data": mk_ds(data[1], bs),
             }
 
         plot_data = None
@@ -367,27 +261,10 @@ def run(
         }
         batch_size = fit_kwargs.pop("batch_size")
 
-        # def my_loss(y, dist):
-        #     marginal_dist = tfd.Independent(
-        #         tfd.TransformedDistribution(
-        #             distribution=tfd.Normal(0, 1),
-        #             bijector=tfb.Invert(
-        #                 tfb.Chain(dist.bijector.bijector.bijectors[1:])
-        #             ),
-        #         ),
-        #         1,
-        #     )
-
-        #     return -dist.log_prob(y) - marginal_dist.log_prob(y)
-
-        # fit_kwargs.update(loss=my_loss)
-        # compile_kwargs.update(
-        #     metrics=[MeanNegativeLogLikelihood(name="nll")],
-        # )
-
         def mk_ds(data):
-            return tf.data.Dataset.from_tensor_slices((data[0], data[1])).batch(
-                batch_size, drop_remainder=True
+            return make_dataset(
+                tf.data.Dataset.from_tensor_slices((data[0], data[1])),
+                batch_size, 
             )
 
         def preprocess_dataset(data, model) -> dict:
@@ -467,33 +344,33 @@ def run(
             for fkw in fit_kwargs:
                 fkw.update(verbose=2)
 
-    p_gpus = tf.config.list_physical_devices("GPU")
-    for gpu in p_gpus:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    l_gpus = tf.config.list_logical_devices("GPU")
-    if len(l_gpus) > 0:
-        strategy_scope = tf.distribute.MirroredStrategy(l_gpus).scope()
-    else:
-        strategy_scope = nullcontext()
+    # p_gpus = tf.config.list_physical_devices("GPU")
+    # for gpu in p_gpus:
+    #     tf.config.experimental.set_memory_growth(gpu, True)
+    # l_gpus = tf.config.list_logical_devices("GPU")
+    # if len(l_gpus) > 0:
+    #     strategy_scope = tf.distribute.MirroredStrategy(l_gpus).scope()
+    # else:
+    #     strategy_scope = nullcontext()
 
-    with strategy_scope:
-        return pipeline(
-            experiment_name=experiment_name,
-            run_name=run_name,
-            results_path=results_path,
-            log_file=log_file,
-            seed=params["seed"],
-            get_dataset_fn=get_dataset_fn,
-            dataset_kwargs=get_dataset_kwargs,
-            get_model_fn=get_model,
-            model_kwargs=model_kwargs,
-            preprocess_dataset=preprocess_dataset,
-            fit_kwargs=fit_kwargs,
-            compile_kwargs=compile_kwargs,
-            plot_data=plot_data,
-            after_fit_hook=after_fit_hook,
-            two_stage_training=params.get("two_stage_training", False),
-        )
+    # with strategy_scope:
+    return pipeline(
+        experiment_name=experiment_name,
+        run_name=run_name,
+        results_path=results_path,
+        log_file=log_file,
+        seed=params["seed"],
+        get_dataset_fn=get_dataset_fn,
+        dataset_kwargs=get_dataset_kwargs,
+        get_model_fn=get_model,
+        model_kwargs=model_kwargs,
+        preprocess_dataset=preprocess_dataset,
+        fit_kwargs=fit_kwargs,
+        compile_kwargs=compile_kwargs,
+        plot_data=plot_data,
+        after_fit_hook=after_fit_hook,
+        two_stage_training=params.get("two_stage_training", False),
+    )
 
 
 # %% main ######################################################################
