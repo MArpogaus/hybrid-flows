@@ -53,9 +53,9 @@ stages:
     cmd: >-
       python scripts/evaluate_sim.py
       --log-level ${log-level}
-      --log-file train.log
+      --log-file evaluate.log
       --model-name ${item.model}
-      --stage-name train-sim@${key}
+      --stage-name eval-sim@${key}
       --dataset-type ${item.dataset.type}
       --dataset-name ${item.dataset.name}
       --results-path results/
@@ -138,6 +138,56 @@ stages:
     - results/${item.dataset.type}/${item.dataset.name}/${item.model}/model_checkpoint.weights.h5
     - results/${item.dataset.type}/${item.dataset.name}/${item.model}/train.log
 
+  eval-benchmark:
+    matrix:
+      dataset: ${benchmark_datasets}
+      model: ${benchmark_models}
+    cmd: >-
+      python scripts/evaluate_benchmark.py
+      --log-level ${log-level}
+      --log-file evaluate.log
+      --model-name ${item.model}
+      --stage-name eval-benchmark@${key}
+      --dataset-type benchmark
+      --dataset-type ${item.dataset.type}
+      --dataset-name ${item.dataset.name}
+      --results-path results/
+    params:
+    - log-level
+    - seed
+    - textwidth
+    - params/${item.dataset.type}/dataset.yaml:
+      - dataset_kwargs.${item.dataset.name}*
+    - params/${item.dataset.type}/${item.dataset.name}/${item.model}.yaml:
+    deps:
+    - scripts/train.py
+    - scripts/evaluate_benchmark.py
+    - ../pyproject.toml
+    - ../src/mctm/data/__init__.py
+    - ../src/mctm/data/benchmark.py
+    - ../src/mctm/utils/__init__.py
+    - ../src/mctm/utils/mlflow.py
+    - ../src/mctm/utils/tensorflow.py
+    - ../src/mctm/utils/visualisation.py
+    - ../src/mctm/utils/decorators.py
+    - ../src/mctm/utils/pipeline.py
+    - ../src/mctm/__init__.py
+    - ../src/mctm/preprocessing.py
+    - ../src/mctm/scheduler.py
+    - ../src/mctm/activations.py
+    - ../src/mctm/models.py
+    - ../src/mctm/nn.py
+    - ../src/mctm/parameters.py
+    - ../src/mctm/distributions.py
+    - datasets/${item.dataset.type}/${item.dataset.name}_train.npy
+    - datasets/${item.dataset.type}/${item.dataset.name}_validate.npy
+    - datasets/${item.dataset.type}/${item.dataset.name}_test.npy
+    - results/${item.dataset.type}/${item.dataset.name}/${item.model}/model_checkpoint.weights.h5
+    outs:
+    - results/${item.dataset.type}/${item.dataset.name}/${item.model}/eval_figures/
+    # metrics:
+    # - results/${item.dataset.type}/${item.dataset.name}/${item.model}/test_metrics.yaml
+
   train-malnutrition:
     foreach: ${malnutrition_models}
     do:
@@ -190,9 +240,9 @@ stages:
       cmd: >-
         python scripts/evaluate_malnutrition.py
         --log-level ${log-level}
-        --log-file train.log
+        --log-file evaluate.log
         --model-name ${item}
-        --stage-name train-malnutrition@${item}
+        --stage-name eval-malnutrition@${item}
         --dataset-type malnutrition
         --dataset-name india
         --results-path results/
