@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-01-21 13:23:59 (Marcel Arpogaus)
+# changed : 2025-01-22 14:27:27 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -22,6 +22,7 @@ import mlflow
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
+import yaml
 from tensorflow_probability import distributions as tfd
 
 from mctm.data.benchmark import get_dataset
@@ -99,6 +100,15 @@ def qq_plots(
     return fig
 
 
+def make_dataset(data, batch_size):
+    return (
+        tf.data.Dataset.from_tensor_slices((tf.ones_like(data), data))
+        .batch(batch_size, drop_remainder=True)
+        .cache()
+        .prefetch(tf.data.AUTOTUNE)
+    )
+
+
 def evaluate(
     dataset_name: str,
     dataset_type: str,
@@ -142,7 +152,7 @@ def evaluate(
     figure_path = os.path.join(results_path, "eval_figures/")
     os.makedirs(figure_path, exist_ok=True)
 
-    (train_data, validation_data, _), dims = get_dataset(dataset_name)
+    (train_data, validation_data, test_data), dims = get_dataset(dataset_name)
     Y = validation_data
 
     if "marginal_bijectors" in model_kwargs.keys():
@@ -160,6 +170,35 @@ def evaluate(
 
         model = get_model(dims=dims, **model_kwargs)
         model.load_weights(os.path.join(results_path, "model_checkpoint.weights.h5"))
+        model.compile(
+            loss=lambda y, dist: -dist.log_prob(y), **params["compile_kwargs"]
+        )
+
+        train_loss = model.evaluate(make_dataset(train_data, batch_size=2**10))
+        validation_loss = model.evaluate(
+            make_dataset(validation_data, batch_size=2**10)
+        )
+        test_loss = model.evaluate(make_dataset(test_data, batch_size=2**10))
+
+        __LOGGER__.info("train_loss: ", train_loss)
+        __LOGGER__.info("validation_loss: ", validation_loss)
+        __LOGGER__.info("test_loss: ", test_loss)
+
+        mlflow.log_metric("train_loss", train_loss)
+        mlflow.log_metric("validation_loss", validation_loss)
+        mlflow.log_metric("test_loss", test_loss)
+
+        with open(
+            os.path.join(results_path, "evaluation_metrics.yaml"), "w+"
+        ) as results_file:
+            yaml.dump(
+                {
+                    "validation_loss": validation_loss,
+                    "test_loss": test_loss,
+                    "train_loss": train_loss,
+                },
+                results_file,
+            )
 
         setup_latex(fontsize=10)
         figsize = get_figsize(params["textwidth"])
