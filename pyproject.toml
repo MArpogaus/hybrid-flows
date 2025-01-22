@@ -24,6 +24,10 @@ readme = 'README.md'
 requires-python = '>=3.7.0'
 
 [project.optional-dependencies]
+cuda = [
+  'mctm[train]',
+  'tensorflow[and-cuda]'
+]
 develop = [
   'mctm[train]',
   'commitizen',
@@ -49,10 +53,6 @@ test = [
 train = [
   'dvc[ssh]==3.*',
   'mlflow==2.*'
-]
-cuda = [
-  'mctm[train]',
-  'tensorflow[and-cuda]'
 ]
 
 [tool.commitizen]

@@ -15,16 +15,12 @@
 import argparse
 import logging
 import os
-from contextlib import nullcontext
 from functools import partial
 from typing import Any, Dict
 
 import numpy as np
-import pandas as pd
-import seaborn as sns
 import tensorflow as tf
 import tensorflow.keras as K
-from tensorflow_probability import distributions as tfd
 
 from mctm.data.benchmark import get_dataset as get_benchmark_dataset
 from mctm.data.malnutrion import get_dataset as get_malnutrition_dataset
@@ -129,7 +125,6 @@ def malnutrition_after_fit_hook(
     fig.savefig(os.path.join(results_path, "samples.pdf"), bbox_inches="tight")
 
 
-
 class MeanNegativeLogLikelihood(K.metrics.Mean):
     """Custom metric for mean negative log likelihood."""
 
@@ -166,8 +161,15 @@ class MeanNegativeLogLikelihood(K.metrics.Mean):
         log_probs = -dist.log_prob(y_true)
         super().update_state(log_probs, sample_weight)
 
+
 def make_dataset(ds, batch_size):
-    return ds.shuffle(10000).batch(batch_size, drop_remainder=True).cache().prefetch(tf.data.AUTOTUNE)
+    return (
+        ds.shuffle(10000)
+        .batch(batch_size, drop_remainder=True)
+        .cache()
+        .prefetch(tf.data.AUTOTUNE)
+    )
+
 
 def run(
     dataset_name: str,
@@ -238,7 +240,7 @@ def run(
         def mk_ds(data, batch_size):
             return make_dataset(
                 tf.data.Dataset.from_tensor_slices((tf.ones_like(data), data)),
-                batch_size, 
+                batch_size,
             )
 
         def preprocess_dataset(data, model) -> dict:
@@ -264,7 +266,7 @@ def run(
         def mk_ds(data):
             return make_dataset(
                 tf.data.Dataset.from_tensor_slices((data[0], data[1])),
-                batch_size, 
+                batch_size,
             )
 
         def preprocess_dataset(data, model) -> dict:
