@@ -7074,18 +7074,16 @@ stages:
       md5: 1ddced54de2505f61a29d3a2cc35959d
       size: 8635
   train-benchmark@dataset0-unconditional_masked_autoregressive_flow_quadratic_spline:
-    cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
-      benchmark-bsds300 --run-name unconditional_masked_autoregressive_flow_quadratic_spline_bsds300
-      --stage-name 
+    cmd: python scripts/train.py --log-level info --log-file train.log --model-name
+      unconditional_masked_autoregressive_flow_quadratic_spline --stage-name 
       train-benchmark@dataset0-unconditional_masked_autoregressive_flow_quadratic_spline
-      --dataset-type benchmark --dataset-name bsds300 --results-path 
-      results/benchmark/bsds300/unconditional_masked_autoregressive_flow_quadratic_spline
-      --test-mode true
+      --dataset-type benchmark --dataset-name bsds300 --results-path results/ --test-mode
+      false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 1bb8cefe554dc1c36064f36ce3518fca
-      size: 2100
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
     - path: ../src/mctm/__init__.py
       hash: md5
       md5: 50bfe848b7a3b24849bf3c51890564e5
@@ -7104,20 +7102,20 @@ stages:
       size: 2461
     - path: ../src/mctm/distributions.py
       hash: md5
-      md5: 0d4ff4172e3a859a3b4f065de6d812f9
-      size: 43692
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
     - path: ../src/mctm/models.py
       hash: md5
-      md5: c7f2f0e6665129b399432f06f678d4d0
-      size: 14118
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
     - path: ../src/mctm/nn.py
       hash: md5
       md5: e19e5322185ca8b0ca12ea054aa302b9
       size: 13279
     - path: ../src/mctm/parameters.py
       hash: md5
-      md5: bec689a85638f3d6fda317622b51f74d
-      size: 13349
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
     - path: ../src/mctm/preprocessing.py
       hash: md5
       md5: 395dbc40ef7a285ba1f11bb6c974eeb8
@@ -7128,28 +7126,28 @@ stages:
       size: 4211
     - path: ../src/mctm/utils/__init__.py
       hash: md5
-      md5: c697ac50e99dd1ba97a749c0a6dd4a28
-      size: 5768
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
     - path: ../src/mctm/utils/decorators.py
       hash: md5
       md5: 8f38fef6acf3e8cf79ef3b52290d32d0
       size: 3799
     - path: ../src/mctm/utils/mlflow.py
       hash: md5
-      md5: 21f9a348ffad2b7e63efd8b977332230
-      size: 2458
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
     - path: ../src/mctm/utils/pipeline.py
       hash: md5
-      md5: d10ee5e4bd333b5dcdc618c86ec94036
-      size: 11960
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
     - path: ../src/mctm/utils/tensorflow.py
       hash: md5
       md5: 01646f069ce1736f3bb3337625f8e9f3
       size: 6355
     - path: ../src/mctm/utils/visualisation.py
       hash: md5
-      md5: 309a92b943855a8121347b1516e4277f
-      size: 17052
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
     - path: datasets/benchmark/bsds300_train.npy
       hash: md5
       md5: 10d58c2a7b77aafde3461874f48c1f1d
@@ -7160,8 +7158,8 @@ stages:
       size: 12600128
     - path: scripts/train.py
       hash: md5
-      md5: 30d0130ef9fd3fc881e6f7137ce31117
-      size: 15730
+      md5: b637138ce90af3c130f303f205565b92
+      size: 17807
     params:
       params.yaml:
         log-level: info
@@ -7170,20 +7168,22 @@ stages:
       params/benchmark/bsds300/unconditional_masked_autoregressive_flow_quadratic_spline.yaml:
         compile_kwargs: {}
         fit_kwargs:
-          batch_size: 512
+          batch_size: 4096
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.0005
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
-          early_stopping: false
+          early_stopping: 30
           verbose: true
         model_kwargs:
           distribution: masked_autoregressive_flow
           num_layers: 10
+          use_invertible_linear_transformations: true
+          random_permutation_seed: 1
           bijector: RationalQuadraticSpline
           bijector_kwargs:
             range_min: -3
@@ -7206,18 +7206,18 @@ stages:
     - path: 
         results/benchmark/bsds300/unconditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 6951cb56ef7f25b909d1d64e0b31c768
-      size: 55
+      md5: 259814b822bab7864ae4f9d884ce66d9
+      size: 48
     - path: 
         results/benchmark/bsds300/unconditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: daf83aad527133a664010c64c5bd04d4
-      size: 124727432
+      md5: 78edd838ac1d412525907ba49b14c594
+      size: 125219632
     - path: 
         results/benchmark/bsds300/unconditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: fa1497117fac67c9cb968a57e29911e6
-      size: 10374
+      md5: ddb424f0767474beb19f52712c027a85
+      size: 13212
   train-benchmark@dataset0-unconditional_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       benchmark-bsds300 --run-name unconditional_coupling_flow_quadratic_spline_bsds300
@@ -7363,17 +7363,16 @@ stages:
       md5: 8f6f09456a4ded030436a730068507f6
       size: 24754
   train-benchmark@dataset1-unconditional_masked_autoregressive_flow_quadratic_spline:
-    cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
-      benchmark-gas --run-name unconditional_masked_autoregressive_flow_quadratic_spline_gas
-      --stage-name 
+    cmd: python scripts/train.py --log-level info --log-file train.log --model-name
+      unconditional_masked_autoregressive_flow_quadratic_spline --stage-name 
       train-benchmark@dataset1-unconditional_masked_autoregressive_flow_quadratic_spline
-      --dataset-type benchmark --dataset-name gas --results-path results/benchmark/gas/unconditional_masked_autoregressive_flow_quadratic_spline
-      --test-mode true
+      --dataset-type benchmark --dataset-name gas --results-path results/ --test-mode
+      false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 1bb8cefe554dc1c36064f36ce3518fca
-      size: 2100
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
     - path: ../src/mctm/__init__.py
       hash: md5
       md5: 50bfe848b7a3b24849bf3c51890564e5
@@ -7392,20 +7391,20 @@ stages:
       size: 2461
     - path: ../src/mctm/distributions.py
       hash: md5
-      md5: 0d4ff4172e3a859a3b4f065de6d812f9
-      size: 43692
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
     - path: ../src/mctm/models.py
       hash: md5
-      md5: c7f2f0e6665129b399432f06f678d4d0
-      size: 14118
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
     - path: ../src/mctm/nn.py
       hash: md5
       md5: e19e5322185ca8b0ca12ea054aa302b9
       size: 13279
     - path: ../src/mctm/parameters.py
       hash: md5
-      md5: bec689a85638f3d6fda317622b51f74d
-      size: 13349
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
     - path: ../src/mctm/preprocessing.py
       hash: md5
       md5: 395dbc40ef7a285ba1f11bb6c974eeb8
@@ -7416,28 +7415,28 @@ stages:
       size: 4211
     - path: ../src/mctm/utils/__init__.py
       hash: md5
-      md5: c697ac50e99dd1ba97a749c0a6dd4a28
-      size: 5768
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
     - path: ../src/mctm/utils/decorators.py
       hash: md5
       md5: 8f38fef6acf3e8cf79ef3b52290d32d0
       size: 3799
     - path: ../src/mctm/utils/mlflow.py
       hash: md5
-      md5: 21f9a348ffad2b7e63efd8b977332230
-      size: 2458
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
     - path: ../src/mctm/utils/pipeline.py
       hash: md5
-      md5: d10ee5e4bd333b5dcdc618c86ec94036
-      size: 11960
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
     - path: ../src/mctm/utils/tensorflow.py
       hash: md5
       md5: 01646f069ce1736f3bb3337625f8e9f3
       size: 6355
     - path: ../src/mctm/utils/visualisation.py
       hash: md5
-      md5: 309a92b943855a8121347b1516e4277f
-      size: 17052
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
     - path: datasets/benchmark/gas_train.npy
       hash: md5
       md5: 39954c6841382043fdca0f1be1437f8e
@@ -7448,8 +7447,8 @@ stages:
       size: 3030048
     - path: scripts/train.py
       hash: md5
-      md5: 30d0130ef9fd3fc881e6f7137ce31117
-      size: 15730
+      md5: b637138ce90af3c130f303f205565b92
+      size: 17807
     params:
       params.yaml:
         log-level: info
@@ -7462,20 +7461,22 @@ stages:
       params/benchmark/gas/unconditional_masked_autoregressive_flow_quadratic_spline.yaml:
         compile_kwargs: {}
         fit_kwargs:
-          batch_size: 512
+          batch_size: 4096
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.0005
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
-          early_stopping: false
+          early_stopping: 30
           verbose: true
         model_kwargs:
           distribution: masked_autoregressive_flow
           num_layers: 10
+          use_invertible_linear_transformations: true
+          random_permutation_seed: 1
           bijector: RationalQuadraticSpline
           bijector_kwargs:
             range_min: -3
@@ -7494,31 +7495,29 @@ stages:
     - path: 
         results/benchmark/gas/unconditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 01dd3110e15039e5e15dd2cd0a39b3f9
-      size: 54
+      md5: 2d80d23bd38f12d9fb188ae81ce4c2be
+      size: 55
     - path: 
         results/benchmark/gas/unconditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 6217f5411dbe49cb1124fb0b7f3b3ddf
-      size: 13920472
+      md5: 5ecf2e5c5b5205c8fbf0395e2a46c25c
+      size: 13942496
     - path: 
         results/benchmark/gas/unconditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: ff5d9769a43ab820ad896ac909dcb992
-      size: 10359
+      md5: 127916e0d24ec65223ca40f95e4833e4
+      size: 13195
   train-benchmark@dataset2-unconditional_masked_autoregressive_flow_quadratic_spline:
-    cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
-      benchmark-hepmass --run-name unconditional_masked_autoregressive_flow_quadratic_spline_hepmass
-      --stage-name 
+    cmd: python scripts/train.py --log-level info --log-file train.log --model-name
+      unconditional_masked_autoregressive_flow_quadratic_spline --stage-name 
       train-benchmark@dataset2-unconditional_masked_autoregressive_flow_quadratic_spline
-      --dataset-type benchmark --dataset-name hepmass --results-path 
-      results/benchmark/hepmass/unconditional_masked_autoregressive_flow_quadratic_spline
-      --test-mode true
+      --dataset-type benchmark --dataset-name hepmass --results-path results/ --test-mode
+      false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 1bb8cefe554dc1c36064f36ce3518fca
-      size: 2100
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
     - path: ../src/mctm/__init__.py
       hash: md5
       md5: 50bfe848b7a3b24849bf3c51890564e5
@@ -7537,20 +7536,20 @@ stages:
       size: 2461
     - path: ../src/mctm/distributions.py
       hash: md5
-      md5: 0d4ff4172e3a859a3b4f065de6d812f9
-      size: 43692
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
     - path: ../src/mctm/models.py
       hash: md5
-      md5: c7f2f0e6665129b399432f06f678d4d0
-      size: 14118
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
     - path: ../src/mctm/nn.py
       hash: md5
       md5: e19e5322185ca8b0ca12ea054aa302b9
       size: 13279
     - path: ../src/mctm/parameters.py
       hash: md5
-      md5: bec689a85638f3d6fda317622b51f74d
-      size: 13349
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
     - path: ../src/mctm/preprocessing.py
       hash: md5
       md5: 395dbc40ef7a285ba1f11bb6c974eeb8
@@ -7561,28 +7560,28 @@ stages:
       size: 4211
     - path: ../src/mctm/utils/__init__.py
       hash: md5
-      md5: c697ac50e99dd1ba97a749c0a6dd4a28
-      size: 5768
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
     - path: ../src/mctm/utils/decorators.py
       hash: md5
       md5: 8f38fef6acf3e8cf79ef3b52290d32d0
       size: 3799
     - path: ../src/mctm/utils/mlflow.py
       hash: md5
-      md5: 21f9a348ffad2b7e63efd8b977332230
-      size: 2458
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
     - path: ../src/mctm/utils/pipeline.py
       hash: md5
-      md5: d10ee5e4bd333b5dcdc618c86ec94036
-      size: 11960
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
     - path: ../src/mctm/utils/tensorflow.py
       hash: md5
       md5: 01646f069ce1736f3bb3337625f8e9f3
       size: 6355
     - path: ../src/mctm/utils/visualisation.py
       hash: md5
-      md5: 309a92b943855a8121347b1516e4277f
-      size: 17052
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
     - path: datasets/benchmark/hepmass_train.npy
       hash: md5
       md5: 21ee7ef1ffaf9ca5739b135de79b50eb
@@ -7593,8 +7592,8 @@ stages:
       size: 2941220
     - path: scripts/train.py
       hash: md5
-      md5: 30d0130ef9fd3fc881e6f7137ce31117
-      size: 15730
+      md5: b637138ce90af3c130f303f205565b92
+      size: 17807
     params:
       params.yaml:
         log-level: info
@@ -7607,20 +7606,22 @@ stages:
       params/benchmark/hepmass/unconditional_masked_autoregressive_flow_quadratic_spline.yaml:
         compile_kwargs: {}
         fit_kwargs:
-          batch_size: 64
+          batch_size: 4096
           epochs: 200
           learning_rate:
             scheduler_kwargs:
               decay_steps: 200
-              initial_learning_rate: 0.0005
+              initial_learning_rate: 0.001
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
-          early_stopping: false
+          early_stopping: 30
           verbose: true
         model_kwargs:
           distribution: masked_autoregressive_flow
           num_layers: 10
+          use_invertible_linear_transformations: true
+          random_permutation_seed: 1
           bijector: RationalQuadraticSpline
           bijector_kwargs:
             range_min: -3
@@ -7639,31 +7640,29 @@ stages:
     - path: 
         results/benchmark/hepmass/unconditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: edbf4bbd36d119f622626460c3c6cdd9
-      size: 52
+      md5: b13f72bad2ea07a14cae85046bbd3910
+      size: 53
     - path: 
         results/benchmark/hepmass/unconditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 9b8e84b8c0c1a28193dd601a9017fb03
-      size: 4511672
+      md5: 90f9b5b4d07b0344dcb353c2966d858a
+      size: 4577468
     - path: 
         results/benchmark/hepmass/unconditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: 7b50e0c5175ac57a983254586e18e9a2
-      size: 10547
+      md5: f360e6fd126ff2191d58434bae17a667
+      size: 13195
   train-benchmark@dataset3-unconditional_masked_autoregressive_flow_quadratic_spline:
-    cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
-      benchmark-miniboone --run-name unconditional_masked_autoregressive_flow_quadratic_spline_miniboone
-      --stage-name 
+    cmd: python scripts/train.py --log-level info --log-file train.log --model-name
+      unconditional_masked_autoregressive_flow_quadratic_spline --stage-name 
       train-benchmark@dataset3-unconditional_masked_autoregressive_flow_quadratic_spline
-      --dataset-type benchmark --dataset-name miniboone --results-path 
-      results/benchmark/miniboone/unconditional_masked_autoregressive_flow_quadratic_spline
-      --test-mode true
+      --dataset-type benchmark --dataset-name miniboone --results-path results/ --test-mode
+      false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 1bb8cefe554dc1c36064f36ce3518fca
-      size: 2100
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
     - path: ../src/mctm/__init__.py
       hash: md5
       md5: 50bfe848b7a3b24849bf3c51890564e5
@@ -7682,20 +7681,20 @@ stages:
       size: 2461
     - path: ../src/mctm/distributions.py
       hash: md5
-      md5: 0d4ff4172e3a859a3b4f065de6d812f9
-      size: 43692
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
     - path: ../src/mctm/models.py
       hash: md5
-      md5: c7f2f0e6665129b399432f06f678d4d0
-      size: 14118
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
     - path: ../src/mctm/nn.py
       hash: md5
       md5: e19e5322185ca8b0ca12ea054aa302b9
       size: 13279
     - path: ../src/mctm/parameters.py
       hash: md5
-      md5: bec689a85638f3d6fda317622b51f74d
-      size: 13349
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
     - path: ../src/mctm/preprocessing.py
       hash: md5
       md5: 395dbc40ef7a285ba1f11bb6c974eeb8
@@ -7706,28 +7705,28 @@ stages:
       size: 4211
     - path: ../src/mctm/utils/__init__.py
       hash: md5
-      md5: c697ac50e99dd1ba97a749c0a6dd4a28
-      size: 5768
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
     - path: ../src/mctm/utils/decorators.py
       hash: md5
       md5: 8f38fef6acf3e8cf79ef3b52290d32d0
       size: 3799
     - path: ../src/mctm/utils/mlflow.py
       hash: md5
-      md5: 21f9a348ffad2b7e63efd8b977332230
-      size: 2458
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
     - path: ../src/mctm/utils/pipeline.py
       hash: md5
-      md5: d10ee5e4bd333b5dcdc618c86ec94036
-      size: 11960
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
     - path: ../src/mctm/utils/tensorflow.py
       hash: md5
       md5: 01646f069ce1736f3bb3337625f8e9f3
       size: 6355
     - path: ../src/mctm/utils/visualisation.py
       hash: md5
-      md5: 309a92b943855a8121347b1516e4277f
-      size: 17052
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
     - path: datasets/benchmark/miniboone_train.npy
       hash: md5
       md5: 34d2db1b9624a6600d4fa650460d96d8
@@ -7738,8 +7737,8 @@ stages:
       size: 564976
     - path: scripts/train.py
       hash: md5
-      md5: 30d0130ef9fd3fc881e6f7137ce31117
-      size: 15730
+      md5: b637138ce90af3c130f303f205565b92
+      size: 17807
     params:
       params.yaml:
         log-level: info
@@ -7752,7 +7751,7 @@ stages:
       params/benchmark/miniboone/unconditional_masked_autoregressive_flow_quadratic_spline.yaml:
         compile_kwargs: {}
         fit_kwargs:
-          batch_size: 128
+          batch_size: 512
           epochs: 200
           learning_rate:
             scheduler_kwargs:
@@ -7761,11 +7760,13 @@ stages:
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
-          early_stopping: false
+          early_stopping: 30
           verbose: true
         model_kwargs:
           distribution: masked_autoregressive_flow
           num_layers: 10
+          use_invertible_linear_transformations: true
+          random_permutation_seed: 1
           bijector: RationalQuadraticSpline
           bijector_kwargs:
             range_min: -3
@@ -7784,18 +7785,18 @@ stages:
     - path: 
         results/benchmark/miniboone/unconditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 5a5e3648e343c85bd34c4eb7c9191c11
-      size: 52
+      md5: 03e866ec48798ed4d58e143694438793
+      size: 53
     - path: 
         results/benchmark/miniboone/unconditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: e5633d150860643480f6bb637d937b6a
-      size: 4602632
+      md5: 45a32e0ae82c81f2eaf820cf85305d7f
+      size: 4839188
     - path: 
         results/benchmark/miniboone/unconditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: d1bdd2b6cdd115fd7ee7d73b9d552e3b
-      size: 10549
+      md5: c8df1d91397fa8647f2ee25c2ec847db
+      size: 13199
   train-benchmark@dataset4-unconditional_coupling_flow_quadratic_spline:
     cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
       benchmark-power --run-name unconditional_coupling_flow_quadratic_spline_power
@@ -8373,18 +8374,16 @@ stages:
       md5: a367ea8de5613bc97675befef116d655
       size: 24951
   train-benchmark@dataset4-unconditional_masked_autoregressive_flow_quadratic_spline:
-    cmd: python scripts/train.py --log-level info --log-file train.log --experiment-name
-      benchmark-power --run-name unconditional_masked_autoregressive_flow_quadratic_spline_power
-      --stage-name 
+    cmd: python scripts/train.py --log-level info --log-file train.log --model-name
+      unconditional_masked_autoregressive_flow_quadratic_spline --stage-name 
       train-benchmark@dataset4-unconditional_masked_autoregressive_flow_quadratic_spline
-      --dataset-type benchmark --dataset-name power --results-path 
-      results/benchmark/power/unconditional_masked_autoregressive_flow_quadratic_spline
-      --test-mode true
+      --dataset-type benchmark --dataset-name power --results-path results/ --test-mode
+      false
     deps:
     - path: ../pyproject.toml
       hash: md5
-      md5: 1bb8cefe554dc1c36064f36ce3518fca
-      size: 2100
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
     - path: ../src/mctm/__init__.py
       hash: md5
       md5: 50bfe848b7a3b24849bf3c51890564e5
@@ -8403,20 +8402,20 @@ stages:
       size: 2461
     - path: ../src/mctm/distributions.py
       hash: md5
-      md5: 0d4ff4172e3a859a3b4f065de6d812f9
-      size: 43692
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
     - path: ../src/mctm/models.py
       hash: md5
-      md5: c7f2f0e6665129b399432f06f678d4d0
-      size: 14118
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
     - path: ../src/mctm/nn.py
       hash: md5
       md5: e19e5322185ca8b0ca12ea054aa302b9
       size: 13279
     - path: ../src/mctm/parameters.py
       hash: md5
-      md5: bec689a85638f3d6fda317622b51f74d
-      size: 13349
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
     - path: ../src/mctm/preprocessing.py
       hash: md5
       md5: 395dbc40ef7a285ba1f11bb6c974eeb8
@@ -8427,28 +8426,28 @@ stages:
       size: 4211
     - path: ../src/mctm/utils/__init__.py
       hash: md5
-      md5: c697ac50e99dd1ba97a749c0a6dd4a28
-      size: 5768
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
     - path: ../src/mctm/utils/decorators.py
       hash: md5
       md5: 8f38fef6acf3e8cf79ef3b52290d32d0
       size: 3799
     - path: ../src/mctm/utils/mlflow.py
       hash: md5
-      md5: 21f9a348ffad2b7e63efd8b977332230
-      size: 2458
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
     - path: ../src/mctm/utils/pipeline.py
       hash: md5
-      md5: d10ee5e4bd333b5dcdc618c86ec94036
-      size: 11960
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
     - path: ../src/mctm/utils/tensorflow.py
       hash: md5
       md5: 01646f069ce1736f3bb3337625f8e9f3
       size: 6355
     - path: ../src/mctm/utils/visualisation.py
       hash: md5
-      md5: 309a92b943855a8121347b1516e4277f
-      size: 17052
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
     - path: datasets/benchmark/power_train.npy
       hash: md5
       md5: b4e926bbb226067d4f02b51fa2849ca2
@@ -8459,8 +8458,8 @@ stages:
       size: 4426568
     - path: scripts/train.py
       hash: md5
-      md5: 30d0130ef9fd3fc881e6f7137ce31117
-      size: 15730
+      md5: b637138ce90af3c130f303f205565b92
+      size: 17807
     params:
       params.yaml:
         log-level: info
@@ -8473,7 +8472,7 @@ stages:
       params/benchmark/power/unconditional_masked_autoregressive_flow_quadratic_spline.yaml:
         compile_kwargs: {}
         fit_kwargs:
-          batch_size: 512
+          batch_size: 4096
           epochs: 200
           learning_rate:
             scheduler_kwargs:
@@ -8482,11 +8481,13 @@ stages:
             scheduler_name: cosine_decay
           monitor: val_loss
           reduce_lr_on_plateau: false
-          early_stopping: false
+          early_stopping: 30
           verbose: true
         model_kwargs:
           distribution: masked_autoregressive_flow
           num_layers: 10
+          use_invertible_linear_transformations: true
+          random_permutation_seed: 1
           bijector: RationalQuadraticSpline
           bijector_kwargs:
             range_min: -3
@@ -8505,18 +8506,18 @@ stages:
     - path: 
         results/benchmark/power/unconditional_masked_autoregressive_flow_quadratic_spline/metrics.yaml
       hash: md5
-      md5: 0c1480b66d66ae570d6857e2fc68c816
-      size: 52
+      md5: 633941d2c84210cb947334f5a4e681b3
+      size: 56
     - path: 
         results/benchmark/power/unconditional_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
       hash: md5
-      md5: 9f7fa7469bde01fee65527c848d98820
-      size: 36087488
+      md5: a3fd9c67a74c22a1a6ade74de5e09dbd
+      size: 36106104
     - path: 
         results/benchmark/power/unconditional_masked_autoregressive_flow_quadratic_spline/train.log
       hash: md5
-      md5: aab951b38bef8b9955659e7d0d31513f
-      size: 10352
+      md5: 85223c1fb2bbb178edcb3958a9f37cf8
+      size: 13199
   train-sim@dataset0-conditional_multivariate_transformation_model:
     cmd: python scripts/train.py --log-level info --log-file train.log --model-name
       conditional_multivariate_transformation_model --stage-name train-sim@dataset0-conditional_multivariate_transformation_model
@@ -16346,3 +16347,2154 @@ stages:
       md5: e9e2eee5d8a83248daa2d7fabc4a1593.dir
       size: 6008721
       nfiles: 8
+  train-benchmark@dataset1-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline:
+    cmd: python scripts/train.py --log-level info --log-file train.log --model-name
+      unconditional_hybrid_masked_autoregressive_flow_quadratic_spline --stage-name
+      train-benchmark@dataset1-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --dataset-type benchmark --dataset-name gas --results-path results/ --test-mode
+      false
+    deps:
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
+    - path: ../src/mctm/__init__.py
+      hash: md5
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/benchmark.py
+      hash: md5
+      md5: 68a2414c23a1d225de633677f541c81f
+      size: 2461
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 01646f069ce1736f3bb3337625f8e9f3
+      size: 6355
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
+    - path: datasets/benchmark/gas_train.npy
+      hash: md5
+      md5: 39954c6841382043fdca0f1be1437f8e
+      size: 27269696
+    - path: datasets/benchmark/gas_validate.npy
+      hash: md5
+      md5: c95b50d7b13d07ab0c52f4b5daf4379d
+      size: 3030048
+    - path: scripts/train.py
+      hash: md5
+      md5: 5d2a1bcbeb9ab939da926d20473d233d
+      size: 13535
+    params:
+      params.yaml:
+        log-level: info
+        seed: 1
+        textwidth: 487.8225
+      params/benchmark/dataset.yaml:
+        dataset_kwargs.gas*:
+          scale: 0.007
+          shift: 5.191
+      params/benchmark/gas/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml:
+        compile_kwargs: {}
+        fit_kwargs:
+        - batch_size: 16384
+          epochs: 1000
+          learning_rate: 0.1
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        - batch_size: 4096
+          epochs: 200
+          learning_rate:
+            scheduler_kwargs:
+              decay_steps: 200
+              initial_learning_rate: 0.001
+            scheduler_name: cosine_decay
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        model_kwargs:
+          marginal_bijectors:
+          - bijector: BernsteinPolynomial
+            invert: true
+            bijector_kwargs:
+              domain:
+              - - -3.1
+                - -1.1
+                - -6.1
+                - -3.1
+                - -2.1
+                - -3.1
+                - -3.1
+                - -3.1
+              - - 2.1
+                - 18.1
+                - 3.1
+                - 111.1
+                - 133.1
+                - 110.1
+                - 3.1
+                - 3.1
+              extrapolation: true
+            parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+            parameters_constraint_fn_kwargs:
+              allow_flexible_bounds: false
+              bounds: smooth
+              high: 4
+              low: -4
+            parameters_fn: parameter_vector
+            parameters_fn_kwargs:
+              dtype: float32
+              parameter_shape:
+              - 8
+              - 2048
+          joint_flow_type: masked_autoregressive_flow_first_dim_masked
+          joint_bijectors:
+            num_layers: 10
+            use_invertible_linear_transformations: true
+            random_permutation_seed: 1
+            bijector: RationalQuadraticSpline
+            bijector_kwargs:
+              range_min: -4
+            parameters_constraint_fn_kwargs:
+              interval_width: 8
+              min_slope: 0.001
+              min_bin_width: 0.001
+              nbins: 8
+            num_parameters: 23
+            maf_parameters_fn_kwargs:
+              activation: relu
+              hidden_units:
+              - 512
+              - 512
+              dtype: float32
+            x0_parameters_fn_kwargs:
+              activation: relu
+              batch_norm: false
+              dropout: false
+              hidden_units:
+              - 512
+              - 512
+              dtype: float32
+        two_stage_training: true
+    outs:
+    - path: 
+        results/benchmark/gas/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/metrics.yaml
+      hash: md5
+      md5: d174a4dd291b51fef2d03b52355fe528
+      size: 56
+    - path: 
+        results/benchmark/gas/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
+      hash: md5
+      md5: 37d415453de8deb2fd4a5e5acc9c035d
+      size: 46247712
+    - path: 
+        results/benchmark/gas/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/train.log
+      hash: md5
+      md5: c343b7f383b0fab1d4715abdacc7c44e
+      size: 18188
+  train-benchmark@dataset4-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline:
+    cmd: python scripts/train.py --log-level info --log-file train.log --model-name
+      unconditional_hybrid_masked_autoregressive_flow_quadratic_spline --stage-name
+      train-benchmark@dataset4-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --dataset-type benchmark --dataset-name power --results-path results/ --test-mode
+      false
+    deps:
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
+    - path: ../src/mctm/__init__.py
+      hash: md5
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/benchmark.py
+      hash: md5
+      md5: 68a2414c23a1d225de633677f541c81f
+      size: 2461
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 01646f069ce1736f3bb3337625f8e9f3
+      size: 6355
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
+    - path: datasets/benchmark/power_train.npy
+      hash: md5
+      md5: b4e926bbb226067d4f02b51fa2849ca2
+      size: 39838136
+    - path: datasets/benchmark/power_validate.npy
+      hash: md5
+      md5: a39220ef08007fba1768aef08f9c91cf
+      size: 4426568
+    - path: scripts/train.py
+      hash: md5
+      md5: 5d2a1bcbeb9ab939da926d20473d233d
+      size: 13535
+    params:
+      params.yaml:
+        log-level: info
+        seed: 1
+        textwidth: 487.8225
+      params/benchmark/dataset.yaml:
+        dataset_kwargs.power*:
+          scale: 0.05
+          shift: 5.456
+      params/benchmark/power/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml:
+        compile_kwargs: {}
+        fit_kwargs:
+        - batch_size: 16384
+          epochs: 1000
+          learning_rate: 0.1
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        - batch_size: 4096
+          epochs: 200
+          learning_rate:
+            scheduler_kwargs:
+              decay_steps: 200
+              initial_learning_rate: 0.0005
+            scheduler_name: cosine_decay
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        model_kwargs:
+          marginal_bijectors:
+          - bijector: BernsteinPolynomial
+            invert: true
+            bijector_kwargs:
+              domain:
+              - - -1.1
+                - -6.1
+                - -1.1
+                - -1.1
+                - -1.1
+                - -2.1
+              - - 10.1
+                - 5.1
+                - 15.1
+                - 14.1
+                - 3.1
+                - 2.1
+              extrapolation: true
+            parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+            parameters_constraint_fn_kwargs:
+              allow_flexible_bounds: false
+              bounds: smooth
+              high: 4
+              low: -4
+            parameters_fn: parameter_vector
+            parameters_fn_kwargs:
+              dtype: float32
+              parameter_shape:
+              - 6
+              - 2048
+          joint_flow_type: masked_autoregressive_flow_first_dim_masked
+          joint_bijectors:
+            num_layers: 10
+            use_invertible_linear_transformations: true
+            random_permutation_seed: 1
+            bijector: RationalQuadraticSpline
+            bijector_kwargs:
+              range_min: -4
+            parameters_constraint_fn_kwargs:
+              interval_width: 8
+              min_slope: 0.001
+              min_bin_width: 0.001
+              nbins: 8
+            num_parameters: 23
+            maf_parameters_fn_kwargs:
+              activation: relu
+              hidden_units:
+              - 256
+              - 256
+              dtype: float32
+            x0_parameters_fn_kwargs:
+              activation: relu
+              batch_norm: false
+              dropout: false
+              hidden_units:
+              - 256
+              - 256
+              dtype: float32
+        two_stage_training: true
+    outs:
+    - path: 
+        results/benchmark/power/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/metrics.yaml
+      hash: md5
+      md5: 04347a06fd4be48ca1e1a390a56ed0b4
+      size: 56
+    - path: 
+        results/benchmark/power/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
+      hash: md5
+      md5: 7330056c2161bc50806b601d993e3b21
+      size: 12925428
+    - path: 
+        results/benchmark/power/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/train.log
+      hash: md5
+      md5: bf4d2c7623b25ef4951faca6c8872bad
+      size: 17871
+  train-benchmark@dataset0-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline:
+    cmd: python scripts/train.py --log-level info --log-file train.log --model-name
+      unconditional_hybrid_masked_autoregressive_flow_quadratic_spline --stage-name
+      train-benchmark@dataset0-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --dataset-type benchmark --dataset-name bsds300 --results-path results/ --test-mode
+      false
+    deps:
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
+    - path: ../src/mctm/__init__.py
+      hash: md5
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/benchmark.py
+      hash: md5
+      md5: 68a2414c23a1d225de633677f541c81f
+      size: 2461
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 01646f069ce1736f3bb3337625f8e9f3
+      size: 6355
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
+    - path: datasets/benchmark/bsds300_train.npy
+      hash: md5
+      md5: 10d58c2a7b77aafde3461874f48c1f1d
+      size: 252000128
+    - path: datasets/benchmark/bsds300_validate.npy
+      hash: md5
+      md5: e9fcc5f84740aa2ee46be1e58fe07962
+      size: 12600128
+    - path: scripts/train.py
+      hash: md5
+      md5: 5d2a1bcbeb9ab939da926d20473d233d
+      size: 13535
+    params:
+      params.yaml:
+        log-level: info
+        seed: 1
+        textwidth: 487.8225
+      params/benchmark/bsds300/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml:
+        compile_kwargs: {}
+        fit_kwargs:
+        - batch_size: 16384
+          epochs: 1000
+          learning_rate: 0.1
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        - batch_size: 4096
+          epochs: 200
+          learning_rate:
+            scheduler_kwargs:
+              decay_steps: 200
+              initial_learning_rate: 0.001
+            scheduler_name: cosine_decay
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        model_kwargs:
+          marginal_bijectors:
+          - bijector: BernsteinPolynomial
+            invert: true
+            bijector_kwargs:
+              domain:
+              - -1
+              - 1
+              extrapolation: true
+            parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+            parameters_constraint_fn_kwargs:
+              allow_flexible_bounds: false
+              bounds: smooth
+              high: 4
+              low: -4
+            parameters_fn: parameter_vector
+            parameters_fn_kwargs:
+              dtype: float32
+              parameter_shape:
+              - 63
+              - 2048
+          joint_flow_type: masked_autoregressive_flow_first_dim_masked
+          joint_bijectors:
+            num_layers: 10
+            use_invertible_linear_transformations: true
+            random_permutation_seed: 1
+            bijector: RationalQuadraticSpline
+            bijector_kwargs:
+              range_min: -4
+            parameters_constraint_fn_kwargs:
+              interval_width: 8
+              min_slope: 0.001
+              min_bin_width: 0.001
+              nbins: 8
+            num_parameters: 23
+            maf_parameters_fn_kwargs:
+              activation: relu
+              hidden_units:
+              - 512
+              - 512
+              dtype: float32
+            x0_parameters_fn_kwargs:
+              activation: relu
+              batch_norm: false
+              dropout: false
+              hidden_units:
+              - 512
+              - 512
+              dtype: float32
+        two_stage_training: true
+      params/benchmark/dataset.yaml:
+        dataset_kwargs.bsds300*:
+          scale: 0.537
+          shift: 0.914
+    outs:
+    - path: 
+        results/benchmark/bsds300/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/metrics.yaml
+      hash: md5
+      md5: 103c5f897b7bb65ccdcf65c05a395afb
+      size: 55
+    - path: 
+        results/benchmark/bsds300/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
+      hash: md5
+      md5: 4daedb900dfcc3a222fd1c765efd0260
+      size: 136194696
+    - path: 
+        results/benchmark/bsds300/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/train.log
+      hash: md5
+      md5: d545f83167b016bd49d27a2ebd99aa26
+      size: 16611
+  train-benchmark@dataset3-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline:
+    cmd: python scripts/train.py --log-level info --log-file train.log --model-name
+      unconditional_hybrid_masked_autoregressive_flow_quadratic_spline --stage-name
+      train-benchmark@dataset3-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --dataset-type benchmark --dataset-name miniboone --results-path results/ --test-mode
+      false
+    deps:
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
+    - path: ../src/mctm/__init__.py
+      hash: md5
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/benchmark.py
+      hash: md5
+      md5: 68a2414c23a1d225de633677f541c81f
+      size: 2461
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 01646f069ce1736f3bb3337625f8e9f3
+      size: 6355
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
+    - path: datasets/benchmark/miniboone_train.npy
+      hash: md5
+      md5: 34d2db1b9624a6600d4fa650460d96d8
+      size: 5083760
+    - path: datasets/benchmark/miniboone_validate.npy
+      hash: md5
+      md5: 081b95e805cef3dcad8c9e4df84aab7a
+      size: 564976
+    - path: scripts/train.py
+      hash: md5
+      md5: 5d2a1bcbeb9ab939da926d20473d233d
+      size: 13535
+    params:
+      params.yaml:
+        log-level: info
+        seed: 1
+        textwidth: 487.8225
+      params/benchmark/dataset.yaml:
+        dataset_kwargs.miniboone*:
+          scale: 0.018
+          shift: 23.507
+      params/benchmark/miniboone/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml:
+        compile_kwargs: {}
+        fit_kwargs:
+        - batch_size: 512
+          epochs: 2000
+          learning_rate: 0.01
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        - batch_size: 512
+          epochs: 200
+          learning_rate:
+            scheduler_kwargs:
+              decay_steps: 200
+              initial_learning_rate: 0.0005
+            scheduler_name: cosine_decay
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        model_kwargs:
+          marginal_bijectors:
+          - bijector: BernsteinPolynomial
+            invert: true
+            bijector_kwargs:
+              domain:
+              - - -3.1
+                - -2.1
+                - -1.1
+                - -4.1
+                - -2.1
+                - -4.1
+                - -7.1
+                - -5.1
+                - -4.1
+                - -7.1
+                - -2.1
+                - -4.1
+                - -2.1
+                - -2.1
+                - -2.1
+                - -1.1
+                - -5.1
+                - -7.1
+                - -12.1
+                - -7.1
+                - -3.1
+                - -18.1
+                - -24.1
+                - -3.1
+                - -4.1
+                - -6.1
+                - -3.1
+                - -8.1
+                - -2.1
+                - -4.1
+                - -4.1
+                - -3.1
+                - -6.1
+                - -4.1
+                - -4.1
+                - -4.1
+                - -12.1
+                - -2.1
+                - -2.1
+                - -22.1
+                - -2.1
+                - -8.1
+                - -6.1
+              - - 11.1
+                - 9.1
+                - 15.1
+                - 10.1
+                - 11.1
+                - 6.1
+                - 3.1
+                - 8.1
+                - 8.1
+                - 11.1
+                - 4.1
+                - 1.1
+                - 10.1
+                - 6.1
+                - 6.1
+                - 32.1
+                - 8.1
+                - 7.1
+                - 13.1
+                - 6.1
+                - 14.1
+                - 1.1
+                - 5.1
+                - 9.1
+                - 12.1
+                - 9.1
+                - 10.1
+                - 5.1
+                - 10.1
+                - 2.1
+                - 6.1
+                - 8.1
+                - 4.1
+                - 13.1
+                - 12.1
+                - 5.1
+                - 7.1
+                - 18.1
+                - 19.1
+                - 4.1
+                - 10.1
+                - 20.1
+                - 6.1
+              extrapolation: true
+            parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+            parameters_constraint_fn_kwargs:
+              allow_flexible_bounds: false
+              bounds: smooth
+              high: 4
+              low: -4
+            parameters_fn: parameter_vector
+            parameters_fn_kwargs:
+              dtype: float32
+              parameter_shape:
+              - 43
+              - 2048
+          joint_flow_type: masked_autoregressive_flow_first_dim_masked
+          joint_bijectors:
+            num_layers: 10
+            use_invertible_linear_transformations: true
+            random_permutation_seed: 1
+            bijector: RationalQuadraticSpline
+            bijector_kwargs:
+              range_min: -4
+            parameters_constraint_fn_kwargs:
+              interval_width: 8
+              min_slope: 0.001
+              min_bin_width: 0.001
+              nbins: 8
+            num_parameters: 23
+            maf_parameters_fn_kwargs:
+              activation: relu
+              hidden_units:
+              - 64
+              - 64
+              dtype: float32
+            x0_parameters_fn_kwargs:
+              activation: relu
+              batch_norm: false
+              dropout: false
+              hidden_units:
+              - 64
+              - 64
+              dtype: float32
+        two_stage_training: true
+    outs:
+    - path: 
+        results/benchmark/miniboone/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/metrics.yaml
+      hash: md5
+      md5: 7daafab6e01ea065fc67e5430763851a
+      size: 53
+    - path: 
+        results/benchmark/miniboone/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
+      hash: md5
+      md5: 5a5e7fffeb8e3c01e4de1e0f232b8dc9
+      size: 9833048
+    - path: 
+        results/benchmark/miniboone/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/train.log
+      hash: md5
+      md5: 2d0e32a6db1d9dfd396ad0763ffb49c7
+      size: 23569
+  train-benchmark@dataset2-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline:
+    cmd: python scripts/train.py --log-level info --log-file train.log --model-name
+      unconditional_hybrid_masked_autoregressive_flow_quadratic_spline --stage-name
+      train-benchmark@dataset2-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --dataset-type benchmark --dataset-name hepmass --results-path results/ --test-mode
+      false
+    deps:
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
+    - path: ../src/mctm/__init__.py
+      hash: md5
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/benchmark.py
+      hash: md5
+      md5: 68a2414c23a1d225de633677f541c81f
+      size: 2461
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 01646f069ce1736f3bb3337625f8e9f3
+      size: 6355
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
+    - path: datasets/benchmark/hepmass_train.npy
+      hash: md5
+      md5: 21ee7ef1ffaf9ca5739b135de79b50eb
+      size: 26470460
+    - path: datasets/benchmark/hepmass_validate.npy
+      hash: md5
+      md5: 3033bad39164ab11597724b09f1db3a4
+      size: 2941220
+    - path: scripts/train.py
+      hash: md5
+      md5: 5d2a1bcbeb9ab939da926d20473d233d
+      size: 13535
+    params:
+      params.yaml:
+        log-level: info
+        seed: 1
+        textwidth: 487.8225
+      params/benchmark/dataset.yaml:
+        dataset_kwargs.hepmass*:
+          scale: 0.054
+          shift: 8.063
+      params/benchmark/hepmass/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml:
+        compile_kwargs: {}
+        fit_kwargs:
+        - batch_size: 16384
+          epochs: 2000
+          learning_rate: 0.1
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        - batch_size: 4096
+          epochs: 200
+          learning_rate:
+            scheduler_kwargs:
+              decay_steps: 200
+              initial_learning_rate: 0.001
+            scheduler_name: cosine_decay
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        model_kwargs:
+          marginal_bijectors:
+          - bijector: BernsteinPolynomial
+            invert: true
+            bijector_kwargs:
+              domain:
+              - - -3.1
+                - -3.1
+                - -2.1
+                - -9.1
+                - -2.1
+                - -6.1
+                - -4.1
+                - -2.1
+                - -5.1
+                - -3.1
+                - -2.1
+                - -4.1
+                - -3.1
+                - -2.1
+                - -3.1
+                - -3.1
+                - -2.1
+                - -4.1
+                - -4.1
+                - -6.1
+                - -3.1
+              - - 4.1
+                - 3.1
+                - 2.1
+                - 3.1
+                - 2.1
+                - 5.1
+                - 4.1
+                - 2.1
+                - 5.1
+                - 3.1
+                - 2.1
+                - 5.1
+                - 3.1
+                - 2.1
+                - 5.1
+                - 3.1
+                - 2.1
+                - 6.1
+                - 8.1
+                - 10.1
+                - 5.1
+              extrapolation: true
+            parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+            parameters_constraint_fn_kwargs:
+              allow_flexible_bounds: false
+              bounds: smooth
+              high: 4
+              low: -4
+            parameters_fn: parameter_vector
+            parameters_fn_kwargs:
+              dtype: float32
+              parameter_shape:
+              - 21
+              - 2048
+          joint_flow_type: masked_autoregressive_flow_first_dim_masked
+          joint_bijectors:
+            num_layers: 10
+            use_invertible_linear_transformations: true
+            random_permutation_seed: 1
+            bijector: RationalQuadraticSpline
+            bijector_kwargs:
+              range_min: -4
+            parameters_constraint_fn_kwargs:
+              interval_width: 8
+              min_slope: 0.001
+              min_bin_width: 0.001
+              nbins: 8
+            num_parameters: 23
+            maf_parameters_fn_kwargs:
+              activation: relu
+              hidden_units:
+              - 64
+              - 64
+              dtype: float32
+            x0_parameters_fn_kwargs:
+              activation: relu
+              batch_norm: false
+              dropout: false
+              hidden_units:
+              - 64
+              - 64
+              dtype: float32
+        two_stage_training: true
+    outs:
+    - path: 
+        results/benchmark/hepmass/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/metrics.yaml
+      hash: md5
+      md5: a2d94091cb0d7a2f5011aba670cfc10f
+      size: 54
+    - path: 
+        results/benchmark/hepmass/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
+      hash: md5
+      md5: 2879b78c6f5ebae1483e7388f882967b
+      size: 4977848
+    - path: 
+        results/benchmark/hepmass/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/train.log
+      hash: md5
+      md5: 9ccb98783156e21ff02ab6b6447460a1
+      size: 20049
+  eval-benchmark@dataset3-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline:
+    cmd: python scripts/evaluate_benchmark.py --log-level info --log-file evaluate.log
+      --model-name unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --stage-name 
+      eval-benchmark@dataset3-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --dataset-type benchmark --dataset-type benchmark --dataset-name miniboone --results-path
+      results/
+    deps:
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
+    - path: ../src/mctm/__init__.py
+      hash: md5
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/benchmark.py
+      hash: md5
+      md5: 68a2414c23a1d225de633677f541c81f
+      size: 2461
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 01646f069ce1736f3bb3337625f8e9f3
+      size: 6355
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
+    - path: datasets/benchmark/miniboone_test.npy
+      hash: md5
+      md5: f30275cd143cca95848f60ab0b35281c
+      size: 627584
+    - path: datasets/benchmark/miniboone_train.npy
+      hash: md5
+      md5: 34d2db1b9624a6600d4fa650460d96d8
+      size: 5083760
+    - path: datasets/benchmark/miniboone_validate.npy
+      hash: md5
+      md5: 081b95e805cef3dcad8c9e4df84aab7a
+      size: 564976
+    - path: 
+        results/benchmark/miniboone/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
+      hash: md5
+      md5: 5a5e7fffeb8e3c01e4de1e0f232b8dc9
+      size: 9833048
+    - path: scripts/evaluate_benchmark.py
+      hash: md5
+      md5: c9f0435b02abf0913433c635e44f9c54
+      size: 7928
+    - path: scripts/train.py
+      hash: md5
+      md5: 5d2a1bcbeb9ab939da926d20473d233d
+      size: 13535
+    params:
+      params.yaml:
+        log-level: info
+        seed: 1
+        textwidth: 487.8225
+      params/benchmark/dataset.yaml:
+        dataset_kwargs.miniboone*:
+          scale: 0.018
+          shift: 23.507
+      params/benchmark/miniboone/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml:
+        compile_kwargs: {}
+        fit_kwargs:
+        - batch_size: 512
+          epochs: 2000
+          learning_rate: 0.01
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        - batch_size: 512
+          epochs: 200
+          learning_rate:
+            scheduler_kwargs:
+              decay_steps: 200
+              initial_learning_rate: 0.0005
+            scheduler_name: cosine_decay
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        model_kwargs:
+          marginal_bijectors:
+          - bijector: BernsteinPolynomial
+            invert: true
+            bijector_kwargs:
+              domain:
+              - - -3.1
+                - -2.1
+                - -1.1
+                - -4.1
+                - -2.1
+                - -4.1
+                - -7.1
+                - -5.1
+                - -4.1
+                - -7.1
+                - -2.1
+                - -4.1
+                - -2.1
+                - -2.1
+                - -2.1
+                - -1.1
+                - -5.1
+                - -7.1
+                - -12.1
+                - -7.1
+                - -3.1
+                - -18.1
+                - -24.1
+                - -3.1
+                - -4.1
+                - -6.1
+                - -3.1
+                - -8.1
+                - -2.1
+                - -4.1
+                - -4.1
+                - -3.1
+                - -6.1
+                - -4.1
+                - -4.1
+                - -4.1
+                - -12.1
+                - -2.1
+                - -2.1
+                - -22.1
+                - -2.1
+                - -8.1
+                - -6.1
+              - - 11.1
+                - 9.1
+                - 15.1
+                - 10.1
+                - 11.1
+                - 6.1
+                - 3.1
+                - 8.1
+                - 8.1
+                - 11.1
+                - 4.1
+                - 1.1
+                - 10.1
+                - 6.1
+                - 6.1
+                - 32.1
+                - 8.1
+                - 7.1
+                - 13.1
+                - 6.1
+                - 14.1
+                - 1.1
+                - 5.1
+                - 9.1
+                - 12.1
+                - 9.1
+                - 10.1
+                - 5.1
+                - 10.1
+                - 2.1
+                - 6.1
+                - 8.1
+                - 4.1
+                - 13.1
+                - 12.1
+                - 5.1
+                - 7.1
+                - 18.1
+                - 19.1
+                - 4.1
+                - 10.1
+                - 20.1
+                - 6.1
+              extrapolation: true
+            parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+            parameters_constraint_fn_kwargs:
+              allow_flexible_bounds: false
+              bounds: smooth
+              high: 4
+              low: -4
+            parameters_fn: parameter_vector
+            parameters_fn_kwargs:
+              dtype: float32
+              parameter_shape:
+              - 43
+              - 2048
+          joint_flow_type: masked_autoregressive_flow_first_dim_masked
+          joint_bijectors:
+            num_layers: 10
+            use_invertible_linear_transformations: true
+            random_permutation_seed: 1
+            bijector: RationalQuadraticSpline
+            bijector_kwargs:
+              range_min: -4
+            parameters_constraint_fn_kwargs:
+              interval_width: 8
+              min_slope: 0.001
+              min_bin_width: 0.001
+              nbins: 8
+            num_parameters: 23
+            maf_parameters_fn_kwargs:
+              activation: relu
+              hidden_units:
+              - 64
+              - 64
+              dtype: float32
+            x0_parameters_fn_kwargs:
+              activation: relu
+              batch_norm: false
+              dropout: false
+              hidden_units:
+              - 64
+              - 64
+              dtype: float32
+        two_stage_training: true
+    outs:
+    - path: 
+        results/benchmark/miniboone/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/eval_figures/
+      hash: md5
+      md5: 6bf110f4a07f044298fb5acf8bb2605f.dir
+      size: 62930
+      nfiles: 2
+  eval-benchmark@dataset2-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline:
+    cmd: python scripts/evaluate_benchmark.py --log-level info --log-file evaluate.log
+      --model-name unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --stage-name 
+      eval-benchmark@dataset2-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --dataset-type benchmark --dataset-type benchmark --dataset-name hepmass --results-path
+      results/
+    deps:
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
+    - path: ../src/mctm/__init__.py
+      hash: md5
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/benchmark.py
+      hash: md5
+      md5: 68a2414c23a1d225de633677f541c81f
+      size: 2461
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 01646f069ce1736f3bb3337625f8e9f3
+      size: 6355
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
+    - path: datasets/benchmark/hepmass_test.npy
+      hash: md5
+      md5: 1cf34998957b8ab3b836b8b41d2d8c80
+      size: 14699036
+    - path: datasets/benchmark/hepmass_train.npy
+      hash: md5
+      md5: 21ee7ef1ffaf9ca5739b135de79b50eb
+      size: 26470460
+    - path: datasets/benchmark/hepmass_validate.npy
+      hash: md5
+      md5: 3033bad39164ab11597724b09f1db3a4
+      size: 2941220
+    - path: 
+        results/benchmark/hepmass/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
+      hash: md5
+      md5: 2879b78c6f5ebae1483e7388f882967b
+      size: 4977848
+    - path: scripts/evaluate_benchmark.py
+      hash: md5
+      md5: c9f0435b02abf0913433c635e44f9c54
+      size: 7928
+    - path: scripts/train.py
+      hash: md5
+      md5: 5d2a1bcbeb9ab939da926d20473d233d
+      size: 13535
+    params:
+      params.yaml:
+        log-level: info
+        seed: 1
+        textwidth: 487.8225
+      params/benchmark/dataset.yaml:
+        dataset_kwargs.hepmass*:
+          scale: 0.054
+          shift: 8.063
+      params/benchmark/hepmass/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml:
+        compile_kwargs: {}
+        fit_kwargs:
+        - batch_size: 16384
+          epochs: 2000
+          learning_rate: 0.1
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        - batch_size: 4096
+          epochs: 200
+          learning_rate:
+            scheduler_kwargs:
+              decay_steps: 200
+              initial_learning_rate: 0.001
+            scheduler_name: cosine_decay
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        model_kwargs:
+          marginal_bijectors:
+          - bijector: BernsteinPolynomial
+            invert: true
+            bijector_kwargs:
+              domain:
+              - - -3.1
+                - -3.1
+                - -2.1
+                - -9.1
+                - -2.1
+                - -6.1
+                - -4.1
+                - -2.1
+                - -5.1
+                - -3.1
+                - -2.1
+                - -4.1
+                - -3.1
+                - -2.1
+                - -3.1
+                - -3.1
+                - -2.1
+                - -4.1
+                - -4.1
+                - -6.1
+                - -3.1
+              - - 4.1
+                - 3.1
+                - 2.1
+                - 3.1
+                - 2.1
+                - 5.1
+                - 4.1
+                - 2.1
+                - 5.1
+                - 3.1
+                - 2.1
+                - 5.1
+                - 3.1
+                - 2.1
+                - 5.1
+                - 3.1
+                - 2.1
+                - 6.1
+                - 8.1
+                - 10.1
+                - 5.1
+              extrapolation: true
+            parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+            parameters_constraint_fn_kwargs:
+              allow_flexible_bounds: false
+              bounds: smooth
+              high: 4
+              low: -4
+            parameters_fn: parameter_vector
+            parameters_fn_kwargs:
+              dtype: float32
+              parameter_shape:
+              - 21
+              - 2048
+          joint_flow_type: masked_autoregressive_flow_first_dim_masked
+          joint_bijectors:
+            num_layers: 10
+            use_invertible_linear_transformations: true
+            random_permutation_seed: 1
+            bijector: RationalQuadraticSpline
+            bijector_kwargs:
+              range_min: -4
+            parameters_constraint_fn_kwargs:
+              interval_width: 8
+              min_slope: 0.001
+              min_bin_width: 0.001
+              nbins: 8
+            num_parameters: 23
+            maf_parameters_fn_kwargs:
+              activation: relu
+              hidden_units:
+              - 64
+              - 64
+              dtype: float32
+            x0_parameters_fn_kwargs:
+              activation: relu
+              batch_norm: false
+              dropout: false
+              hidden_units:
+              - 64
+              - 64
+              dtype: float32
+        two_stage_training: true
+    outs:
+    - path: 
+        results/benchmark/hepmass/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/eval_figures/
+      hash: md5
+      md5: 6041107291e4ee66992c933afd6eeff6.dir
+      size: 32389
+      nfiles: 2
+  eval-benchmark@dataset1-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline:
+    cmd: python scripts/evaluate_benchmark.py --log-level info --log-file evaluate.log
+      --model-name unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --stage-name 
+      eval-benchmark@dataset1-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --dataset-type benchmark --dataset-type benchmark --dataset-name gas --results-path
+      results/
+    deps:
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
+    - path: ../src/mctm/__init__.py
+      hash: md5
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/benchmark.py
+      hash: md5
+      md5: 68a2414c23a1d225de633677f541c81f
+      size: 2461
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 01646f069ce1736f3bb3337625f8e9f3
+      size: 6355
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
+    - path: datasets/benchmark/gas_test.npy
+      hash: md5
+      md5: 29304c974e66beebe53a493e06d74b58
+      size: 3366720
+    - path: datasets/benchmark/gas_train.npy
+      hash: md5
+      md5: 39954c6841382043fdca0f1be1437f8e
+      size: 27269696
+    - path: datasets/benchmark/gas_validate.npy
+      hash: md5
+      md5: c95b50d7b13d07ab0c52f4b5daf4379d
+      size: 3030048
+    - path: 
+        results/benchmark/gas/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
+      hash: md5
+      md5: 37d415453de8deb2fd4a5e5acc9c035d
+      size: 46247712
+    - path: scripts/evaluate_benchmark.py
+      hash: md5
+      md5: c9f0435b02abf0913433c635e44f9c54
+      size: 7928
+    - path: scripts/train.py
+      hash: md5
+      md5: 5d2a1bcbeb9ab939da926d20473d233d
+      size: 13535
+    params:
+      params.yaml:
+        log-level: info
+        seed: 1
+        textwidth: 487.8225
+      params/benchmark/dataset.yaml:
+        dataset_kwargs.gas*:
+          scale: 0.007
+          shift: 5.191
+      params/benchmark/gas/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml:
+        compile_kwargs: {}
+        fit_kwargs:
+        - batch_size: 16384
+          epochs: 1000
+          learning_rate: 0.1
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        - batch_size: 4096
+          epochs: 200
+          learning_rate:
+            scheduler_kwargs:
+              decay_steps: 200
+              initial_learning_rate: 0.001
+            scheduler_name: cosine_decay
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        model_kwargs:
+          marginal_bijectors:
+          - bijector: BernsteinPolynomial
+            invert: true
+            bijector_kwargs:
+              domain:
+              - - -3.1
+                - -1.1
+                - -6.1
+                - -3.1
+                - -2.1
+                - -3.1
+                - -3.1
+                - -3.1
+              - - 2.1
+                - 18.1
+                - 3.1
+                - 111.1
+                - 133.1
+                - 110.1
+                - 3.1
+                - 3.1
+              extrapolation: true
+            parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+            parameters_constraint_fn_kwargs:
+              allow_flexible_bounds: false
+              bounds: smooth
+              high: 4
+              low: -4
+            parameters_fn: parameter_vector
+            parameters_fn_kwargs:
+              dtype: float32
+              parameter_shape:
+              - 8
+              - 2048
+          joint_flow_type: masked_autoregressive_flow_first_dim_masked
+          joint_bijectors:
+            num_layers: 10
+            use_invertible_linear_transformations: true
+            random_permutation_seed: 1
+            bijector: RationalQuadraticSpline
+            bijector_kwargs:
+              range_min: -4
+            parameters_constraint_fn_kwargs:
+              interval_width: 8
+              min_slope: 0.001
+              min_bin_width: 0.001
+              nbins: 8
+            num_parameters: 23
+            maf_parameters_fn_kwargs:
+              activation: relu
+              hidden_units:
+              - 512
+              - 512
+              dtype: float32
+            x0_parameters_fn_kwargs:
+              activation: relu
+              batch_norm: false
+              dropout: false
+              hidden_units:
+              - 512
+              - 512
+              dtype: float32
+        two_stage_training: true
+    outs:
+    - path: 
+        results/benchmark/gas/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/eval_figures/
+      hash: md5
+      md5: 862a70ab3528758c924082b0cdb5f2b2.dir
+      size: 25479
+      nfiles: 2
+  eval-benchmark@dataset4-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline:
+    cmd: python scripts/evaluate_benchmark.py --log-level info --log-file evaluate.log
+      --model-name unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --stage-name 
+      eval-benchmark@dataset4-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --dataset-type benchmark --dataset-type benchmark --dataset-name power --results-path
+      results/
+    deps:
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
+    - path: ../src/mctm/__init__.py
+      hash: md5
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/benchmark.py
+      hash: md5
+      md5: 68a2414c23a1d225de633677f541c81f
+      size: 2461
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 01646f069ce1736f3bb3337625f8e9f3
+      size: 6355
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
+    - path: datasets/benchmark/power_test.npy
+      hash: md5
+      md5: 0b21ded54f9d31633fe63fe7d5eaf13d
+      size: 4918400
+    - path: datasets/benchmark/power_train.npy
+      hash: md5
+      md5: b4e926bbb226067d4f02b51fa2849ca2
+      size: 39838136
+    - path: datasets/benchmark/power_validate.npy
+      hash: md5
+      md5: a39220ef08007fba1768aef08f9c91cf
+      size: 4426568
+    - path: 
+        results/benchmark/power/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
+      hash: md5
+      md5: 7330056c2161bc50806b601d993e3b21
+      size: 12925428
+    - path: scripts/evaluate_benchmark.py
+      hash: md5
+      md5: c9f0435b02abf0913433c635e44f9c54
+      size: 7928
+    - path: scripts/train.py
+      hash: md5
+      md5: 5d2a1bcbeb9ab939da926d20473d233d
+      size: 13535
+    params:
+      params.yaml:
+        log-level: info
+        seed: 1
+        textwidth: 487.8225
+      params/benchmark/dataset.yaml:
+        dataset_kwargs.power*:
+          scale: 0.05
+          shift: 5.456
+      params/benchmark/power/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml:
+        compile_kwargs: {}
+        fit_kwargs:
+        - batch_size: 16384
+          epochs: 1000
+          learning_rate: 0.1
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        - batch_size: 4096
+          epochs: 200
+          learning_rate:
+            scheduler_kwargs:
+              decay_steps: 200
+              initial_learning_rate: 0.0005
+            scheduler_name: cosine_decay
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        model_kwargs:
+          marginal_bijectors:
+          - bijector: BernsteinPolynomial
+            invert: true
+            bijector_kwargs:
+              domain:
+              - - -1.1
+                - -6.1
+                - -1.1
+                - -1.1
+                - -1.1
+                - -2.1
+              - - 10.1
+                - 5.1
+                - 15.1
+                - 14.1
+                - 3.1
+                - 2.1
+              extrapolation: true
+            parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+            parameters_constraint_fn_kwargs:
+              allow_flexible_bounds: false
+              bounds: smooth
+              high: 4
+              low: -4
+            parameters_fn: parameter_vector
+            parameters_fn_kwargs:
+              dtype: float32
+              parameter_shape:
+              - 6
+              - 2048
+          joint_flow_type: masked_autoregressive_flow_first_dim_masked
+          joint_bijectors:
+            num_layers: 10
+            use_invertible_linear_transformations: true
+            random_permutation_seed: 1
+            bijector: RationalQuadraticSpline
+            bijector_kwargs:
+              range_min: -4
+            parameters_constraint_fn_kwargs:
+              interval_width: 8
+              min_slope: 0.001
+              min_bin_width: 0.001
+              nbins: 8
+            num_parameters: 23
+            maf_parameters_fn_kwargs:
+              activation: relu
+              hidden_units:
+              - 256
+              - 256
+              dtype: float32
+            x0_parameters_fn_kwargs:
+              activation: relu
+              batch_norm: false
+              dropout: false
+              hidden_units:
+              - 256
+              - 256
+              dtype: float32
+        two_stage_training: true
+    outs:
+    - path: 
+        results/benchmark/power/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/eval_figures/
+      hash: md5
+      md5: f53ff1cb910fbe6a6e731b8352976f13.dir
+      size: 24182
+      nfiles: 2
+  eval-benchmark@dataset0-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline:
+    cmd: python scripts/evaluate_benchmark.py --log-level info --log-file evaluate.log
+      --model-name unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --stage-name 
+      eval-benchmark@dataset0-unconditional_hybrid_masked_autoregressive_flow_quadratic_spline
+      --dataset-type benchmark --dataset-type benchmark --dataset-name bsds300 --results-path
+      results/
+    deps:
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 1214450666afc83a1c320cccb05e6491
+      size: 2153
+    - path: ../src/mctm/__init__.py
+      hash: md5
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/mctm/activations.py
+      hash: md5
+      md5: fbcc1a7e509e4df7654ccd420ee95cca
+      size: 6973
+    - path: ../src/mctm/data/__init__.py
+      hash: md5
+      md5: 4bb4f98e76433de954fedc2402f91b79
+      size: 67
+    - path: ../src/mctm/data/benchmark.py
+      hash: md5
+      md5: 68a2414c23a1d225de633677f541c81f
+      size: 2461
+    - path: ../src/mctm/distributions.py
+      hash: md5
+      md5: e9e6c4182ef1b9eaec7ca0795e492729
+      size: 48294
+    - path: ../src/mctm/models.py
+      hash: md5
+      md5: 90f4b787d72c793e88c9be15b809c16b
+      size: 14802
+    - path: ../src/mctm/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/mctm/parameters.py
+      hash: md5
+      md5: 7bcafb9613cd7a93b7a1c7d27b2ddd1b
+      size: 14294
+    - path: ../src/mctm/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/mctm/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/mctm/utils/__init__.py
+      hash: md5
+      md5: a1933c0f39ff956afb3724558bb46e58
+      size: 5773
+    - path: ../src/mctm/utils/decorators.py
+      hash: md5
+      md5: 8f38fef6acf3e8cf79ef3b52290d32d0
+      size: 3799
+    - path: ../src/mctm/utils/mlflow.py
+      hash: md5
+      md5: eded3b88cd993d91b643e7cd771dca7e
+      size: 3108
+    - path: ../src/mctm/utils/pipeline.py
+      hash: md5
+      md5: f12bf6f4e3d68f227ec0da7955c7ea42
+      size: 11830
+    - path: ../src/mctm/utils/tensorflow.py
+      hash: md5
+      md5: 01646f069ce1736f3bb3337625f8e9f3
+      size: 6355
+    - path: ../src/mctm/utils/visualisation.py
+      hash: md5
+      md5: dfbc7ff40a85ac8b78b5f93570556d23
+      size: 17342
+    - path: datasets/benchmark/bsds300_test.npy
+      hash: md5
+      md5: 1b72ae87752c55a3762d4ff4bfcb5746
+      size: 63000128
+    - path: datasets/benchmark/bsds300_train.npy
+      hash: md5
+      md5: 10d58c2a7b77aafde3461874f48c1f1d
+      size: 252000128
+    - path: datasets/benchmark/bsds300_validate.npy
+      hash: md5
+      md5: e9fcc5f84740aa2ee46be1e58fe07962
+      size: 12600128
+    - path: 
+        results/benchmark/bsds300/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/model_checkpoint.weights.h5
+      hash: md5
+      md5: 4daedb900dfcc3a222fd1c765efd0260
+      size: 136194696
+    - path: scripts/evaluate_benchmark.py
+      hash: md5
+      md5: c9f0435b02abf0913433c635e44f9c54
+      size: 7928
+    - path: scripts/train.py
+      hash: md5
+      md5: 5d2a1bcbeb9ab939da926d20473d233d
+      size: 13535
+    params:
+      params.yaml:
+        log-level: info
+        seed: 1
+        textwidth: 487.8225
+      params/benchmark/bsds300/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml:
+        compile_kwargs: {}
+        fit_kwargs:
+        - batch_size: 16384
+          epochs: 1000
+          learning_rate: 0.1
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        - batch_size: 4096
+          epochs: 200
+          learning_rate:
+            scheduler_kwargs:
+              decay_steps: 200
+              initial_learning_rate: 0.001
+            scheduler_name: cosine_decay
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          early_stopping: 30
+          verbose: true
+        model_kwargs:
+          marginal_bijectors:
+          - bijector: BernsteinPolynomial
+            invert: true
+            bijector_kwargs:
+              domain:
+              - -1
+              - 1
+              extrapolation: true
+            parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+            parameters_constraint_fn_kwargs:
+              allow_flexible_bounds: false
+              bounds: smooth
+              high: 4
+              low: -4
+            parameters_fn: parameter_vector
+            parameters_fn_kwargs:
+              dtype: float32
+              parameter_shape:
+              - 63
+              - 2048
+          joint_flow_type: masked_autoregressive_flow_first_dim_masked
+          joint_bijectors:
+            num_layers: 10
+            use_invertible_linear_transformations: true
+            random_permutation_seed: 1
+            bijector: RationalQuadraticSpline
+            bijector_kwargs:
+              range_min: -4
+            parameters_constraint_fn_kwargs:
+              interval_width: 8
+              min_slope: 0.001
+              min_bin_width: 0.001
+              nbins: 8
+            num_parameters: 23
+            maf_parameters_fn_kwargs:
+              activation: relu
+              hidden_units:
+              - 512
+              - 512
+              dtype: float32
+            x0_parameters_fn_kwargs:
+              activation: relu
+              batch_norm: false
+              dropout: false
+              hidden_units:
+              - 512
+              - 512
+              dtype: float32
+        two_stage_training: true
+      params/benchmark/dataset.yaml:
+        dataset_kwargs.bsds300*:
+          scale: 0.537
+          shift: 0.914
+    outs:
+    - path: 
+        results/benchmark/bsds300/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline/eval_figures/
+      hash: md5
+      md5: 083aabee1ca4885dbaf4aeb35a0c003b.dir
+      size: 59839
+      nfiles: 2
