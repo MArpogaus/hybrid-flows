@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-12-12 09:45:44 (Marcel Arpogaus)
-# changed : 2025-01-21 13:57:10 (Marcel Arpogaus)
+# changed : 2025-01-25 19:18:49 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -78,7 +78,8 @@ def sim_after_fit_hook(
         x = x.numpy()[indices]
         y = y.numpy()[indices]
 
-    fig = plot_samples(model(x), y, seed=1, **kwargs)
+    dist = model(x)
+    fig = plot_samples(dist, y, seed=1, **kwargs)
     fig.savefig(os.path.join(results_path, "samples.pdf"), bbox_inches="tight")
 
 
@@ -306,7 +307,7 @@ def run(
 
         def preprocess_dataset(data, model) -> dict:
             return {
-                "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype),
+                "x": tf.convert_to_tensor(data[1], dtype=model.dtype),
                 "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
             }
 

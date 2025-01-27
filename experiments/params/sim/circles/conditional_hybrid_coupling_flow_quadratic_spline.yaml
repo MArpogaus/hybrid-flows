@@ -2,11 +2,11 @@ compile_kwargs:
   jit_compile: true
 two_stage_training: true
 fit_kwargs:
-- epochs: 100
-  batch_size: 512
-  learning_rate: 0.01
+- epochs: 1000
+  batch_size: 4096
+  learning_rate: 0.1
   reduce_lr_on_plateau: false
-  early_stopping: 15
+  early_stopping: 50
   monitor: val_loss
   verbose: true
   validation_split: 0.25
@@ -35,19 +35,13 @@ model_kwargs:
       bounds: linear
       high: 5
       low: -5
-    parameters_fn: parameter_vector
-    parameters_fn_kwargs:
-      dtype: float32
-      parameter_shape: [&dims 2, 300]
-  - bijector: Shift
-    invert: true
     parameters_fn: bernstein_polynomial
     parameters_fn_kwargs:
-      conditional_event_shape: 1
       dtype: float
       extrapolation: true
-      parameter_shape: [*dims]
-      polynomial_order: 6
+      conditional_event_shape: 1
+      polynomial_order: 1
+      parameter_shape: [2, 300]
   joint_bijectors:
   - bijector: RealNVP
     bijector_kwargs:
@@ -55,9 +49,9 @@ model_kwargs:
     nested_bijector:
       bijector: RationalQuadraticSpline
       bijector_kwargs:
-        range_min: -7
+        range_min: -5
       parameters_constraint_fn_kwargs:
-        interval_width: 14
+        interval_width: 10
         min_slope: 0.001
         min_bin_width: 0.001
         nbins: 64

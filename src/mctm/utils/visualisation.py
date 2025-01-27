@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 12:12:12 (Marcel Arpogaus)
-# changed : 2024-12-12 09:34:08 (Marcel Arpogaus)
+# changed : 2025-01-25 13:46:26 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -284,7 +284,7 @@ def plot_samples(
 
     """
     columns = ["$y_1$", "$y_2$"]
-    if len(dist.batch_shape) == 0 or dist.batch_shape[0] == data.shape[-1]:
+    if len(dist.batch_shape) == 0:
         N = data.shape[0]
     else:
         N = []

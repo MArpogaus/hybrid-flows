@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2024-12-12 19:06:54 (Marcel Arpogaus)
+# changed : 2025-01-25 18:35:42 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -107,7 +107,7 @@ def plot_hybrid_model(model, x, y):
             "$F_2(y_2)$",
             "$x$",
         ],
-        data=np.concatenate([y, w, z, pit, x], -1),
+        data=np.concatenate([y, w, z, pit, x[..., None]], -1),
     )
 
     # %% data
@@ -257,7 +257,7 @@ def evaluate(
 
     def preprocess_dataset(data, model) -> dict:
         return {
-            "x": tf.convert_to_tensor(data[1][..., None], dtype=model.dtype),
+            "x": tf.convert_to_tensor(data[1], dtype=model.dtype),
             "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
         }
 

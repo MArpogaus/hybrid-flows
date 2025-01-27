@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 13:16:19 (Marcel Arpogaus)
-# changed : 2024-12-23 13:04:51 (Marcel Arpogaus)
+# changed : 2025-01-27 12:57:37 (Marcel Arpogaus)
 
 # %% Description ###############################################################
 """Functions defining ANNs.
@@ -370,21 +370,22 @@ def get_bernstein_polynomial_fn(
         The parameter lambda and the parameter vector.
 
     """
-    parameter_shape = (
+    parameter_vector_shape = (
         [conditional_event_shape] + parameter_shape + [polynomial_order + 1]
     )
-    _, parameter_vector, _ = get_parameter_vector_fn(
-        parameter_shape=parameter_shape,
+    parameter_vector = get_parameter_vector_fn(
+        parameter_shape=parameter_vector_shape,
         dtype=dtype,
         initializer=initializer,
-    )
+    )[1][0]
 
     def get_parameter_fn(conditional_input, **_):
         b_poly = BernsteinPolynomial(thetas_constrain_fn(parameter_vector), **kwargs)
-        p = b_poly(conditional_input[..., None])
-        return tf.reduce_sum(p, 1)
+        shape = [...] + [tf.newaxis for _ in range(len(parameter_shape))]
+        # TODO: This is wring for conditional_event_shape != 1
+        return b_poly(conditional_input[shape])
 
-    return get_parameter_fn, parameter_vector, []
+    return get_parameter_fn, [parameter_vector], []
 
 
 def get_test_parameters_fn(input_shape, param_shape):
