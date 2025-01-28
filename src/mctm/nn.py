@@ -85,9 +85,9 @@ def _build_autoregressive_net(
     """
     inputs = K.Input(shape=input_shape, name="ar_input", dtype=dtype)
 
-    assert (
-        input_shape[0] == output_shape[0]
-    ), "First dim of input and output shapes must be equal"
+    assert input_shape[0] == output_shape[0], (
+        "First dim of input and output shapes must be equal"
+    )
     fc = [ConstantLayer(output_shape[1:], name=f"{name}_constant_layer")(inputs)]
     for i in range(1, input_shape[0]):
         x = inputs[..., :i]
@@ -289,9 +289,9 @@ def build_masked_autoregressive_net(
     def reduce_prod(iterable):
         return reduce(lambda x, r: x * r, tuple(iterable), 1)
 
-    assert (
-        input_shape[0] == output_shape[0]
-    ), "First dim of input and output shapes must be equal"
+    assert input_shape[0] == output_shape[0], (
+        "First dim of input and output shapes must be equal"
+    )
 
     params = reduce_prod(output_shape[1:])
 

@@ -196,13 +196,13 @@ def test_build_masked_autoregressive_net(
     autoregressive_layers = [
         layer for layer in model.layers if layer.name.endswith("network")
     ]
-    assert (
-        len(autoregressive_layers) == 1
-    ), "Model should include an AutoregressiveNetwork layer"
+    assert len(autoregressive_layers) == 1, (
+        "Model should include an AutoregressiveNetwork layer"
+    )
 
-    assert (
-        sum(layer.count_params() for layer in model.layers) > 0
-    ), "Model must have parameters"
+    assert sum(layer.count_params() for layer in model.layers) > 0, (
+        "Model must have parameters"
+    )
 
 
 @pytest.mark.parametrize(
@@ -235,13 +235,13 @@ def test_build_fully_connected_autoregressive_net(
     assert model.output_shape[1:] == output_shape
 
     # Validate layers created by submodel_build_fn
-    assert any(
-        isinstance(layer, tf.keras.layers.Layer) for layer in model.layers
-    ), "Model should have multiple layers"
+    assert any(isinstance(layer, tf.keras.layers.Layer) for layer in model.layers), (
+        "Model should have multiple layers"
+    )
 
-    assert (
-        sum(layer.count_params() for layer in model.layers) > 0
-    ), "Model must have parameters"
+    assert sum(layer.count_params() for layer in model.layers) > 0, (
+        "Model must have parameters"
+    )
 
 
 @pytest.mark.parametrize(
@@ -280,17 +280,17 @@ def test_build_fully_connected_res_net(
     add_layers = [
         layer for layer in model.layers if isinstance(layer, tf.keras.layers.Add)
     ]
-    assert (
-        len(add_layers) == res_blocks
-    ), "Model should have Add layers equal to the number of res_blocks"
+    assert len(add_layers) == res_blocks, (
+        "Model should have Add layers equal to the number of res_blocks"
+    )
 
     # Check if dense layers exist and are connected properly
     dense_layers = [
         layer for layer in model.layers if isinstance(layer, tf.keras.layers.Dense)
     ]
-    assert (
-        len(dense_layers) == res_blocks * 2 + 2
-    ), "Model should have two Dense layers per res block plus two for input and output"
+    assert len(dense_layers) == res_blocks * 2 + 2, (
+        "Model should have two Dense layers per res block plus two for input and output"
+    )
 
     # Validate dropout usage
     if dropout > 0:
@@ -299,9 +299,9 @@ def test_build_fully_connected_res_net(
             for layer in model.layers
             if isinstance(layer, tf.keras.layers.Dropout)
         ]
-        assert (
-            len(dropout_layers) == res_blocks
-        ), "Should have dropout layer for each res block with dropout configured"
+        assert len(dropout_layers) == res_blocks, (
+            "Should have dropout layer for each res block with dropout configured"
+        )
 
     # Check if batch normalization is present where applicable
     if batch_norm:
@@ -310,9 +310,9 @@ def test_build_fully_connected_res_net(
             for layer in model.layers
             if isinstance(layer, tf.keras.layers.BatchNormalization)
         ]
-        assert (
-            len(batch_norm_layers) == res_blocks * 2
-        ), "Each res block should have two batch normalization layers"
+        assert len(batch_norm_layers) == res_blocks * 2, (
+            "Each res block should have two batch normalization layers"
+        )
 
     total_params = sum(layer.count_params() for layer in dense_layers)
     assert total_params > 0, "The model should have non-zero parameters"

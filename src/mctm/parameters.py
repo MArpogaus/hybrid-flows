@@ -101,9 +101,9 @@ def get_fully_connected_network_fn(
     parameter_network.build(input_shape)
 
     if conditional:
-        assert (
-            conditional_event_shape is not None
-        ), "Conditional event shape must be provided if network is conditional."
+        assert conditional_event_shape is not None, (
+            "Conditional event shape must be provided if network is conditional."
+        )
 
         parameter_network = build_conditional_net(
             input_shape=input_shape,
@@ -202,9 +202,9 @@ def get_fully_connected_res_net_fn(
     )
 
     if conditional:
-        assert (
-            conditional_event_shape is not None
-        ), "Conditional event shape must be provided if network is conditional."
+        assert conditional_event_shape is not None, (
+            "Conditional event shape must be provided if network is conditional."
+        )
 
         parameter_network = build_conditional_net(
             input_shape=conditional_event_shape,
@@ -312,9 +312,9 @@ def get_fully_connected_autoregressive_network_fn(
     )
 
     if conditional:
-        assert (
-            conditional_event_shape is not None
-        ), "Conditional event shape must be provided if network is conditional."
+        assert conditional_event_shape is not None, (
+            "Conditional event shape must be provided if network is conditional."
+        )
 
         parameter_network = build_conditional_net(
             input_shape=[dims],

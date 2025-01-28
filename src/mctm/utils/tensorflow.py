@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-29 12:55:08 (Marcel Arpogaus)
-# changed : 2024-10-29 12:55:08 (Marcel Arpogaus)
+# changed : 2025-01-27 12:51:32 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -69,6 +69,8 @@ def get_learning_rate(
         scheduler_kwargs = learning_rate.get("scheduler_kwargs", {})
         __LOGGER__.info(f"Scheduler: {scheduler_name}({scheduler_kwargs})")
 
+        if scheduler_kwargs.get("decay_steps", None) == "epochs":
+            scheduler_kwargs["decay_steps"] = fit_kwargs["epochs"]
         scheduler = getattr(
             mctm.scheduler,
             scheduler_class_name,
