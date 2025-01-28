@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-12-12 09:45:44 (Marcel Arpogaus)
-# changed : 2025-01-25 19:18:49 (Marcel Arpogaus)
+# changed : 2025-01-28 17:29:00 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -20,11 +20,8 @@ from typing import Any, Dict
 
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras as K
 
-from mctm.data.benchmark import get_dataset as get_benchmark_dataset
-from mctm.data.malnutrion import get_dataset as get_malnutrition_dataset
-from mctm.data.sklearn_datasets import get_dataset as get_sim_dataset
+from mctm.data import get_dataset
 from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
 from mctm.utils import str2bool
 from mctm.utils.pipeline import pipeline, prepare_pipeline
@@ -126,52 +123,6 @@ def malnutrition_after_fit_hook(
     fig.savefig(os.path.join(results_path, "samples.pdf"), bbox_inches="tight")
 
 
-class MeanNegativeLogLikelihood(K.metrics.Mean):
-    """Custom metric for mean negative log likelihood."""
-
-    def __init__(
-        self, name: str = "mean_negative_log_likelihood", **kwargs: dict
-    ) -> None:
-        """Initialize Keras metric for negative logarithmic likelihood.
-
-        Parameters
-        ----------
-        name : str, optional
-            Name of the metric instance, by default "mean_negative_log_likelihood".
-        **kwargs : dict
-            Additional keyword arguments for the base class.
-
-        """
-        super().__init__(name=name, **kwargs)
-
-    def update_state(
-        self, y_true: tf.Tensor, dist: object, sample_weight: tf.Tensor = None
-    ) -> None:
-        """Update the metric state with the true labels and the distribution.
-
-        Parameters
-        ----------
-        y_true : tf.Tensor
-            The ground truth values.
-        dist : object
-            The distribution object that provides the log probability method.
-        sample_weight : tf.Tensor, optional
-            Optional weighting of each example, by default None.
-
-        """
-        log_probs = -dist.log_prob(y_true)
-        super().update_state(log_probs, sample_weight)
-
-
-def make_dataset(ds, batch_size):
-    return (
-        ds.shuffle(10000)
-        .batch(batch_size, drop_remainder=True)
-        .cache()
-        .prefetch(tf.data.AUTOTUNE)
-    )
-
-
 def run(
     dataset_name: str,
     dataset_type: str,
@@ -225,57 +176,18 @@ def run(
     else:
         get_model = DensityRegressionModel
 
+    get_dataset_fn, get_dataset_kwargs, preprocess_dataset = get_dataset(
+        dataset_type=dataset_type,
+        dataset_name=dataset_name,
+        test_mode=test_mode,
+        fit_kwargs=fit_kwargs,
+        **dataset_kwargs,
+    )
+
     if dataset_type == "benchmark":
-        get_dataset_fn = get_benchmark_dataset
-        get_dataset_kwargs = {
-            "dataset_name": dataset_name,
-            # "test_mode": test_mode,
-        }
-        if isinstance(fit_kwargs, dict):
-            batch_size = fit_kwargs.pop("batch_size")
-        elif isinstance(fit_kwargs, list):
-            batch_size = []
-            for fkw in fit_kwargs:
-                batch_size.append(fkw.pop("batch_size"))
-
-        def mk_ds(data, batch_size):
-            return make_dataset(
-                tf.data.Dataset.from_tensor_slices((tf.ones_like(data), data)),
-                batch_size,
-            )
-
-        def preprocess_dataset(data, model) -> dict:
-            if isinstance(fit_kwargs, dict):
-                bs = batch_size
-            else:
-                bs = batch_size[1] if model.joint_trainable else batch_size[0]
-            return {
-                "x": mk_ds(data[0], bs),
-                "validation_data": mk_ds(data[1], bs),
-            }
-
         plot_data = None
         after_fit_hook = False
     elif dataset_type == "malnutrition":
-        get_dataset_fn = get_malnutrition_dataset
-        get_dataset_kwargs = {
-            **dataset_kwargs,
-            "test_mode": test_mode,
-        }
-        batch_size = fit_kwargs.pop("batch_size")
-
-        def mk_ds(data):
-            return make_dataset(
-                tf.data.Dataset.from_tensor_slices((data[0], data[1])),
-                batch_size,
-            )
-
-        def preprocess_dataset(data, model) -> dict:
-            return {
-                "x": mk_ds(data[0]),
-                "validation_data": mk_ds(data[1]),
-            }
-
         figsize = get_figsize(params["textwidth"])
         fig_height = figsize[0]
 
@@ -296,21 +208,7 @@ def run(
             plot_samples_kwargs=dict(height=fig_height / 3),
             plot_marginals_kwargs=dict(figsize=figsize),
         )
-
     elif dataset_type == "sim":
-        get_dataset_fn = get_sim_dataset
-        get_dataset_kwargs = {
-            **dataset_kwargs,
-            "dataset_name": dataset_name,
-            "test_mode": test_mode,
-        }
-
-        def preprocess_dataset(data, model) -> dict:
-            return {
-                "x": tf.convert_to_tensor(data[1], dtype=model.dtype),
-                "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
-            }
-
         fig_height = get_figsize(params["textwidth"], fraction=0.5)[0]
         plot_data = partial(plot_2d_data, figsize=(fig_height, fig_height))
         after_fit_hook = partial(
@@ -347,9 +245,9 @@ def run(
             for fkw in fit_kwargs:
                 fkw.update(verbose=2)
 
-    # p_gpus = tf.config.list_physical_devices("GPU")
-    # for gpu in p_gpus:
-    #     tf.config.experimental.set_memory_growth(gpu, True)
+    p_gpus = tf.config.list_physical_devices("GPU")
+    for gpu in p_gpus:
+        tf.config.experimental.set_memory_growth(gpu, True)
     # l_gpus = tf.config.list_logical_devices("GPU")
     # if len(l_gpus) > 0:
     #     strategy_scope = tf.distribute.MirroredStrategy(l_gpus).scope()

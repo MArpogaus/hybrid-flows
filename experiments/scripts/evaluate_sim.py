@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-01-25 18:35:42 (Marcel Arpogaus)
+# changed : 2025-01-28 17:38:25 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -26,7 +26,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 from tensorflow_probability import distributions as tfd
 
-from mctm.data.sklearn_datasets import get_dataset
+from mctm.data import get_dataset
 from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
 from mctm.utils.mlflow import (
     log_and_save_figure,
@@ -253,13 +253,15 @@ def evaluate(
     figure_path = os.path.join(results_path, "eval_figures/")
     os.makedirs(figure_path, exist_ok=True)
 
-    data, dims = get_dataset(dataset_name, **dataset_kwargs)
-
-    def preprocess_dataset(data, model) -> dict:
-        return {
-            "x": tf.convert_to_tensor(data[1], dtype=model.dtype),
-            "y": tf.convert_to_tensor(data[0], dtype=model.dtype),
-        }
+    get_dataset_fn, get_dataset_kwargs, preprocess_dataset = get_dataset(
+        dataset_type=dataset_type,
+        dataset_name=dataset_name,
+        test_mode=False,
+        fit_kwargs={},
+        test_data=True,
+        **dataset_kwargs,
+    )
+    data, dims = get_dataset_fn(**get_dataset_kwargs)
 
     if "marginal_bijectors" in model_kwargs.keys():
         get_model = HybridDensityRegressionModel
