@@ -11,16 +11,16 @@ from pprint import pformat
 
 import mlflow
 import numpy as np
-import optuna
 import yaml
+
+import optuna
+from mctm.utils import str2bool
+from mctm.utils.mlflow import log_cfg
+from mctm.utils.pipeline import prepare_pipeline, start_run_with_exception_logging
 from optuna.integration import TFKerasPruningCallback
 from optuna.pruners import SuccessiveHalvingPruner
 from optuna.samplers import TPESampler
 from optuna.trial import TrialState
-
-from mctm.utils import str2bool
-from mctm.utils.mlflow import log_cfg
-from mctm.utils.pipeline import prepare_pipeline, start_run_with_exception_logging
 
 # %% global objects
 __LOGGER__ = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ def suggest_new_params(
                 options[trial.suggest_int(d["name"], low=0, high=len(options) - 1)]
             )
         else:
-            v = getattr(trial, f'suggest_{d["type"]}')(d["name"], **d["kwargs"])
+            v = getattr(trial, f"suggest_{d['type']}")(d["name"], **d["kwargs"])
         p[key] = v
 
     if use_pruning:

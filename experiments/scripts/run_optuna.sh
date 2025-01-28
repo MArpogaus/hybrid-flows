@@ -90,7 +90,7 @@ run_optuna_script() {
 
 for ((seed = 1; seed <= $JOBS; seed++)); do
 	run_optuna_script $seed &
-	sleep 5
+	sleep 15
 done
 
 wait # Wait for all the background jobs to finish
