@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-01-22 14:27:27 (Marcel Arpogaus)
+# changed : 2025-01-29 16:50:48 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -25,7 +25,7 @@ import tensorflow_probability as tfp
 import yaml
 from tensorflow_probability import distributions as tfd
 
-from mctm.data.benchmark import get_dataset
+from mctm.data import get_dataset
 from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
 from mctm.utils.mlflow import (
     log_and_save_figure,
@@ -152,7 +152,13 @@ def evaluate(
     figure_path = os.path.join(results_path, "eval_figures/")
     os.makedirs(figure_path, exist_ok=True)
 
-    (train_data, validation_data, test_data), dims = get_dataset(dataset_name)
+    get_dataset_fn, get_dataset_kwargs, _ = get_dataset(
+        dataset_type=dataset_type,
+        dataset_name=dataset_name,
+        test_mode=False,
+        fit_kwargs={},
+    )
+    (train_data, validation_data, test_data), dims = get_dataset_fn(get_dataset_kwargs)
     Y = validation_data
 
     if "marginal_bijectors" in model_kwargs.keys():
@@ -180,9 +186,9 @@ def evaluate(
         )
         test_loss = model.evaluate(make_dataset(test_data, batch_size=2**10))
 
-        __LOGGER__.info("train_loss: ", train_loss)
-        __LOGGER__.info("validation_loss: ", validation_loss)
-        __LOGGER__.info("test_loss: ", test_loss)
+        __LOGGER__.info("train_loss: %.3f", train_loss)
+        __LOGGER__.info("validation_loss: %.3f", validation_loss)
+        __LOGGER__.info("test_loss: %.3f", test_loss)
 
         mlflow.log_metric("train_loss", train_loss)
         mlflow.log_metric("validation_loss", validation_loss)

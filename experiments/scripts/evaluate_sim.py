@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-01-28 17:38:25 (Marcel Arpogaus)
+# changed : 2025-01-31 13:45:12 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -278,9 +278,14 @@ def evaluate(
 
         model = get_model(dims=dims, **model_kwargs)
         model.load_weights(os.path.join(results_path, "model_checkpoint.weights.h5"))
+        model.compile(loss=lambda y, dist: -dist.log_prob(y))
 
         preprocessed = preprocess_dataset(data, model)
         x, y = preprocessed.values()
+
+        test_loss = model.evaluate(x, y, batch_size=2**10)
+        __LOGGER__.info("test_loss: %.4f", test_loss)
+        mlflow.log_metric("test_loss", test_loss)
 
         setup_latex(fontsize=10)
         fig = pdf_contour_plot(model)
