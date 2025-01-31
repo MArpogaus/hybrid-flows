@@ -1,0 +1,22 @@
+#!/bin bash
+
+MODELS="
+conditional_coupling_flow_bernstein_poly
+conditional_coupling_flow_quadratic_spline
+conditional_hybrid_coupling_flow_bernstein_poly
+conditional_hybrid_coupling_flow_quadratic_spline
+conditional_masked_autoregressive_flow_bernstein_poly
+conditional_masked_autoregressive_flow_quadratic_spline
+conditional_multivariate_normal
+conditional_multivariate_transformation_model
+unconditional_coupling_flow_bernstein_poly
+unconditional_coupling_flow_quadratic_spline
+unconditional_hybrid_coupling_flow_bernstein_poly
+unconditional_hybrid_coupling_flow_quadratic_spline
+unconditional_masked_autoregressive_flow_bernstein_poly
+unconditional_masked_autoregressive_flow_quadratic_spline
+unconditional_multivariate_normal
+unconditional_multivariate_transformation_model
+"
+
+parallel --delay 10 sbatch --export=ALL,DATASET_NUM={1},MODEL_NAME={2},SEED={3} slurm_sim_seeds.sh ::: {0..1} ::: $MODELS ::: {1..20}
