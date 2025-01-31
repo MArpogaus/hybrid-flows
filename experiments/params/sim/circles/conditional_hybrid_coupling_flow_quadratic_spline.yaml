@@ -3,22 +3,22 @@ compile_kwargs:
 two_stage_training: true
 fit_kwargs:
 - epochs: 1000
-  batch_size: 4096
-  learning_rate: 0.1
+  batch_size: 1024
+  learning_rate: 0.05
   reduce_lr_on_plateau: false
   early_stopping: 50
   monitor: val_loss
   verbose: true
   validation_split: 0.25
-- epochs: &epochs 200
+- epochs: 400
   batch_size: 512
   learning_rate:
     scheduler_kwargs:
-      decay_steps: *epochs
-      initial_learning_rate: 0.001
+      decay_steps: epochs
+      initial_learning_rate: 0.003
     scheduler_name: cosine_decay
   reduce_lr_on_plateau: false
-  early_stopping: 30
+  early_stopping: 50
   monitor: val_loss
   verbose: true
   validation_split: 0.25
@@ -64,7 +64,7 @@ model_kwargs:
       hidden_units:
       - 512
       - 512
-      - 512
+      - 32
       dtype: float32
       input_shape: [1]
       parameter_shape: [1, 191] # 64 * 3 - 1
