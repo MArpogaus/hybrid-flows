@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-29 12:55:08 (Marcel Arpogaus)
-# changed : 2025-01-27 12:51:32 (Marcel Arpogaus)
+# changed : 2025-01-29 15:36:55 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -94,10 +94,10 @@ def fit_distribution(
     early_stopping: bool,
     lr_patience: Optional[int] = None,
     lr_reduction_factor: Optional[float] = None,
-    weight_decay: Optional[float] = None,
     loss: Callable = lambda y, dist: -dist.log_prob(y),
     callbacks: list = [],
     compile_kwargs: dict = {},
+    optimizer_kwargs: dict = {},
     **fit_kwargs: Any,
 ) -> K.callbacks.History:
     """Train model.
@@ -128,14 +128,14 @@ def fit_distribution(
         The patience parameter for learning rate reduction.
     lr_reduction_factor : float, optional
         Factor by which the learning rate will be reduced. new_lr = lr * factor.
-    weight_decay : float, optional
-        Weight decay for the optimizer.
     loss : callable
         The loss function for the model.
     callbacks : list
         Additional training callbacks.
     compile_kwargs : dict
         Additional compilation parameters.
+    optimizer_kwargs: dict
+        Additional keyword arguments passed the to `tf.keras.optimizers.Adam' optimizer.
     fit_kwargs: dict
         Additional keyword arguments passed to `Model.fit`.
 
@@ -146,12 +146,7 @@ def fit_distribution(
 
     """
     set_seed(seed)
-    if weight_decay:
-        optimizer = K.optimizers.AdamW(
-            learning_rate=learning_rate, weight_decay=weight_decay
-        )
-    else:
-        optimizer = K.optimizers.Adam(learning_rate=learning_rate)
+    optimizer = K.optimizers.Adam(learning_rate=learning_rate, **optimizer_kwargs)
     model.compile(optimizer=optimizer, loss=loss, **compile_kwargs)
 
     callbacks.extend(
