@@ -28,4 +28,4 @@ env | sort
 export MLFLOW_EXPERIMENT_NAME="sim_seeds_$(date -I)_${SEED}"
 export MLFLOW_TRACKING_URI=http://login1:5000
 
-dvc exp run --temp -S "seed=${SEED}" "eval-sim@dataset${DATASET_NUM}-${MODEL_NAME}"
+dvc exp run --force --temp -S "seed=${SEED}" "eval-sim@dataset${DATASET_NUM}-${MODEL_NAME}"
