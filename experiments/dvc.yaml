@@ -89,6 +89,8 @@ stages:
     - results/${item.dataset.type}/${item.dataset.name}/${item.model}/model_checkpoint.weights.h5
     outs:
     - results/${item.dataset.type}/${item.dataset.name}/${item.model}/eval_figures/
+    metrics:
+    - results/${item.dataset.type}/${item.dataset.name}/${item.model}/evaluation_metrics.yaml
 
   train-benchmark:
     matrix:
@@ -185,8 +187,8 @@ stages:
     - results/${item.dataset.type}/${item.dataset.name}/${item.model}/model_checkpoint.weights.h5
     outs:
     - results/${item.dataset.type}/${item.dataset.name}/${item.model}/eval_figures/
-    # metrics:
-    # - results/${item.dataset.type}/${item.dataset.name}/${item.model}/test_metrics.yaml
+    metrics:
+    - results/${item.dataset.type}/${item.dataset.name}/${item.model}/evaluation_metrics.yaml
 
   train-malnutrition:
     foreach: ${malnutrition_models}

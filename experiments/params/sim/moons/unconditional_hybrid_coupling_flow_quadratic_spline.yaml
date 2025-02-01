@@ -3,8 +3,8 @@ compile_kwargs:
 two_stage_training: true
 fit_kwargs:
 - epochs: 1000
-  batch_size: 512
-  learning_rate: 0.08
+  batch_size: 1024
+  learning_rate: 0.05
   reduce_lr_on_plateau: false
   early_stopping: 50
   monitor: val_loss

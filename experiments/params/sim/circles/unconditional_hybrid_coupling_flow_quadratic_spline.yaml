@@ -2,7 +2,7 @@ compile_kwargs:
   jit_compile: true
 two_stage_training: true
 fit_kwargs:
-- epochs: 100
+- epochs: 1000
   batch_size: 1024
   learning_rate: 0.05
   reduce_lr_on_plateau: false
