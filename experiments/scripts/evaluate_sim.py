@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-01-31 13:45:12 (Marcel Arpogaus)
+# changed : 2025-02-01 13:02:37 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -24,6 +24,7 @@ import pandas as pd
 import seaborn as sns
 import tensorflow as tf
 import tensorflow_probability as tfp
+import yaml
 from tensorflow_probability import distributions as tfd
 
 from mctm.data import get_dataset
@@ -286,6 +287,14 @@ def evaluate(
         test_loss = model.evaluate(x, y, batch_size=2**10)
         __LOGGER__.info("test_loss: %.4f", test_loss)
         mlflow.log_metric("test_loss", test_loss)
+
+        with open(
+            os.path.join(results_path, "evaluation_metrics.yaml"), "w+"
+        ) as results_file:
+            yaml.dump(
+                {"test_loss": test_loss},
+                results_file,
+            )
 
         setup_latex(fontsize=10)
         fig = pdf_contour_plot(model)

@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2024-12-13 13:45:18 (Marcel Arpogaus)
+# changed : 2025-01-28 17:21:40 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -168,9 +168,7 @@ def plot_reliability_diagram(model, dims, x, y, targets, **kwargs):
 
     def apply_cdf(df):
         data_cols = ["data_" + c for c in targets]
-        model_cols = ["model_" + c for c in targets]
         measurements = df.loc[:, data_cols].values
-        samples = df.loc[:, model_cols].values
         marginal_dist = model.marginal_distribution(df.cage.unique()[..., None])
         marginal_dist = tfd.TransformedDistribution(
             distribution=marginal_dist.distribution.distribution,
