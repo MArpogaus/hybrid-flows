@@ -15,7 +15,7 @@ fit_kwargs:
   learning_rate:
     scheduler_kwargs:
       decay_steps: epochs
-      initial_learning_rate: 0.005
+      initial_learning_rate: 0.001
     scheduler_name: cosine_decay
   reduce_lr_on_plateau: false
   early_stopping: 50
@@ -59,9 +59,9 @@ model_kwargs:
       batch_norm: false
       dropout: false
       hidden_units:
-      - 512
-      - 32
-      - 512
+      - 128
+      - 128
+      - 128
       dtype: float32
       input_shape: [1]
       parameter_shape: [1, 95] # 32 * 3 - 1

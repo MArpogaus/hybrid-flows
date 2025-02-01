@@ -1,8 +1,8 @@
 compile_kwargs:
   jit_compile: false
 fit_kwargs:
-  epochs: 400
-  batch_size: 1024
+  epochs: 200
+  batch_size: 512
   learning_rate:
     scheduler_kwargs:
       decay_steps: epochs

@@ -37,7 +37,7 @@ model_kwargs:
       low: -5
     parameters_fn: bernstein_polynomial
     parameters_fn_kwargs:
-      dtype: float
+      dtype: float32
       extrapolation: true
       conditional_event_shape: 1
       polynomial_order: 1
