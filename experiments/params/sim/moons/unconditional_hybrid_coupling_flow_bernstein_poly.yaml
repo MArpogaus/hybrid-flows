@@ -1,5 +1,5 @@
 compile_kwargs:
-  jit_compile: true
+  jit_compile: false
 two_stage_training: true
 fit_kwargs:
 - epochs: 1000
