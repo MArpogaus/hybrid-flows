@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-12-12 09:45:44 (Marcel Arpogaus)
-# changed : 2025-01-28 17:29:00 (Marcel Arpogaus)
+# changed : 2025-02-05 10:42:15 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -116,7 +116,11 @@ def malnutrition_after_fit_hook(
         Additional kwargs passed to `plot_marginal_cdf_and_pdf`
 
     """
-    x, y = validation_data._input_dataset._tensors
+    # unpack dataset
+    ds = validation_data
+    while not hasattr(ds, "_tensors"):
+        ds = ds._input_dataset
+    x, y = ds._tensors
     fig = plot_malnutrition_samples(
         model, x, y, seed, targets, frac=0.5, **plot_samples_kwargs
     )

@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from mctm.utils.tensorflow import set_seed
 
 
-def get_dataset(
+def load_data(
     data_path,
     targets,
     scale=True,
@@ -49,7 +49,7 @@ def get_dataset(
         print(f"{covariates=}")
 
     if test_mode:
-        data = data.groupby(covariates).sample(frac=0.2, random_state=1)
+        data = data.groupby(covariates).sample(frac=0.4, random_state=1)
 
     # Split the dataset into train, validation, and test sets
     set_seed(seed)

@@ -16,7 +16,7 @@ from sklearn import datasets
 from sklearn.preprocessing import MinMaxScaler
 
 
-def get_dataset(
+def gen_data(
     dataset_name,
     n_samples,
     scale,

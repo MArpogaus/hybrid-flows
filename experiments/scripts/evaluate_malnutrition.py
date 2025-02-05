@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-01-28 17:21:40 (Marcel Arpogaus)
+# changed : 2025-02-05 16:38:26 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -28,7 +28,7 @@ import tensorflow_probability as tfp
 from matplotlib import pyplot as plt
 from tensorflow_probability import distributions as tfd
 
-from mctm.data.malnutrion import get_dataset
+from mctm.data import get_dataset, make_malnutrition_dataset
 from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
 from mctm.utils.mlflow import (
     log_and_save_figure,
@@ -39,6 +39,8 @@ from mctm.utils.pipeline import prepare_pipeline
 from mctm.utils.visualisation import (
     _get_malnutrition_samples_df,
     get_figsize,
+    plot_malnutrition_data,
+    plot_malnutrition_samples,
     setup_latex,
 )
 
@@ -330,13 +332,19 @@ def evaluate(
     tf.config.set_visible_devices([], "GPU")
 
     figsize = get_figsize(params["textwidth"])
+    fig_height = figsize[0]
     figsize_half = get_figsize(params["textwidth"], fraction=0.7)
     model_kwargs = params["model_kwargs"]
     dataset_kwargs = params["dataset_kwargs"][dataset_name]
     figure_path = os.path.join(results_path, "eval_figures/")
     os.makedirs(figure_path, exist_ok=True)
 
-    (train_data, validation_data, _), dims = get_dataset(**dataset_kwargs)
+    get_dataset_fn, get_dataset_kwargs, _ = get_dataset(
+        dataset_type=dataset_type,
+        dataset_name=dataset_name,
+        test_mode=False,
+    )
+    (train_data, validation_data, test_data), dims = get_dataset_fn(**dataset_kwargs)
 
     if "marginal_bijectors" in model_kwargs.keys():
         get_model = HybridDensityRegressionModel
@@ -353,43 +361,60 @@ def evaluate(
 
         model = get_model(dims=dims, **model_kwargs)
         model.load_weights(os.path.join(results_path, "model_checkpoint.weights.h5"))
+        model.compile(
+            loss=lambda y, dist: -dist.log_prob(y), **params["compile_kwargs"]
+        )
+
+        train_loss = model.evaluate(
+            make_malnutrition_dataset(train_data, batch_size=2**10)
+        )
+        validation_loss = model.evaluate(
+            make_malnutrition_dataset(validation_data, batch_size=2**10)
+        )
+        test_loss = model.evaluate(
+            make_malnutrition_dataset(test_data, batch_size=2**10)
+        )
+
+        __LOGGER__.info("train_loss: %.3f", train_loss)
+        __LOGGER__.info("validation_loss: %.3f", validation_loss)
+        __LOGGER__.info("test_loss: %.3f", test_loss)
 
         setup_latex(fontsize=10)
-        # fig = plot_malnutrition_data(
-        #     validation_data,
-        #     targets=dataset_kwargs["targets"],
-        #     covariates=dataset_kwargs["covariates"],
-        #     hue=dataset_kwargs["covariates"][0],
-        #     seed=params["seed"],
-        #     frac=0.8,
-        #     height=fig_height / 3,
-        # )
-        # log_and_save_figure(
-        #     figure=fig,
-        #     figure_path=figure_path,
-        #     file_name="_".join((dataset_type, model_name, "data")),
-        #     file_format=figure_format,
-        #     bbox_inches="tight",
-        #     transparent=True,
-        # )
+        fig = plot_malnutrition_data(
+            validation_data,
+            targets=dataset_kwargs["targets"],
+            covariates=dataset_kwargs["covariates"],
+            hue=dataset_kwargs["covariates"][0],
+            seed=params["seed"],
+            frac=0.8,
+            height=fig_height / 3,
+        )
+        log_and_save_figure(
+            figure=fig,
+            figure_path=figure_path,
+            file_name="_".join((dataset_type, model_name, "data")),
+            file_format=figure_format,
+            bbox_inches="tight",
+            transparent=True,
+        )
 
-        # fig = plot_malnutrition_samples(
-        #     model=model,
-        #     x=validation_data[0],
-        #     y=validation_data[1],
-        #     seed=params["seed"],
-        #     targets=dataset_kwargs["targets"],
-        #     height=fig_height / 3,
-        #     frac=0.8,
-        # )
-        # log_and_save_figure(
-        #     figure=fig,
-        #     figure_path=figure_path,
-        #     file_name="_".join((dataset_type, model_name, "samples")),
-        #     file_format=figure_format,
-        #     bbox_inches="tight",
-        #     transparent=True,
-        # )
+        fig = plot_malnutrition_samples(
+            model=model,
+            x=validation_data[0],
+            y=validation_data[1],
+            seed=params["seed"],
+            targets=dataset_kwargs["targets"],
+            height=fig_height / 3,
+            frac=0.8,
+        )
+        log_and_save_figure(
+            figure=fig,
+            figure_path=figure_path,
+            file_name="_".join((dataset_type, model_name, "samples")),
+            file_format=figure_format,
+            bbox_inches="tight",
+            transparent=True,
+        )
 
         if isinstance(model, HybridDensityRegressionModel):
             marginal_bijectors = model_kwargs["marginal_bijectors"]

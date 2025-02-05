@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-02-01 13:02:37 (Marcel Arpogaus)
+# changed : 2025-02-05 16:45:59 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -258,7 +258,6 @@ def evaluate(
         dataset_type=dataset_type,
         dataset_name=dataset_name,
         test_mode=False,
-        fit_kwargs={},
         test_data=True,
         **dataset_kwargs,
     )

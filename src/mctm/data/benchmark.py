@@ -5,7 +5,7 @@ import os
 import numpy as np
 
 
-def get_dataset(dataset_name, dataset_path="datasets/benchmark", test_mode=False):
+def load_data(dataset_name, dataset_path="datasets/benchmark", test_mode=False):
     """Provide access to the specified dataset.
 
     :param str dataset_name: Name of the dataset (e.g., "POWER", "GAS", etc.).
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     shift_and_scale = {}
     for dataset_name in ("POWER", "GAS", "HEPMASS", "MINIBOONE", "BSDS300"):
         print(f"=== {dataset_name} ===")
-        (train_data, validation_data, _), dims = get_dataset(dataset_name)
+        (train_data, validation_data, _), dims = load_data(dataset_name)
         print(f"{dims=}")
         for d, split in zip((train_data, validation_data), ("train", "validate")):
             print(f"--- {split} ---")
@@ -44,11 +44,19 @@ if __name__ == "__main__":
             print(f"{d.mean()=}")
 
         d = train_data
-        eps = 0.01
-        data_min = np.min([train_data.min(), validation_data.min()])
-        data_max = np.max([train_data.max(), validation_data.max()])
-        shift = (-data_min + eps).round(3)
-        scale = ((1 - 2 * eps) / (data_max - data_min)).round(3)
+        # data_min = np.min([train_data.min(), validation_data.min()])
+        # data_max = np.max([train_data.max(), validation_data.max()])
+        data_min = np.min([train_data.min(0), validation_data.min(0)], 0)
+        data_max = np.max([train_data.max(0), validation_data.max(0)], 0)
+
+        eps = 0.1
+        domain_min = np.floor(data_min).astype(float) - eps
+        domain_max = np.ceil(data_max).astype(float) + eps
+        print(f"{domain_min=}")
+        print(f"{domain_max=}")
+
+        shift = (-domain_min + eps).round(3)
+        scale = ((1 - 2 * eps) / (domain_max - domain_min)).round(3)
 
         print(f"{shift=}")
         print(f"{scale=}")
@@ -64,8 +72,11 @@ if __name__ == "__main__":
         assert scaled_val_data.min() >= 0
         assert scaled_val_data.max() <= 1
 
+        print(f"domain: {[domain_min.tolist(), domain_max.tolist()]}")
+
         shift_and_scale[dataset_name.lower()] = dict(
-            scale=scale.tolist(), shift=shift.tolist()
+            scale=scale.tolist(),
+            shift=shift.tolist(),
         )
 
     print(yaml.safe_dump({"benchmark_datasets": shift_and_scale}))

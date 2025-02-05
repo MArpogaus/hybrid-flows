@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-01-29 16:50:48 (Marcel Arpogaus)
+# changed : 2025-02-05 16:41:22 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -25,7 +25,7 @@ import tensorflow_probability as tfp
 import yaml
 from tensorflow_probability import distributions as tfd
 
-from mctm.data import get_dataset
+from mctm.data import get_data, make_benchmark_dataset
 from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
 from mctm.utils.mlflow import (
     log_and_save_figure,
@@ -100,15 +100,6 @@ def qq_plots(
     return fig
 
 
-def make_dataset(data, batch_size):
-    return (
-        tf.data.Dataset.from_tensor_slices((tf.ones_like(data), data))
-        .batch(batch_size, drop_remainder=True)
-        .cache()
-        .prefetch(tf.data.AUTOTUNE)
-    )
-
-
 def evaluate(
     dataset_name: str,
     dataset_type: str,
@@ -152,11 +143,10 @@ def evaluate(
     figure_path = os.path.join(results_path, "eval_figures/")
     os.makedirs(figure_path, exist_ok=True)
 
-    get_dataset_fn, get_dataset_kwargs, _ = get_dataset(
+    get_dataset_fn, get_dataset_kwargs, _ = get_data(
         dataset_type=dataset_type,
         dataset_name=dataset_name,
         test_mode=False,
-        fit_kwargs={},
     )
     (train_data, validation_data, test_data), dims = get_dataset_fn(get_dataset_kwargs)
     Y = validation_data
@@ -180,11 +170,13 @@ def evaluate(
             loss=lambda y, dist: -dist.log_prob(y), **params["compile_kwargs"]
         )
 
-        train_loss = model.evaluate(make_dataset(train_data, batch_size=2**10))
-        validation_loss = model.evaluate(
-            make_dataset(validation_data, batch_size=2**10)
+        train_loss = model.evaluate(
+            make_benchmark_dataset(train_data, batch_size=2**10)
         )
-        test_loss = model.evaluate(make_dataset(test_data, batch_size=2**10))
+        validation_loss = model.evaluate(
+            make_benchmark_dataset(validation_data, batch_size=2**10)
+        )
+        test_loss = model.evaluate(make_benchmark_dataset(test_data, batch_size=2**10))
 
         __LOGGER__.info("train_loss: %.3f", train_loss)
         __LOGGER__.info("validation_loss: %.3f", validation_loss)
