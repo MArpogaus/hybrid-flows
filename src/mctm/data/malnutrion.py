@@ -48,9 +48,6 @@ def load_data(
         covariates = data.columns[~data.columns.isin(targets)].to_list()
         print(f"{covariates=}")
 
-    if test_mode:
-        data = data.groupby(covariates).sample(frac=0.4, random_state=1)
-
     # Split the dataset into train, validation, and test sets
     set_seed(seed)
     train_val_data, test_data = train_test_split(

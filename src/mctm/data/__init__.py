@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2025-01-28 17:08:47 (Marcel Arpogaus)
-# changed : 2025-02-05 16:32:11 (Marcel Arpogaus)
+# changed : 2025-02-05 18:55:12 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -59,7 +59,7 @@ def _get_preprocess_dataset(batch_size, get_dataset_fn):
 def make_malnutrition_dataset(data, batch_size):
     """Return malnutrition data as TensorFlow dataset."""
     return _make_dataset(
-        tf.data.Dataset.from_tensor_slices((data[0], data[1])),
+        tf.data.Dataset.from_tensor_slices((tf.squeeze(data[0]), data[1])),
         batch_size,
     )
 
