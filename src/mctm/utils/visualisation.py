@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 12:12:12 (Marcel Arpogaus)
-# changed : 2025-01-25 13:46:26 (Marcel Arpogaus)
+# changed : 2025-02-05 22:25:36 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -132,7 +132,9 @@ def _get_malnutrition_samples_df(
     """
     df_data = pd.DataFrame(y, columns=targets).assign(source="data").assign(cage=x)
     df_model = (
-        pd.DataFrame(model(x).sample(seed=seed).numpy().squeeze(), columns=targets)
+        pd.DataFrame(
+            model(tf.squeeze(x)).sample(seed=seed).numpy().squeeze(), columns=targets
+        )
         .assign(source="model")
         .assign(cage=x)
     )

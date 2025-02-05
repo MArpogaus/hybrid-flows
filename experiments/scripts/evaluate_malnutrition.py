@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-02-05 16:38:26 (Marcel Arpogaus)
+# changed : 2025-02-05 23:09:33 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -51,9 +51,11 @@ __LOGGER__ = logging.getLogger(__name__)
 # %% functions #################################################################
 def plot_params(model, x, targets, **kwargs):
     """Plot marginal parameter functions."""
-    t = np.linspace(min(x), max(x), 200, dtype="float32")
+    t = np.linspace(min(x), max(x), 200)
     pv = (
-        model.marginal_transformation_parameters_fn(t[..., None])[1][-1]["parameters"]
+        model.marginal_transformation_parameters_fn(
+            tf.convert_to_tensor(t, dtype=model.dtype)
+        )[1][-1]["parameters"]
         .numpy()
         .squeeze()
     )
@@ -72,7 +74,7 @@ def plot_rank_corr(model, x, targets, **kwargs):
     # %% rank correlation
     ages = np.unique(x)
     ages = np.sort(ages)
-    joint_dist = model(tf.convert_to_tensor(ages, dtype=model.dtype)[..., None])
+    joint_dist = model(tf.convert_to_tensor(ages, dtype=model.dtype))
 
     lambdas = joint_dist.bijector.bijectors[-1].bijector.parameters["scale"].to_dense()
 
@@ -115,7 +117,7 @@ def plot_marginal_distribution(model, ages, targets, palette="mako_r", **kwargs)
         np.linspace(0, 1, len(ages))
     ).tolist()
     marginal_dist = model.marginal_distribution(
-        tf.convert_to_tensor(ages, dtype=model.dtype)[..., None]
+        tf.convert_to_tensor(ages, dtype=model.dtype)
     )
     marginal_dist = tfd.TransformedDistribution(
         distribution=marginal_dist.distribution.distribution.distribution,
@@ -171,9 +173,11 @@ def plot_reliability_diagram(model, dims, x, y, targets, **kwargs):
     def apply_cdf(df):
         data_cols = ["data_" + c for c in targets]
         measurements = df.loc[:, data_cols].values
-        marginal_dist = model.marginal_distribution(df.cage.unique()[..., None])
+        marginal_dist = model.marginal_distribution(
+            tf.convert_to_tensor(df.cage.unique(), dtype=model.dtype)
+        )
         marginal_dist = tfd.TransformedDistribution(
-            distribution=marginal_dist.distribution.distribution,
+            distribution=marginal_dist.distribution.distribution.distribution,
             bijector=marginal_dist.bijector,
         )
         model_cdf = marginal_dist.cdf(measurements).numpy()
@@ -518,7 +522,7 @@ def evaluate(
             )
 
             # Q-Q joint
-            dist = model.joint_distribution(X)
+            dist = model.joint_distribution(tf.squeeze(X))
             flow = dist.bijector
             normal_base = dist.distribution.distribution.distribution
 
@@ -543,8 +547,8 @@ def evaluate(
             )
 
             # Q-Q marginal
-            marginal_dist = model.marginal_distribution(X)
-            joint_dist = model.joint_distribution(X)
+            marginal_dist = model.marginal_distribution(tf.squeeze(X))
+            joint_dist = model.joint_distribution(tf.squeeze(X))
 
             w = marginal_dist.bijector.inverse(Y)
             z = joint_dist.bijector.inverse(Y)
