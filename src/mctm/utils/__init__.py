@@ -19,7 +19,7 @@ from typing import Any, Callable, Union
 
 
 # FUNCTION DEFINITIONS #########################################################
-def flatten_dict(d: Mapping[str, Any], parent_key: str = "", sep: str = ".") -> dict:
+def flatten_dict(value: Any, parent_key: str = "", sep: str = ".") -> dict:
     """Recursively flatten a nested dictionary.
 
     This function takes a nested dictionary and flattens it by concatenating
@@ -28,8 +28,8 @@ def flatten_dict(d: Mapping[str, Any], parent_key: str = "", sep: str = ".") -> 
 
     Parameters
     ----------
-    d : dict
-        The input nested dictionary to be flattened.
+    value : Any
+        If the input is a dictionary it will be recursively flattened.
     parent_key : str, optional
         Used for recursion, indicating the parent key.
     sep : str, optional
@@ -42,19 +42,16 @@ def flatten_dict(d: Mapping[str, Any], parent_key: str = "", sep: str = ".") -> 
 
     """
     items = []
-    for key, value in d.items():
-        new_key = sep.join((parent_key, str(key))) if parent_key else str(key)
-        if isinstance(value, Mapping) and len(value):
+    if isinstance(value, Mapping):
+        for key, value in value.items():
+            new_key = sep.join((parent_key, str(key))) if parent_key else str(key)
             items.extend(flatten_dict(value, new_key, sep=sep).items())
-        elif isinstance(value, (tuple, MutableSequence)):
-            for i, v in enumerate(value):
-                new_key_indexed = sep.join((new_key, str(i)))
-                if isinstance(v, Mapping) and len(value):
-                    items.extend(flatten_dict(v, new_key_indexed, sep=sep).items())
-                else:
-                    items.append((new_key_indexed, v))
-        else:
-            items.append((new_key, value))
+    elif isinstance(value, (tuple, MutableSequence)):
+        for i, v in enumerate(value):
+            new_key = sep.join((parent_key, str(i)))
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+    else:
+        items.append((parent_key, value))
     return dict(items)
 
 
