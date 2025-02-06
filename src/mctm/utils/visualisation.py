@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-08-22 12:12:12 (Marcel Arpogaus)
-# changed : 2025-02-05 22:25:36 (Marcel Arpogaus)
+# changed : 2025-02-06 14:38:25 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -203,7 +203,7 @@ def setup_latex(fontsize: int = 10) -> None:
         "text.usetex": True,
         "font.family": "serif",
         # for the align enivironment
-        "text.latex.preamble": r"\usepackage{amsmath}",
+        "text.latex.preamble": r"\usepackage{amsmath}\usepackage{bm}",
         # Use 10pt font in plots, to match 10pt font in document
         "axes.labelsize": fontsize,
         "font.size": fontsize,

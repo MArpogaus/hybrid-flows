@@ -21,6 +21,7 @@ from contextlib import contextmanager
 
 import mlflow
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 
 from mctm.utils import filter_recursive, flatten_dict
@@ -86,10 +87,47 @@ def start_run_with_exception_logging(**kwds):
         mlflow.end_run(status="FINISHED")
 
 
-def log_and_save_figure(figure, figure_path, file_name, file_format, **kwargs):
+def extract_data_from_figure(fig, xlabel="x", ylabel="y"):
+    """Hacky helper function to get data back from mpl figure.
+
+    Warning:
+    -------
+    This makes quite some assumptions about the plot structure and is note suitable
+    to extract data from arbitrary plots.
+
+    """
+    dfs = []
+    for ax in fig.get_axes():
+        index = ax.title.get_text()
+        new_xlabel, new_ylabel = ax.get_xlabel(), ax.get_ylabel()
+        columns = [
+            xlabel if new_xlabel == "" else new_xlabel,
+            ylabel if new_ylabel == "" else new_ylabel,
+        ]
+        xlabel, ylabel = columns
+        for i, line in enumerate(ax.lines):
+            data = np.stack(line.get_data(), 1)
+            df = pd.DataFrame(data=data, columns=columns).assign(
+                var_name="-".join((index, str(i)))
+            )
+            dfs.append(df)
+    return pd.concat(dfs).reset_index(drop=True)
+
+
+def log_and_save_figure(
+    figure, figure_path, file_name, file_format, extract_data=False, **kwargs
+):
     """Save figure to disk and log it with mlflow."""
     figure.savefig(
         os.path.join(figure_path, f"{file_name}.{file_format}"),
         **kwargs,
     )
     mlflow.log_figure(figure, f"{file_name}.svg")
+    if extract_data:
+        dat = extract_data_from_figure(figure)
+        dat.to_csv(
+            os.path.join(figure_path, f"{file_name}.csv"),
+        )
+        mlflow.log_artifact(
+            os.path.join(figure_path, f"{file_name}.csv"),
+        )

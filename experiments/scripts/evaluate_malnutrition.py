@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-02-06 08:13:12 (Marcel Arpogaus)
+# changed : 2025-02-06 14:46:53 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -61,9 +61,10 @@ def plot_params(model, x, targets, **kwargs):
     )
     fig, axs = plt.subplots(1, len(targets), sharex=True, sharey=True, **kwargs)
     for (i, c), label in zip(enumerate(targets), targets):
-        axs[i].plot(t, pv[:, i])
+        axs[i].plot(t, -pv[:, i])
         axs[i].set_xlabel("cage")
         axs[i].set_title(label.upper())
+    axs[0].set_ylabel(r"$-\bm{\beta}_x$")
     axs[0].set_xticks((t.min(), t.max()))
     fig.tight_layout(w_pad=-0.1)
     return fig
@@ -258,7 +259,7 @@ def plot_reliability_diagram(model, dims, x, y, targets, **kwargs):
 def get_quantile(data_or_dist, q, i=None):
     """Get qunatile from either distribution or ecdf."""
     if isinstance(data_or_dist, tfd.Distribution):
-        return data_or_dist.quantile(q)
+        return data_or_dist.quantile(q).numpy()
     else:
         return np.quantile(data_or_dist[..., i], q)
 
@@ -268,30 +269,33 @@ def qq_plot(
     y,
     targets,
     n_probs=200,
-    xlim=(-4.5, 4.5),
-    ylim=(-4.5, 4.5),
     xlabel="Estimated Quantile",
     ylabel="Observed Quantile",
+    low_lim=-5,
+    high_lim=5,
+    eps=1e-6,
     **kwargs,
 ):
     """Create a Qunatile-Quantile-Plot."""
     fig, axs = plt.subplots(1, len(targets), sharey=True, **kwargs)
-    q = np.linspace(0, 1, n_probs)
+    q = np.linspace(eps, 1 - eps, n_probs)
     for i, ax in enumerate(axs):
         x_quantiles = get_quantile(x, q, i)
         y_quantiles = get_quantile(y, q, i)
 
-        ax.plot(xlim, ylim, "k:", linewidth=1)
+        ax.plot((low_lim, high_lim), (low_lim, high_lim), "k:", linewidth=1)
         ax.plot(x_quantiles, y_quantiles)
 
         ax.set_title(targets[i].upper())
         ax.set_xlabel(xlabel)
         ax.set_aspect("equal")
-        ax.set(xlim=xlim, ylim=ylim)
+        ax.set(xlim=(low_lim, high_lim), ylim=(low_lim, high_lim))
+        ax.set_xticks([])
+        ax.set_yticks([])
 
     axs[0].set_ylabel(ylabel)
 
-    fig.tight_layout(w_pad=0)
+    fig.tight_layout(w_pad=0.2)
 
     return fig
 
@@ -445,6 +449,7 @@ def evaluate(
                     file_format=figure_format,
                     bbox_inches="tight",
                     transparent=True,
+                    extract_data=True,
                 )
             if (
                 len(joint_bijectors) == 1
@@ -497,6 +502,30 @@ def evaluate(
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,
+            )
+
+            # Q-Q samples
+            X, Y = validation_data
+            dist = model.marginal_distribution(tf.squeeze(X))
+
+            setup_latex(fontsize=10)
+            fig = qq_plot(
+                Y,
+                dist.sample(seed=1),
+                targets=dataset_kwargs["targets"],
+                n_probs=200,
+                xlabel="Observed Quantile",
+                ylabel="Estimated Quantile",
+                figsize=figsize_half,
+            )
+            log_and_save_figure(
+                figure=fig,
+                figure_path=figure_path,
+                file_name="_".join((dataset_type, model_name, "qq_data_samples")),
+                file_format=figure_format,
+                bbox_inches="tight",
+                transparent=True,
+                extract_data=True,
             )
 
             # Q-Q marginal
