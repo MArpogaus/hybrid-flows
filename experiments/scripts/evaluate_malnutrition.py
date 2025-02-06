@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-02-05 23:09:33 (Marcel Arpogaus)
+# changed : 2025-02-06 08:13:12 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -382,6 +382,10 @@ def evaluate(
         __LOGGER__.info("train_loss: %.3f", train_loss)
         __LOGGER__.info("validation_loss: %.3f", validation_loss)
         __LOGGER__.info("test_loss: %.3f", test_loss)
+
+        mlflow.log_metric("train_loss", train_loss)
+        mlflow.log_metric("validation_loss", validation_loss)
+        mlflow.log_metric("test_loss", test_loss)
 
         setup_latex(fontsize=10)
         fig = plot_malnutrition_data(
