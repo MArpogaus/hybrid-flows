@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2025-01-07 14:57:42 (Marcel Arpogaus)
+# changed : 2025-01-14 17:02:22 (Marcel Arpogaus)
 
 
 # %% Description ###############################################################
@@ -340,10 +340,16 @@ def _init_parameters_fn(
                 if callable(parameters_fn):
                     __LOGGER__.debug("Using provided callable as parameter function")
                     get_parameters_fn = parameters_fn
-                else:
+                elif isinstance(parameters_fn, str):
                     __LOGGER__.debug("Parameter function: %s", parameters_fn)
                     get_parameters_fn = getattr(
                         parameters_lib, f"get_{parameters_fn}_fn"
+                    )
+                else:
+                    raise TypeError(
+                        "Unsupported type '%s' for '%s' in bijector definition.",
+                        type(parameters_fn),
+                        __PARAMETERS_FN_KEY__,
                     )
 
                 __LOGGER__.debug("Initializing parametrization function")
