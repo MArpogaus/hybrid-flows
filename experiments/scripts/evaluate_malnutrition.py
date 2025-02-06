@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-02-06 14:46:53 (Marcel Arpogaus)
+# changed : 2025-02-06 15:28:57 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -64,7 +64,7 @@ def plot_params(model, x, targets, **kwargs):
         axs[i].plot(t, -pv[:, i])
         axs[i].set_xlabel("cage")
         axs[i].set_title(label.upper())
-    axs[0].set_ylabel(r"$-\bm{\beta}_x$")
+    axs[0].set_ylabel(r"$\beta_x$")
     axs[0].set_xticks((t.min(), t.max()))
     fig.tight_layout(w_pad=-0.1)
     return fig
