@@ -2,7 +2,7 @@
 #SBATCH --partition=gpu1
 #SBATCH --gres=gpu:1
 #SBATCH --mem=256GB
-#SBATCH --time=2:00:00
+#SBATCH --time=20:00:00
 #SBATCH --output="slurm_train_hybrid_models_%j.out"
 source ~/.bashrc
 
@@ -22,6 +22,8 @@ nvidia-smi -pm 1
 python -c 'import tensorflow as tf; assert len(tf.config.list_physical_devices("GPU")) > 0'
 
 env | sort
+
+cd experiments
 
 export MLFLOW_TRACKING_URI=http://login1:5000
 
