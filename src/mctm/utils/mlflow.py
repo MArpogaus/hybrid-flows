@@ -122,7 +122,7 @@ def log_and_save_figure(
         os.path.join(figure_path, f"{file_name}.{file_format}"),
         **kwargs,
     )
-    mlflow.log_figure(figure, f"{file_name}.svg")
+    mlflow.log_figure(figure, f"{file_name}.{file_format}")
     if extract_data:
         dat = extract_data_from_figure(figure)
         dat.to_csv(
