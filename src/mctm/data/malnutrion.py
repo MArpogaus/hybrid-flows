@@ -17,6 +17,7 @@ def load_data(
     val_size=0.1,
     covariates=None,
     stratify=False,
+    seed=1,
     dtype=tf.float32,
     column_transformers=[],
     test_mode=False,
@@ -51,12 +52,14 @@ def load_data(
         test_size=test_size,
         shuffle=True,
         stratify=data[covariates] if stratify else None,
+        random_state=seed,
     )
     train_data, val_data = train_test_split(
         train_val_data,
         test_size=val_size,
         shuffle=True,
         stratify=train_val_data[covariates] if stratify else None,
+        random_state=seed,
     )
 
     # Apply data scaling using column transformer
