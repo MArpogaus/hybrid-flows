@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-29 13:22:38 (Marcel Arpogaus)
-# changed : 2024-12-02 14:08:48 (Marcel Arpogaus)
+# changed : 2025-02-06 16:34:41 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -248,7 +248,6 @@ def pipeline(
 
 
 def fit_distribution_with_logging(
-    seed: int,
     run_name: str,
     data: Any,
     preprocess_dataset: DoPreprocessDataset,
@@ -264,8 +263,6 @@ def fit_distribution_with_logging(
 
     Parameters
     ----------
-    seed : int
-        Seed for random operations to ensure reproducibility.
     run_name : str
         Name of the MLFlow run.
     results_path : str
@@ -315,7 +312,6 @@ def fit_distribution_with_logging(
 
         hist = fit_distribution(
             model=model,
-            seed=seed,
             results_path=results_path,
             compile_kwargs=compile_kwargs,
             **fit_kwargs,

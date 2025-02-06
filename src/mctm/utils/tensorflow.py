@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-10-29 12:55:08 (Marcel Arpogaus)
-# changed : 2025-01-29 15:36:55 (Marcel Arpogaus)
+# changed : 2025-02-06 16:34:16 (Marcel Arpogaus)
 
 # %% License ###################################################################
 
@@ -85,7 +85,6 @@ def get_learning_rate(
 
 def fit_distribution(
     model: K.Model,
-    seed: int,
     learning_rate: float,
     results_path: str,
     monitor: str,
@@ -110,8 +109,6 @@ def fit_distribution(
     ----------
     model : K.Model
         The probability distribution model to fit.
-    seed : int
-        The random seed for reproducibility.
     learning_rate : float
         The learning rate for the optimizer.
     results_path : str
@@ -145,7 +142,6 @@ def fit_distribution(
         The training history of the fitted model.
 
     """
-    set_seed(seed)
     optimizer = K.optimizers.Adam(learning_rate=learning_rate, **optimizer_kwargs)
     model.compile(optimizer=optimizer, loss=loss, **compile_kwargs)
 

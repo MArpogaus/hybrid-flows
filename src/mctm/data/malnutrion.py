@@ -8,8 +8,6 @@ from sklearn.compose import make_column_transformer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from mctm.utils.tensorflow import set_seed
-
 
 def load_data(
     data_path,
@@ -20,7 +18,6 @@ def load_data(
     covariates=None,
     stratify=False,
     dtype=tf.float32,
-    seed=1,
     column_transformers=[],
     test_mode=False,
 ):
@@ -49,7 +46,6 @@ def load_data(
         print(f"{covariates=}")
 
     # Split the dataset into train, validation, and test sets
-    set_seed(seed)
     train_val_data, test_data = train_test_split(
         data,
         test_size=test_size,
