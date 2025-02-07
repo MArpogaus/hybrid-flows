@@ -4,7 +4,7 @@
 # author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 #
 # created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-02-06 15:28:57 (Marcel Arpogaus)
+# changed : 2025-02-07 14:30:43 (Marcel Arpogaus)
 
 
 # %% License ###################################################################
@@ -504,9 +504,9 @@ def evaluate(
                 transparent=True,
             )
 
-            # Q-Q samples
+            # Q-Q: data - samples
             X, Y = validation_data
-            dist = model.marginal_distribution(tf.squeeze(X))
+            dist = model.joint_distribution(tf.squeeze(X))
 
             setup_latex(fontsize=10)
             fig = qq_plot(
@@ -528,7 +528,7 @@ def evaluate(
                 extract_data=True,
             )
 
-            # Q-Q marginal
+            # Q-Q: normal - marginal
             X, Y = validation_data
             dist = model.marginal_distribution(X)
             flow = dist.bijector
@@ -538,11 +538,11 @@ def evaluate(
 
             setup_latex(fontsize=10)
             fig = qq_plot(
-                normalized_data,
                 normal_base,
+                normalized_data,
                 targets=dataset_kwargs["targets"],
-                xlabel="$W$ Quantile",
-                ylabel="Normal Quantile",
+                xlabel="Normal Quantile",
+                ylabel="$W$ Quantile",
                 figsize=figsize_half,
             )
             log_and_save_figure(
@@ -552,9 +552,10 @@ def evaluate(
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,
+                extract_data=True,
             )
 
-            # Q-Q joint
+            # Q-Q: normal - joint
             dist = model.joint_distribution(tf.squeeze(X))
             flow = dist.bijector
             normal_base = dist.distribution.distribution.distribution
@@ -563,11 +564,11 @@ def evaluate(
 
             setup_latex(fontsize=10)
             fig = qq_plot(
-                normalized_data,
                 normal_base,
+                normalized_data,
                 targets=dataset_kwargs["targets"],
-                xlabel="$Z$ Quantile",
-                ylabel="Normal Quantile",
+                xlabel="Normal Quantile",
+                ylabel="$Z$ Quantile",
                 figsize=figsize_half,
             )
             log_and_save_figure(
@@ -577,9 +578,10 @@ def evaluate(
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,
+                extract_data=True,
             )
 
-            # Q-Q marginal
+            # Q-Q: w - z
             marginal_dist = model.marginal_distribution(tf.squeeze(X))
             joint_dist = model.joint_distribution(tf.squeeze(X))
 
@@ -602,6 +604,7 @@ def evaluate(
                 file_format=figure_format,
                 bbox_inches="tight",
                 transparent=True,
+                extract_data=True,
             )
 
 
