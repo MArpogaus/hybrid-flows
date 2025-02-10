@@ -1,13 +1,3 @@
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# %% Author ####################################################################
-# file    : test_models.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2024-11-12 11:44:56 (Marcel Arpogaus)
-# changed : 2025-01-09 09:36:20 (Marcel Arpogaus)
-
-# %% License ###################################################################
-
 # %% Description ###############################################################
 """Unit test for density regression models."""
 

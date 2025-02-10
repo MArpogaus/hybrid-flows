@@ -1,13 +1,3 @@
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# %% Author ####################################################################
-# file    : train.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2024-12-12 09:45:44 (Marcel Arpogaus)
-# changed : 2025-02-05 10:42:15 (Marcel Arpogaus)
-
-# %% License ###################################################################
-
 # %% Description ###############################################################
 """Train multivariate density estimation models on different datasets."""
 

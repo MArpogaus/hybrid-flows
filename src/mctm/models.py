@@ -1,12 +1,3 @@
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# %% Author ####################################################################
-# file    : models.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2024-11-03 15:57:47 (Marcel Arpogaus)
-# changed : 2024-12-03 10:29:39 (Marcel Arpogaus)
-
-# %% License ###################################################################
 # %% Description ###############################################################
 """Definition of TensorFlow Keras models for density regression."""
 

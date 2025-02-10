@@ -1,12 +1,3 @@
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# %% Author ####################################################################
-# file    : distributions.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2024-10-03 12:48:17 (Marcel Arpogaus)
-# changed : 2025-01-14 17:02:22 (Marcel Arpogaus)
-
-
 # %% Description ###############################################################
 """Functions for probability distributions.
 

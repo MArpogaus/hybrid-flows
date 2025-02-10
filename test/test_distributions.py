@@ -1,13 +1,3 @@
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# %% Author ####################################################################
-# file    : test_distributions.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2024-10-31 13:56:39 (Marcel Arpogaus)
-# changed : 2025-01-07 14:18:47 (Marcel Arpogaus)
-
-# %% License ###################################################################
-
 # %% Description ###############################################################
 """Unit test for normalizing flow module."""
 

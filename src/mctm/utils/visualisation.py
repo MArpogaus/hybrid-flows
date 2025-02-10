@@ -1,13 +1,3 @@
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# %% Author ####################################################################
-# file    : visualisation.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2024-08-22 12:12:12 (Marcel Arpogaus)
-# changed : 2025-02-06 14:38:25 (Marcel Arpogaus)
-
-
-# %% License ###################################################################
 # %% Description ###############################################################
 """Visualization utils."""
 

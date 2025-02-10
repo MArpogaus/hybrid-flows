@@ -1,13 +1,3 @@
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# %% Author ####################################################################
-# file    : tensorflow.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2024-10-29 12:55:08 (Marcel Arpogaus)
-# changed : 2025-02-06 16:34:16 (Marcel Arpogaus)
-
-# %% License ###################################################################
-
 # %% Description ###############################################################
 """Tensorflow utils."""
 

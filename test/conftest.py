@@ -1,13 +1,3 @@
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# %% Author ####################################################################
-# file    : conftest.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2024-10-31 13:57:25 (Marcel Arpogaus)
-# changed : 2024-10-31 13:57:25 (Marcel Arpogaus)
-
-# %% License ###################################################################
-
 # %% Description ###############################################################
 """Definitions shared accros all tests."""
 

@@ -1,15 +1,3 @@
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# %% Author ####################################################################
-# file    : evaluate_sim.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2024-11-18 14:16:47 (Marcel Arpogaus)
-# changed : 2025-02-07 14:30:43 (Marcel Arpogaus)
-
-
-# %% License ###################################################################
-
-
 # %% Description ###############################################################
 """Train multivariate density estimation models on different datasets."""
 

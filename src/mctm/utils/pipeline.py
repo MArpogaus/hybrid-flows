@@ -1,13 +1,3 @@
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# %% Author ####################################################################
-# file    : pipeline.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2024-10-29 13:22:38 (Marcel Arpogaus)
-# changed : 2025-02-06 16:34:41 (Marcel Arpogaus)
-
-
-# %% License ###################################################################
 # %% Description ###############################################################
 """Pipeline."""
 

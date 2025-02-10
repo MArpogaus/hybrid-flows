@@ -1,18 +1,7 @@
+# %% Description ###############################################################
 """Mlflow utils."""
 
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# AUTHOR INFORMATION ##########################################################
-# file    : mlflow.py
-# author  : Marcel Arpogaus <marcel dot arpogaus at gmail dot com>
-#
-# created : 2023-01-16 12:47:35 (Marcel Arpogaus)
-# changed : 2021-03-26 11:48:25 (Marcel Arpogaus)
-# DESCRIPTION #################################################################
-# ...
-# LICENSE #####################################################################
-# ...
-###############################################################################
-# REQUIRED MODULES ############################################################
+# %% imports ###################################################################
 import logging
 import os
 import tempfile
@@ -27,7 +16,7 @@ import tensorflow as tf
 from mctm.utils import filter_recursive, flatten_dict
 
 
-# PUBLIC FUNCTIONS ############################################################
+# %% functions #################################################################
 def log_cfg(cfg: dict):
     """Log flattened dict as parameters in the current MLflow run.
 

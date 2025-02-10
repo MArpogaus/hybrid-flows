@@ -1,11 +1,3 @@
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# %% Author ####################################################################
-# file    : decorators.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2024-10-09 06:38:42 (Marcel Arpogaus)
-# changed : 2024-10-18 17:33:05 (Marcel Arpogaus)
-
 # %% Description ###############################################################
 """Module for useful decorator functions."""
 

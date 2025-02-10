@@ -1,11 +1,3 @@
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# %% Author ####################################################################
-# file    : activations.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2024-08-22 13:55:15 (Marcel Arpogaus)
-# changed : 2024-08-22 13:59:03 (Marcel Arpogaus)
-
 # %% Description ###############################################################
 """Defines functions to constrain NN outputs."""
 

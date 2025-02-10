@@ -1,24 +1,14 @@
+# %% Description ###############################################################
 """Util functions."""
 
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# AUTHOR INFORMATION ###########################################################
-# file    : utils.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2023-06-19 14:44:17 (Marcel Arpogaus)
-# changed : 2023-06-19 17:08:07 (Marcel Arpogaus)
-# DESCRIPTION ##################################################################
-# ...
-# LICENSE ######################################################################
-# ...
-################################################################################
+# %% imports ###################################################################
 import argparse
 import importlib
 from collections.abc import Mapping, MutableMapping, MutableSequence
 from typing import Any, Callable, Union
 
 
-# FUNCTION DEFINITIONS #########################################################
+# %% functions #################################################################
 def flatten_dict(value: Any, parent_key: str = "", sep: str = ".") -> dict:
     """Recursively flatten a nested dictionary.
 

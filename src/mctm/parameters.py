@@ -1,11 +1,3 @@
-# -*- time-stamp-pattern: "changed[\s]+:[\s]+%%$"; -*-
-# %% Author ####################################################################
-# file    : parameters.py
-# author  : Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
-#
-# created : 2024-08-22 13:16:19 (Marcel Arpogaus)
-# changed : 2025-01-27 12:57:37 (Marcel Arpogaus)
-
 # %% Description ###############################################################
 """Functions defining ANNs.
 
