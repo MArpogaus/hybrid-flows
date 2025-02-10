@@ -30,7 +30,7 @@ model_kwargs:
     parameters_fn: parameter_vector
     parameters_fn_kwargs:
       dtype: float32
-      parameter_shape: [&dims 2, 100]
+      parameter_shape: [&dims 2, 300]
   joint_bijectors:
   - bijector: ScaleMatvecLinearOperator
     invert: true
