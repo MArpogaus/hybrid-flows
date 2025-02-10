@@ -3,8 +3,6 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=256GB
 #SBATCH --time=48:00:00
-#SBATCH --mail-type=all
-#SBATCH --mail-user=marpogau@htwg-konstanz.de
 #SBATCH --output="slurm_train_hybrid_models_%j.out"
 source ~/.bashrc
 

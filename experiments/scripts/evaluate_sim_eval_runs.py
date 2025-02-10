@@ -16,7 +16,7 @@ dataset_names
 fig_height = get_figsize(487.8225)[1]
 
 exp_name = "sim_evaluation"
-mlflow.set_tracking_uri("https://marcel-mlflow.ai4grids.ei.htwg-konstanz.de")
+mlflow.set_tracking_uri("...")
 
 exp_name = "sim_seeds_2025-02-01"
 exp_names = [
