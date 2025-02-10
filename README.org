@@ -39,7 +39,7 @@ The project uses the following python packages:
 - [[https://github.com/tensorflow/probability][tensorflow_probability]]
 - [[https://github.com/tensorflow/tensorflow][tensorflow]]
 
-And an implementation of Bernstein polynomial bisectors is available from [[https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector][Bernstein-Polynomials as TensorFlow Probability Bijector]].
+And an implementation of Bernstein polynomial bijectors available from [[https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector][Bernstein-Polynomials as TensorFlow Probability Bijector]].
 
 The dependencies are defined in the respective =setup.py= and are automatically installed by conda, when the experiments are reproduced as described below.
 
@@ -56,6 +56,7 @@ To get a local copy up and running, follow these steps.
    #+end_src
 
 2. Install the required packages
+
    You can used the provided conda environment to install all dependencies, defined in `conda_env.yaml`:
    #+begin_src shell
      conda create -n hybrid_flows -f conda_env.yaml
