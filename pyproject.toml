@@ -19,17 +19,17 @@ dependencies = [
 ]
 dynamic = ['version']
 license = {text = 'TODO'}
-name = 'mctm'
+name = 'hybrid_flows'
 readme = 'README.md'
 requires-python = '>=3.9.0'
 
 [project.optional-dependencies]
 cuda = [
-  'mctm[train]',
+  'hybrid_flows[train]',
   'tensorflow[and-cuda]'
 ]
 develop = [
-  'mctm[train]',
+  'hybrid_flows[train]',
   'commitizen',
   'ipython',
   'pre-commit',
@@ -41,7 +41,7 @@ docs = [
   'pdoc'
 ]
 optuna = [
-  'mctm[train]',
+  'hybrid_flows[train]',
   'optuna~=3.5.0',
   'optuna-integration~=3.5.0',
   'plotly~=5.18.0'

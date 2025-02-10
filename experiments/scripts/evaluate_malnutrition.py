@@ -13,24 +13,23 @@ import pandas as pd
 import seaborn as sns
 import tensorflow as tf
 import tensorflow_probability as tfp
-from matplotlib import pyplot as plt
-from tensorflow_probability import distributions as tfd
-
-from mctm.data import get_dataset, make_malnutrition_dataset
-from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
-from mctm.utils.mlflow import (
+from hybrid_flows.data import get_dataset, make_malnutrition_dataset
+from hybrid_flows.models import DensityRegressionModel, HybridDensityRegressionModel
+from hybrid_flows.utils.mlflow import (
     log_and_save_figure,
     log_cfg,
     start_run_with_exception_logging,
 )
-from mctm.utils.pipeline import prepare_pipeline
-from mctm.utils.visualisation import (
+from hybrid_flows.utils.pipeline import prepare_pipeline
+from hybrid_flows.utils.visualisation import (
     _get_malnutrition_samples_df,
     get_figsize,
     plot_malnutrition_data,
     plot_malnutrition_samples,
     setup_latex,
 )
+from matplotlib import pyplot as plt
+from tensorflow_probability import distributions as tfd
 
 # %% globals ###################################################################
 __LOGGER__ = logging.getLogger(__name__)

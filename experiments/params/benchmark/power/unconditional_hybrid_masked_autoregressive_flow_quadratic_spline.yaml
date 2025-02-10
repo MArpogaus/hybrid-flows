@@ -78,7 +78,7 @@ model_kwargs:
       - [10.1, 5.1, 15.1, 14.1, 3.1, 2.1]
       # [-6, 15]
       extrapolation: true
-    parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+    parameters_constraint_fn: hybrid_flows.activations.get_thetas_constrain_fn
     parameters_constraint_fn_kwargs:
       allow_flexible_bounds: false
       bounds: smooth

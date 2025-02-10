@@ -21,7 +21,7 @@ model_kwargs:
     bijector_kwargs:
       domain: [0, 1]
       extrapolation: true
-    parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+    parameters_constraint_fn: hybrid_flows.activations.get_thetas_constrain_fn
     parameters_constraint_fn_kwargs:
       allow_flexible_bounds: false
       bounds: smooth
@@ -50,4 +50,4 @@ model_kwargs:
       extrapolation: true
       parameter_shape: [1]
       polynomial_order: 3
-    parameters_constraint_fn: mctm.activations.lambda_parameters_constraint_fn
+    parameters_constraint_fn: hybrid_flows.activations.lambda_parameters_constraint_fn

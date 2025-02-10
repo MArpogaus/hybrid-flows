@@ -8,10 +8,10 @@ import yaml
 from matplotlib import pyplot as plt
 from tensorflow_probability import distributions as tfd
 
-from mctm.data.benchmark import get_data
-from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
-from mctm.utils.pipeline import prepare_pipeline
-from mctm.utils.visualisation import (
+from hybrid_flows.data.benchmark import get_data
+from hybrid_flows.models import DensityRegressionModel, HybridDensityRegressionModel
+from hybrid_flows.utils.pipeline import prepare_pipeline
+from hybrid_flows.utils.visualisation import (
     get_figsize,
     setup_latex,
 )

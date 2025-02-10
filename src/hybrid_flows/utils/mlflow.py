@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from mctm.utils import filter_recursive, flatten_dict
+from .utils import filter_recursive, flatten_dict
 
 
 # %% functions #################################################################

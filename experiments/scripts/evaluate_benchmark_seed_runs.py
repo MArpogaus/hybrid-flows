@@ -2,7 +2,7 @@
 import mlflow
 import seaborn as sns
 
-from mctm.utils.visualisation import get_figsize, setup_latex
+from hybrid_flows.utils.visualisation import get_figsize, setup_latex
 
 # %% globals ###################################################################
 fig_height = get_figsize(487.8225)[1]

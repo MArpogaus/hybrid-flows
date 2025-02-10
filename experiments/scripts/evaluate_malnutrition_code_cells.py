@@ -8,10 +8,10 @@ import tensorflow as tf
 from matplotlib import pyplot as plt
 from tensorflow_probability import distributions as tfd
 
-from mctm.data.malnutrion import load_data
-from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
-from mctm.utils.pipeline import prepare_pipeline
-from mctm.utils.visualisation import (
+from hybrid_flows.data.malnutrion import load_data
+from hybrid_flows.models import DensityRegressionModel, HybridDensityRegressionModel
+from hybrid_flows.utils.pipeline import prepare_pipeline
+from hybrid_flows.utils.visualisation import (
     _get_malnutrition_samples_df,
     _plot_grid,
     get_figsize,

@@ -10,12 +10,11 @@ from typing import Any, Dict
 
 import numpy as np
 import tensorflow as tf
-
-from mctm.data import get_dataset
-from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
-from mctm.utils import str2bool
-from mctm.utils.pipeline import pipeline, prepare_pipeline
-from mctm.utils.visualisation import (
+from hybrid_flows.data import get_dataset
+from hybrid_flows.models import DensityRegressionModel, HybridDensityRegressionModel
+from hybrid_flows.utils import str2bool
+from hybrid_flows.utils.pipeline import pipeline, prepare_pipeline
+from hybrid_flows.utils.visualisation import (
     get_figsize,
     plot_2d_data,
     plot_malnutrition_data,

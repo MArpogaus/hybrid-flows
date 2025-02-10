@@ -16,9 +16,9 @@ import numpy as np
 import yaml
 from matplotlib.pyplot import Figure
 
-from mctm.models import DensityRegressionBaseModel, HybridDensityRegressionModel
-from mctm.utils.mlflow import log_cfg, start_run_with_exception_logging
-from mctm.utils.tensorflow import fit_distribution, get_learning_rate, set_seed
+from ..models import DensityRegressionBaseModel, HybridDensityRegressionModel
+from .mlflow import log_cfg, start_run_with_exception_logging
+from .tensorflow import fit_distribution, get_learning_rate, set_seed
 
 # %% globals ###################################################################
 __LOGGER__ = logging.getLogger(__name__)

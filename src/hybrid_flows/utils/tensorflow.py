@@ -10,7 +10,7 @@ import tensorflow as tf
 import tensorflow.keras as K
 from tensorflow.keras.optimizers.schedules import LearningRateSchedule
 
-import mctm.scheduler
+from .. import scheduler as scheduler_lib
 
 # %% globals ###################################################################
 __LOGGER__ = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ def get_learning_rate(
         if scheduler_kwargs.get("decay_steps", None) == "epochs":
             scheduler_kwargs["decay_steps"] = fit_kwargs["epochs"]
         scheduler = getattr(
-            mctm.scheduler,
+            scheduler_lib,
             scheduler_class_name,
             getattr(K.optimizers.schedules, scheduler_class_name, None),
         )(**scheduler_kwargs)

@@ -4,7 +4,7 @@ import pandas as pd
 import yaml
 from tqdm import tqdm
 
-from mctm.utils.visualisation import get_figsize
+from hybrid_flows.utils.visualisation import get_figsize
 
 # %%
 with open("params/sim/dataset.yaml", "r") as f:

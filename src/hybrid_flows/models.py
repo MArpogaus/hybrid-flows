@@ -12,7 +12,7 @@ from keras.src.saving import serialization_lib
 from tensorflow_probability import bijectors as tfb
 from tensorflow_probability import distributions as tfd
 
-from mctm import distributions
+from . import distributions
 
 
 # %% classes ###################################################################

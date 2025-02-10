@@ -7,8 +7,7 @@ from typing import List, Tuple
 import numpy as np
 import pytest
 import tensorflow as tf
-
-from mctm.nn import (
+from hybrid_flows.nn import (
     ConstantLayer,
     build_conditional_net,
     build_fully_connected_autoregressive_net,

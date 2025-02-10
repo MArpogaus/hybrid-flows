@@ -29,7 +29,7 @@ model_kwargs:
     bijector_kwargs:
       domain: [0, 1]
       extrapolation: false
-    parameters_constraint_fn: mctm.activations.get_thetas_constrain_fn
+    parameters_constraint_fn: hybrid_flows.activations.get_thetas_constrain_fn
     parameters_constraint_fn_kwargs:
       allow_flexible_bounds: false
       bounds: linear

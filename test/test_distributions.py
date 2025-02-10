@@ -9,9 +9,7 @@ import pytest
 import tensorflow as tf
 import tensorflow_probability as tfp
 from bernstein_flow.bijectors import BernsteinPolynomial
-from tensorflow_probability import bijectors as tfb
-
-from mctm.distributions import (
+from hybrid_flows.distributions import (
     __ALL_KEYS__,
     __BIJECTOR_KWARGS_KEY__,
     __BIJECTOR_NAME_KEY__,
@@ -35,11 +33,12 @@ from mctm.distributions import (
     get_masked_autoregressive_flow_first_dim_masked,
     get_normalizing_flow,
 )
-from mctm.parameters import (
+from hybrid_flows.parameters import (
     get_test_parameters_fn,
     get_test_parameters_nested_fn,
 )
-from mctm.utils.decorators import recurse_on_key
+from hybrid_flows.utils.decorators import recurse_on_key
+from tensorflow_probability import bijectors as tfb
 
 logging.basicConfig(level=logging.DEBUG)
 

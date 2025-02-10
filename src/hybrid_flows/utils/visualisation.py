@@ -16,7 +16,7 @@ import tensorflow_probability as tfp
 from matplotlib.figure import Figure
 from tensorflow_probability import distributions as tfd
 
-from mctm.models import DensityRegressionModel
+from ..models import DensityRegressionModel
 
 # %% globals
 __LOGGER__ = logging.getLogger(__name__)

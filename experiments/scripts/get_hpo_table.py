@@ -7,7 +7,7 @@ import pandas as pd
 import yaml
 from tqdm.contrib.concurrent import process_map
 
-from mctm.utils import flatten_dict
+from hybrid_flows.utils import flatten_dict
 
 # %% load params
 stages = (

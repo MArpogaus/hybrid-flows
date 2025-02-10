@@ -9,7 +9,7 @@ import pytest
 import tensorflow as tf
 from tensorflow import keras as K
 
-from mctm.distributions import (
+from hybrid_flows.distributions import (
     __BIJECTOR_KWARGS_KEY__,
     __BIJECTOR_NAME_KEY__,
     __INVERT_BIJECTOR_KEY__,
@@ -18,7 +18,7 @@ from mctm.distributions import (
     __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__,
     __PARAMETERS_FN_KWARGS_KEY__,
 )
-from mctm.models import DensityRegressionModel, HybridDensityRegressionModel
+from hybrid_flows.models import DensityRegressionModel, HybridDensityRegressionModel
 
 # Define toy data parameters
 NUM_SAMPLES = 1024
@@ -364,7 +364,7 @@ def density_regression_model_config(request):
                         "parameter_shape": [DATA_DIMS, 10],
                         "dtype": "float32",
                     },
-                    "parameters_constraint_fn": "mctm.activations.get_thetas_constrain_fn",  # noqa: E501
+                    "parameters_constraint_fn": "hybrid_flows.activations.get_thetas_constrain_fn",  # noqa: E501
                     "parameters_constraint_fn_kwargs": {
                         "low": -4,
                         "high": 4,
@@ -397,7 +397,7 @@ def density_regression_model_config(request):
                         "extrapolation": True,
                         "initializer": tf.ones,
                     },
-                    "parameters_constraint_fn": "mctm.activations.lambda_parameters_constraint_fn",  # noqa: E501
+                    "parameters_constraint_fn": "hybrid_flows.activations.lambda_parameters_constraint_fn",  # noqa: E501
                 }
             ],
         }
