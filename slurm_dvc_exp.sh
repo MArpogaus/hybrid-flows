@@ -23,7 +23,7 @@ python -c 'import tensorflow as tf; assert len(tf.config.list_physical_devices("
 
 env | sort
 
-cd experiments
+[ -d experiments ] && cd experiments
 
 export MLFLOW_TRACKING_URI=http://login1:5000
 
