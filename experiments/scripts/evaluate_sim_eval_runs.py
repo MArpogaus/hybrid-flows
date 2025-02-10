@@ -1,11 +1,10 @@
 # %% imports ###################################################################
 import mlflow
 import pandas as pd
-import seaborn as sns
 import yaml
 from tqdm import tqdm
 
-from mctm.utils.visualisation import get_figsize, setup_latex
+from mctm.utils.visualisation import get_figsize
 
 # %%
 with open("params/sim/dataset.yaml", "r") as f:
@@ -21,7 +20,7 @@ mlflow.set_tracking_uri("https://marcel-mlflow.ai4grids.ei.htwg-konstanz.de")
 
 exp_name = "sim_seeds_2025-02-01"
 exp_names = [
-    "sim_seeds_2025-02-02_unconditional_multivariate_transformation_model",
+    "sim_seeds_2025-02-10_unconditional_multivariate_transformation_model",
     "sim_seeds_2025-02-02_unconditional_multivariate_normal",
     "sim_seeds_2025-02-02_unconditional_masked_autoregressive_flow_quadratic_spline",
     "sim_seeds_2025-02-02_unconditional_masked_autoregressive_flow_bernstein_poly",
@@ -29,7 +28,7 @@ exp_names = [
     "sim_seeds_2025-02-02_unconditional_hybrid_coupling_flow_bernstein_poly",
     "sim_seeds_2025-02-02_unconditional_coupling_flow_quadratic_spline",
     "sim_seeds_2025-02-02_unconditional_coupling_flow_bernstein_poly",
-    "sim_seeds_2025-02-02_conditional_multivariate_transformation_model",
+    "sim_seeds_2025-02-10_conditional_multivariate_transformation_model",
     "sim_seeds_2025-02-02_conditional_multivariate_normal",
     "sim_seeds_2025-02-02_conditional_masked_autoregressive_flow_quadratic_spline",
     "sim_seeds_2025-02-02_conditional_masked_autoregressive_flow_bernstein_poly",
@@ -139,111 +138,3 @@ pt = df.pivot_table(
     aggfunc="first",
 )
 print(pt.sort_index(ascending=False).round(4).to_markdown())
-
-
-# %%
-latex_table = (
-    loss_table.stack(0)
-    .reset_index()
-    .set_index(["model", "dataset name", "level_2"])[["mean", "sem"]]
-    .aggregate(lambda x: f"{x[0]:.3f} $\pm$ {2*x[1]:.3f}", 1)
-    .unstack(1)
-    .to_latex()
-)
-print(latex_table)
-
-# %% plot
-setup_latex(10)
-g = sns.catplot(
-    df,
-    y="test loss",
-    col="dataset name",
-    hue="model",
-    col_wrap=2,
-    sharey=False,
-    sharex=False,
-    height=fig_height / 2,
-    kind="box",
-    palette="pastel",
-    gap=0.2,
-    fliersize=False,
-    legend=True,
-    # col_order=sorted(df["dataset name"].unique()),
-)
-g.map_dataframe(sns.swarmplot, y="test loss", hue="model", palette="muted", dodge=True)
-g.tick_params(bottom=False)
-sns.despine(offset=10, bottom=True)
-sns.move_legend(
-    g,
-    loc="center left",
-    bbox_to_anchor=(0.6, 0.18),
-)
-g.figure.savefig("seed_test_nll.pdf", bbox_inches="tight")
-
-# %% analyze eval runtime
-relevant_columns = [
-    "params.seed",
-    "params.dataset_name",
-    "start_time",
-    "end_time",
-]
-df = eval_runs[relevant_columns]
-df.columns = df.columns.map(lambda x: x.split(".")[-1].replace("_", " "))
-
-
-def get_model_name(x):
-    if "hybrid" in x:
-        if "joint" in x:
-            return "HMAF J"
-        if "marginals" in x:
-            return "HMAF M"
-        else:
-            return "HMAF"
-    else:
-        return "MAF"
-
-
-df = df.assign(model=eval_runs["tags.mlflow.runName"].apply(get_model_name))
-# %%
-eval_run_time_table = (
-    df.assign(run_time=df[["start time", "end time"]].agg(lambda x: x[1] - x[0], 1))
-    .groupby(["model", "dataset name"])
-    .run_time.agg(["mean", "std"])
-).aggregate(lambda x: f"{x[0].seconds / 60:.3f} $\pm$ {2*x[1].seconds / 60:.3f}", 1)
-print(eval_run_time_table.to_markdown())
-
-# %% analyze train runtime
-train_runs = mlflow.search_runs(
-    experiment_ids=exp.experiment_id,
-    filter_string="attributes.run_name like '%train'",
-)
-relevant_columns = [
-    "params.seed",
-    "params.dataset_kwargs.dataset_name",
-    "start_time",
-    "end_time",
-]
-df = train_runs[relevant_columns]
-df.columns = df.columns.map(lambda x: x.split(".")[-1].replace("_", " "))
-
-
-def get_model_name(x):
-    if "hybrid" in x:
-        if "joint" in x:
-            return "HMAF J"
-        if "marginals" in x:
-            return "HMAF M"
-        else:
-            return "HMAF"
-    else:
-        return "MAF"
-
-
-df = df.assign(model=train_runs["tags.mlflow.runName"].apply(get_model_name))
-# %%
-train_run_time_table = (
-    df.assign(run_time=df[["start time", "end time"]].agg(lambda x: x[1] - x[0], 1))
-    .groupby(["model", "dataset name"])
-    .run_time.agg(["mean", "std"])
-).aggregate(lambda x: f"{x[0].seconds / 60:.3f} $\pm$ {2*x[1].seconds / 60:.3f}", 1)
-print(train_run_time_table.to_markdown())
