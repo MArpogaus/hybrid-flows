@@ -1,0 +1,207 @@
+#+OPTIONS: toc:nol
+#+startup: indent
+
+* Hybrid Bernstein Normalizing Flows for Flexible Multivariate Density Regression with Interpretable Marginals :noexport:
+
+This repository provides the code and parameters to reproduce the results presented in the paper _Hybrid Bernstein Normalizing Flows for Flexible Multivariate Density Regression with Interpretable Marginals_.
+The paper introduces Hybrid Masked Autoregressive Bernstein Flows (HMAFs), a novel approach for density regression.
+
+* Table of Contents :TOC_3_gh:noexport:
+- [[#about-the-project][About The Project]]
+- [[#prerequisites][Prerequisites]]
+- [[#installation][Installation]]
+- [[#reproduce-experiments][Reproduce Experiments]]
+  - [[#benchmark-datasets][Benchmark Datasets]]
+  - [[#simulated-datasets][Simulated Datasets]]
+  - [[#malnutrition-dataset][Malnutrition Dataset]]
+- [[#minimal-code-examples][Minimal Code Examples]]
+  - [[#density-regression-model][Density Regression Model]]
+  - [[#hybrid-density-regression-model][Hybrid Density Regression Model]]
+- [[#license][License]]
+
+* About The Project
+:PROPERTIES:
+:CUSTOM_ID: about-the-project
+:END:
+This repository provides the implementation of HMAFs, a novel hybrid approach that combines the strengths of Multivariate Conditional Transformation Models (MCTMs) and autoregressive Normalizing Flows (NFs).
+HMAFs allow for flexible modeling of the dependency structure in multivariate data while retaining the interpretability of marginal distributions. The code includes experiments on simulated and real-world datasets, comparing HMAFs with MCTMs, MAFs, Coupling Flows and other benchmark models.
+A detailed description of all hyperparameters is available in the supplementary material of the paper.
+* Prerequisites
+    :PROPERTIES:
+    :CUSTOM_ID: prerequisites
+    :END:
+The project uses the following python packages:
+
+- [[https://github.com/iterative/dvc][dvc]]
+- [[https://github.com/matplotlib/matplotlib][matplotlib]]
+- [[https://github.com/mlflow/mlflow][mlflow]]
+- [[https://github.com/seaborn/seaborn][seaborn]]
+- [[https://github.com/tensorflow/probability][tensorflow_probability]]
+- [[https://github.com/tensorflow/tensorflow][tensorflow]]
+
+And an implementation of Bernstein polynomial bisectors is available from [[https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector][Bernstein-Polynomials as TensorFlow Probability Bijector]].
+
+The dependencies are defined in the respective =setup.py= and are automatically installed by conda, when the experiments are reproduced as described below.
+
+* Installation
+:PROPERTIES:
+:CUSTOM_ID: getting-started
+:END:
+To get a local copy up and running, follow these steps.
+
+1. Clone the repository
+   #+begin_src shell
+     git clone https://github.com/MArpogaus/mctm.git
+     cd mctm
+   #+end_src
+
+2. Install the required packages
+   You can used the provided conda environment to install all dependencies, defined in `conda_env.yaml`:
+   #+begin_src shell
+     conda create -n mctm -f conda_env.yaml
+   #+end_src
+
+* Reproduce Experiments
+:PROPERTIES:
+:CUSTOM_ID: experiments
+:END:
+
+The repository provides several experiments implemented as [[https://dvc.org/][DVC]] stages in the =experiments= directory.
+All configuration files for the different models can be found in the =params= directory.
+The experiments cover training and evaluation of several models on different datasets.
+
+A detailed explanation of the model parameters can be found in the supplementary material of the paper.
+
+All experiments can be executed by simply running the following command in the =experiments= directory after installing all required dependencies:
+
+#+begin_src shell
+  dvc repro
+#+end_src
+
+The individual stages are defined in the following.
+
+** Benchmark Datasets
+:PROPERTIES:
+:CUSTOM_ID: benchmark-datasets
+:END:
+
+These stages train and evaluate models on five real-world benchmark datasets: BSDS300, GAS, HEPMASS, MINIBOONE, and POWER ([[file:experiments/params/benchmark/dataset.yaml][dataset configuration]]).
+The model configurations are defined in [[file:experiments/params/benchmark][experiments/params/benchmark]].
+
+- =train-benchmark=: Trains two models ([[file:experiments/dvc.yaml::train-benchmark][dvc stage definition]]) on the benchmark datasets:
+  - MAF with RQS ([[file:experiments/params/benchmark/bsds300/unconditional_masked_autoregressive_flow_quadratic_spline.yaml][bsds300]], [[file:experiments/params/benchmark/gas/unconditional_masked_autoregressive_flow_quadratic_spline.yaml][gas]], [[file:experiments/params/benchmark/hepmass/unconditional_masked_autoregressive_flow_quadratic_spline.yaml][hepmass]], [[file:experiments/params/benchmark/miniboone/unconditional_masked_autoregressive_flow_quadratic_spline.yaml][minibone]], [[file:experiments/params/benchmark/power/unconditional_masked_autoregressive_flow_quadratic_spline.yaml][power]])
+  - HMAF with RQS ([[file:experiments/params/benchmark/bsds300/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml][bsds300]], [[file:experiments/params/benchmark/gas/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml][gas]], [[file:experiments/params/benchmark/hepmass/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml][hepmass]], [[file:experiments/params/benchmark/miniboone/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml][minibone]], [[file:experiments/params/benchmark/power/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml][power]])
+
+- =eval-benchmark=: Evaluates the trained models. ([[file:experiments/dvc.yaml::eval-benchmark][dvc stage definition]]). Generates various diagnostic plots, such as Q-Q plots, for analysis and comparison.
+  Evaluation metrics are logged in `evaluation_metrics.yaml`.
+
+** Simulated Datasets
+:PROPERTIES:
+:CUSTOM_ID: simulated-datasets
+:END:
+The following stages train and evaluate different models on two simulated datasets: *moons* and *circles* ([[file:experiments/params/sim/dataset.yaml][dataset configuration]]).
+The hyper parameters are defined in [[file:experiments/params/sim][experiments/params/sim]].
+
+- =train-sim=: Trains a range of models ([[file:experiments/dvc.yaml::train-sim][dvc stage definition]]) on both simulated datasets.  The model configurations are defined in [[file:experiments/params/sim/moons][params/sim/moons]] and  [[file:experiments/params/sim/circles][params/sim/circles]].
+  Each dataset has 16,384 data points, with 25\% reserved for validation.
+  A binary feature, =x=, is included for conditional density estimation, indicating spatial location.
+  The following models are trained:
+  - Multivariate Normal (MVN) ([[file:experiments/params/sim/circles/unconditional_multivariate_normal.yaml][unconditional]]/[[file:experiments/params/sim/circles/conditional_multivariate_normal.yaml][conditional]])
+  - Multivariate Conditional Transformation Model (MCTM) ([[file:experiments/params/sim/circles/unconditional_multivariate_transformation_model.yaml][unconditional]]/[[file:experiments/params/sim/circles/conditional_multivariate_transformation_model.yaml][conditional]])
+  - Coupling Flow (CF) with spline ([[file:experiments/params/sim/circles/unconditional_coupling_flow_quadratic_spline.yaml][unconditional]]/[[file:experiments/params/sim/circles/conditional_coupling_flow_quadratic_spline.yaml][conditional]]) and Bernstein polynomial ([[file:experiments/params/sim/circles/unconditional_coupling_flow_bernstein_poly.yaml][unconditional]]/[[file:experiments/params/sim/circles/conditional_coupling_flow_bernstein_poly.yaml][conditional]]) transformations.
+  - Masked Autoregressive Flow (MAF) with spline ([[file:experiments/params/sim/circles/unconditional_masked_autoregressive_flow_quadratic_spline.yaml][unconditional]]/[[file:experiments/params/sim/circles/conditional_masked_autoregressive_flow_quadratic_spline.yaml][conditional]]) and Bernstein polynomial ([[file:experiments/params/sim/circles/unconditional_masked_autoregressive_flow_bernstein_poly.yaml][unconditional]]/[[file:experiments/params/sim/circles/conditional_masked_autoregressive_flow_bernstein_poly.yaml][conditional]]) transformations.
+  - Hybrid Coupling Flow (HCF) with spline ([[file:experiments/params/sim/circles/unconditional_hybrid_coupling_flow_quadratic_spline.yaml][unconditional]]/[[file:experiments/params/sim/circles/conditional_hybrid_coupling_flow_quadratic_spline.yaml][conditional]]) and Bernstein polynomial ([[file:experiments/params/sim/circles/unconditional_hybrid_coupling_flow_bernstein_poly.yaml][unconditional]]/[[file:experiments/params/sim/circles/conditional_hybrid_coupling_flow_bernstein_poly.yaml][conditional]]) transformations.
+
+- =eval-sim=: Evaluates the trained models ([[file:experiments/dvc.yaml::eval-sim][dvc stage definition]]) on the simulated data.
+  Evaluation metrics and visualizations, such as contour plots, Q-Q plots and transformed data distributions, are generated.
+  Metrics are logged in `evaluation_metrics.yaml`.
+
+** Malnutrition Dataset
+:PROPERTIES:
+:CUSTOM_ID: malnutrition-dataset
+:END:
+These stages concern a real-world dataset on childhood malnutrition in India ([[file:experiments/params/malnutrition/dataset.yaml][dataset configuration]]).
+Model parameters can be found in [[file:experiments/params/malnutrition][experiments/params/malnutrition]].
+
+- =train-malnutrition=: Trains three models ([[file:experiments/dvc.yaml::train-malnutrition][dvc stage definition]]) to estimate the joint distribution of anthropometric indices (stunting, wasting, underweight) conditional on the child’s age.
+  - MCTM ([[file:experiments/params/malnutrition/conditional_multivariate_transformation_model.yaml][model configuration]])
+  - HMAF with Bernstein polynomials ([[file:experiments/params/malnutrition/conditional_hybrid_masked_autoregressive_flow_bernstein_poly.yaml][model configuration]])
+  - HMAF with quadratic splines ([[file:experiments/params/malnutrition/conditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml][model configuration]])
+- =eval-malnutrition=: Evaluates the models' performance ([[file:experiments/dvc.yaml::eval-malnutrition][dvc stage definition]]) using reliability diagrams, Q-Q plots, analysis of marginal distributions and feature effects.
+
+* Minimal Code Examples
+:PROPERTIES:
+:CUSTOM_ID: minimal-code-examples
+:END:
+
+** Density Regression Model
+#+begin_src python
+  from mctm.models import DensityRegressionModel
+
+  # Define model parameters
+  model_parameters = {
+      "distribution": "multivariate_normal",
+      "model_kwargs": {
+          "parameters_fn_kwargs": {"conditional": False}
+      },
+      "dims": 2
+  }
+  # Initialize and compile the model
+  model = DensityRegressionModel(**model_parameters)
+  model.compile(optimizer='adam', loss=lambda y, p_y: -p_y.log_prob(y))
+
+  # load data
+  x, y = ...
+
+  # Fit the model (replace with your actual data)
+  model.fit(x=x, y=y, epochs=1)
+
+  # Access the distribution
+  dist = model(x)
+#+end_src
+
+** Hybrid Density Regression Model
+#+begin_src python
+  from mctm.models import HybridDensityRegressionModel
+
+  # Define model parameters
+  model_parameters = {
+      "marginal_bijectors": [
+          {
+              "bijector": "BernsteinPolynomial",
+              "parameters_fn_kwargs": {"parameter_shape": [2, 10]}
+          }
+      ],
+      "joint_bijectors": [
+          {
+              "bijector": "ScaleMatvecLinearOperator",
+              "parameters_fn": "parameter_vector",
+              "parameters_fn_kwargs": {"parameter_shape": [1]},
+              "parameters_constraint_fn": "lambda x: tf.exp(x)"
+          }
+      ],
+      "dims": 12
+  }
+
+  # Initialize and compile the model
+  model = HybridDensityRegressionModel(**model_parameters)
+  model.compile(optimizer='adam', loss=lambda y, p_y: -p_y.log_prob(y))
+
+  # load data
+  x, y = ...
+
+  # Fit the model (replace with your actual data and parameters)
+  model.fit(x=x, y=y, epochs=1)
+
+  # Get the joint distribution
+  joint_dist = model(x)
+
+  # Get the marginal distributions
+  # marginal_dist = model.marginal_distribution(x)
+#+end_src
+
+* License
+:PROPERTIES:
+:CUSTOM_ID: license
+:END:
+Distributed under the [[file:experiments/LICENSE][Apache License 2.0]]
