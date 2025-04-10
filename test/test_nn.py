@@ -7,6 +7,7 @@ from typing import List, Tuple
 import numpy as np
 import pytest
 import tensorflow as tf
+
 from hybrid_flows.nn import (
     ConstantLayer,
     build_conditional_net,

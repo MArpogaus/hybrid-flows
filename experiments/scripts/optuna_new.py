@@ -13,16 +13,17 @@ import mlflow
 import numpy as np
 import optuna
 import yaml
+from optuna.integration import TFKerasPruningCallback
+from optuna.pruners import SuccessiveHalvingPruner
+from optuna.samplers import TPESampler
+from optuna.trial import TrialState
+
 from hybrid_flows.utils import str2bool
 from hybrid_flows.utils.mlflow import log_cfg
 from hybrid_flows.utils.pipeline import (
     prepare_pipeline,
     start_run_with_exception_logging,
 )
-from optuna.integration import TFKerasPruningCallback
-from optuna.pruners import SuccessiveHalvingPruner
-from optuna.samplers import TPESampler
-from optuna.trial import TrialState
 
 # %% global objects
 __LOGGER__ = logging.getLogger(__name__)

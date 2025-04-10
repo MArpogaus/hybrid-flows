@@ -9,6 +9,8 @@ import pytest
 import tensorflow as tf
 import tensorflow_probability as tfp
 from bernstein_flow.bijectors import BernsteinPolynomial
+from tensorflow_probability import bijectors as tfb
+
 from hybrid_flows.distributions import (
     __ALL_KEYS__,
     __BIJECTOR_KWARGS_KEY__,
@@ -38,7 +40,6 @@ from hybrid_flows.parameters import (
     get_test_parameters_nested_fn,
 )
 from hybrid_flows.utils.decorators import recurse_on_key
-from tensorflow_probability import bijectors as tfb
 
 logging.basicConfig(level=logging.DEBUG)
 
