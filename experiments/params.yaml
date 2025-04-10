@@ -2,7 +2,7 @@ log-level: info
 seed: 1
 textwidth: 487.8225
 testmode: true
-python: srun --partition=gpu1 --gres=gpu:1 --mem=256GB --export=ALL,MLFLOW_TRACKING_URI=http://login1:5000  python
+python: srun --partition=gpu1 --gres=gpu:1 --mem=256GB --time=48:00:00 --export=ALL,MLFLOW_TRACKING_URI=http://login1:5000  python
 
 train-sim-experiment-name: train-sim
 eval-sim-experiment-name: eval-sim
