@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-dvc status | grep @ | tr -d : | parallel --delay 25 dvc exp run --queue {}
+dvc status | grep eval.*@ | tr -d : | parallel --delay 5 dvc exp run --force --copy datasets/malnutrition/india.raw --queue {}
