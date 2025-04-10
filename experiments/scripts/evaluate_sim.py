@@ -15,6 +15,8 @@ import seaborn as sns
 import tensorflow as tf
 import tensorflow_probability as tfp
 import yaml
+from tensorflow_probability import distributions as tfd
+
 from hybrid_flows.data import get_dataset
 from hybrid_flows.models import DensityRegressionModel, HybridDensityRegressionModel
 from hybrid_flows.utils.mlflow import (
@@ -24,7 +26,6 @@ from hybrid_flows.utils.mlflow import (
 )
 from hybrid_flows.utils.pipeline import prepare_pipeline
 from hybrid_flows.utils.visualisation import plot_samples, setup_latex
-from tensorflow_probability import distributions as tfd
 
 # %% globals ###################################################################
 __LOGGER__ = logging.getLogger(__name__)
@@ -206,6 +207,7 @@ def evaluate(
     results_path: str,
     params: dict,
     figure_format: str = "pdf",
+    experiment_name: str = None,
 ) -> tuple:
     """Execute experiment.
 
@@ -223,6 +225,8 @@ def evaluate(
         Dictionary containing experiment parameters.
     figure_format: str
         Data format to save figures to.
+    experiment_name : str, optional
+        Name of the MLFlow experiment.
 
     Returns
     -------
@@ -230,9 +234,10 @@ def evaluate(
         Experiment results: history, model, and preprocessed data.
 
     """
-    experiment_name = os.environ.get(
-        "MLFLOW_EXPERIMENT_NAME", "_".join((dataset_type, "evaluation"))
-    )
+    if experiment_name is None:
+        experiment_name = os.environ.get(
+            "MLFLOW_EXPERIMENT_NAME", "_".join((dataset_type, "evaluation"))
+        )
     run_name = "_".join((model_name, dataset_name, "evaluation"))
 
     __LOGGER__.info(f"{tf.__version__=}\n{tfp.__version__=}")
@@ -390,6 +395,14 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
+        "--experiment-name",
+        type=str,
+        help="name of MLFlow experiment",
+        required=False,
+        default=None,
+    )
+
+    parser.add_argument(
         "--dataset-type",
         type=str,
         help="type of dataset",
@@ -428,4 +441,5 @@ if __name__ == "__main__":
         model_name=args.model_name,
         results_path=results_path,
         params=params,
+        experiment_name=args.experiment_name,
     )

@@ -10,6 +10,7 @@ from typing import Any, Dict
 
 import numpy as np
 import tensorflow as tf
+
 from hybrid_flows.data import get_dataset
 from hybrid_flows.models import DensityRegressionModel, HybridDensityRegressionModel
 from hybrid_flows.utils import str2bool
@@ -300,6 +301,13 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
+        "--experiment-name",
+        type=str,
+        help="name of MLFlow experiment",
+        required=False,
+        default=None,
+    )
+    parser.add_argument(
         "--dataset-type",
         type=str,
         help="type of dataset",
@@ -341,4 +349,5 @@ if __name__ == "__main__":
         results_path=results_path,
         test_mode=args.test_mode,
         params=params,
+        experiment_name=args.experiment_name,
     )

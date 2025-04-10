@@ -2,6 +2,14 @@ log-level: info
 seed: 1
 textwidth: 487.8225
 testmode: false
+python: srun --partition=gpu1 --gres=gpu:1 --mem=256GB --export=ALL,MLFLOW_TRACKING_URI=http://login1:5000  python
+
+train-sim-experiment-name: train-sim
+eval-sim-experiment-name: eval-sim
+train-benchmark-experiment-name: train-benchmark
+eval-benchmark-experiment-name: eval-benchmark
+train-malnutrition-experiment-name: train-malnutrition
+eval-malnutrition-experiment-name: eval-malnutrition
 
 sim_datasets:
 - type: sim

@@ -4,7 +4,7 @@ stages:
       dataset: ${sim_datasets}
       model: ${sim_models}
     cmd: >-
-      python scripts/train.py
+      ${python} scripts/train.py
       --log-level ${log-level}
       --log-file train.log
       --model-name ${item.model}
@@ -13,6 +13,7 @@ stages:
       --dataset-name ${item.dataset.name}
       --results-path results/
       --test-mode ${testmode}
+      --experiment-name ${train-sim-experiment-name}
     params:
     - seed
     - textwidth
@@ -51,7 +52,7 @@ stages:
       dataset: ${sim_datasets}
       model: ${sim_models}
     cmd: >-
-      python scripts/evaluate_sim.py
+      ${python} scripts/evaluate_sim.py
       --log-level ${log-level}
       --log-file evaluate.log
       --model-name ${item.model}
@@ -59,6 +60,7 @@ stages:
       --dataset-type ${item.dataset.type}
       --dataset-name ${item.dataset.name}
       --results-path results/
+      --experiment-name ${eval-sim-experiment-name}
     params:
     - seed
     - textwidth
@@ -97,7 +99,7 @@ stages:
       dataset: ${benchmark_datasets}
       model: ${benchmark_models}
     cmd: >-
-      python scripts/train.py
+      ${python} scripts/train.py
       --log-level ${log-level}
       --log-file train.log
       --model-name ${item.model}
@@ -106,6 +108,7 @@ stages:
       --dataset-name ${item.dataset.name}
       --results-path results/
       --test-mode ${testmode}
+      --experiment-name ${train-benchmark-experiment-name}
     params:
     - log-level
     - seed
@@ -145,7 +148,7 @@ stages:
       dataset: ${benchmark_datasets}
       model: ${benchmark_models}
     cmd: >-
-      python scripts/evaluate_benchmark.py
+      ${python} scripts/evaluate_benchmark.py
       --log-level ${log-level}
       --log-file evaluate.log
       --model-name ${item.model}
@@ -154,6 +157,7 @@ stages:
       --dataset-type ${item.dataset.type}
       --dataset-name ${item.dataset.name}
       --results-path results/
+      --experiment-name ${eval-benchmark-experiment-name}
     params:
     - log-level
     - seed
@@ -194,7 +198,7 @@ stages:
     foreach: ${malnutrition_models}
     do:
       cmd: >-
-        python scripts/train.py
+        ${python} scripts/train.py
         --log-level ${log-level}
         --log-file train.log
         --model-name ${item}
@@ -203,6 +207,7 @@ stages:
         --dataset-name india
         --results-path results/
         --test-mode ${testmode}
+        --experiment-name ${train-malnutrition-experiment-name}
       params:
       - seed
       - textwidth
@@ -240,7 +245,7 @@ stages:
     foreach: ${malnutrition_models}
     do:
       cmd: >-
-        python scripts/evaluate_malnutrition.py
+        ${python} scripts/evaluate_malnutrition.py
         --log-level ${log-level}
         --log-file evaluate.log
         --model-name ${item}
@@ -248,6 +253,7 @@ stages:
         --dataset-type malnutrition
         --dataset-name india
         --results-path results/
+        --experiment-name ${eval-malnutrition-experiment-name}
       params:
       - seed
       - textwidth
