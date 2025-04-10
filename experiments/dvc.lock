@@ -1,0 +1,299 @@
+schema: '2.0'
+stages:
+  train-sim@dataset0-conditional_coupling_flow_bernstein_poly:
+    cmd: srun --partition=gpu1 --gres=gpu:1 --mem=256GB --export=ALL,MLFLOW_TRACKING_URI=http://login1:5000  python
+      scripts/train.py --log-level info --log-file train.log --model-name conditional_coupling_flow_bernstein_poly
+      --stage-name train-sim@dataset0-conditional_coupling_flow_bernstein_poly --dataset-type
+      sim --dataset-name moons --results-path results/ --test-mode true --experiment-name
+      train-sim
+    deps:
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 9f6b323a9f3c1417548e88585890e2bb
+      size: 2185
+    - path: ../src/hybrid_flows/__init__.py
+      hash: md5
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/hybrid_flows/activations.py
+      hash: md5
+      md5: 9a4b52ca62e674d4e873fcf37ac33b1c
+      size: 6651
+    - path: ../src/hybrid_flows/data/__init__.py
+      hash: md5
+      md5: db8cab88136ebab93664b848e3e036f8
+      size: 3448
+    - path: ../src/hybrid_flows/data/sklearn_datasets.py
+      hash: md5
+      md5: 34d8ecb0a7c6a8d218f9df383cdfeb64
+      size: 770
+    - path: ../src/hybrid_flows/distributions.py
+      hash: md5
+      md5: 89bc65603be6390bf752d27d47e39317
+      size: 48255
+    - path: ../src/hybrid_flows/models.py
+      hash: md5
+      md5: e7fed3c9a67239cdc070cbc0f03ce4b1
+      size: 14401
+    - path: ../src/hybrid_flows/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/hybrid_flows/parameters.py
+      hash: md5
+      md5: 0dd497e85ee923919fa423a93e4d6289
+      size: 14090
+    - path: ../src/hybrid_flows/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/hybrid_flows/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/hybrid_flows/utils/__init__.py
+      hash: md5
+      md5: e492dadbd5fd819f4e207599e3db2e88
+      size: 5196
+    - path: ../src/hybrid_flows/utils/decorators.py
+      hash: md5
+      md5: 4cb2aa8fb69539031cb20b80f3607959
+      size: 3478
+    - path: ../src/hybrid_flows/utils/mlflow.py
+      hash: md5
+      md5: 149e1cec02a8171b8b5c5c60fb4cd440
+      size: 3819
+    - path: ../src/hybrid_flows/utils/pipeline.py
+      hash: md5
+      md5: 3146f4dcdee978b5a1998ebd6ce0dff1
+      size: 11291
+    - path: ../src/hybrid_flows/utils/tensorflow.py
+      hash: md5
+      md5: 0a4f2eec14691c8baa617685b4858871
+      size: 5910
+    - path: ../src/hybrid_flows/utils/visualisation.py
+      hash: md5
+      md5: 59397f4b8ef22f40aa0e8831c5a93c9a
+      size: 16941
+    - path: scripts/train.py
+      hash: md5
+      md5: 2bf31f9aa7b886b13c22c481467886ab
+      size: 10071
+    params:
+      params.yaml:
+        seed: 1
+        textwidth: 487.8225
+      params/sim/dataset.yaml:
+        dataset_kwargs.moons*:
+          n_samples: 16384
+          noise: 0.05
+          scale:
+          - 0.05
+          - 0.95
+          random_state: 1
+      params/sim/moons/conditional_coupling_flow_bernstein_poly.yaml:
+        compile_kwargs:
+          jit_compile: true
+        fit_kwargs:
+          epochs: 400
+          batch_size: 512
+          learning_rate:
+            scheduler_kwargs:
+              decay_steps: epochs
+              initial_learning_rate: 0.001
+            scheduler_name: cosine_decay
+          reduce_lr_on_plateau: false
+          early_stopping: 50
+          monitor: val_loss
+          verbose: true
+          validation_split: 0.25
+        model_kwargs:
+          distribution: coupling_flow
+          num_layers: 2
+          bijector: BernsteinPolynomial
+          bijector_kwargs:
+            extrapolation: false
+            domain:
+            - 0
+            - 1
+          invert: true
+          parameters_constraint_fn_kwargs:
+            allow_flexible_bounds: false
+            bounds: linear
+            low: 0
+            high: 1
+          num_parameters: 300
+          layer_overwrites:
+            -2:
+              parameters_constraint_fn_kwargs:
+                low: -5
+                high: 5
+            -1:
+              parameters_constraint_fn_kwargs:
+                low: -5
+                high: 5
+          parameters_fn_kwargs:
+            activation: relu
+            batch_norm: false
+            dropout: 0
+            hidden_units:
+            - 128
+            - 128
+            - 128
+            conditional: true
+            conditional_event_shape: 1
+    outs:
+    - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/dataset.pdf
+      hash: md5
+      md5: c16ca43f65c9a3db00f9705d875fe871
+      size: 72412
+    - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/metrics.yaml
+      hash: md5
+      md5: 5fdf394be1171490af3231db028ebea6
+      size: 54
+    - path: 
+        results/sim/moons/conditional_coupling_flow_bernstein_poly/model_checkpoint.weights.h5
+      hash: md5
+      md5: c20671ea8d37a0c24c038541d5b21e62
+      size: 3498008
+    - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/samples.pdf
+      hash: md5
+      md5: 48e9c3c16a0ff352b98cf63e7e53a138
+      size: 133291
+    - path: results/sim/moons/conditional_coupling_flow_bernstein_poly/train.log
+      hash: md5
+      md5: 62b18e665dd564f35c70d1cfa3ec7ee7
+      size: 5943
+  train-sim@dataset0-unconditional_multivariate_normal:
+    cmd: srun --partition=gpu1 --gres=gpu:1 --mem=256GB --export=ALL,MLFLOW_TRACKING_URI=http://login1:5000  python
+      scripts/train.py --log-level info --log-file train.log --model-name unconditional_multivariate_normal
+      --stage-name train-sim@dataset0-unconditional_multivariate_normal --dataset-type
+      sim --dataset-name moons --results-path results/ --test-mode true --experiment-name
+      train-sim
+    deps:
+    - path: ../pyproject.toml
+      hash: md5
+      md5: 9f6b323a9f3c1417548e88585890e2bb
+      size: 2185
+    - path: ../src/hybrid_flows/__init__.py
+      hash: md5
+      md5: 50bfe848b7a3b24849bf3c51890564e5
+      size: 54
+    - path: ../src/hybrid_flows/activations.py
+      hash: md5
+      md5: 9a4b52ca62e674d4e873fcf37ac33b1c
+      size: 6651
+    - path: ../src/hybrid_flows/data/__init__.py
+      hash: md5
+      md5: db8cab88136ebab93664b848e3e036f8
+      size: 3448
+    - path: ../src/hybrid_flows/data/sklearn_datasets.py
+      hash: md5
+      md5: 34d8ecb0a7c6a8d218f9df383cdfeb64
+      size: 770
+    - path: ../src/hybrid_flows/distributions.py
+      hash: md5
+      md5: 89bc65603be6390bf752d27d47e39317
+      size: 48255
+    - path: ../src/hybrid_flows/models.py
+      hash: md5
+      md5: e7fed3c9a67239cdc070cbc0f03ce4b1
+      size: 14401
+    - path: ../src/hybrid_flows/nn.py
+      hash: md5
+      md5: e19e5322185ca8b0ca12ea054aa302b9
+      size: 13279
+    - path: ../src/hybrid_flows/parameters.py
+      hash: md5
+      md5: 0dd497e85ee923919fa423a93e4d6289
+      size: 14090
+    - path: ../src/hybrid_flows/preprocessing.py
+      hash: md5
+      md5: 395dbc40ef7a285ba1f11bb6c974eeb8
+      size: 4395
+    - path: ../src/hybrid_flows/scheduler.py
+      hash: md5
+      md5: 968fe1c35be0e11147ab55012795e31c
+      size: 4211
+    - path: ../src/hybrid_flows/utils/__init__.py
+      hash: md5
+      md5: e492dadbd5fd819f4e207599e3db2e88
+      size: 5196
+    - path: ../src/hybrid_flows/utils/decorators.py
+      hash: md5
+      md5: 4cb2aa8fb69539031cb20b80f3607959
+      size: 3478
+    - path: ../src/hybrid_flows/utils/mlflow.py
+      hash: md5
+      md5: 149e1cec02a8171b8b5c5c60fb4cd440
+      size: 3819
+    - path: ../src/hybrid_flows/utils/pipeline.py
+      hash: md5
+      md5: 3146f4dcdee978b5a1998ebd6ce0dff1
+      size: 11291
+    - path: ../src/hybrid_flows/utils/tensorflow.py
+      hash: md5
+      md5: 0a4f2eec14691c8baa617685b4858871
+      size: 5910
+    - path: ../src/hybrid_flows/utils/visualisation.py
+      hash: md5
+      md5: 59397f4b8ef22f40aa0e8831c5a93c9a
+      size: 16941
+    - path: scripts/train.py
+      hash: md5
+      md5: 2bf31f9aa7b886b13c22c481467886ab
+      size: 10071
+    params:
+      params.yaml:
+        seed: 1
+        textwidth: 487.8225
+      params/sim/dataset.yaml:
+        dataset_kwargs.moons*:
+          n_samples: 16384
+          noise: 0.05
+          scale:
+          - 0.05
+          - 0.95
+          random_state: 1
+      params/sim/moons/unconditional_multivariate_normal.yaml:
+        compile_kwargs:
+          jit_compile: false
+        fit_kwargs:
+          batch_size: 256
+          early_stopping: false
+          epochs: 200
+          learning_rate:
+            scheduler_kwargs:
+              decay_steps: 200
+              initial_learning_rate: 0.01
+            scheduler_name: cosine_decay
+          monitor: val_loss
+          reduce_lr_on_plateau: false
+          validation_split: 0.1
+          verbose: true
+        model_kwargs:
+          distribution: multivariate_normal
+          parameters_fn_kwargs:
+            conditional: false
+            dtype: float32
+    outs:
+    - path: results/sim/moons/unconditional_multivariate_normal/dataset.pdf
+      hash: md5
+      md5: be4163474e17c9c2663a16a77739575b
+      size: 72412
+    - path: results/sim/moons/unconditional_multivariate_normal/metrics.yaml
+      hash: md5
+      md5: 83a658f6185d1f2476711dc22afb4e1a
+      size: 53
+    - path: results/sim/moons/unconditional_multivariate_normal/model_checkpoint.weights.h5
+      hash: md5
+      md5: 650a45520e6bb4b049ffc30bb4afd958
+      size: 11000
+    - path: results/sim/moons/unconditional_multivariate_normal/samples.pdf
+      hash: md5
+      md5: 9b885b8d6591bbd24843cf3f68a4d6e1
+      size: 133393
+    - path: results/sim/moons/unconditional_multivariate_normal/train.log
+      hash: md5
+      md5: 5c049a7282aaccbe0aa1e4b9235dc7be
+      size: 2005
