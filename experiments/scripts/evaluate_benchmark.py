@@ -15,7 +15,7 @@ import tensorflow_probability as tfp
 import yaml
 from tensorflow_probability import distributions as tfd
 
-from hybrid_flows.data import get_data, make_benchmark_dataset
+from hybrid_flows.data import get_dataset, make_benchmark_dataset
 from hybrid_flows.models import DensityRegressionModel, HybridDensityRegressionModel
 from hybrid_flows.utils.mlflow import (
     log_and_save_figure,
@@ -137,12 +137,12 @@ def evaluate(
     figure_path = os.path.join(results_path, "eval_figures/")
     os.makedirs(figure_path, exist_ok=True)
 
-    get_dataset_fn, get_dataset_kwargs, _ = get_data(
+    get_dataset_fn, get_dataset_kwargs, _ = get_dataset(
         dataset_type=dataset_type,
         dataset_name=dataset_name,
         test_mode=False,
     )
-    (train_data, validation_data, test_data), dims = get_dataset_fn(get_dataset_kwargs)
+    (train_data, validation_data, test_data), dims = get_dataset_fn(**get_dataset_kwargs)
     Y = validation_data
 
     if "marginal_bijectors" in model_kwargs.keys():
