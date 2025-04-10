@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+dvc exp rm -A
+dvc queue remove --all
+dvc gc --all-experiments -a -f
+git gc --aggressive
 
 MODELS=$(dvc status eval-sim | grep -oP '@dataset\d-\K.*(?=:)' | sort | uniq)
 
