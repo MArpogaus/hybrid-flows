@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+set -euxo pipefail
+
 dvc exp rm -A
-dvc queue remove --all
+dvc queue remove --success --failed
 dvc gc --all-experiments -a -f
 git gc --aggressive
 
