@@ -7,11 +7,18 @@ dvc gc --all-experiments -a -f
 git gc --aggressive
 
 MODELS=$(dvc status eval-malnutrition | grep -oP '@\K.*(?=:)' | sort | uniq)
+EXP_NAME="malnutrition-seeds-$(date -I)"
 
 for model in $MODELS; do
-	exp_name="malnutrition-seeds-$(date -I)"
-	dvc exp run --force --queue -S "seed=range(1,21)" \
-		-S "train-malnutrition-experiment-name=$exp_name" \
-		-S "eval-malnutrition-experiment-name=$exp_name" \
-		eval-malnutrition@${model}
+	for seed in {1..20}; do
+		dvc exp run --force --temp \
+			-C datasets/malnutrition/india.raw \
+			-S "seed=$seed" \
+			-S "train-malnutrition-experiment-name=$EXP_NAME" \
+			-S "eval-malnutrition-experiment-name=$EXP_NAME" \
+			eval-malnutrition@${model} &
+		sleep 15
+	done
 done
+
+wait
