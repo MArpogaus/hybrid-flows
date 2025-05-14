@@ -152,3 +152,39 @@ train_run_time_table = (
     .run_time.agg(["mean", "std"])
 ).aggregate(lambda x: f"{x[0].seconds / 60:.3f} $\pm$ {2*x[1].seconds / 60:.3f}", 1)
 print(train_run_time_table.to_markdown())
+
+# %% analyze eval runtime
+eval_runs = mlflow.search_runs(
+    experiment_ids=exp.experiment_id,
+    filter_string="attributes.run_name like '%evaluation'",
+)
+relevant_columns = [
+    "params.seed",
+    "params.dataset_name",
+    "start_time",
+    "end_time",
+]
+df = eval_runs[relevant_columns]
+df.columns = df.columns.map(lambda x: x.split(".")[-1].replace("_", " "))
+
+
+def get_model_name(x):
+    if "hybrid" in x:
+        if "joint" in x:
+            return "HMAF J"
+        if "marginals" in x:
+            return "HMAF M"
+        else:
+            return "HMAF"
+    else:
+        return "MAF"
+
+
+df = df.assign(model=eval_runs["tags.mlflow.runName"].apply(get_model_name))
+# %%
+eval_run_time_table = (
+    df.assign(run_time=df[["start time", "end time"]].agg(lambda x: x[1] - x[0], 1))
+    .groupby(["model", "dataset name"])
+    .run_time.agg(["mean", "std"])
+).aggregate(lambda x: f"{x[0].seconds / 60:.3f} $\pm$ {2*x[1].seconds / 60:.3f}", 1)
+print(eval_run_time_table.to_markdown())

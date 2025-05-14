@@ -5,16 +5,6 @@ import seaborn as sns
 
 from hybrid_flows.utils.visualisation import get_figsize, setup_latex
 
-# %% globals ###################################################################
-fig_width, fig_height = get_figsize(487.8225, fraction=0.9)
-
-exp_name = "malnutrition_seeds_2025-02-07_6"
-mlflow.set_tracking_uri("http://localhost:5000")
-eval_runs_params = mlflow.search_runs(
-    experiment_names=[exp_name],
-    filter_string="attributes.run_name like '%evaluation'",
-)
-
 
 # %% functions
 def get_model_abrev(run_name):
@@ -39,18 +29,33 @@ def get_model_abrev(run_name):
     return model_abrev
 
 
+# %% globals ###################################################################
+fig_width, fig_height = get_figsize(487.8225, fraction=0.9)
+
+exp_name = "malnutrition-seeds-2025-05-13"
+mlflow.set_tracking_uri("http://localhost:5000")
+runs = mlflow.search_runs(
+    experiment_names=[exp_name],
+)
+eval_runs = runs.loc[runs["tags.mlflow.runName"].str.endswith("evaluation")]
+train_runs = runs.loc[runs["tags.mlflow.runName"].str.endswith("train")]
+
+# %% check if we have 20 runs per model
+assert (train_runs.groupby("tags.mlflow.runName")["params.seed"].count() == 20).all()
+assert (eval_runs.groupby("tags.mlflow.runName")["params.seed"].count() == 20).all()
+
 # %% eval runs
 relevant_columns = [
     "tags.mlflow.runName",
     "params.seed",
     "metrics.test_loss",
 ]
-df = eval_runs_params[relevant_columns]  # .dropna()
+df = eval_runs[relevant_columns]  # .dropna()
 df = df.assign(
-    conditional=eval_runs_params["tags.mlflow.runName"].apply(
+    conditional=eval_runs["tags.mlflow.runName"].apply(
         lambda x: x.startswith("conditional")
     ),
-    model=eval_runs_params["tags.mlflow.runName"].apply(get_model_abrev),
+    model=eval_runs["tags.mlflow.runName"].apply(get_model_abrev),
 )
 df.columns = df.columns.map(lambda x: x.split(".")[-1].replace("_", " "))
 
@@ -65,7 +70,7 @@ print(pt.sort_index().to_markdown())
 
 # %% completed runs
 loss_tab = df.groupby("model")["test loss"].agg(
-    lambda x: f"{x.mean().round(3):.3f} $\pm$ {2*x.std().round(3):.3f}",
+    lambda x: f"{x.mean().round(3):.3f} $\pm$ {2 * x.std().round(3):.3f}",
 )
 print(
     loss_tab.sort_index(ascending=False).to_latex(
@@ -99,7 +104,7 @@ g.figure.savefig("seed_test_nll.pdf", bbox_inches="tight")
 
 # %% parms plot ################################################################
 # exp_name = "malnutrition_seeds_2025-02-06_5"
-eval_runs_params = mlflow.search_runs(
+eval_runs = mlflow.search_runs(
     experiment_names=[exp_name],
     filter_string="attributes.run_name like '%evaluation'",
 )
@@ -110,9 +115,9 @@ relevant_columns = [
     "params.seed",
     "metrics.test_loss",
 ]
-eval_run_ids = eval_runs_params[relevant_columns]  # .dropna()
+eval_run_ids = eval_runs[relevant_columns]  # .dropna()
 eval_run_ids = eval_run_ids.assign(
-    model=eval_runs_params["tags.mlflow.runName"].apply(get_model_abrev),
+    model=eval_runs["tags.mlflow.runName"].apply(get_model_abrev),
 )
 
 eval_run_ids
