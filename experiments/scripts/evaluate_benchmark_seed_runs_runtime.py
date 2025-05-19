@@ -1,23 +1,7 @@
 # %% imports
 import mlflow
 import pandas as pd
-
-# %% globals
-exp_name = "benchmark-seeds-2025-05-13"
-mlflow.set_tracking_uri("http://localhost:5000")
-runs = mlflow.search_runs(
-    experiment_names=[exp_name]
-    # filter_string="attributes.run_name like '%evaluation'",
-)
-eval_runs = runs.loc[runs["tags.mlflow.runName"].str.endswith("evaluation")]
-train_runs = runs.loc[runs["tags.mlflow.runName"].str.endswith("train")]
-
-# %% check if we have 20 runs per model
-train_runs.groupby("tags.mlflow.runName")["params.seed"].count()
-eval_runs.groupby("tags.mlflow.runName")["params.seed"].count()
-
-assert (train_runs.groupby("tags.mlflow.runName")["params.seed"].count() == 20).all()
-assert (eval_runs.groupby("tags.mlflow.runName")["params.seed"].count() == 20).all()
+import yaml
 
 
 # %% functions
@@ -31,6 +15,63 @@ def get_model_name(x):
             return "HMAF"
     else:
         return "MAF"
+
+
+# %% globals
+exp_name = "benchmark-seeds-2025-05-13"
+mlflow.set_tracking_uri("http://localhost:5000")
+runs = mlflow.search_runs(
+    experiment_names=[exp_name],
+    # filter_string="attributes.run_name like '%evaluation'",
+    # filter_string="attributes.run_name like 'unconditional_masked_autoregressive_flow_quadratic_spline_power_evaluation'"
+)
+eval_runs = runs.loc[runs["tags.mlflow.runName"].str.endswith("evaluation")]
+train_runs = runs.loc[runs["tags.mlflow.runName"].str.endswith("train")]
+
+# %% check if we have 20 runs per model
+train_runs.groupby("tags.mlflow.runName")["params.seed"].count()
+eval_runs.groupby("tags.mlflow.runName")["params.seed"].count()
+assert (train_runs.groupby("tags.mlflow.runName")["params.seed"].count() == 20).all()
+assert (eval_runs.groupby("tags.mlflow.runName")["params.seed"].count() == 20).all()
+
+# %% unfinished runs
+pt = eval_runs.pivot_table(
+    index=["tags.mlflow.runName"],
+    columns=["params.seed"],
+    values="experiment_id",
+    aggfunc="count",
+)
+print(pt.sort_index().to_markdown())
+
+# %% load dataset names
+with open("experiments/params/benchmark/dataset.yaml", "r") as f:
+    dataset_kwargs = yaml.safe_load(f)
+dataset_names = list(dataset_kwargs["dataset_kwargs"].keys())
+dataset_names
+
+# %% get run commands
+run_cmds = pt.stack(dropna=False)
+run_cmds = run_cmds[run_cmds.isna()]
+print(len(run_cmds))
+
+python = "srun --partition=gpu1 --gres=gpu:1 --mem=256GB --time=48:00:00 --export=ALL,MLFLOW_TRACKING_URI=http://login1:5000 python"
+
+cmd_str = "dvc exp run --temp --pull -S 'python=\"{python}\"' -S 'seed={seed}' -S 'train-benchmark-experiment-name={exp_name}-DUPLICATED' -S 'eval-benchmark-experiment-name={exp_name}' eval-benchmark@dataset{dataset}-{model} &"
+
+
+for _, row in run_cmds.reset_index().iterrows():
+    model, dataset_name, _ = row["tags.mlflow.runName"].rsplit("_", 2)
+    dataset_id = dataset_names.index(dataset_name)
+    print(
+        cmd_str.format(
+            python=python,
+            dataset=dataset_id,
+            exp_name=exp_name,
+            model=model,
+            seed=row["params.seed"],
+        )
+    )
+    print("sleep 10")
 
 
 # %% analyze eval runtime
