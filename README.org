@@ -1,72 +1,80 @@
-#+OPTIONS: toc:nol
-#+startup: indent
+# Inspired by: https://github.com/othneildrew/Best-README-Template
+#+OPTIONS: toc:nil
 
-* Hybrid Bernstein Normalizing Flows for Flexible Multivariate Density Regression with Interpretable Marginals :noexport:
+[[https://github.com/MArpogaus/hybrid-flows/graphs/contributors][https://img.shields.io/github/contributors/MArpogaus/hybrid-flows.svg?style=flat-square]]
+[[https://github.com/MArpogaus/hybrid-flows/network/members][https://img.shields.io/github/forks/MArpogaus/hybrid-flows.svg?style=flat-square]]
+[[https://github.com/MArpogaus/hybrid-flows/stargazers][https://img.shields.io/github/stars/MArpogaus/hybrid-flows.svg?style=flat-square]]
+[[https://github.com/MArpogaus/hybrid-flows/issues][https://img.shields.io/github/issues/MArpogaus/hybrid-flows.svg?style=flat-square]]
+[[https://github.com/MArpogaus/hybrid-flows/blob/main/LICENSE][https://img.shields.io/github/license/MArpogaus/hybrid-flows.svg?style=flat-square]]
+[[https://github.com/MArpogaus/hybrid-flows/actions/workflows/test.yaml][https://img.shields.io/github/actions/workflow/status/MArpogaus/hybrid-flows/test.yaml.svg?label=test&style=flat-square]]
+[[https://github.com/MArpogaus/hybrid-flows/actions/workflows/release.yaml][https://img.shields.io/github/actions/workflow/status/MArpogaus/hybrid-flows/release.yaml.svg?label=release&style=flat-square]]
+[[https://github.com/MArpogaus/hybrid-flows/blob/main/.pre-commit-config.yaml][https://img.shields.io/badge/pre--commit-enabled-brightgreen.svg?logo=pre-commit&style=flat-square]]
+[[https://arxiv.org/abs/2505.14164][https://img.shields.io/badge/arXiv-2505.14164-B31B1B.svg?style=flat-square]]
+[[https://linkedin.com/in/MArpogaus][https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555]]
 
-This repository provides the code and parameters to reproduce the results presented in the paper _Hybrid Bernstein Normalizing Flows for Flexible Multivariate Density Regression with Interpretable Marginals_.
-The paper introduces Hybrid Masked Autoregressive Bernstein Flows (HMAFs), a novel approach for density regression.
+* Hybrid Bernstein Normalizing Flows for Flexible Multivariate Density Regression with Interpretable Marginals
+This repository provides the code and parameters to reproduce the results presented in the paper:
 
-* Table of Contents :TOC_3_gh:noexport:
-- [[#about-the-project][About The Project]]
-- [[#prerequisites][Prerequisites]]
-- [[#installation][Installation]]
-- [[#reproduce-experiments][Reproduce Experiments]]
-  - [[#benchmark-datasets][Benchmark Datasets]]
-  - [[#simulated-datasets][Simulated Datasets]]
-  - [[#malnutrition-dataset][Malnutrition Dataset]]
-- [[#minimal-code-examples][Minimal Code Examples]]
-  - [[#density-regression-model][Density Regression Model]]
-  - [[#hybrid-density-regression-model][Hybrid Density Regression Model]]
-- [[#license][License]]
+#+begin_quote
+M. Arpogaus, T. Kneib, T. Nagler, und D. Rügamer, „Hybrid Bernstein Normalizing Flows for Flexible Multivariate Density Regression with Interpretable Marginals“, 20. Mai 2025, arXiv: arXiv:2505.14164. doi:10.48550/arXiv.2505.14164.
+#+end_quote
 
-* About The Project
-:PROPERTIES:
-:CUSTOM_ID: about-the-project
-:END:
-This repository provides the implementation of HMAFs, a novel hybrid approach that combines the strengths of Multivariate Conditional Transformation Models (MCTMs) and autoregressive Normalizing Flows (NFs).
+#+TOC: headlines 2 local
+
+** About The Project
+This repository provides the implementation of Hybrid Masked Autoregressive Flows (HMAFs), a novel hybrid approach that combines the strengths of Multivariate Conditional Transformation Models (MCTMs) and autoregressive Normalizing Flows (NFs).
 HMAFs allow for flexible modeling of the dependency structure in multivariate data while retaining the interpretability of marginal distributions. The code includes experiments on simulated and real-world datasets, comparing HMAFs with MCTMs, MAFs, Coupling Flows and other benchmark models.
 A detailed description of all hyperparameters is available in the supplementary material of the paper.
-* Prerequisites
-    :PROPERTIES:
-    :CUSTOM_ID: prerequisites
-    :END:
-The project uses the following python packages:
 
-- [[https://github.com/iterative/dvc][dvc]]
-- [[https://github.com/matplotlib/matplotlib][matplotlib]]
-- [[https://github.com/mlflow/mlflow][mlflow]]
-- [[https://github.com/seaborn/seaborn][seaborn]]
-- [[https://github.com/tensorflow/probability][tensorflow_probability]]
-- [[https://github.com/tensorflow/tensorflow][tensorflow]]
+** Abstract
+Density regression models allow a comprehensive understanding of data by modeling the complete conditional probability distribution.
+While flexible estimation approaches such as normalizing flows (NF) work particularly well in multiple dimensions, interpreting the input-output relationship of such models is often difficult, due to the black-box character of deep learning models.
+In contrast, existing statistical methods for multivariate outcomes such as multivariate conditional transformation models (MCTM) are restricted in flexibility and are often not expressive enough to represent complex multivariate probability distributions.
+In this paper, we combine MCTM with state-of-the-art and autoregressive NF to leverage the transparency of MCTM for modeling interpretable feature effects on the marginal distributions in the first step and the flexibility of neural-network-based NF techniques to account for complex and non-linear relationships in the joint data distribution.
+We demonstrate our method's versatility in various numerical experiments and compare it with MCTM and other NF models on both simulated and real-world data.
 
-And an implementation of Bernstein polynomial bijectors available from [[https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector][Bernstein-Polynomials as TensorFlow Probability Bijector]].
+** Getting Started
 
-The dependencies are defined in the respective =setup.py= and are automatically installed by conda, when the experiments are reproduced as described below.
+To get a local copy up and running follow these simple example steps.
 
-* Installation
-:PROPERTIES:
-:CUSTOM_ID: getting-started
-:END:
-To get a local copy up and running, follow these steps.
+*** Prerequisites
+Amon others, this project uses the following python packages:
 
+- [[https://github.com/iterative/dvc][=dvc=]]
+- [[https://github.com/mlflow/mlflow][=mlflow=]]
+- [[https://github.com/seaborn/seaborn][=seaborn=]]
+- [[https://github.com/tensorflow/tensorflow][=tensorflow=]]
+- [[https://github.com/tensorflow/probability][=tensorflow_probability=]]
+
+And my implementation of Bernstein polynomial bijectors available from [[https://github.com/MArpogaus/TensorFlow-Probability-Bernstein-Polynomial-Bijector][this repro]].
+
+All the dependencies are defined in the [[file:pyproject.toml][=pyproject.toml=]] file of this project and are automatically met when installed using pip or uv.
+
+*** Installation
 1. Clone the repository
-   #+begin_src shell
-     git clone https://github.com/anonymized/hybrid_flows.git
-     cd hybrid_flows
-   #+end_src
+  #+begin_src shell
+    git clone https://github.com/anonymized/hybrid-flows.git
+    cd hybrid-flows
+  #+end_src
 
 2. Install the required packages
 
-   You can used the provided conda environment to install all dependencies, defined in `conda_env.yaml`:
-   #+begin_src shell
-     conda create -n hybrid_flows -f conda_env.yaml
-   #+end_src
+   I'd recommend [[https://github.com/astral-sh/uv][uv]] to setup this project in a [[https://docs.astral.sh/uv/pip/environments][venv]].
+  #+begin_src shell
+    uv venv --python 3.11
+    source .venv/bin/activate
+    uv sync --extra train
+  #+end_src
 
-* Reproduce Experiments
-:PROPERTIES:
-:CUSTOM_ID: experiments
-:END:
+   Alternative can used the provided conda environment (=conda_env.yaml=) to install all dependencies:
+  #+begin_src shell
+    conda create -n hybrid_flows -f conda_env.yaml
+    conda activate hybrid_flows
+  #+end_src
 
+  *Note:* Additional to =train= other =optional-dependenies= are defined in the [[file:pyproject.toml][=pyproject.toml=]] file, for cuda-support, optuna, testing, etc.
+
+*** Reproduce Experiments
 The repository provides several experiments implemented as [[https://dvc.org/][DVC]] stages in the =experiments= directory.
 All configuration files for the different models can be found in the =params= directory.
 The experiments cover training and evaluation of several models on different datasets.
@@ -79,13 +87,9 @@ All experiments can be executed by simply running the following command in the =
   dvc repro
 #+end_src
 
-The individual stages are defined in the following.
+The individual stages are described in the following.
 
-** Benchmark Datasets
-:PROPERTIES:
-:CUSTOM_ID: benchmark-datasets
-:END:
-
+**** Benchmark Datasets
 These stages train and evaluate models on five real-world benchmark datasets: BSDS300, GAS, HEPMASS, MINIBOONE, and POWER ([[file:experiments/params/benchmark/dataset.yaml][dataset configuration]]).
 The model configurations are defined in [[file:experiments/params/benchmark][experiments/params/benchmark]].
 
@@ -94,17 +98,14 @@ The model configurations are defined in [[file:experiments/params/benchmark][exp
   - HMAF with RQS ([[file:experiments/params/benchmark/bsds300/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml][bsds300]], [[file:experiments/params/benchmark/gas/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml][gas]], [[file:experiments/params/benchmark/hepmass/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml][hepmass]], [[file:experiments/params/benchmark/miniboone/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml][minibone]], [[file:experiments/params/benchmark/power/unconditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml][power]])
 
 - =eval-benchmark=: Evaluates the trained models. ([[file:experiments/dvc.yaml::eval-benchmark][dvc stage definition]]). Generates various diagnostic plots, such as Q-Q plots, for analysis and comparison.
-  Evaluation metrics are logged in `evaluation_metrics.yaml`.
+  Evaluation metrics are logged in =evaluation_metrics.yaml=.
 
-** Simulated Datasets
-:PROPERTIES:
-:CUSTOM_ID: simulated-datasets
-:END:
+**** Simulated Datasets
 The following stages train and evaluate different models on two simulated datasets: *moons* and *circles* ([[file:experiments/params/sim/dataset.yaml][dataset configuration]]).
 The hyper parameters are defined in [[file:experiments/params/sim][experiments/params/sim]].
 
 - =train-sim=: Trains a range of models ([[file:experiments/dvc.yaml::train-sim][dvc stage definition]]) on both simulated datasets.  The model configurations are defined in [[file:experiments/params/sim/moons][params/sim/moons]] and  [[file:experiments/params/sim/circles][params/sim/circles]].
-  Each dataset has 16,384 data points, with 25\% reserved for validation.
+  Each dataset has 16,384 data points, with 25 % reserved for validation.
   A binary feature, =x=, is included for conditional density estimation, indicating spatial location.
   The following models are trained:
   - Multivariate Normal (MVN) ([[file:experiments/params/sim/circles/unconditional_multivariate_normal.yaml][unconditional]]/[[file:experiments/params/sim/circles/conditional_multivariate_normal.yaml][conditional]])
@@ -115,9 +116,9 @@ The hyper parameters are defined in [[file:experiments/params/sim][experiments/p
 
 - =eval-sim=: Evaluates the trained models ([[file:experiments/dvc.yaml::eval-sim][dvc stage definition]]) on the simulated data.
   Evaluation metrics and visualizations, such as contour plots, Q-Q plots and transformed data distributions, are generated.
-  Metrics are logged in `evaluation_metrics.yaml`.
+  Metrics are logged in =evaluation_metrics.yaml=.
 
-** Malnutrition Dataset
+**** Malnutrition Dataset
 :PROPERTIES:
 :CUSTOM_ID: malnutrition-dataset
 :END:
@@ -130,26 +131,24 @@ Model parameters can be found in [[file:experiments/params/malnutrition][experim
   - HMAF with quadratic splines ([[file:experiments/params/malnutrition/conditional_hybrid_masked_autoregressive_flow_quadratic_spline.yaml][model configuration]])
 - =eval-malnutrition=: Evaluates the models' performance ([[file:experiments/dvc.yaml::eval-malnutrition][dvc stage definition]]) using reliability diagrams, Q-Q plots, analysis of marginal distributions and feature effects.
 
-* Minimal Code Examples
-:PROPERTIES:
-:CUSTOM_ID: minimal-code-examples
-:END:
 
-** Density Regression Model
+** Usage of the Density Regression Models
+The =hybriod_flows= python packages implements TensorFlow models for density regression using various methods.
+Here are some basic examples to get you started.
+Please also review the tests defined in [[file:test/test_models.py]], and the model parameters used for the experiments described above if you require more examples.
+*** Unconditional Multivariate Normal
 #+begin_src python
   from hybrid_flows.models import DensityRegressionModel
 
   # Define model parameters
   model_parameters = {
       "distribution": "multivariate_normal",
-      "model_kwargs": {
-          "parameters_fn_kwargs": {"conditional": False}
-      },
-      "dims": 2
+      "parameters_fn_kwargs": {"conditional": False},
+      "dims": 2,
   }
   # Initialize and compile the model
   model = DensityRegressionModel(**model_parameters)
-  model.compile(optimizer='adam', loss=lambda y, p_y: -p_y.log_prob(y))
+  model.compile(optimizer="adam", loss=lambda y, p_y: -p_y.log_prob(y))
 
   # load data
   x, y = ...
@@ -160,33 +159,128 @@ Model parameters can be found in [[file:experiments/params/malnutrition][experim
   # Access the distribution
   dist = model(x)
 #+end_src
-
-** Hybrid Density Regression Model
+*** Masked Autoregressive Flow
 #+begin_src python
+  import tensorflow as tf
+  from hybrid_flows.models import DensityRegressionModel
+
+  # Define model parameters
+  DATA_DIMS=10
+  model_parameters = {
+      "distribution": "masked_autoregressive_flow",
+      "model_kwargs": {"parameters_fn_kwargs": {"conditional": False}},
+      "dims": DATA_DIMS,
+      "num_layers": 2,
+      "num_parameters": 8,
+      "nested_bijectors": [
+          {
+              "bijector": "Scale",
+              "parameters_constraint_fn": tf.math.softplus,
+              "parameters_slice_size": 1,
+          },
+          {
+              "bijector": "Shift",
+              "parameters_slice_size": 1,
+          },
+          {
+              "parameters_constraint_fn_kwargs": {
+                  "allow_flexible_bounds": False,
+                  "bounds": "linear",
+                  "high": -4,
+                  "low": 4,
+              },
+              "bijector": "BernsteinPolynomial",
+              "bijector_kwargs": {
+                  "domain": [0, 1],
+                  "extrapolation": False,
+              },
+              "invert": True,
+              "parameters_slice_size": 6,
+          },
+      ],
+      "parameters_fn_kwargs": {
+          "hidden_units": [16] * 4,
+          "activation": "relu",
+          "conditional": True,
+          "conditional_event_shape": DATA_DIMS,
+      },
+  }
+  # Initialize and compile the model
+  model = DensityRegressionModel(**model_parameters)
+  model.compile(optimizer="adam", loss=lambda y, p_y: -p_y.log_prob(y))
+
+  # load data
+  x, y = ...
+
+  # Fit the model (replace with your actual data)
+  model.fit(x=x, y=y, epochs=1)
+
+  # Access the distribution
+  dist = model(x)
+#+end_src
+*** Multivariate Conditional Transformation Model
+#+begin_src python
+  import tensorflow as tf
+
   from hybrid_flows.models import HybridDensityRegressionModel
 
   # Define model parameters
+  DATA_DIMS = 3
   model_parameters = {
       "marginal_bijectors": [
           {
               "bijector": "BernsteinPolynomial",
-              "parameters_fn_kwargs": {"parameter_shape": [2, 10]}
-          }
+              "bijector_kwargs": {
+                  "domain": (-4, 4),
+                  "extrapolation": True,
+              },
+              "parameters_fn": "parameter_vector",
+              "parameters_fn_kwargs": {
+                  "parameter_shape": [DATA_DIMS, 10],
+                  "dtype": "float32",
+              },
+              "parameters_constraint_fn": "hybrid_flows.activations.get_thetas_constrain_fn",  # noqa: E501
+              "parameters_constraint_fn_kwargs": {
+                  "low": -4,
+                  "high": 4,
+                  "bounds": "smooth",
+                  "allow_flexible_bounds": True,
+              },
+          },
+          {
+              "bijector": "Shift",
+              "parameters_fn": "bernstein_polynomial",  # "parameter_vector",
+              "parameters_fn_kwargs": {
+                  "parameter_shape": [DATA_DIMS],
+                  "dtype": "float",
+                  "polynomial_order": 6,
+                  "conditional_event_shape": DATA_DIMS,
+                  "extrapolation": True,
+              },
+          },
       ],
       "joint_bijectors": [
           {
               "bijector": "ScaleMatvecLinearOperator",
-              "parameters_fn": "parameter_vector",
-              "parameters_fn_kwargs": {"parameter_shape": [1]},
-              "parameters_constraint_fn": "lambda x: tf.exp(x)"
+              "parameters_fn": "bernstein_polynomial",
+              "parameters_fn_kwargs": {
+                  "parameter_shape": [sum(range(DATA_DIMS))],
+                  "dtype": "float",
+                  "polynomial_order": 6,
+                  "conditional_event_shape": DATA_DIMS,
+                  "domain": (-1, 1),
+                  "extrapolation": True,
+                  "initializer": tf.ones,
+              },
+              "parameters_constraint_fn": "hybrid_flows.activations.lambda_parameters_constraint_fn",  # noqa: E501
           }
       ],
-      "dims": 12
+      "dims": DATA_DIMS
   }
 
   # Initialize and compile the model
   model = HybridDensityRegressionModel(**model_parameters)
-  model.compile(optimizer='adam', loss=lambda y, p_y: -p_y.log_prob(y))
+  model.compile(optimizer="adam", loss=lambda y, p_y: -p_y.log_prob(y))
 
   # load data
   x, y = ...
@@ -198,11 +292,100 @@ Model parameters can be found in [[file:experiments/params/malnutrition][experim
   joint_dist = model(x)
 
   # Get the marginal distributions
-  # marginal_dist = model.marginal_distribution(x)
+  marginal_dist = model.marginal_distribution(x)
 #+end_src
+*** Conditional Hybrid Masked Autoregressive Flow using Quadratic Splines
+#+begin_src python
+  import tensorflow as tf
 
-* License
-:PROPERTIES:
-:CUSTOM_ID: license
-:END:
+  from hybrid_flows.models import HybridDensityRegressionModel
+
+  # Define model parameters
+  DATA_DIMS = 3
+  model_parameters = {
+      "marginal_bijectors": [
+          {
+              "bijector": "BernsteinPolynomial",
+              "invert": True,
+              "bijector_kwargs": {"domain": [0, 1], "extrapolation": False},
+              "parameters_constraint_fn": "hybrid_flows.activations.get_thetas_constrain_fn",
+              "parameters_constraint_fn_kwargs": {
+                  "allow_flexible_bounds": False,
+                  "bounds": "linear",
+                  "high": 5,
+                  "low": -5,
+              },
+              "parameters_fn": "bernstein_polynomial",
+              "parameters_fn_kwargs": {
+                  "dtype": "float32",
+                  "extrapolation": True,
+                  "conditional_event_shape": 1,
+                  "polynomial_order": 1,
+                  "parameter_shape": [2, 300],
+              },
+          }
+      ],
+      "joint_bijectors": [
+          {
+              "bijector": "RealNVP",
+              "bijector_kwargs": {"num_masked": 1},
+              "nested_bijector": {
+                  "bijector": "RationalQuadraticSpline",
+                  "bijector_kwargs": {"range_min": -5},
+                  "parameters_constraint_fn_kwargs": {
+                      "interval_width": 10,
+                      "min_slope": 0.001,
+                      "min_bin_width": 0.001,
+                      "nbins": 32,
+                  },
+                  "parametrized_by_parent": True,
+              },
+              "parameters_fn": "fully_connected_network",
+              "parameters_fn_kwargs": {
+                  "activation": "relu",
+                  "batch_norm": False,
+                  "dropout": False,
+                  "hidden_units": [128, 128, 128],
+                  "dtype": "float32",
+                  "input_shape": [1],
+                  "parameter_shape": [1, 95],
+                  "conditional": True,
+                  "conditional_event_shape": 1,
+              },
+          }
+      ],
+      "dims": DATA_DIMS,
+  }
+
+  # Initialize and compile the model
+  model = HybridDensityRegressionModel(**model_parameters)
+  model.compile(optimizer="adam", loss=lambda y, p_y: -p_y.log_prob(y))
+
+  # load data
+  x, y = ...
+
+  # Fit the model (replace with your actual data and parameters)
+  model.fit(x=x, y=y, epochs=1)
+
+  # Get the joint distribution
+  joint_dist = model(x)
+
+  # Get the marginal distributions
+  marginal_dist = model.marginal_distribution(x)
+#+end_src
+** Contributing
+Any Contributions are greatly appreciated! If you have a question, an issue or would like to contribute, please read our [[file:CONTRIBUTING.md][contributing guidelines]].
+
+** License
 Distributed under the [[file:experiments/LICENSE][Apache License 2.0]]
+
+** Contact
+[[https://github.com/MArpogaus/][Marcel Arpogaus]] - [[mailto:znepry.necbtnhf@tznvy.pbz][znepry.necbtnhf@tznvy.pbz]] (encrypted with [[https://rot13.com/][ROT13]])
+
+Project Link:
+[[https://github.com/MArpogaus/hybrid-flows]]
+
+** Acknowledgments
+
+This research was funded by the Carl-Zeiss-Stiftung in the project ”DeepCarbPlanner” (grant no. P2021-08-007).
+We thank the [[https://wiki.bwhpc.de/e/DACHS][DACHS]] data analysis cluster, hosted at Hochschule Esslingen and co-funded by the MWK within the DFG’s ,,Großgeräte der Länder” program, for providing the computational resources necessary for this research.
