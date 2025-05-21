@@ -88,6 +88,12 @@ ignore = []
 select = ["I", "E", "F", "D"]
 unfixable = []
 
+[tool.ruff.lint.per-file-ignores]
+# ignore missing doc strings in python scripts
+"experiments/scripts/*" = ["D100", "D103"]
+# ignore too long lines
+"experiments/scripts/get_hpo_table.py" = ["E501"]
+
 [tool.setuptools_scm]
 # https://stackoverflow.com/a/74404703
 # omits local version, useful because pypi does not support it

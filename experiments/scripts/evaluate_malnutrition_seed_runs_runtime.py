@@ -91,6 +91,10 @@ train_run_time_table = (df.groupby("model").run_time.agg(["mean", "std"])).aggre
 train_run_time_table
 
 # %% Print LaTeX table
+caption = (
+    "Mean runtime in seconds for training and evaluation of models on malnutrition data.\n"  # noqa: E501
+    "Variance resulting deviations from 20 runs reported as standard deviation."
+)
 print(
     pd.concat(
         [
@@ -98,7 +102,5 @@ print(
             eval_run_time_table.rename("evaluation"),
         ],
         axis=1,
-    ).to_latex(
-        caption="Mean runtime in seconds for training and evaluation of models on malnutrition data.\nVariance resulting deviations from 20 runs reported as standard deviation."
-    )
+    ).to_latex(caption=caption)
 )

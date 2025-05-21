@@ -60,7 +60,7 @@ run_cmds = pt.stack(dropna=False)
 run_cmds = run_cmds[run_cmds.isna()]
 
 exp_name = "sim-seeds-{model}-{date}"
-cmd_str = "dvc exp run --force --queue -S 'seed={seed}' -S 'train-sim-experiment-name={exp_name}' -S 'train-sim-experiment-name={exp_name}' eval-sim@dataset{dataset}-{model}"
+cmd_str = "dvc exp run --force --queue -S 'seed={seed}' -S 'train-sim-experiment-name={exp_name}' -S 'train-sim-experiment-name={exp_name}' eval-sim@dataset{dataset}-{model}"  # noqa: E501
 
 
 for _, row in run_cmds.reset_index().iterrows():
@@ -160,6 +160,10 @@ train_run_time_table = (
 train_run_time_table
 
 # %% Print LaTeX table
+caption = (
+    "Mean runtime in seconds for training and evaluation of models on simulated data.\n"
+    "Variance resulting deviations from 20 runs reported as standard deviation."
+)
 print(
     pd.concat(
         [
@@ -167,7 +171,5 @@ print(
             eval_run_time_table.rename("evaluation"),
         ],
         axis=1,
-    ).to_latex(
-        caption="Mean runtime in seconds for training and evaluation of models on simulated data.\nVariance resulting deviations from 20 runs reported as standard deviation."
-    )
+    ).to_latex(caption=caption)
 )

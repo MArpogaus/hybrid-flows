@@ -697,10 +697,6 @@ param_map = {
         "name": "Use Invertible Linear Transformations",
         "desc": "Specifies if invertible linear transformations should be employed",
     },
-    "model_kwargs.joint_flow_type": {
-        "name": "Type of Joint Flow",
-        "desc": "Specifies the type of flow used in the model",
-    },
     "two_stage_training": {
         "name": "Two-Stage Training",
         "desc": "Indicates if the model should be trained in two stages",

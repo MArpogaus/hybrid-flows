@@ -22,8 +22,6 @@ exp_name = "benchmark-seeds-2025-05-13"
 mlflow.set_tracking_uri("http://localhost:5000")
 runs = mlflow.search_runs(
     experiment_names=[exp_name],
-    # filter_string="attributes.run_name like '%evaluation'",
-    # filter_string="attributes.run_name like 'unconditional_masked_autoregressive_flow_quadratic_spline_power_evaluation'"
 )
 eval_runs = runs.loc[runs["tags.mlflow.runName"].str.endswith("evaluation")]
 train_runs = runs.loc[runs["tags.mlflow.runName"].str.endswith("train")]
@@ -54,9 +52,9 @@ run_cmds = pt.stack(dropna=False)
 run_cmds = run_cmds[run_cmds.isna()]
 print(len(run_cmds))
 
-python = "srun --partition=gpu1 --gres=gpu:1 --mem=256GB --time=48:00:00 --export=ALL,MLFLOW_TRACKING_URI=http://login1:5000 python"
+python = "srun --partition=gpu1 --gres=gpu:1 --mem=256GB --time=48:00:00 --export=ALL,MLFLOW_TRACKING_URI=http://login1:5000 python"  # noqa: E501
 
-cmd_str = "dvc exp run --temp --pull -S 'python=\"{python}\"' -S 'seed={seed}' -S 'train-benchmark-experiment-name={exp_name}-DUPLICATED' -S 'eval-benchmark-experiment-name={exp_name}' eval-benchmark@dataset{dataset}-{model} &"
+cmd_str = "dvc exp run --temp --pull -S 'python=\"{python}\"' -S 'seed={seed}' -S 'train-benchmark-experiment-name={exp_name}-DUPLICATED' -S 'eval-benchmark-experiment-name={exp_name}' eval-benchmark@dataset{dataset}-{model} &"  # noqa: E501
 
 
 for _, row in run_cmds.reset_index().iterrows():
@@ -123,6 +121,10 @@ train_run_time_table = (
 print(train_run_time_table)
 
 # %% Print LaTeX table
+caption = (
+    "Runtime in Minutes for training and evaluation of models on benchmark data.\n"
+    "Variance resulting deviations from 20 runs reported as standard deviation."
+)
 print(
     pd.concat(
         [
@@ -130,7 +132,5 @@ print(
             eval_run_time_table.rename("evaluation"),
         ],
         axis=1,
-    ).to_latex(
-        caption="Runtime in Minutes for training and evaluation of models on benchmark data.\nVariance resulting deviations from 20 runs reported as standard deviation."
-    )
+    ).to_latex(caption=caption)
 )
