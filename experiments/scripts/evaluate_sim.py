@@ -88,8 +88,8 @@ def plot_hybrid_model(model, x, y):
 
     df = pd.DataFrame(
         columns=[
-            "$y1$",
-            "$y2$",
+            "$y_1$",
+            "$y_2$",
             "$w_{1}$",
             "$w_{2}$",
             "$z_{1}$",
@@ -102,7 +102,7 @@ def plot_hybrid_model(model, x, y):
     )
 
     # %% data
-    g = sns.JointGrid(data=df, x="$y1$", y="$y2$", height=2)
+    g = sns.JointGrid(data=df, x="$y_1$", y="$y_2$", height=2)
     g.plot_joint(sns.scatterplot, s=4, alpha=0.5)
     g.plot_marginals(sns.histplot)
     data_fig = g.figure
