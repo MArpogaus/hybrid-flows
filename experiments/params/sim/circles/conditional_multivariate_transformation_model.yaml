@@ -35,7 +35,7 @@ model_kwargs:
     invert: true
     parameters_fn: bernstein_polynomial
     parameters_fn_kwargs:
-      conditional_event_shape: 1
+      conditional_event_shape: [1]
       dtype: float32
       extrapolation: true
       parameter_shape: [*dims]
@@ -45,7 +45,7 @@ model_kwargs:
     invert: true
     parameters_fn: bernstein_polynomial
     parameters_fn_kwargs:
-      conditional_event_shape: 1
+      conditional_event_shape: [1]
       dtype: float32
       extrapolation: true
       parameter_shape: [1]

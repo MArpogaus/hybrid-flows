@@ -19,7 +19,7 @@ model_kwargs:
     activation: relu
     batch_norm: true
     conditional: true
-    conditional_event_shape: 1
+    conditional_event_shape: [1]
     dropout: 0
     hidden_units:
     - 16

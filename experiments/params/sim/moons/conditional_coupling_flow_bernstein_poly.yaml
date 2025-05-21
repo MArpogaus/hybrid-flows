@@ -46,4 +46,4 @@ model_kwargs:
     - 128
     - 128
     conditional: true
-    conditional_event_shape: 1
+    conditional_event_shape: [1]

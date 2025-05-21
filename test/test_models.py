@@ -52,7 +52,7 @@ def batch_size(request):
                     "batch_norm": False,
                     "dropout": 0,
                     "conditional": True,
-                    "conditional_event_shape": DATA_DIMS,
+                    "conditional_event_shape": [DATA_DIMS],
                 },
             },
         ),
@@ -71,7 +71,7 @@ def batch_size(request):
                     "batch_norm": False,
                     "dropout": 0,
                     "conditional": False,
-                    "conditional_event_shape": DATA_DIMS,
+                    "conditional_event_shape": [DATA_DIMS],
                 },
                 __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__: {
                     "allow_flexible_bounds": False,
@@ -99,7 +99,7 @@ def batch_size(request):
                     "batch_norm": False,
                     "dropout": 0,
                     "conditional": False,
-                    "conditional_event_shape": DATA_DIMS,
+                    "conditional_event_shape": [DATA_DIMS],
                 },
                 __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__: {
                     "allow_flexible_bounds": False,
@@ -128,7 +128,7 @@ def batch_size(request):
                     "batch_norm": False,
                     "dropout": 0,
                     "conditional": True,
-                    "conditional_event_shape": DATA_DIMS,
+                    "conditional_event_shape": [DATA_DIMS],
                 },
                 __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__: {
                     "allow_flexible_bounds": False,
@@ -193,7 +193,7 @@ def batch_size(request):
                     "batch_norm": False,
                     "dropout": 0,
                     "conditional": True,
-                    "conditional_event_shape": DATA_DIMS,
+                    "conditional_event_shape": [DATA_DIMS],
                 },
                 __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__: {
                     "interval_width": 10,
@@ -240,7 +240,7 @@ def batch_size(request):
                     "hidden_units": [16] * 4,
                     "activation": "relu",
                     "conditional": True,
-                    "conditional_event_shape": DATA_DIMS,
+                    "conditional_event_shape": [DATA_DIMS],
                 },
                 __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__: {
                     "allow_flexible_bounds": False,
@@ -286,7 +286,7 @@ def batch_size(request):
                     "hidden_units": [16] * 4,
                     "activation": "relu",
                     "conditional": True,
-                    "conditional_event_shape": DATA_DIMS,
+                    "conditional_event_shape": [DATA_DIMS],
                 },
             },
         ),
@@ -300,7 +300,7 @@ def batch_size(request):
                     "hidden_units": [32] * 2,
                     "activation": "relu",
                     "conditional": True,
-                    "conditional_event_shape": DATA_DIMS,
+                    "conditional_event_shape": [DATA_DIMS],
                 },
                 __PARAMETERS_CONSTRAINT_FN_KWARGS_KEY__: {
                     "interval_width": 10,
@@ -324,7 +324,7 @@ def batch_size(request):
                     "batch_norm": False,
                     "dropout": 0,
                     "conditional": True,
-                    "conditional_event_shape": DATA_DIMS,
+                    "conditional_event_shape": [DATA_DIMS],
                 },
                 "maf_parameters_fn_kwargs": {
                     "hidden_units": [16] * 4,
@@ -379,7 +379,7 @@ def density_regression_model_config(request):
                         "parameter_shape": [DATA_DIMS],
                         "dtype": "float",
                         "polynomial_order": 6,
-                        "conditional_event_shape": DATA_DIMS,
+                        "conditional_event_shape": [DATA_DIMS],
                         "extrapolation": True,
                     },
                 },
@@ -392,7 +392,7 @@ def density_regression_model_config(request):
                         "parameter_shape": [sum(range(DATA_DIMS))],
                         "dtype": "float",
                         "polynomial_order": 6,
-                        "conditional_event_shape": DATA_DIMS,
+                        "conditional_event_shape": [DATA_DIMS],
                         "domain": (-1, 1),
                         "extrapolation": True,
                         "initializer": tf.ones,
@@ -454,7 +454,7 @@ def test_density_regression_model(
         # Test sampling
         if parameter_kwargs.get("conditional", False):
             conditional_input = tf.ones(
-                (batch_size, parameter_kwargs["conditional_event_shape"])
+                [batch_size] + parameter_kwargs["conditional_event_shape"]
             )
             dist = model(conditional_input)
             assert dist.batch_shape == [batch_size]

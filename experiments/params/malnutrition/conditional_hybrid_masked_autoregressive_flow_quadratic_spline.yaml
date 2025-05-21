@@ -41,7 +41,7 @@ model_kwargs:
     invert: true
     parameters_fn: bernstein_polynomial
     parameters_fn_kwargs:
-      conditional_event_shape: 1
+      conditional_event_shape: [1]
       domain: [0, 35]
       dtype: float32
       extrapolation: true
@@ -68,7 +68,7 @@ model_kwargs:
       - 512
       dtype: float32
       conditional: true
-      conditional_event_shape: 1
+      conditional_event_shape: [1]
     x0_parameters_fn_kwargs:
       activation: relu
       batch_norm: false
@@ -79,4 +79,4 @@ model_kwargs:
       - 512
       dtype: float32
       conditional: true
-      conditional_event_shape: 1
+      conditional_event_shape: [1]

@@ -28,7 +28,7 @@ model_kwargs:
   parameters_fn_kwargs:
     activation: relu
     conditional: true
-    conditional_event_shape: 1
+    conditional_event_shape: [1]
     hidden_units:
     - 128
     - 128

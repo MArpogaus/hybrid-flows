@@ -39,7 +39,7 @@ model_kwargs:
     parameters_fn_kwargs:
       dtype: float32
       extrapolation: true
-      conditional_event_shape: 1
+      conditional_event_shape: [1]
       polynomial_order: 1
       parameter_shape: [2, 300]
   joint_bijectors:
@@ -72,4 +72,4 @@ model_kwargs:
       input_shape: [1]
       parameter_shape: [1, 300]
       conditional: true
-      conditional_event_shape: 1
+      conditional_event_shape: [1]
