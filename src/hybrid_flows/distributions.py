@@ -648,9 +648,9 @@ def _init_nested_bijector_from_dict(
             )
         initialized_nested_bijectors.append(bijector)
 
-    assert offset == 0 or (
-        offset == parent_parameters.shape[-1]
-    ), "Not all parameters from parent bijector used. Check your config!"
+    assert offset == 0 or (offset == parent_parameters.shape[-1]), (
+        "Not all parameters from parent bijector used. Check your config!"
+    )
     __LOGGER__.debug(
         "Initialized nested bijectors: %s",
         initialized_nested_bijectors,

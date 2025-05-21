@@ -105,7 +105,7 @@ pt = df.pivot_table(
     index=["model"],
     columns=["dataset name", "conditional"],
     values="test loss",
-    aggfunc=lambda x: f"{x.mean().round(3):.3f} $\pm$ {2*x.std().round(3):.3f}",
+    aggfunc=lambda x: f"{x.mean().round(3):.3f} $\pm$ {2 * x.std().round(3):.3f}",
 )
 print(
     pt.sort_index(ascending=False)

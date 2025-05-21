@@ -142,7 +142,9 @@ def evaluate(
         dataset_name=dataset_name,
         test_mode=False,
     )
-    (train_data, validation_data, test_data), dims = get_dataset_fn(**get_dataset_kwargs)
+    (train_data, validation_data, test_data), dims = get_dataset_fn(
+        **get_dataset_kwargs
+    )
     Y = validation_data
 
     if "marginal_bijectors" in model_kwargs.keys():
