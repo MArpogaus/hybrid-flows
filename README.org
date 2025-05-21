@@ -7,7 +7,6 @@
 [[https://github.com/MArpogaus/hybrid-flows/issues][https://img.shields.io/github/issues/MArpogaus/hybrid-flows.svg?style=flat-square]]
 [[https://github.com/MArpogaus/hybrid-flows/blob/main/LICENSE][https://img.shields.io/github/license/MArpogaus/hybrid-flows.svg?style=flat-square]]
 [[https://github.com/MArpogaus/hybrid-flows/actions/workflows/test.yaml][https://img.shields.io/github/actions/workflow/status/MArpogaus/hybrid-flows/test.yaml.svg?label=test&style=flat-square]]
-[[https://github.com/MArpogaus/hybrid-flows/actions/workflows/release.yaml][https://img.shields.io/github/actions/workflow/status/MArpogaus/hybrid-flows/release.yaml.svg?label=release&style=flat-square]]
 [[https://github.com/MArpogaus/hybrid-flows/blob/main/.pre-commit-config.yaml][https://img.shields.io/badge/pre--commit-enabled-brightgreen.svg?logo=pre-commit&style=flat-square]]
 [[https://arxiv.org/abs/2505.14164][https://img.shields.io/badge/arXiv-2505.14164-B31B1B.svg?style=flat-square]]
 [[https://linkedin.com/in/MArpogaus][https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555]]

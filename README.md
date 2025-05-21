@@ -1,4 +1,4 @@
-[![img](https://img.shields.io/github/contributors/MArpogaus/hybrid-flows.svg?style=flat-square)](https://github.com/MArpogaus/hybrid-flows/graphs/contributors) [![img](https://img.shields.io/github/forks/MArpogaus/hybrid-flows.svg?style=flat-square)](https://github.com/MArpogaus/hybrid-flows/network/members) [![img](https://img.shields.io/github/stars/MArpogaus/hybrid-flows.svg?style=flat-square)](https://github.com/MArpogaus/hybrid-flows/stargazers) [![img](https://img.shields.io/github/issues/MArpogaus/hybrid-flows.svg?style=flat-square)](https://github.com/MArpogaus/hybrid-flows/issues) [![img](https://img.shields.io/github/license/MArpogaus/hybrid-flows.svg?style=flat-square)](https://github.com/MArpogaus/hybrid-flows/blob/main/LICENSE) [![img](https://img.shields.io/github/actions/workflow/status/MArpogaus/hybrid-flows/test.yaml.svg?label=test&style=flat-square)](https://github.com/MArpogaus/hybrid-flows/actions/workflows/test.yaml) [![img](https://img.shields.io/github/actions/workflow/status/MArpogaus/hybrid-flows/release.yaml.svg?label=release&style=flat-square)](https://github.com/MArpogaus/hybrid-flows/actions/workflows/release.yaml) [![img](https://img.shields.io/badge/pre--commit-enabled-brightgreen.svg?logo=pre-commit&style=flat-square)](https://github.com/MArpogaus/hybrid-flows/blob/main/.pre-commit-config.yaml) [![img](https://img.shields.io/badge/arXiv-2505.14164-B31B1B.svg?style=flat-square)](https://arxiv.org/abs/2505.14164) [![img](https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555)](https://linkedin.com/in/MArpogaus)
+[![img](https://img.shields.io/github/contributors/MArpogaus/hybrid-flows.svg?style=flat-square)](https://github.com/MArpogaus/hybrid-flows/graphs/contributors) [![img](https://img.shields.io/github/forks/MArpogaus/hybrid-flows.svg?style=flat-square)](https://github.com/MArpogaus/hybrid-flows/network/members) [![img](https://img.shields.io/github/stars/MArpogaus/hybrid-flows.svg?style=flat-square)](https://github.com/MArpogaus/hybrid-flows/stargazers) [![img](https://img.shields.io/github/issues/MArpogaus/hybrid-flows.svg?style=flat-square)](https://github.com/MArpogaus/hybrid-flows/issues) [![img](https://img.shields.io/github/license/MArpogaus/hybrid-flows.svg?style=flat-square)](https://github.com/MArpogaus/hybrid-flows/blob/main/LICENSE) [![img](https://img.shields.io/github/actions/workflow/status/MArpogaus/hybrid-flows/test.yaml.svg?label=test&style=flat-square)](https://github.com/MArpogaus/hybrid-flows/actions/workflows/test.yaml) [![img](https://img.shields.io/badge/pre--commit-enabled-brightgreen.svg?logo=pre-commit&style=flat-square)](https://github.com/MArpogaus/hybrid-flows/blob/main/.pre-commit-config.yaml) [![img](https://img.shields.io/badge/arXiv-2505.14164-B31B1B.svg?style=flat-square)](https://arxiv.org/abs/2505.14164) [![img](https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555)](https://linkedin.com/in/MArpogaus)
 
 
 # Hybrid Bernstein Normalizing Flows for Flexible Multivariate Density Regression with Interpretable Marginals
@@ -7,45 +7,45 @@ This repository provides the code and parameters to reproduce the results presen
 
 > M. Arpogaus, T. Kneib, T. Nagler, und D. Rügamer, „Hybrid Bernstein Normalizing Flows for Flexible Multivariate Density Regression with Interpretable Marginals“, 20. Mai 2025, arXiv: arXiv:2505.14164. https://doi.org/10.48550/arXiv.2505.14164.
 
-1.  [About The Project](#orged23a43)
-2.  [Abstract](#org4dc22ef)
-3.  [Getting Started](#orgd77ce9a)
-    1.  [Prerequisites](#org8dbb0ca)
-    2.  [Installation](#org808e2b3)
-    3.  [Reproduce Experiments](#org0f924c8)
-4.  [Usage of the Density Regression Models](#orgddf71c5)
-    1.  [Unconditional Multivariate Normal](#org3457d11)
-    2.  [Masked Autoregressive Flow](#org59896a3)
-    3.  [Multivariate Conditional Transformation Model](#orgd549016)
-    4.  [Conditional Hybrid Masked Autoregressive Flow using Quadratic Splines](#org3ea6b68)
-5.  [Contributing](#org89a3567)
-6.  [License](#org52c8cb8)
-7.  [Contact](#org1e7f2af)
-8.  [Acknowledgments](#org1641752)
+1.  [About The Project](#org7866fe4)
+2.  [Abstract](#org154aa44)
+3.  [Getting Started](#org2d336a7)
+    1.  [Prerequisites](#orgb62bd3a)
+    2.  [Installation](#org9c153ad)
+    3.  [Reproduce Experiments](#org414c83e)
+4.  [Usage of the Density Regression Models](#orgb000851)
+    1.  [Unconditional Multivariate Normal](#org7f47afb)
+    2.  [Masked Autoregressive Flow](#org6745ed3)
+    3.  [Multivariate Conditional Transformation Model](#orgea05762)
+    4.  [Conditional Hybrid Masked Autoregressive Flow using Quadratic Splines](#orgf5c9459)
+5.  [Contributing](#org0adf605)
+6.  [License](#org322e2cd)
+7.  [Contact](#org446cf22)
+8.  [Acknowledgments](#org235c90f)
 
 
-<a id="orged23a43"></a>
+<a id="org7866fe4"></a>
 
 ## About The Project
 
 This repository provides the implementation of Hybrid Masked Autoregressive Flows (HMAFs), a novel hybrid approach that combines the strengths of Multivariate Conditional Transformation Models (MCTMs) and autoregressive Normalizing Flows (NFs). HMAFs allow for flexible modeling of the dependency structure in multivariate data while retaining the interpretability of marginal distributions. The code includes experiments on simulated and real-world datasets, comparing HMAFs with MCTMs, MAFs, Coupling Flows and other benchmark models. A detailed description of all hyperparameters is available in the supplementary material of the paper.
 
 
-<a id="org4dc22ef"></a>
+<a id="org154aa44"></a>
 
 ## Abstract
 
 Density regression models allow a comprehensive understanding of data by modeling the complete conditional probability distribution. While flexible estimation approaches such as normalizing flows (NF) work particularly well in multiple dimensions, interpreting the input-output relationship of such models is often difficult, due to the black-box character of deep learning models. In contrast, existing statistical methods for multivariate outcomes such as multivariate conditional transformation models (MCTM) are restricted in flexibility and are often not expressive enough to represent complex multivariate probability distributions. In this paper, we combine MCTM with state-of-the-art and autoregressive NF to leverage the transparency of MCTM for modeling interpretable feature effects on the marginal distributions in the first step and the flexibility of neural-network-based NF techniques to account for complex and non-linear relationships in the joint data distribution. We demonstrate our method's versatility in various numerical experiments and compare it with MCTM and other NF models on both simulated and real-world data.
 
 
-<a id="orgd77ce9a"></a>
+<a id="org2d336a7"></a>
 
 ## Getting Started
 
 To get a local copy up and running follow these simple example steps.
 
 
-<a id="org8dbb0ca"></a>
+<a id="orgb62bd3a"></a>
 
 ### Prerequisites
 
@@ -62,7 +62,7 @@ And my implementation of Bernstein polynomial bijectors available from [this rep
 All the dependencies are defined in the [`pyproject.toml`](pyproject.toml) file of this project and are automatically met when installed using pip or uv.
 
 
-<a id="org808e2b3"></a>
+<a id="org9c153ad"></a>
 
 ### Installation
 
@@ -93,7 +93,7 @@ All the dependencies are defined in the [`pyproject.toml`](pyproject.toml) file 
     **Note:** Additional to `train` other `optional-dependenies` are defined in the [`pyproject.toml`](pyproject.toml) file, for cuda-support, optuna, testing, etc.
 
 
-<a id="org0f924c8"></a>
+<a id="org414c83e"></a>
 
 ### Reproduce Experiments
 
@@ -143,14 +143,14 @@ The individual stages are described in the following.
     -   `eval-malnutrition`: Evaluates the models' performance ([dvc stage definition](experiments/dvc.yaml)) using reliability diagrams, Q-Q plots, analysis of marginal distributions and feature effects.
 
 
-<a id="orgddf71c5"></a>
+<a id="orgb000851"></a>
 
 ## Usage of the Density Regression Models
 
 The `hybriod_flows` python packages implements TensorFlow models for density regression using various methods. Here are some basic examples to get you started. Please also review the tests defined in <test/test_models.py>, and the model parameters used for the experiments described above if you require more examples.
 
 
-<a id="org3457d11"></a>
+<a id="org7f47afb"></a>
 
 ### Unconditional Multivariate Normal
 
@@ -178,7 +178,7 @@ dist = model(x)
 ```
 
 
-<a id="org59896a3"></a>
+<a id="org6745ed3"></a>
 
 ### Masked Autoregressive Flow
 
@@ -242,7 +242,7 @@ dist = model(x)
 ```
 
 
-<a id="orgd549016"></a>
+<a id="orgea05762"></a>
 
 ### Multivariate Conditional Transformation Model
 
@@ -323,7 +323,7 @@ marginal_dist = model.marginal_distribution(x)
 ```
 
 
-<a id="org3ea6b68"></a>
+<a id="orgf5c9459"></a>
 
 ### Conditional Hybrid Masked Autoregressive Flow using Quadratic Splines
 
@@ -407,21 +407,21 @@ marginal_dist = model.marginal_distribution(x)
 ```
 
 
-<a id="org89a3567"></a>
+<a id="org0adf605"></a>
 
 ## Contributing
 
 Any Contributions are greatly appreciated! If you have a question, an issue or would like to contribute, please read our [contributing guidelines](CONTRIBUTING.md).
 
 
-<a id="org52c8cb8"></a>
+<a id="org322e2cd"></a>
 
 ## License
 
 Distributed under the [Apache License 2.0](experiments/LICENSE)
 
 
-<a id="org1e7f2af"></a>
+<a id="org446cf22"></a>
 
 ## Contact
 
@@ -430,7 +430,7 @@ Distributed under the [Apache License 2.0](experiments/LICENSE)
 Project Link: <https://github.com/MArpogaus/hybrid-flows>
 
 
-<a id="org1641752"></a>
+<a id="org235c90f"></a>
 
 ## Acknowledgments
 
