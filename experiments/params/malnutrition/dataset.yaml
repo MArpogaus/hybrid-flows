@@ -1,0 +1,13 @@
+dataset_kwargs:
+  india:
+    data_path: datasets/malnutrition/india.raw
+    covariates:
+    - cage
+    targets:
+    - stunting
+    - wasting
+    - underweight
+    stratify: true
+    scale: true
+    column_transformers:
+    - [passthrough, [cage]]

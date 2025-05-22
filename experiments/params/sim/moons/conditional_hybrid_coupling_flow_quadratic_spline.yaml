@@ -1,0 +1,72 @@
+compile_kwargs:
+  jit_compile: true
+two_stage_training: true
+fit_kwargs:
+- epochs: 1000
+  batch_size: 1024
+  learning_rate: 0.05
+  reduce_lr_on_plateau: false
+  early_stopping: 50
+  monitor: val_loss
+  verbose: true
+  validation_split: 0.25
+- epochs: 400
+  batch_size: 512
+  learning_rate:
+    scheduler_kwargs:
+      decay_steps: epochs
+      initial_learning_rate: 0.001
+    scheduler_name: cosine_decay
+  reduce_lr_on_plateau: false
+  early_stopping: 50
+  monitor: val_loss
+  verbose: true
+  validation_split: 0.25
+model_kwargs:
+  marginal_bijectors:
+  - bijector: BernsteinPolynomial
+    invert: true
+    bijector_kwargs:
+      domain: [0, 1]
+      extrapolation: false
+    parameters_constraint_fn: hybrid_flows.activations.get_thetas_constrain_fn
+    parameters_constraint_fn_kwargs:
+      allow_flexible_bounds: false
+      bounds: linear
+      high: 5
+      low: -5
+    parameters_fn: bernstein_polynomial
+    parameters_fn_kwargs:
+      dtype: float32
+      extrapolation: true
+      conditional_event_shape: [1]
+      polynomial_order: 1
+      parameter_shape: [2, 300]
+  joint_bijectors:
+  - bijector: RealNVP
+    bijector_kwargs:
+      num_masked: 1
+    nested_bijector:
+      bijector: RationalQuadraticSpline
+      bijector_kwargs:
+        range_min: -5
+      parameters_constraint_fn_kwargs:
+        interval_width: 10
+        min_slope: 0.001
+        min_bin_width: 0.001
+        nbins: 32
+      parametrized_by_parent: true
+    parameters_fn: fully_connected_network
+    parameters_fn_kwargs:
+      activation: relu
+      batch_norm: false
+      dropout: false
+      hidden_units:
+      - 128
+      - 128
+      - 128
+      dtype: float32
+      input_shape: [1]
+      parameter_shape: [1, 95] # 32 * 3 - 1
+      conditional: true
+      conditional_event_shape: [1]

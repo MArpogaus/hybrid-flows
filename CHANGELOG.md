@@ -1,0 +1,167 @@
+## v0.1.0 (2025-05-22)
+
+### Feat
+
+- add experiment name and python interpreter to params
+- extract plot data from figures an log with mlflow
+- add optional `optimizer_kwargs` to `fit_distribution`
+- evaluate test NLL
+- add evaluation script for benchmark models
+- add optional kwargs for mlflow experiment and run name
+- add 1x1 convolutins for permutations
+- only use latex for rendering if latex binary is found in path
+- new argument `frac` to specify fraction of data to plot in `plot_malnutrition_samples`
+- allows to specify joint flow type in the constructor.
+- add reliability plot for malnutrition models
+- add additional eval plots for malnutrion models
+- first version of malnutrition eval scrip
+- update evaluation script with some more plots for hybrid models
+- update pipeline and train script to hybrid models in two steps
+- add property `predic_marginals` to solely predict marginals densities in call method
+- add `get_config` and `from_config` for Keras serialization
+- Add new version of `HybridDensityRegressionModel`
+- flatten nested list elements for parameter logging
+- add new argument to pass lists of nested bijectors to nvp and maf
+- add validation function from bijector definition.
+- pretty format params
+- add function to parametrize MAF with the first dim masked
+- add function to parametrize a masked autoregressive flow
+- add function to initialize coupling flows
+- make certain nf layers non trainable
+- support for malnutrion models
+- add function to constrain mctm lambda matrix
+- add test mode for malnutrion data
+- add plot functions for malnutrition data and models
+- allow to constrain Bernstein coefficients
+- use lambda matrix to model dependecies
+- add support for autoregressive flow in new nf impl
+- add option to enable stratified splitting of data
+- add Bernstein polynomial parameter function
+- allows to learn parametrization of base distribution
+- learnable scale and shift transformations
+- uses custom initializers form parameter vector
+- adds autoregressive res net
+- set MLFlow run name via cli argument
+- allows to scale data to bpoly domain in stacked flows
+- add truncated normal as base distribution
+- stacked flows with first dim masked
+- add custom LR Logger as keras callback
+- add LR scheduler with polynomial warmup and cosine decay
+- allows sampling from a given list of dicts
+- add test_mode argument to reducing sample size in data loaders
+- add custom activation function
+
+### Fix
+
+- Bernstein polynomial parameter function now supports event shapes > 1
+- subscript of data plot axes labels
+- import correct data loading function
+- invalid import
+- plot qq plot for samples from joint density
+- use fixed random_state for data splitting
+- ensure to set seed only once when executing pipeline
+- don't use bm in math text
+- raise error if parameters_fn has unsupported
+- log figure in correct file format
+- log metrics with mlflow
+- malnutrition evaluation now uses correct covariate shapes
+- correct shape for malnutrition covariates
+- flatten dict now works for nested lists and dictionaries
+- malnutrition training and evaluation
+- conditional sim models
+- ensure all bpolys have same domain and codomain
+- disable jit compile to prevent errors when training on GPU
+- optuna script now works with new run function
+- ensure n_samples is a multiple of two in test mode
+- handling of permutations is now working as expected
+- power AC Model lr
+- use correct stage name for benchmark models
+- use correct filenames for figures
+- use correct results path
+- usage of wrong results path in train script
+- model config now contains dims and joint_flow_type
+- test of nested flows now use correct shapes
+- disable NLL metrci for hybrid models sicne two stage training is default now.
+- mlflow parameter tracking now also works robustly for hybrid models
+- optimize and fix bugs in dvc stages for sim models training and evaluation
+- Mlflow now keeps track of prams inside lists of dictionaries
+- parameters fn kwargs for coupling spline model on miniboone
+- skip plotting the cdf for now
+- bpoly parameters fn now returns parameters in expected form
+- parameter fn evaluation now also works with non nn functions
+- model logging with mlflow now works again
+- set default argument of conditional_event_shape to `None`
+- also wait for running experiments
+- multivariate normal models now use correct kwargs
+- cd into experiment folder in mlflow script
+- use consistent naming for parameters_fn
+- assignments of trainable and non trainable variables now works
+- parameters now work with ne implementation
+- pass kwargs to sub model
+- several issues with stacked models
+- nf base dist now has correct event shape
+- made net with additive conditioner now works with new nf impl
+- update params to work with updated lib
+- recursive filter now only drops None values
+- dropout is now correctly applied to input values
+- latent dist plot now uses correct columns
+- fix latent disist for trafo plots
+- optuna script now works independent of dvc
+- only log non-object type arguments with mlflow
+- update checkpoint path in stage definition
+- conditional params use conditional_event_shape instead of input_shape
+- train scripts now use tf_keras
+- use tf_keras to be compatible with latest tf version
+- min_slope being added twice if no bounds are given
+- correct parameter shape of polynomial parameter function
+- align script for interpretable model with newest version of lib
+- pass additional kwargs to super class initializer
+- fixes fc res net arguments and removes faulty ar res net builders
+- use simple MADE for BNF MAF
+- models now allow passing custom parameter functions as callable
+- MLFlow experiment and run name
+- removes base_parameter_kwargs from multivariate_flow
+- invalid fit_kwargs in sim models
+- freezes tf version
+- set_seed now enables TensorFlow op determinism
+- stage definition for benchmark models
+- hybrid models base dist event_shape
+- removes needed print statements
+- add lr scheduler via keras callback to update lr for each epoch
+- uses tf_name_scope and converts everything to tensors
+- don't remove callbacks from fit_kwds
+- log lr after every epoch
+- makes scheduler call method tf graph compatible
+- use numpy value for lr logging to fix mlflow tracking error
+- test mode for benchmark data now selects first 1000 samples
+- check if completed trials exist before plotting intermediate results
+- **elementwise_flow**: use independent base distribution
+- disable lr patience for early stopping if reduce_lr_on_plateau is False
+- applies pre-commit hooks
+- add `model.build? to silence MLFlow Warnings
+
+### Refactor
+
+- rename pkg to hybrid_flows
+- use data loading function in eval script
+- helper functions to get bijector deffinition for AC, MA and masked MA flows
+- move common serialization code in abstract base class.
+- refactor flow parametrization in separate function
+- new pre-activation resnet implementation
+- lr scheduler logic into pipeline function
+- reorganize directory structure and move exp files into subdir
+- drop obsolete get_masked_autoregressive_flow_first_dim_masked patramter fn
+- first draft and test of new nf implementation
+- coupling and masked flows now use new nf function
+- more consistent function arguments and allow to pass bijector objetcts
+- makes model builders more generic and composable
+- simplify parameter handling and reduces code duplication
+- **train**: restructures all benchmark params
+
+### Perf
+
+- optimizations for parallelized GPU training
+- modify train script to run parallel on multiple GPUs
+
+
+- convert doc strings to numpy style and add type annotations

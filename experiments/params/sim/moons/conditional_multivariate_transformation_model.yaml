@@ -1,0 +1,53 @@
+compile_kwargs: {}
+  # jit_compile: true
+two_stage_training: true
+fit_kwargs:
+  epochs: &epochs 100
+  batch_size: 512
+  learning_rate:
+    scheduler_kwargs:
+      decay_steps: *epochs
+      initial_learning_rate: 0.01
+    scheduler_name: cosine_decay
+  reduce_lr_on_plateau: false
+  early_stopping: false
+  monitor: val_loss
+  verbose: true
+  validation_split: 0.25
+model_kwargs:
+  marginal_bijectors:
+  - bijector: BernsteinPolynomial
+    invert: true
+    bijector_kwargs:
+      domain: [0, 1]
+      extrapolation: true
+    parameters_constraint_fn: hybrid_flows.activations.get_thetas_constrain_fn
+    parameters_constraint_fn_kwargs:
+      allow_flexible_bounds: false
+      bounds: smooth
+      high: 4
+      low: -4
+    parameters_fn: parameter_vector
+    parameters_fn_kwargs:
+      dtype: float32
+      parameter_shape: [&dims 2, 300]
+  - bijector: Shift
+    invert: true
+    parameters_fn: bernstein_polynomial
+    parameters_fn_kwargs:
+      conditional_event_shape: [1]
+      dtype: float32
+      extrapolation: true
+      parameter_shape: [*dims]
+      polynomial_order: 6
+  joint_bijectors:
+  - bijector: ScaleMatvecLinearOperator
+    invert: true
+    parameters_fn: bernstein_polynomial
+    parameters_fn_kwargs:
+      conditional_event_shape: [1]
+      dtype: float32
+      extrapolation: true
+      parameter_shape: [1]
+      polynomial_order: 3
+    parameters_constraint_fn: hybrid_flows.activations.lambda_parameters_constraint_fn

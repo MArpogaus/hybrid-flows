@@ -1,0 +1,39 @@
+repos:
+- hooks:
+  - args:
+    - --fix
+    id: ruff
+  - id: ruff-format
+  repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.11.10
+- hooks:
+  - id: check-added-large-files
+  - id: check-executables-have-shebangs
+  - id: check-merge-conflict
+  - id: check-shebang-scripts-are-executable
+  - id: check-toml
+  - id: check-yaml
+  - id: end-of-file-fixer
+  - id: mixed-line-ending
+  - id: trailing-whitespace
+  repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+- hooks:
+  - args:
+    - --autofix
+    - --indent
+    - '2'
+    id: pretty-format-yaml
+  - args:
+    - --autofix
+    id: pretty-format-toml
+  - args:
+    - --autofix
+    id: pretty-format-ini
+  repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.14.0
+- hooks:
+  - id: commitizen
+    stages: [commit-msg]
+  repo: https://github.com/commitizen-tools/commitizen
+  rev: v4.7.2

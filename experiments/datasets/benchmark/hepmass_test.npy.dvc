@@ -1,0 +1,5 @@
+outs:
+- md5: 1cf34998957b8ab3b836b8b41d2d8c80
+  size: 14699036
+  hash: md5
+  path: hepmass_test.npy

@@ -1,0 +1,5 @@
+outs:
+- md5: 29304c974e66beebe53a493e06d74b58
+  size: 3366720
+  hash: md5
+  path: gas_test.npy

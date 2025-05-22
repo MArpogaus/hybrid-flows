@@ -1,0 +1,5 @@
+outs:
+- md5: 10d58c2a7b77aafde3461874f48c1f1d
+  size: 252000128
+  hash: md5
+  path: bsds300_train.npy

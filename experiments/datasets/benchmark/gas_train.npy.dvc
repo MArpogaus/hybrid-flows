@@ -1,0 +1,5 @@
+outs:
+- md5: 39954c6841382043fdca0f1be1437f8e
+  size: 27269696
+  hash: md5
+  path: gas_train.npy

@@ -1,0 +1,5 @@
+outs:
+- md5: a39220ef08007fba1768aef08f9c91cf
+  size: 4426568
+  hash: md5
+  path: power_validate.npy

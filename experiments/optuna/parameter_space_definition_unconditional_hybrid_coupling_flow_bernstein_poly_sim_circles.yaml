@@ -1,0 +1,39 @@
+- kwargs:
+    low: 0.0001
+    high: 0.1
+  name: fit_kwargs.0.learning_rate
+  type: float32
+- kwargs:
+    low: 0.00001
+    high: 0.01
+  name: fit_kwargs.1.learning_rate.scheduler_kwargs.initial_learning_rate
+  type: float32
+- kwargs:
+    choices: [32, 512, 1024, 4096]
+  name: fit_kwargs.0.batch_size
+  type: categorical
+- kwargs:
+    choices: [32, 512, 1024, 4096]
+  name: fit_kwargs.1.batch_size
+  type: categorical
+- kwargs:
+    choices: [200, 400, 1000]
+  name: fit_kwargs.1.epochs
+  type: categorical
+- kwargs:
+    choices: &hidden_units [32, 128, 512, 1024]
+  name: model_kwargs.joint_bijectors.0.parameters_fn_kwargs.hidden_units.0
+  type: categorical
+- kwargs:
+    choices: *hidden_units
+  name: model_kwargs.joint_bijectors.0.parameters_fn_kwargs.hidden_units.1
+  type: categorical
+- kwargs:
+    choices: *hidden_units
+  name: model_kwargs.joint_bijectors.0.parameters_fn_kwargs.hidden_units.2
+  type: categorical
+- kwargs:
+    low: 8
+    high: 4096
+  name: model_kwargs.joint_bijectors.0.parameters_fn_kwargs.parameter_shape.1
+  type: int
