@@ -263,8 +263,8 @@ resolution-markers = [
     "python_full_version == '3.10.*' and sys_platform != 'win32'",
 ]
 dependencies = [
-    { name = "absl-py", marker = "python_full_version >= '3.10'" },
-    { name = "etils", version = "1.12.2", source = { registry = "https://pypi.org/simple" }, extra = ["epath"], marker = "python_full_version >= '3.10'" },
+    { name = "absl-py", marker = "python_full_version >= '3.10' and sys_platform != 'win32'" },
+    { name = "etils", version = "1.12.2", source = { registry = "https://pypi.org/simple" }, extra = ["epath"], marker = "python_full_version >= '3.10' and sys_platform != 'win32'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f7/5a/b58f1a2e5752ee765ce348b435358544a99e254f36dd7e726f66f6002d94/array_record-0.7.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8d40d0039b97cd18b7360472ddb160dbb6f17bbb4aa17603828a75680876582b", size = 2135234 },
@@ -2183,6 +2183,7 @@ name = "hybrid-flows"
 source = { editable = "." }
 dependencies = [
     { name = "bernstein-flow" },
+    { name = "scikit-learn" },
     { name = "seaborn" },
     { name = "tensorflow" },
     { name = "tensorflow-datasets", version = "4.9.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
@@ -2209,6 +2210,8 @@ develop = [
     { name = "ruff" },
 ]
 docs = [
+    { name = "dvc", extra = ["ssh"] },
+    { name = "mlflow" },
     { name = "pdoc" },
 ]
 optuna = [
@@ -2234,6 +2237,7 @@ requires-dist = [
     { name = "dvc", extras = ["ssh"], marker = "extra == 'train'", specifier = "==3.*" },
     { name = "hybrid-flows", extras = ["train"], marker = "extra == 'cuda'" },
     { name = "hybrid-flows", extras = ["train"], marker = "extra == 'develop'" },
+    { name = "hybrid-flows", extras = ["train"], marker = "extra == 'docs'" },
     { name = "hybrid-flows", extras = ["train"], marker = "extra == 'optuna'" },
     { name = "ipython", marker = "extra == 'develop'" },
     { name = "mlflow", marker = "extra == 'train'", specifier = "==2.*" },
@@ -2247,13 +2251,14 @@ requires-dist = [
     { name = "python-lsp-ruff", marker = "extra == 'develop'" },
     { name = "python-lsp-server", extras = ["all"], marker = "extra == 'develop'" },
     { name = "ruff", marker = "extra == 'develop'" },
+    { name = "scikit-learn", specifier = "==1.6.*" },
     { name = "seaborn", specifier = "==0.13.*" },
     { name = "tensorflow", specifier = "==2.15.*" },
     { name = "tensorflow", extras = ["and-cuda"], marker = "extra == 'cuda'" },
     { name = "tensorflow-datasets", specifier = "==4.9.*" },
     { name = "tensorflow-probability", specifier = "==0.23.*" },
 ]
-provides-extras = ["cuda", "develop", "docs", "optuna", "test", "train"]
+provides-extras = ["train", "cuda", "develop", "docs", "optuna", "test"]
 
 [[package]]
 name = "hydra-core"
